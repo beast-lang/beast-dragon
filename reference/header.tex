@@ -1,0 +1,130 @@
+% !TeX root = main.tex
+
+\documentclass[10pt, a4paper, fleqn]{report}
+\usepackage[margin=20mm]{geometry}
+\usepackage{cmap}
+
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{tabto}
+%\usepackage{fullpage}
+\usepackage{float}
+\usepackage[hypcap]{caption}
+
+\usepackage{titling}
+\usepackage{titlesec}
+
+\usepackage{environ}
+\usepackage{verbatim}
+
+\usepackage{ifthen, paralist}
+\usepackage{intcalc}
+
+\usepackage{xcolor}
+
+\usepackage{multicol}
+
+\usepackage{xparse}
+
+% Referencing
+\usepackage[hidelinks]{hyperref}
+\newcommand{\putlabel}{
+	(\arabic{chapter}.\arabic{equation})
+}
+\newcommand{\putref}{
+	\refstepcounter{equation}
+	\putlabel
+}
+
+%math settings
+\usepackage{amsmath}
+\usepackage{mathtools}
+\everymath{\displaystyle}
+\usepackage{MnSymbol}
+\setlength\delimitershortfall{0pt}
+
+\allowdisplaybreaks
+
+% Font
+\usepackage{DejaVuSans}
+\usepackage[scaled]{beramono}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+\usepackage[T1]{fontenc}
+\usepackage{pxfonts}
+
+%paragraph settings
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.3cm}
+
+\titlespacing*{\chapter}{0em}{0em}{0em}
+\titleformat{\chapter}[block]{\bf\LARGE}{\arabic{chapter} | }{0em}{}
+
+\titlespacing*{\section}{0em}{0em}{0em}
+
+%circuit settings
+\usepackage{circuitikz}
+\usepackage{sidecap}
+\ctikzset{resistor = european}
+\newenvironment{circuit}{ \refstepcounter{equation}
+	\begin{center}
+	\begin{circuitikz}[scale=0.7]
+	\draw
+}{
+	;
+	\end{circuitikz}
+	
+	\eqlabel
+	\end{center}
+}
+
+
+%tabular settings
+\usepackage{array}
+\usepackage[hang,bottom]{footmisc}
+\setlength\extrarowheight{2pt}
+\setlength\footnotemargin{10pt}
+\usepackage{setspace}
+\usepackage{rotating}
+
+\newenvironment{reftabular}[1]{
+	\begin{center}
+		\begin{tabular}{#1}	
+}{
+		\end{tabular}
+		
+		\putref
+	\end{center}
+}
+
+% graphics
+\usepackage{graphicx}
+\newcommand{\imagetempl}[3][]{
+
+	\begin{minipage}{\linewidth}
+		\begin{center}
+			\includegraphics[#3]{#2}
+			
+			{\footnotesize \putref #1}
+		\end{center}
+	\end{minipage}
+}
+\newcommand{\image}[2][]{
+	\imagetempl[#1]{#2}{height=4cm}
+}
+\newcommand{\bigimage}[2][]{
+	\imagetempl[#1]{#2}{width=14cm}
+}
+\NewEnviron{diagram}{ \refstepcounter{equation}
+
+	\begin{minipage}{\linewidth}
+		\begin{center}
+			\begin{tikzpicture}
+				\BODY
+			\end{tikzpicture}
+			
+			\eqlabel
+		\end{center}
+	\end{minipage}
+}
+

@@ -1,0 +1,32 @@
+% !TeX root = main.tex
+
+\newcommand{\subtitle}[1]{
+	\def\thesubtitle{#1}
+}
+
+\definecolor{fit-logo-red}{cmyk}{0,0.93,0.79,0}
+\definecolor{fit-logo-blue}{cmyk}{0.83,0.01,0,0}
+
+\newcommand{\mainpage}{
+	\begin{titlepage}
+		\begin{center}
+			\includegraphics[width=15cm]{FIT_barevne_PANTONE_CZ.pdf}
+			
+			\vspace{6cm}
+			\textbf{\Huge \thetitle}
+			
+			{\Large  \thesubtitle}
+			
+			\vspace{4cm}
+			\begin{minipage}{10cm}
+				\begin{center}
+					\large \theauthor
+				\end{center}
+			\end{minipage}
+			
+			\vspace*{\fill}
+			\thedate
+		\end{center}
+	\end{titlepage}
+	\newpage
+}

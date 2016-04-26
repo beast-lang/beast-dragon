@@ -1,0 +1,5 @@
+*.aux
+*.out
+reference/main.synctex.gz
+*.toc
+reference/main.pdf

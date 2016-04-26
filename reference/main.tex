@@ -1,0 +1,484 @@
+% !TeX spellcheck = en_US
+
+\include{header}
+\include{mainpage}
+\include{support}
+
+\setlength\extrarowheight{2pt}
+
+% Title Page
+\title{NATI (Not All That Innovative) programming language}
+\subtitle{Language specification/reference}
+\author{Daniel Čejchan}
+\date{2016}
+
+
+\begin{document}
+\mainpage
+%\renewcommand{\clearpage}{}
+
+\chapter{Table of contents}
+\makeatletter
+\@starttoc{toc}
+\makeatother
+
+\chapter{Lexical}
+In the normal code, NATI accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
+
+\begin{grammar}
+	\tokenDef{Whitespace} \verb|[\n\t ]+|
+\end{grammar}
+
+\section{Identifiers}
+\begin{grammar}
+	\tokenDef{Identifier} \verb|#?[a-zA-Z_][a-zA-Z_0-9]*|
+\end{grammar}
+An identifier consists of any combination of lower and upper case ASCII letters, numbers and undescores, with these additional rules:
+\begin{itemize}
+	\item An identifier cannot begin with a number.
+	\item An identifier can begin with the hasthag (\verb|#|) character. These identifiers are to be used as \hyperref[traits]{traits}.
+\end{itemize}
+
+\section{Keywords} \label{keywords}
+Most of the keywords are not actually used in the language, but they might be in the future.
+\begin{code}
+alias, auto, break, case, class, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, module, return, scope, singleton, switch, template, this, throw, true, try, type, while, with, yield
+\end{code}
+
+\section{Literals}
+
+\paragraph{See also} \nameref{literalUnits}
+
+\subsection{Integer literal}
+\begin{grammar}
+	\tokenDef{IntLiteral} \verb|-?[0-9]+| \\
+	\tokenDef{BinLiteral} \verb|0b[01]+| \\
+	\tokenDef{OctLiteral} \verb|0o[0-7]+| \\
+	\tokenDef{HexLiteral} \verb|0x[0-9a-fA-F]+|
+\end{grammar}
+
+\paragraph{Data type} Type of a literal is always the smallest signed type possible. If the number doesn't fit in the signed variant but fits in the unsigned variant with the same size, the unsigned variant is used. If the required bit count exceeds 128, a \type{BigInt} type is used.
+
+For non-decimal systems, smallest unsigned variant is used.
+
+\begin{code}
+10 // Int8
+128 // UInt8
+-10 // Int8
+-150 // Int16
+60000 // Int16
+0xaa // UInt8
+0xa01 // UInt16
+\end{code}
+
+\subsection{Float literal}
+\begin{grammar}
+	\tokenDef{FloatLiteral} \verb|[0-9]*\.[0-9]+|
+\end{grammar}
+
+\paragraph{Data type} Float literal is always of type \type{Float64}. It is recommended to use the \verb|f| \hyperref[literalUnits]{literal unit} for casting to \type{Float32}.
+
+\section{Comments}
+\begin{grammar}
+	\tokenDef{LineComment} \verb|//[^\n$][\n$]| \\
+	\tokenDef{Comment} \verb|/\*.*?\*/|
+\end{grammar}
+Additionally, \textbf{comments can be nested}.
+
+\begin{code}
+void main() {
+	/* This is a comment
+		/* This is a comment, too. */
+		Still a comment */
+	thisIsACode();
+}
+\end{code}
+
+\chapter{Syntactic}
+\begin{grammar}
+	\grDef{ExtendedIdentifier} \token{Identifier} \{ \kwdsym{.} \token{Identifier} \}
+\end{grammar}
+
+\chapter{Modules}
+\begin{grammar}
+	\grDef{ModuleEntry} \kwd{module} \gr{ExtendedIdentifier} \kwdsym{;} \{ \gr{ModuleLvlDecl} \} \\
+	\\
+	\grDef{ModuleLvlDecl} \gr{DecoratedModuleLvlDecl} \\
+	& | \gr{ModuleLvlDeclBlock} \\
+	& | \gr{ImportStmt} \\
+	& | \gr{ScopeDecorationStmt} \\
+	\grDef{DecoratedModuleLvlDecl} \gr{Decoration} \{ \gr{Decoration} \} \gr{ModuleLvlDecl} \\
+	\grDef{ScopeDecorationStmt} \gr{Decoration} \{ \gr{Decoration} \} \kwdsym{:} \\
+	\grDef{ModuleLvlDeclBlock} \kwdsym{\{} \gr{ModuleLvlDecl} \kwdsym{\}} \\
+\end{grammar}
+
+The program is divided into modules. Each module begins with a module declaration statement.
+\begin{code}
+module package.package.moduleName;
+\end{code}
+
+The \gr{ExtendedIdentifier} in the \gr{ModuleEntry} then works as an identifier for the module. Multiple modules with the same identifier are not allowed.
+
+\paragraph{Filesystem representation} Module identifier has to correspond with the directory structure the source file is in and the source file name has to be same as the module name (case sensitive). For example, having set up \verb|project/src| and \verb|project/include| source file directories, module \verb|straw.nati.main| has to be in file \verb|project/src/straw/nati/main.nati| or \verb|project/include/straw/nati/main.nati|.
+
+\paragraph{Naming convention} Modules should be named in lower-CamelCase. This is not enforced, however disobeying this rule results in a warning.
+
+\section{Imports} \label{imports}
+\begin{grammar}
+	\grDef{ImportStmt} \kwd{import} \gr{ExtendedIdentifier} \kwdsym{;}
+\end{grammar}
+
+Using the \kwd{import} statement, you can make symbols other modules accessible for the current scope.
+
+Imports are not modified using standard access modifier decorators (\decorator{public}, \decorator{private}, etc.), but with \decorator{global} and \decorator{local}, \decorator{local} being default.
+
+\subsection{Local imports} \label{decorator:local}
+Local import makes the symbols from the specified module accessible only for the current scope (and its subscopes).
+
+\begin{code}
+module a;
+
+Void aFunc() {
+	// Do something
+}
+
+$\moduleSep$
+module b;
+
+import a; /* Equivalent with @local import a; */
+
+Void bFunc() {
+	aFunc(); // Ok
+}
+
+$\moduleSep$
+module c;
+
+import b;
+
+Void cFunc() {
+	import a;
+	aFunc(); // Ok
+}
+Void cFunc2() {
+	aFunc(); // Error	
+}
+\end{code}
+
+\subsection{Global imports} \label{decorator:global}
+Symbols that are imported using the global import are accessible from the current scope (and its subscopes) and all scopes that import the current scope (and their subscopes).
+
+\begin{code}
+module a;
+
+Void aFunc() {
+	// Do something
+}
+
+$\moduleSep$
+module b;
+
+@global import a;
+
+Void bFunc() {
+	aFunc(); // Ok
+}
+
+$\moduleSep$
+module c;
+
+@global import b;
+
+Void cFunc() {
+	bFunc(); // Ok
+	aFunc(); // Ok	
+}
+
+$\moduleSep$
+module d;
+
+import c;
+
+VoiddFunc() {
+	cFunc(); // Ok
+	aFunc(); // Ok
+}
+
+$\moduleSep$
+module e;
+
+import d;
+
+Void eFunc() {
+	dFunc(); // Ok
+	cFunc(); // Error
+	aFunc(); // Error	
+}
+\end{code}
+
+\chapter{Decorators}
+\begin{grammar}
+	\grDef{Decoration} \kwdsym{@} \token{Identifier} [ \gr{ArgumentList} ]
+\end{grammar}
+
+Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code.
+
+\section{Decorator application}
+In module level, there are three ways of how to apply a decorator:
+\begin{code}
+module a;
+
+class C {
+	
+// Scope decoration
+@decoratorA @decoratorB:
+	Int32 d;
+	Int64 c;
+	
+	// Block decoration
+	@decoratorE @decoratorF {
+		Int8! b;
+		Int16! c;	
+	}
+	
+	// Statement decoration
+	@decoratorC @decoratorD Int8! a;
+				
+}
+\end{code}
+
+\paragraph{Scope decorations} Decorators are applied to all statements following the decoration up to next scope decoration or current scope end. You can not use scope decorations directly in the module root scope.
+
+\paragraph{Block decorations} Decorators are applied to all statements in the block.
+
+\paragraph{Statement decorations} Decorators are applied to the statement that follows the decoration.
+
+\subsection{Decoration contexts}
+There are multiple different contexts in which decorators can be used. Most decorators can't be used in all the contexts.
+
+The contexts are following:
+\begin{itemize}
+	\item Module level declaration
+	\item Variable declaration
+	\item Function declaration
+	\item Parameter declaration
+	\item Class declaration
+	\item Enum declaration
+	\item Control statement (\kwd{if}, \kwd{for}, \kwd{while}, ...)
+	\item Block of code (\verb|{ /* code here */ }|)
+\end{itemize}
+
+\begin{code}
+enum DecorationContext {
+	importDecoration,
+	moduleLevelDeclaration,
+	parameterDeclaration,
+	variableDeclaration,
+	functionDeclaration,
+	classDeclaration,
+	enumDeclaration,
+	typeDecoration,
+	controlStatement,
+	codeBlock;
+	
+	enum : DecorationContext.Set {
+		typeDeclaration = classDeclaration | enumDeclaration	
+	}
+}
+\end{code} \label{enum:DecorationContext}
+
+\subsection{Context ambiguity resolution} In some cases, the context the decorator is used in can be ambiguous. Consider following example:
+\begin{code}
+Void f( @ctime Int8 param ) {
+	// Code here
+}
+\end{code}
+
+Here, the \decorator{ctime} decorator can be considered to be used in either \texttt{parameter\-Declaration}, \texttt{variable\-Decl\-aration} or \verb|typeDecoration| context. How is it decided? The compiler tries to use contexts in order they are defined in the \verb|DecorationContext| enum, looking for a first match. If the decorator doesn't support any of the contexts available, an error is shown. This means that \textbf{you can't apply a decorator on a stuff the decorator doesn't support}. In some other langauges, the decorator would simply be ignored, but this does not apply for NATI.
+
+In the example, it would first try to apply the decorator in \verb|parameterDeclaration| context. Because the \decorator{ctime} decorator doesn't support that context, it would try the \verb|variableDeclaration| context, which is supported, so the resolving would succeed.
+
+\subsection{Decorator conflicts}
+\textbf{You can not apply two decorators that are incompatible.} The most common case are the \hyperref[accessModifierDecorators]{access modifier decorators}.
+\begin{code}
+class C {
+
+@public:
+	@private Int8 a; // Error - @public and @private decorators are incompatible
+	
+}
+\end{code}
+
+\section{Predefined decorators}
+
+\subsection{Import locality modifiers (\decorator{global}, \decorator{local})}
+The decorators only support \hyperref[enum:DecorationContext]{\ttfamily importDecoration} context. See \nameref{imports}.
+
+\subsection{Access modifiers (\decorator{public}, \decorator{private}, \decorator{protected} and \decorator{friend})} \label{accessModifierDecorators}
+Access modifier decorators specify where a symbol is accessible from. They only support the \hyperref[enum:DecorationContext]{\ttfamily moduleLevelDeclaration} context.
+
+\paragraph{\decorator{public}} \label{decorator:public} Symbols with the \decorator{public} access modifier are accessible from everywhere.
+
+\paragraph{\decorator{private}} \label{decorator:private} Symbols with the \decorator{private} access modifier are accessible only from the current scope.
+
+\paragraph{\decorator{protected}} \label{decorator:protected} The \decorator{protected} only makes sense when used in classes. It makes symbols accessible from the current scope, its subscopes and any scope that derives from any of its subscopes.
+
+\paragraph{\decorator{friend}} \label{decorator:friend} The \decorator{friend} decorator exclusively allows access to one scope symbol, specified as the parameter. This overrides the \decorator{protected} or \decorator{private} access restriction.
+
+\begin{code}
+class C {
+	@private @friend( func3 ) Int8 x;
+	@protected Int16 func() {
+		return 32000;
+	}	
+	@public Int32 y;
+}
+
+class D : @public C {
+	
+@public:
+	Void func2() {
+		x = 6; // Error
+		func(); // Ok
+	}
+	
+}
+
+Void func3() {
+	C c;
+	c.x = 5; // Ok - func3 is friend with C.x
+	c.func(); // Error
+	c.y = 10; // Ok
+}
+\end{code}
+
+\paragraph{Inter-compatibility}
+The \decorator{public}, \decorator{protected} and \decorator{private} decorators are not compatible with any decorator from the three (this also means you can't apply them twice). Also, \decorator{friend} and \decorator{public} decorators are not compatible.
+
+\subsection{The \decorator{ctime} decorator} \label{decorator:ctime}
+Generally, the \decorator{ctime} decorator is related with compile time execution. It supports multiple contexts and depending on the context, its semantics can slightly change.
+
+\paragraph{Compile-time parameters}
+A function parameter decorated with \decorator{ctime} is a compile-time parameter. In some cases, parameters don't have to be decorated with \decorator{ctime} -- class, enum, template parameters are always compile-time and decorating them with \decorator{ctime} even results in warning.
+
+Compile-time parameter's values must be known at compile time. Compile-time parameters can be mutable.
+
+Technically, a function with compile-time arguments is a function template.
+
+\begin{code}
+// 'y' and 't' parameters are compile-time
+Void f( Int32 x, @ctime Int32 y, @ctime Type t ) {
+	
+}
+\end{code}
+
+For more info, see \nameref{ctime:parameter}.
+
+\paragraph{Compile-time variables}
+A variable decorated with \decorator{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable}. A compile-time variable can be of a \hyperref[ctime:class]{compile-time type}. You can not define a compile-time variable as a dynamic member of a non-compile-time class.
+
+\begin{code}
+Void f() {
+	@ctime Type! t = Int32;
+	t x = 5; // x is of type Int32
+	t = String;
+	t str = "asd"; // y is of type String
+	@ctime t str2 = "lol"; // str2 is compile-time and of type String
+}
+\end{code}
+
+For more info, see \nameref{ctime:variable}.
+
+\paragraph{Compile-time functions}
+A function decorated with \decorator{ctime} is a compile-time function. A compile-time function is always executed at compile time. It can return a \hyperref[ctime:class]{compile-time type}. Its parameters and all variables used in its body are compile-time and the \decorator{ctime} decorator should be omitted (a warning is shown otherwise).
+
+Because of some reasons, 
+
+\begin{code}
+@ctime Type TypeIntersection( Type t1, Type t2 ) {
+	// if t2 is parent of t1
+	if( t1 is t2 )
+		return t2;
+		
+	// if t1 is parent of t2
+	else if( t2 is t1 )
+		return t1;
+	
+	else
+		return Void;
+}
+\end{code}
+
+For more info, see \nameref{ctime:function}
+
+\paragraph{Compile-time classes}
+A class decorated with \decorator{ctime} is a compile-time class. A compile-time class can exists only during compilation. All its member functions are \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decorator{ctime} decorator should be omitted).
+
+\begin{code}
+@ctime class FunctionInfo {
+
+@public:
+	Void #ctor!( Function F ) {
+		returnType = F.#returnType;
+		parameterTypes = F.#parameters.map( ( x ) => x.type );
+	}
+	
+@public:
+	Type returnType;
+	Type[] parameterTypes;	
+	
+}
+\end{code}
+
+For more info, see \nameref{ctime:class}.
+
+\paragraph{Compile-time control statements}
+A control statement decorated with \decorator{ctime} is a compile-time control statement. In a compile-time control statement, \textbf{expressions in the statement are evaluated in compile-time, but the statement bodies are evaluated at runtime}.
+
+All variables declared in the statement expressions are compile-time. They should be decorated with the \decorator{ctime} decorator (a warning is shown otherwise).
+
+\begin{code}
+Void f() {
+	Type! t = Int8;
+	
+	
+	if( 3 == 5 )
+		t = Int16; // Warning: compile-time variable modification inside a runtime control statement
+	
+	// t == Int16 here
+	
+	@ctime if( 4 == 5 )	
+		t = Int32;
+		
+	// t == Int16
+}
+\end{code}
+
+\begin{code}
+Void g() {
+	@ctime for( @ctime Int16 x = 0; x < 20; x ++ ) {
+		// x is a compile-time variable
+		writeln( "lol" );
+		// The code generated from this would be twenty writeln("lol") calls
+	}
+	
+	for( Int16 x = 0; x < 20; x ++ ) {
+		// x is a runtime variable, the loop is executed at runtime	
+	}
+}
+\end{code}
+
+\paragraph{Compile-time code block} A code block decorated with the \decorator{ctime} is executed at compile time. All variables declared in it are compile time and they should not be decorated with the \decorator{ctime} decorator.
+
+\chapter{Plans for the future}
+\begin{itemize}
+	\item Aliased imports
+	\item Namespaces
+	\item User decorators
+	\item Singletons
+	\item Compiler support for documentation comments?
+	\item Compiler outputs intellisense data?
+	\item Extern functions -- cooperation with other programming languages
+\end{itemize}
+
+\end{document}          

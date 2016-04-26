@@ -1,0 +1,73 @@
+% !TeX root = main.tex
+
+\newenvironment{traitsTable}{
+	\begin{reftabular}{l | l | l}
+		Name & Type & Description \\
+		\hline \hline
+}{
+	\end{reftabular}
+}
+
+% Grammar
+\newcounter{grammarRule}
+\newenvironment{grammar}{
+	\hspace{0.5cm}
+	\begin{minipage}{\textwidth - 0.5cm}
+		\ttfamily \small
+		\begin{tabular}{l l}
+}{
+		\end{tabular}
+	\end{minipage}
+	\nopagebreak
+	\begin{center}
+		\putref
+	\end{center}
+}
+\newcommand{\grDef}[1]{\refstepcounter{grammarRule}\label{gr:#1}#1:&}
+\newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&}
+
+\newcommand{\gr}[1]{\hyperref[gr:#1]{#1}}
+\newcommand{\kwd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\kwdsym}[1]{'\textbf{#1}'}
+\newcommand{\token}[1]{\textit{\hyperref[tok:#1]{#1}}}
+\newcommand{\type}[1]{\hyperref[type:#1]{\texttt{#1}}}
+\newcommand{\decorator}[1]{\hyperref[decorator:#1]{\texttt{@#1}}}
+
+\newcommand{\moduleSep}{/* - - - - - - - - DIFFERENT MODULE - - - - - - - - */}
+
+% Code
+\usepackage{listings}
+
+\lstdefinelanguage{nati}
+{
+	morekeywords={alias, auto, break, case, class, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, module, return, scope, singleton, switch, template, this, throw, true, try, type, while, with, yield},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+
+\lstset{% 
+	basicstyle=\ttfamily\small, 
+	language=nati,
+	breaklines=true,
+	breakatwhitespace=true,
+	breakautoindent=true,
+	breakindent=5mm,
+	escapeinside=$$,
+	numbers=left,
+	numberstyle=\small\ttfamily,
+	numbersep=3mm,
+	tabsize=2,
+	frame=leftline,
+	framesep=2mm,
+	xleftmargin=8mm,
+} 
+\lstnewenvironment{code}{
+	\hspace{0mm}
+}{
+	\nobreak\nopagebreak
+	\begin{center}
+		\putref
+	\end{center}
+} 
