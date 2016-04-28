@@ -1,42 +1,33 @@
 % !TeX root = main.tex
 
-\newenvironment{traitsTable}{
-	\begin{reftabular}{l | l | l}
-		Name & Type & Description \\
-		\hline \hline
-}{
-	\end{reftabular}
-}
-
 % Grammar
 \newcounter{grammarRule}
-\newenvironment{grammar}{
+\NewEnviron{grammar}{
 	\hspace{0.5cm}
-	\begin{minipage}{\textwidth - 0.5cm}
-		\ttfamily \small
-		\begin{tabular}{l l}
-}{
-		\end{tabular}
-	\end{minipage}
+	\ttfamily \small
+	\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
+		\BODY
+	\end{tabularx}
 	\nopagebreak
 	\begin{center}
 		\putref
 	\end{center}
 }
-\newcommand{\grDef}[1]{\refstepcounter{grammarRule}\label{gr:#1}#1:&}
-\newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&}
+\newcommand{\grDef}[1]{\rule{0mm}{5mm}\refstepcounter{grammarRule}\label{gr:#1}#1&::=&}
+\newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&&}
+\newcommand{\grAltLn}{&&| }
 
 \newcommand{\gr}[1]{\hyperref[gr:#1]{#1}}
-\newcommand{\kwd}[1]{\textbf{\texttt{#1}}}
-\newcommand{\kwdsym}[1]{'\textbf{#1}'}
+\newcommand{\kwd}[1]{'\textbf{\texttt{#1}}'}
 \newcommand{\token}[1]{\textit{\hyperref[tok:#1]{#1}}}
 \newcommand{\type}[1]{\hyperref[type:#1]{\texttt{#1}}}
+
 \newcommand{\decorator}[1]{\hyperref[decorator:#1]{\texttt{@#1}}}
+\newcommand{\decorationContext}[1]{\hyperref[decorationContexts]{\texttt{#1}}}
 
 \newcommand{\moduleSep}{/* - - - - - - - - DIFFERENT MODULE - - - - - - - - */}
 
 % Code
-\usepackage{listings}
 
 \lstdefinelanguage{nati}
 {

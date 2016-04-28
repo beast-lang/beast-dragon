@@ -96,20 +96,189 @@ void main() {
 
 \chapter{Syntactic}
 \begin{grammar}
-	\grDef{ExtendedIdentifier} \token{Identifier} \{ \kwdsym{.} \token{Identifier} \}
+	\grDef{ExtendedIdentifier} \token{Identifier} \{ \kwd{.} \token{Identifier} \}
+\end{grammar}
+
+\chapter{Expressions}
+\begin{grammar}
+	\grDef{Expression} \gr{P10Expr} \\
+	\grDef{CommaExpression} \gr{Expression} \{ \kwd{,} \gr{Expression} \} \\
+	\grDef{ParentCommaExpr} \kwd{(} [ \gr{CommaExpression} ] \kwd{)} \\
+	\\
+	\grDef{P10Expr} \gr{P9Expr} \\
+		\grAltLn \gr{P9Expr} \kwd{..} \gr{P9Expr} \\
+		
+	\grDef{P9Expr} \gr{P8Expr} \\
+		\grAltLn \gr{P8Expr} \gr{P9UnchainableOp} \gr{P8Expr} \\
+		\grAltLn \gr{P8Expr} \{ \kwd{=} \gr{P8Expr} \}+ \\
+		\grAltLn \gr{P8Expr} \{ \kwd{:=} \gr{P8Expr} \}+ \\
+	
+	\grDef{P8Expr} \gr{P7Expr} \\
+		\grAltLn \gr{P7Expr} \kwd{?} \gr{P7Expr} \kwd{:} \gr{P7Expr} \\
+	
+	\grDef{P7Expr} \gr{P6Expr} \\
+		\grAltLn \gr{P6Expr} \{ \kwd{\&\&} \gr{P6Expr} \}+ \\
+		\grAltLn \gr{P6Expr} \{ \kwd{||} \gr{P6Expr} \}+ \\
+	
+	\grDef{P6Expr} \gr{P5Expr} \\
+		\grAltLn \gr{P5Expr} ( \kwd{is} | \kwd{!is} | \kwd{in} | \kwd{!in} | \kwd{!=} ) \gr{P5Expr} \\
+		\grAltLn \gr{P5Expr} \{ ( \kwd{==} | \kwd{>=} | \kwd{>} ) \gr{P5Expr} \}+ \\
+		\grAltLn \gr{P5Expr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{P5Expr} \}+ \\
+	
+	\grDef{P5Expr} \gr{P4Expr} \\
+		\grAltLn \gr{P4Expr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{P4Expr} \\
+		\grAltLn \gr{P4Expr} \{ \kwd{\&} \gr{P4Expr} \}+ \\
+		\grAltLn \gr{P4Expr} \{ \kwd{|} \gr{P4Expr} \}+ \\
+		\grAltLn \gr{P4Expr} \{ \kwd{\^} \gr{P4Expr} \}+ \\
+		
+	\grDef{P4Expr} \gr{P3Expr} \\
+		\grAltLn \gr{P3Expr} \{ ( \kwd{+} | \kwd{-} ) \gr{P3Expr} \}+ \\
+		
+	\grDef{P3Expr} \gr{P2Expr} \\
+		\grAltLn \gr{P2Expr} \{ ( \kwd{*} | \kwd{/} ) \gr{P2Expr} \}+ \\
+		\grAltLn \gr{P2Expr} \kwd{\%} \gr{P2Expr} \\
+		
+	\grDef{P2Expr} \gr{P1Expr} \\
+		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{*} | \kwd{\&} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
+		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} | \kwd{!} ) \\
+		\grAltLn \gr{InlineVarDecl} \\
+		
+	\grDef{P1Expr} \gr{P0Expr} \\
+		\grAltLn \gr{P0Expr} \{ \gr{P1Op} \} \\
+	
+	\grDef{P0Expr} \token{Identifier} \\
+		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
+		
+	\\
+	
+	\grDef{P9UnchainableOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
+		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
+		
+	\grDef{P1Op} \kwd{(} \gr{CommaExpression} \kwd{)} \\
+		\grAltLn \kwd{[} [ \gr{Expression} ] \kwd{]} \\
+		\grAltLn \kwd{.} \token{Identifier} \\
+		
+	\\
+	
+	\grDef{InlineVarDecl} \gr{P1Expr} [ \kwd{\&} ] \token{Identifier} [ \gr{ParentCommaExpr} ] \\
+	\grDef{VariableDeclStmt} \gr{P1Expr} [ \kwd{\&} ] \token{Identifier} [ \gr{VarDeclCtor} ] \kwd{;} \\
+	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
+	
+\end{grammar}
+
+\section{Operator precedence}
+\begin{centeredTabular}{c | c | p{8cm} | c}
+	\textbf{Priority} & \textbf{Operator} & \textbf{Semantics} & \textbf{Associativity} \\ \hline \rule{0mm}{4mm}
+	
+	1
+		& \verb|x(args)| & Function call & Left to right \\
+		& \verb|x[args]| & Array subscripting & \\
+		& \verb|x.ident| & Attribute access & \\
+	\hline
+	
+	2
+		& \verb|!x| & Logical NOT & Cannot be chained \\
+		& \verb|-x| & Sign negation & \\
+		& \verb|~x| & Bitwise NOT & \\
+		& \verb|*x| & Dereference & \\
+		& \verb|&x| & Adress of & \\
+		& \verb|++x| & Prefix increment & \\
+		& \verb|--x| & Prefix decrement & \\
+		\cline{2-4}
+		& \verb|x++| & Suffix increment & Cannot be chained \\
+		& \verb|x--| & Suffix decrement & \\
+		& \verb|x!| & Mutability modifier & \\
+		\cline{2-4}
+		& \verb|X ident| & Inline variable declaration & \\
+	\hline
+	
+	3
+		& \verb|x * y| & Multiplication & Left to right \\
+		& \verb|x / y| & Division \\
+		\cline{2-4}
+		& \verb|x % y| & Modulo & Cannot be chained \\
+	\hline
+	
+	4
+		& \verb|x + y| & Addition & Left to right \\
+		& \verb|x - y| & Subtraction & \\
+	\hline
+	
+	5
+		& \verb|x & y| & Bitwise AND & Left to right, \\
+		& \verb$x | y$ & Bitwise OR & only the same \\
+		& \verb|x ^ y| & Bitwise XOR & \\
+		\cline{2-4}
+		& \verb|x >> y| & Bitwise right shift & Cannot be chained \\
+		& \verb|x << y| & Bitwise left shift & \\
+		& \verb|x >>> y| & Bitwise right circular shift & \\
+		& \verb|x <<< y| & Bitwise left circular shift & \\
+	\hline
+	
+	6
+		& \verb|x is y| & Is (something like equal to) & Cannot be chained \\
+		& \verb|x !is y| & Is not & \\
+		& \verb|x in y| & In & \\
+		& \verb|x !in y| & Not in & \\
+		& \verb|x != y| & Not equal to & \\
+		\cline{2-4}
+		& \verb|x < y| & Less than & Left to right, \\
+		& \verb|x <= y| & Less than or equal to & specific chaining rules \\
+		& \verb|x == y| & Equal to & \\
+		& \verb|x >= y| & Greater than or equal to & \\
+		& \verb|x > y| & Less than & \\
+	\hline
+	
+	7
+		& \verb|x && y| & Logical AND & Left to right, \\
+		& \verb$x || y$ & Logical OR & only the same \\
+	\hline
+	
+	8
+		& \verb|x ? y : z| & Ternary conditional & Cannot be chained \\
+	\hline
+	
+	9
+		& \verb|x = y| & Assignment & Right to left \\
+		& \verb|x := y| & Reference assignment & \\
+		\cline{2-4}
+		& \verb|x += y| && Cannot be chained \\
+		& \verb|x -= y| && \\
+		& \verb|x *= y| && \\
+		& \verb|x /= y| && \\
+		& \verb|x %= y| && \\
+		& \verb|x &= y| && \\
+		& \verb$x |= y$ && \\
+		& \verb|x ^= y| && \\
+		& \verb|x <<= y| && \\
+		& \verb|x >>= y| && \\
+		& \verb|x <<<= y| && \\
+		& \verb|x >>>= y| && \\
+	\hline
+	
+	10
+		& \verb|x .. y| & Range separator (only in array subscript args) & Cannot be chained \\
+	\hline
+	
+	11
+		& \verb|x, y| & Comma & Left to right \\
+\end{centeredTabular}
+
+\chapter{Functions}
+\begin{grammar}
+	\grDef{FunctionDecl} ( \gr{P1Expr} | \kwd{auto} ) [ \kwd{\&} ] \token{Identifier} \gr{ParentCommaExpr} \\
 \end{grammar}
 
 \chapter{Modules}
 \begin{grammar}
-	\grDef{ModuleEntry} \kwd{module} \gr{ExtendedIdentifier} \kwdsym{;} \{ \gr{ModuleLvlDecl} \} \\
+	\grDef{ModuleEntry} \kwd{module} \gr{ExtendedIdentifier} \kwd{;} \{ \gr{ModuleLvlDecl} \} \\
 	\\
-	\grDef{ModuleLvlDecl} \gr{DecoratedModuleLvlDecl} \\
-	& | \gr{ModuleLvlDeclBlock} \\
-	& | \gr{ImportStmt} \\
-	& | \gr{ScopeDecorationStmt} \\
-	\grDef{DecoratedModuleLvlDecl} \gr{Decoration} \{ \gr{Decoration} \} \gr{ModuleLvlDecl} \\
-	\grDef{ScopeDecorationStmt} \gr{Decoration} \{ \gr{Decoration} \} \kwdsym{:} \\
-	\grDef{ModuleLvlDeclBlock} \kwdsym{\{} \gr{ModuleLvlDecl} \kwdsym{\}} \\
+	\grDef{ModuleLvlDecl} \gr{ModuleLvlDeclBlock} \\
+		\grAltLn \gr{ImportStmt} \\
+		\grAltLn \gr{FunctionDecl} \\
+		\grAltLn \gr{ScopeDecorationStmt} \\
+	\grDef{ScopeDecorationStmt} \gr{Decoration} \{ \gr{Decoration} \} \kwd{:} \\
+	\grDef{ModuleLvlDeclBlock} \kwd{\{} \gr{ModuleLvlDecl} \kwd{\}} \\
 \end{grammar}
 
 The program is divided into modules. Each module begins with a module declaration statement.
@@ -125,7 +294,7 @@ The \gr{ExtendedIdentifier} in the \gr{ModuleEntry} then works as an identifier 
 
 \section{Imports} \label{imports}
 \begin{grammar}
-	\grDef{ImportStmt} \kwd{import} \gr{ExtendedIdentifier} \kwdsym{;}
+	\grDef{ImportStmt} \kwd{import} \gr{ExtendedIdentifier} \kwd{;}
 \end{grammar}
 
 Using the \kwd{import} statement, you can make symbols other modules accessible for the current scope.
@@ -199,7 +368,7 @@ module d;
 
 import c;
 
-VoiddFunc() {
+Void Func() {
 	cFunc(); // Ok
 	aFunc(); // Ok
 }
@@ -218,7 +387,7 @@ Void eFunc() {
 
 \chapter{Decorators}
 \begin{grammar}
-	\grDef{Decoration} \kwdsym{@} \token{Identifier} [ \gr{ArgumentList} ]
+	\grDef{Decoration} \kwd{@} \token{Identifier} [ \gr{ArgumentList} ]
 \end{grammar}
 
 Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code.
@@ -253,7 +422,7 @@ class C {
 
 \paragraph{Statement decorations} Decorators are applied to the statement that follows the decoration.
 
-\subsection{Decoration contexts}
+\subsection{Decoration contexts} \label{decorationContexts}
 There are multiple different contexts in which decorators can be used. Most decorators can't be used in all the contexts.
 
 The contexts are following:
@@ -294,9 +463,9 @@ Void f( @ctime Int8 param ) {
 }
 \end{code}
 
-Here, the \decorator{ctime} decorator can be considered to be used in either \texttt{parameter\-Declaration}, \texttt{variable\-Decl\-aration} or \verb|typeDecoration| context. How is it decided? The compiler tries to use contexts in order they are defined in the \verb|DecorationContext| enum, looking for a first match. If the decorator doesn't support any of the contexts available, an error is shown. This means that \textbf{you can't apply a decorator on a stuff the decorator doesn't support}. In some other langauges, the decorator would simply be ignored, but this does not apply for NATI.
+Here, the \decorator{ctime} decorator can be considered to be used in either \decorationContext{parameter\-Declaration}, \decorationContext{variable\-Decl\-aration} or \decorationContext{typeDecoration} context. How is it decided? The compiler tries to use contexts in order they are defined in the \verb|DecorationContext| enum, looking for a first match. If the decorator doesn't support any of the contexts available, an error is shown. This means that \textbf{you can't apply a decorator on a stuff the decorator doesn't support}. In some other langauges, the decorator would simply be ignored, but this does not apply for NATI.
 
-In the example, it would first try to apply the decorator in \verb|parameterDeclaration| context. Because the \decorator{ctime} decorator doesn't support that context, it would try the \verb|variableDeclaration| context, which is supported, so the resolving would succeed.
+In the example, it would first try to apply the decorator in  \decorationContext{parameterDeclaration} context. Because the \decorator{ctime} decorator doesn't support that context, it would try the  \decorationContext{variableDeclaration} context, which is supported, so the resolving would succeed.
 
 \subsection{Decorator conflicts}
 \textbf{You can not apply two decorators that are incompatible.} The most common case are the \hyperref[accessModifierDecorators]{access modifier decorators}.
@@ -312,10 +481,10 @@ class C {
 \section{Predefined decorators}
 
 \subsection{Import locality modifiers (\decorator{global}, \decorator{local})}
-The decorators only support \hyperref[enum:DecorationContext]{\ttfamily importDecoration} context. See \nameref{imports}.
+The decorators only support \decorationContext{importDecoration} context. See \nameref{imports}.
 
 \subsection{Access modifiers (\decorator{public}, \decorator{private}, \decorator{protected} and \decorator{friend})} \label{accessModifierDecorators}
-Access modifier decorators specify where a symbol is accessible from. They only support the \hyperref[enum:DecorationContext]{\ttfamily moduleLevelDeclaration} context.
+Access modifier decorators specify where a symbol is accessible from. They only support the \decorationContext{moduleLevelDeclaration} context.
 
 \paragraph{\decorator{public}} \label{decorator:public} Symbols with the \decorator{public} access modifier are accessible from everywhere.
 
@@ -355,7 +524,7 @@ Void func3() {
 \paragraph{Inter-compatibility}
 The \decorator{public}, \decorator{protected} and \decorator{private} decorators are not compatible with any decorator from the three (this also means you can't apply them twice). Also, \decorator{friend} and \decorator{public} decorators are not compatible.
 
-\subsection{The \decorator{ctime} decorator} \label{decorator:ctime}
+\subsection{The \decorator{ctime} (and \decorator{autoCtime}) decorator} \label{decorator:ctime}
 Generally, the \decorator{ctime} decorator is related with compile time execution. It supports multiple contexts and depending on the context, its semantics can slightly change.
 
 \paragraph{Compile-time parameters}
@@ -378,13 +547,11 @@ For more info, see \nameref{ctime:parameter}.
 A variable decorated with \decorator{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable}. A compile-time variable can be of a \hyperref[ctime:class]{compile-time type}. You can not define a compile-time variable as a dynamic member of a non-compile-time class.
 
 \begin{code}
-Void f() {
-	@ctime Type! t = Int32;
-	t x = 5; // x is of type Int32
-	t = String;
-	t str = "asd"; // y is of type String
-	@ctime t str2 = "lol"; // str2 is compile-time and of type String
-}
+@ctime Type! t = Int32;
+t x = 5; // x is of type Int32
+t = String;
+t str = "asd"; // y is of type String
+@ctime t str2 = "lol"; // str2 is compile-time and of type String
 \end{code}
 
 For more info, see \nameref{ctime:variable}.
@@ -438,47 +605,80 @@ A control statement decorated with \decorator{ctime} is a compile-time control s
 All variables declared in the statement expressions are compile-time. They should be decorated with the \decorator{ctime} decorator (a warning is shown otherwise).
 
 \begin{code}
-Void f() {
-	Type! t = Int8;
+@ctime Type! t = Int8;
+
+if( 3 == 5 )
+	t = Int16; // Warning: compile-time variable modification inside a runtime control statement
+
+// t == Int16 here
+
+@ctime if( 4 == 5 )	
+	t = Int32;
 	
-	
-	if( 3 == 5 )
-		t = Int16; // Warning: compile-time variable modification inside a runtime control statement
-	
-	// t == Int16 here
-	
-	@ctime if( 4 == 5 )	
-		t = Int32;
-		
-	// t == Int16
-}
+// t == Int16
 \end{code}
 
 \begin{code}
-Void g() {
-	@ctime for( @ctime Int16 x = 0; x < 20; x ++ ) {
-		// x is a compile-time variable
-		writeln( "lol" );
-		// The code generated from this would be twenty writeln("lol") calls
-	}
-	
-	for( Int16 x = 0; x < 20; x ++ ) {
-		// x is a runtime variable, the loop is executed at runtime	
-	}
+@ctime for( @ctime Int16 x = 0; x < 20; x ++ ) {
+	// x is a compile-time variable
+	writeln( "lol" );
+	// The code generated from this would be twenty writeln("lol") calls
+}
+
+for( Int16 x = 0; x < 20; x ++ ) {
+	// x is a runtime variable, the loop is executed at runtime	
 }
 \end{code}
 
 \paragraph{Compile-time code block} A code block decorated with the \decorator{ctime} is executed at compile time. All variables declared in it are compile time and they should not be decorated with the \decorator{ctime} decorator.
+
+\paragraph{The \decorator{autoCtime} decorator} \label{decorator:autoCtime} This decorator works similar to the \decorator{ctime}, except it only makes things compile-time when it is convenient.
+
+In \decorationContext{classDeclaration} and \decorationContext{enumDeclaration}, it makes the type compile-time if it derives from a compile-time type or if it has a nonstatic compile-time member. For example, container types should be decorated with \decorator{autoCtime} so they can store compile-time types.
+
+In the \decorationContext{parameterDeclaration} context, the parameter is made compile-time whenever the function is called with a parameter value that is known at compile time.
+\begin{code}
+class HashTable( Type Key, Type Value ) {
+
+@public:
+	T!& #operator!( NATI_Operator op := "[args]", @autoCtime Key key ) {
+		Offset hash = key.#hash() % tableSize_;	
+		
+		// Locating the record here 
+	}
+	
+}
+
+Void main() {
+	HashTable( String, Int32 )! table;
+	
+	table[ stdin.read() ] = 5;
+	
+	// Here the #key parameter is known at compile time, so the function is optimized (the hash calculation is performed at compile time)
+	table[ "key" ] = 10;
+}
+\end{code}
+
+In the \decorationContext{functionDeclaration} context, the function is made compile-time when all of its parameters (all of them must be decorated with \decorator{autoCtime} or \decorator{ctime}) and/or return type are compile time.
+
+In the \decorationContext{variableDeclaration} context, the variable is made compile time if its type is compile time.
+
+The decorator can not be used in any other contexts.
 
 \chapter{Plans for the future}
 \begin{itemize}
 	\item Aliased imports
 	\item Namespaces
 	\item User decorators
+	\item Blueprints -- "mixin classes"
+	\item Mixins
+	\item Mixins but no mixins (not mixing a string, mixing a declaration)
+	\item Lambdas
 	\item Singletons
+	\item Extern functions -- cooperation with other programming languages
 	\item Compiler support for documentation comments?
 	\item Compiler outputs intellisense data?
-	\item Extern functions -- cooperation with other programming languages
+	\item Compiler caching
 \end{itemize}
 
 \end{document}          

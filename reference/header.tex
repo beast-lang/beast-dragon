@@ -42,16 +42,17 @@
 \usepackage{mathtools}
 \everymath{\displaystyle}
 \usepackage{MnSymbol}
+\usepackage{wasysym}
 \setlength\delimitershortfall{0pt}
 
 \allowdisplaybreaks
 
 % Font
-\usepackage{DejaVuSans}
-\usepackage[scaled]{beramono}
-\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
-\usepackage[T1]{fontenc}
 \usepackage{pxfonts}
+\usepackage[default]{sourcecodepro}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
 
 %paragraph settings
 \setlength{\parindent}{0cm}
@@ -78,14 +79,30 @@
 	\end{center}
 }
 
-
 %tabular settings
 \usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
 \usepackage[hang,bottom]{footmisc}
 \setlength\extrarowheight{2pt}
 \setlength\footnotemargin{10pt}
 \usepackage{setspace}
 \usepackage{rotating}
+\usepackage{longtable}
+\usepackage{ltablex}
+
+% Fix for - not working properly in cline
+\usepackage{etoolbox}
+\preto\tabular{\shorthandoff{-}}
+\preto\longtable{\shorthandoff{-}}
+
+\newenvironment{centeredTabular}[1]{
+	\begin{center}
+		\begin{longtable}{#1}	
+}{
+		\end{longtable}
+	\end{center}
+}
 
 \newenvironment{reftabular}[1]{
 	\begin{center}
@@ -128,3 +145,5 @@
 	\end{minipage}
 }
 
+% Code
+\usepackage{listings}
