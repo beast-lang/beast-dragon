@@ -44,7 +44,7 @@
 \usepackage{MnSymbol}
 \usepackage{wasysym}
 \setlength\delimitershortfall{0pt}
-
+\setlength\fboxsep{0pt}
 \allowdisplaybreaks
 
 % Font
@@ -53,6 +53,7 @@
 \renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
 \usepackage{mathptmx}
 \usepackage[T1]{fontenc}
+\usepackage{tcolorbox}
 
 %paragraph settings
 \setlength{\parindent}{0cm}
@@ -96,11 +97,11 @@
 \preto\tabular{\shorthandoff{-}}
 \preto\longtable{\shorthandoff{-}}
 
-\newenvironment{centeredTabular}[1]{
+\newenvironment{centeredRefTabular}[1]{
 	\begin{center}
 		\begin{longtable}{#1}	
 }{
-		\end{longtable}
+		\end{longtable}~\\*\putref
 	\end{center}
 }
 
@@ -108,9 +109,7 @@
 	\begin{center}
 		\begin{tabular}{#1}	
 }{
-		\end{tabular}
-		
-		\putref
+		\end{tabular}~\\*\putref
 	\end{center}
 }
 

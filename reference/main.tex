@@ -36,13 +36,13 @@ In the normal code, NATI accepts only standard ASCII characters. Non-ascii chara
 An identifier consists of any combination of lower and upper case ASCII letters, numbers and undescores, with these additional rules:
 \begin{itemize}
 	\item An identifier cannot begin with a number.
-	\item An identifier can begin with the hasthag (\verb|#|) character. These identifiers are to be used as \hyperref[traits]{traits}.
+	\item An identifier can begin with the hasthag (\verb|#|) character. These identifiers are used in various language constructs and can have restrictions of where and how they can be used in declarations.
 \end{itemize}
 
 \section{Keywords} \label{keywords}
 Most of the keywords are not actually used in the language, but they might be in the future.
 \begin{code}
-alias, auto, break, case, class, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, module, return, scope, singleton, switch, template, this, throw, true, try, type, while, with, yield
+alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, true, try, type, while, with, yield
 \end{code}
 
 \section{Literals}
@@ -104,10 +104,21 @@ void main() {
 	\grDef{Expression} \gr{P10Expr} \\
 	\grDef{CommaExpression} \gr{Expression} \{ \kwd{,} \gr{Expression} \} \\
 	\grDef{ParentCommaExpr} \kwd{(} [ \gr{CommaExpression} ] \kwd{)} \\
+		
 	\\
+	
+	\grDef{InlineVarDecl} \{ \gr{Decoration} \} \gr{P1Expr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
+	\grDef{VariableDeclStmt} \gr{P1Expr} [ \kwd{\&} ] \token{Identifier} [ \gr{VarDeclCtor} ] \\
+		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
+	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
+	
+\end{grammar}
+
+\section{Operators}
+\begin{grammar}
 	\grDef{P10Expr} \gr{P9Expr} \\
 		\grAltLn \gr{P9Expr} \kwd{..} \gr{P9Expr} \\
-		
+	
 	\grDef{P9Expr} \gr{P8Expr} \\
 		\grAltLn \gr{P8Expr} \gr{P9UnchainableOp} \gr{P8Expr} \\
 		\grAltLn \gr{P8Expr} \{ \kwd{=} \gr{P8Expr} \}+ \\
@@ -119,55 +130,49 @@ void main() {
 	\grDef{P7Expr} \gr{P6Expr} \\
 		\grAltLn \gr{P6Expr} \{ \kwd{\&\&} \gr{P6Expr} \}+ \\
 		\grAltLn \gr{P6Expr} \{ \kwd{||} \gr{P6Expr} \}+ \\
-	
+		
 	\grDef{P6Expr} \gr{P5Expr} \\
 		\grAltLn \gr{P5Expr} ( \kwd{is} | \kwd{!is} | \kwd{in} | \kwd{!in} | \kwd{!=} ) \gr{P5Expr} \\
 		\grAltLn \gr{P5Expr} \{ ( \kwd{==} | \kwd{>=} | \kwd{>} ) \gr{P5Expr} \}+ \\
 		\grAltLn \gr{P5Expr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{P5Expr} \}+ \\
-	
-	\grDef{P5Expr} \gr{P4Expr} \\
-		\grAltLn \gr{P4Expr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{P4Expr} \\
-		\grAltLn \gr{P4Expr} \{ \kwd{\&} \gr{P4Expr} \}+ \\
-		\grAltLn \gr{P4Expr} \{ \kwd{|} \gr{P4Expr} \}+ \\
-		\grAltLn \gr{P4Expr} \{ \kwd{\^} \gr{P4Expr} \}+ \\
 		
+	\grDef{P5Expr} \gr{P4Expr} \\
+		\grAltLn \gr{P2Expr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{P2Expr} \\
+		\grAltLn \gr{P2Expr} \{ \kwd{\&} \gr{P2Expr} \}+ \\
+		\grAltLn \gr{P2Expr} \{ \kwd{|} \gr{P2Expr} \}+ \\
+		\grAltLn \gr{P2Expr} \{ \kwd{\^} \gr{P2Expr} \}+ \\
+	
 	\grDef{P4Expr} \gr{P3Expr} \\
 		\grAltLn \gr{P3Expr} \{ ( \kwd{+} | \kwd{-} ) \gr{P3Expr} \}+ \\
-		
+	
 	\grDef{P3Expr} \gr{P2Expr} \\
 		\grAltLn \gr{P2Expr} \{ ( \kwd{*} | \kwd{/} ) \gr{P2Expr} \}+ \\
 		\grAltLn \gr{P2Expr} \kwd{\%} \gr{P2Expr} \\
-		
+	
 	\grDef{P2Expr} \gr{P1Expr} \\
 		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{*} | \kwd{\&} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
-		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} | \kwd{!} ) \\
+		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} ) \\
+		\grAltLn \gr{P1Expr} \{ \kwd{\&} | \kwd{*} | \kwd{!} \}+ \\
 		\grAltLn \gr{InlineVarDecl} \\
-		
+	
 	\grDef{P1Expr} \gr{P0Expr} \\
 		\grAltLn \gr{P0Expr} \{ \gr{P1Op} \} \\
 	
 	\grDef{P0Expr} \token{Identifier} \\
 		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
-		
+	
 	\\
 	
 	\grDef{P9UnchainableOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
 		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
-		
+	
 	\grDef{P1Op} \kwd{(} \gr{CommaExpression} \kwd{)} \\
 		\grAltLn \kwd{[} [ \gr{Expression} ] \kwd{]} \\
-		\grAltLn \kwd{.} \token{Identifier} \\
-		
-	\\
-	
-	\grDef{InlineVarDecl} \gr{P1Expr} [ \kwd{\&} ] \token{Identifier} [ \gr{ParentCommaExpr} ] \\
-	\grDef{VariableDeclStmt} \gr{P1Expr} [ \kwd{\&} ] \token{Identifier} [ \gr{VarDeclCtor} ] \kwd{;} \\
-	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
-	
+		\grAltLn \kwd{.} \token{Identifier}
 \end{grammar}
 
-\section{Operator precedence}
-\begin{centeredTabular}{c | c | p{8cm} | c}
+\subsection{Operator precedence}
+\begin{centeredRefTabular}{c | c | p{8cm} | c}
 	\textbf{Priority} & \textbf{Operator} & \textbf{Semantics} & \textbf{Associativity} \\ \hline \rule{0mm}{4mm}
 	
 	1
@@ -187,9 +192,12 @@ void main() {
 		\cline{2-4}
 		& \verb|x++| & Suffix increment & Cannot be chained \\
 		& \verb|x--| & Suffix decrement & \\
-		& \verb|x!| & Mutability modifier & \\
 		\cline{2-4}
-		& \verb|X ident| & Inline variable declaration & \\
+		& \verb|x!| & Mutable type & Left to right \\
+		& \verb|x*| & Pointer of type & \\
+		& \verb|x&| & Reference of type & \\
+		\cline{2-4}
+		& \verb|X ident| & Inline variable declaration & Cannot be chained \\
 	\hline
 	
 	3
@@ -206,10 +214,10 @@ void main() {
 	
 	5
 		& \verb|x & y| & Bitwise AND & Left to right, \\
-		& \verb$x | y$ & Bitwise OR & only the same \\
-		& \verb|x ^ y| & Bitwise XOR & \\
+		(cannot& \verb$x | y$ & Bitwise OR & only the same \\
+		use& \verb|x ^ y| & Bitwise XOR & \\
 		\cline{2-4}
-		& \verb|x >> y| & Bitwise right shift & Cannot be chained \\
+		P3,P4)& \verb|x >> y| & Bitwise right shift & Cannot be chained \\
 		& \verb|x << y| & Bitwise left shift & \\
 		& \verb|x >>> y| & Bitwise right circular shift & \\
 		& \verb|x <<< y| & Bitwise left circular shift & \\
@@ -239,8 +247,8 @@ void main() {
 	\hline
 	
 	9
-		& \verb|x = y| & Assignment & Right to left \\
-		& \verb|x := y| & Reference assignment & \\
+		& \verb|x = y| & Assignment & Right to left, \\
+		& \verb|x := y| & Reference assignment & only the same \\
 		\cline{2-4}
 		& \verb|x += y| && Cannot be chained \\
 		& \verb|x -= y| && \\
@@ -262,11 +270,42 @@ void main() {
 	
 	11
 		& \verb|x, y| & Comma & Left to right \\
-\end{centeredTabular}
+\end{centeredRefTabular}
+
+\paragraph{Associativity -- explanation}
+\begin{compactitem}
+	\item \textbf{Left to right} Operations from the same group are processed from left to right, meaning \inlineCode{x + y + z} is processed as \inlineCode{(x + y) + z}.
+	\item \textbf{Right to left} Operations from the same group are processed from right to left, meaning \inlineCode{x = y = z} is processed as \inlineCode{x = (y = z)}.
+	\item \textbf{Cannot be chained} Operations cannot be chained with any operator of the same priority, meaning expressions like \inlineCode{x >> y >> z}, \inlineCode{x >> y << z} or \inlineCode{++!x} are syntactically incorrect.
+	\item \textbf{Only the same} Only the same operators can be chained, meaning \inlineCode{x & y & z} and \inlineCode{x | y | z} is correct, but \inlineCode{x & y | z} is not.
+\end{compactitem}
+
+\paragraph{Operator precedence specialities}
+In order to improve code readability, it is prohibited to use priority 3 and 4 operators as priority 5 operands -- you must wrap them in the parentheses.
+\begin{code}
+x + y >> z; // Error
+(x + y) >> z; // Ok
+\end{code}
+
+\paragraph{Comparison operators chaining} Comparison operators can be chained in monotonous order:
+\begin{code}
+// (Almost) equivalent with (a > b) && (b >= c) && (c == d) && (d >= e) && (e > f)
+a > b >= c == d >= e > f;
+// (Almost) equivalent with (a <= b) && (b < c) && (c <= d) && (d == e) && (e < f)
+a <= b < c <= d == e < f;
+// (Almost) equivalent with (a == b) && (b == c)
+a == b == c;
+// Syntax error
+a > b < c;
+\end{code}
+
+When chaining comparison operators, the expressions in form \inlineCode{x == y > z} are internally rewritten to \inlineCode{(x == y) && (x > z)} (supports user overloaded operators), except the \verb|x|, \verb|y| and \verb|z| expressions are evaluated only once.
+
+\section{Variable declarations (in functions)}
 
 \chapter{Functions}
 \begin{grammar}
-	\grDef{FunctionDecl} ( \gr{P1Expr} | \kwd{auto} ) [ \kwd{\&} ] \token{Identifier} \gr{ParentCommaExpr} \\
+	\grDef{FunctionDecl} ( \gr{P1Expr} | \kwd{auto} ) [ \kwd{\&} ] \token{Identifier} \gr{ParentCommaExpr} [ \gr{CommandBlock} ] \\
 \end{grammar}
 
 \chapter{Modules}
@@ -277,7 +316,7 @@ void main() {
 		\grAltLn \gr{ImportStmt} \\
 		\grAltLn \gr{FunctionDecl} \\
 		\grAltLn \gr{ScopeDecorationStmt} \\
-	\grDef{ScopeDecorationStmt} \gr{Decoration} \{ \gr{Decoration} \} \kwd{:} \\
+	\grDef{ScopeDecorationStmt} \{ \gr{Decoration} \}+ \kwd{:} \\
 	\grDef{ModuleLvlDeclBlock} \kwd{\{} \gr{ModuleLvlDecl} \kwd{\}} \\
 \end{grammar}
 
@@ -641,7 +680,7 @@ In the \decorationContext{parameterDeclaration} context, the parameter is made c
 class HashTable( Type Key, Type Value ) {
 
 @public:
-	T!& #operator!( NATI_Operator op := "[args]", @autoCtime Key key ) {
+	T!& #operator!( NATI_Operator op := "x[args]", @autoCtime Key key ) {
 		Offset hash = key.#hash() % tableSize_;	
 		
 		// Locating the record here 
