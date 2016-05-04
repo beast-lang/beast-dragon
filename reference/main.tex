@@ -46,6 +46,15 @@ alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate
 \end{code}
 
 \section{Literals}
+\begin{grammar}
+	\grDef{Literal} \gr{LiteralBase} [ \token{Identifier} ] \\
+	\grDef{LiteralBase} \gr{StringLiteral} \\
+		\grAltLn \gr{IntLiteral} \\
+		\grAltLn \gr{BinLiteral} \\
+		\grAltLn \gr{OctLiteral} \\
+		\grAltLn \gr{HexLiteral} \\
+		\grAltLn \gr{FloatLiteral} \\
+\end{grammar}
 
 \paragraph{See also} \nameref{literalUnits}
 
@@ -78,6 +87,8 @@ For non-decimal systems, smallest unsigned variant is used.
 
 \paragraph{Data type} Float literal is always of type \type{Float64}. It is recommended to use the \verb|f| \hyperref[literalUnits]{literal unit} for casting to \type{Float32}.
 
+\paragraph{TODO} string literals, boolean literals, literal units
+
 \section{Comments}
 \begin{grammar}
 	\tokenDef{LineComment} \verb|//[^\n$][\n$]| \\
@@ -101,175 +112,173 @@ void main() {
 
 \chapter{Expressions}
 \begin{grammar}
-	\grDef{Expression} \gr{P10Expr} \\
+	\grDef{Expression} \gr{AssignExpr} \\
 	\grDef{CommaExpression} \gr{Expression} \{ \kwd{,} \gr{Expression} \} \\
-	\grDef{ParentCommaExpr} \kwd{(} [ \gr{CommaExpression} ] \kwd{)} \\
-		
+	
 	\\
 	
-	\grDef{InlineVarDecl} \{ \gr{Decoration} \} \gr{P1Expr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
-	\grDef{VariableDeclStmt} \gr{P1Expr} [ \kwd{\&} ] \token{Identifier} [ \gr{VarDeclCtor} ] \\
-		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
-	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
+	\grDef{ParentCommaExpr} \kwd{(} [ \gr{ParentCommaExprItem} \{ \kwd{,} \gr{ParentCommaExprItem} \} ] \kwd{)} \\
+	\grDef{ParentCommaExprItem} \gr{InexprVarDecl} | [ \kwd{::} ] \gr{Expression} \\
 	
 \end{grammar}
 
 \section{Operators}
 \begin{grammar}
-	\grDef{P10Expr} \gr{P9Expr} \\
-		\grAltLn \gr{P9Expr} \kwd{..} \gr{P9Expr} \\
+	\grDef{RangeExpr} \gr{TernExpr} \\
+		\grAltLn \gr{TernExpr} \kwd{..} \gr{TernExpr} \\
 	
-	\grDef{P9Expr} \gr{P8Expr} \\
-		\grAltLn \gr{P8Expr} \gr{P9UnchainableOp} \gr{P8Expr} \\
-		\grAltLn \gr{P8Expr} \{ \kwd{=} \gr{P8Expr} \}+ \\
-		\grAltLn \gr{P8Expr} \{ \kwd{:=} \gr{P8Expr} \}+ \\
+	\grDef{AssignExpr} \gr{TernExpr} \\
+		\grAltLn \gr{TernExpr} \gr{AssignOpOp} \gr{TernExpr} \\
+		\grAltLn \gr{TernExpr} \{ \kwd{=} \gr{TernExpr} \}+ \\
+		\grAltLn \gr{TernExpr} \{ \kwd{:=} \gr{TernExpr} \}+ \\
 	
-	\grDef{P8Expr} \gr{P7Expr} \\
-		\grAltLn \gr{P7Expr} \kwd{?} \gr{P7Expr} \kwd{:} \gr{P7Expr} \\
+	\grDef{TernExpr} \gr{LogicExpr} \\
+		\grAltLn \gr{LogicExpr} \kwd{?} \gr{LogicExpr} \kwd{:} \gr{LogicExpr} \\
 	
-	\grDef{P7Expr} \gr{P6Expr} \\
-		\grAltLn \gr{P6Expr} \{ \kwd{\&\&} \gr{P6Expr} \}+ \\
-		\grAltLn \gr{P6Expr} \{ \kwd{||} \gr{P6Expr} \}+ \\
+	\grDef{LogicExpr} \gr{CmpExpr} \\
+		\grAltLn \gr{CmpExpr} \{ \kwd{\&\&} \gr{CmpExpr} \}+ \\
+		\grAltLn \gr{CmpExpr} \{ \kwd{||} \gr{CmpExpr} \}+ \\
 		
-	\grDef{P6Expr} \gr{P5Expr} \\
-		\grAltLn \gr{P5Expr} ( \kwd{is} | \kwd{!is} | \kwd{in} | \kwd{!in} | \kwd{!=} ) \gr{P5Expr} \\
-		\grAltLn \gr{P5Expr} \{ ( \kwd{==} | \kwd{>=} | \kwd{>} ) \gr{P5Expr} \}+ \\
-		\grAltLn \gr{P5Expr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{P5Expr} \}+ \\
+	\grDef{CmpExpr} \gr{BitExpr} \\
+		\grAltLn \gr{BitExpr} ( \kwd{is} | \kwd{!is} | \kwd{in} | \kwd{!in} | \kwd{!=} ) \gr{BitExpr} \\
+		\grAltLn \gr{BitExpr} \{ ( \kwd{==} | \kwd{>=} | \kwd{>} ) \gr{BitExpr} \}+ \\
+		\grAltLn \gr{BitExpr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{BitExpr} \}+ \\
 		
-	\grDef{P5Expr} \gr{P4Expr} \\
-		\grAltLn \gr{P2Expr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{P2Expr} \\
-		\grAltLn \gr{P2Expr} \{ \kwd{\&} \gr{P2Expr} \}+ \\
-		\grAltLn \gr{P2Expr} \{ \kwd{|} \gr{P2Expr} \}+ \\
-		\grAltLn \gr{P2Expr} \{ \kwd{\^} \gr{P2Expr} \}+ \\
+	\grDef{BitExpr} \gr{SumExpr} \\
+		\grAltLn \gr{UnaryExpr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{UnaryExpr} \\
+		\grAltLn \gr{UnaryExpr} \{ \kwd{\&} \gr{UnaryExpr} \}+ \\
+		\grAltLn \gr{UnaryExpr} \{ \kwd{|} \gr{UnaryExpr} \}+ \\
+		\grAltLn \gr{UnaryExpr} \{ \kwd{\^} \gr{UnaryExpr} \}+ \\
 	
-	\grDef{P4Expr} \gr{P3Expr} \\
-		\grAltLn \gr{P3Expr} \{ ( \kwd{+} | \kwd{-} ) \gr{P3Expr} \}+ \\
+	\grDef{SumExpr} \gr{MultExpr} \\
+		\grAltLn \gr{MultExpr} \{ ( \kwd{+} | \kwd{-} ) \gr{MultExpr} \}+ \\
 	
-	\grDef{P3Expr} \gr{P2Expr} \\
-		\grAltLn \gr{P2Expr} \{ ( \kwd{*} | \kwd{/} ) \gr{P2Expr} \}+ \\
-		\grAltLn \gr{P2Expr} \kwd{\%} \gr{P2Expr} \\
+	\grDef{MultExpr} \gr{UnaryExpr} \\
+		\grAltLn \gr{UnaryExpr} \{ ( \kwd{*} | \kwd{/} ) \gr{UnaryExpr} \}+ \\
+		\grAltLn \gr{UnaryExpr} \kwd{\%} \gr{UnaryExpr} \\
 	
-	\grDef{P2Expr} \gr{P1Expr} \\
+	\grDef{UnaryExpr} \gr{P1Expr} \\
 		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{*} | \kwd{\&} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
 		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} ) \\
 		\grAltLn \gr{P1Expr} \{ \kwd{\&} | \kwd{*} | \kwd{!} \}+ \\
 		\grAltLn \gr{InlineVarDecl} \\
+		\grAltLn \kwd{\$} \\
 	
-	\grDef{P1Expr} \gr{P0Expr} \\
-		\grAltLn \gr{P0Expr} \{ \gr{P1Op} \} \\
+	\grDef{P1Expr} \gr{AtomExpr} \\
+		\grAltLn \gr{AtomExpr} \{ \gr{P1Op} \} \\
 	
-	\grDef{P0Expr} \token{Identifier} \\
+	\grDef{AtomExpr} \token{Identifier} \\
 		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
 	
 	\\
 	
-	\grDef{P9UnchainableOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
+	\grDef{AssignOpOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
 		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
 	
-	\grDef{P1Op} \kwd{(} \gr{CommaExpression} \kwd{)} \\
-		\grAltLn \kwd{[} [ \gr{Expression} ] \kwd{]} \\
-		\grAltLn \kwd{.} \token{Identifier}
+	\grDef{P1Op} \gr{ParentCommaExpr} \\
+		\grAltLn \kwd{[} [ \gr{RangeExpr} \{ \kwd{,} \gr{RangeExpr} ] \kwd{]} \\
+		\grAltLn \kwd{.} \token{Identifier} \\
 \end{grammar}
 
 \subsection{Operator precedence}
-\begin{centeredRefTabular}{c | c | p{8cm} | c}
-	\textbf{Priority} & \textbf{Operator} & \textbf{Semantics} & \textbf{Associativity} \\ \hline \rule{0mm}{4mm}
+\begin{centeredRefTabular}{P{1.5cm} | c | c | p{6cm} | c}
+	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Associativity} \\ \hline
 	
 	1
-		& \verb|x(args)| & Function call & Left to right \\
-		& \verb|x[args]| & Array subscripting & \\
-		& \verb|x.ident| & Attribute access & \\
+		& \verb|x(args)| & \verb|funcCall| & Function call & Left to right \\
+		& \verb|x[args]| & \verb|brackets| & Array subscripting & \\
+		& \verb|x.ident| & \verb|dispatch| & Attribute access & \\
 	\hline
 	
 	2
-		& \verb|!x| & Logical NOT & Cannot be chained \\
-		& \verb|-x| & Sign negation & \\
-		& \verb|~x| & Bitwise NOT & \\
-		& \verb|*x| & Dereference & \\
-		& \verb|&x| & Adress of & \\
-		& \verb|++x| & Prefix increment & \\
-		& \verb|--x| & Prefix decrement & \\
-		\cline{2-4}
-		& \verb|x++| & Suffix increment & Cannot be chained \\
-		& \verb|x--| & Suffix decrement & \\
-		\cline{2-4}
-		& \verb|x!| & Mutable type & Left to right \\
-		& \verb|x*| & Pointer of type & \\
-		& \verb|x&| & Reference of type & \\
-		\cline{2-4}
-		& \verb|X ident| & Inline variable declaration & Cannot be chained \\
+		& \verb|!x| & \verb|preNot| & Logical NOT & Cannot be chained \\
+		& \verb|-x| & \verb|preMinus| & Sign negation & \\
+		& \verb|~x| & \verb|preTilde| & Bitwise NOT & \\
+		& \verb|*x| & \verb|preMult| & Dereference & \\
+		& \verb|&x| & \verb|preAnd| & Adress of & \\
+		& \verb|++x| & \verb|preInc| & Prefix increment & \\
+		& \verb|--x| & \verb|preDec| & Prefix decrement & \\
+		\cline{2-5}
+		& \verb|x++| & \verb|suffInc| & Suffix increment & Cannot be chained \\
+		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
+		\cline{2-5}
+		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
+		& \verb|x*| & \verb|suffMult| & Pointer of type & \\
+		& \verb|x&| & \verb|suffAnd| & Reference of type & \\
+		\cline{2-5}
+		& \verb|$| & \verb|dollar| & Array size & \\
 	\hline
 	
 	3
-		& \verb|x * y| & Multiplication & Left to right \\
-		& \verb|x / y| & Division \\
-		\cline{2-4}
-		& \verb|x % y| & Modulo & Cannot be chained \\
+		& \verb|x * y| & \verb|binMult| & Multiplication & Left to right \\
+		& \verb|x / y| & \verb|binDiv| & Division \\
+		\cline{2-5}
+		& \verb|x % y| & \verb|binMod| & Modulo & Cannot be chained \\
 	\hline
 	
 	4
-		& \verb|x + y| & Addition & Left to right \\
-		& \verb|x - y| & Subtraction & \\
+		& \verb|x + y| & \verb|binPlus| & Addition & Left to right \\
+		& \verb|x - y| & \verb|binMinus| & Subtraction & \\
 	\hline
 	
-	5
-		& \verb|x & y| & Bitwise AND & Left to right, \\
-		(cannot& \verb$x | y$ & Bitwise OR & only the same \\
-		use& \verb|x ^ y| & Bitwise XOR & \\
-		\cline{2-4}
-		P3,P4)& \verb|x >> y| & Bitwise right shift & Cannot be chained \\
-		& \verb|x << y| & Bitwise left shift & \\
-		& \verb|x >>> y| & Bitwise right circular shift & \\
-		& \verb|x <<< y| & Bitwise left circular shift & \\
+	\multirow{4}{1.5cm}{\centering 5\\(cannot use P3,P4)}
+		& \verb|x & y| & \verb|binAnd| & Bitwise AND & Left to right, \\
+		& \verb$x | y$ & \verb|binOr| & Bitwise OR & only the same \\
+		& \verb|x ^ y| & \verb|binXor| & Bitwise XOR & \\
+		\cline{2-5}
+		& \verb|x >> y| & \verb|binRSft| & Bitwise right shift & Cannot be chained \\
+		& \verb|x << y| & \verb|binLSft| & Bitwise left shift & \\
+		& \verb|x >>> y| & \verb|binRRot| & Bitwise right circular shift & \\
+		& \verb|x <<< y| & \verb|binLRot| & Bitwise left circular shift & \\
 	\hline
 	
 	6
-		& \verb|x is y| & Is (something like equal to) & Cannot be chained \\
-		& \verb|x !is y| & Is not & \\
-		& \verb|x in y| & In & \\
-		& \verb|x !in y| & Not in & \\
-		& \verb|x != y| & Not equal to & \\
-		\cline{2-4}
-		& \verb|x < y| & Less than & Left to right, \\
-		& \verb|x <= y| & Less than or equal to & specific chaining rules \\
-		& \verb|x == y| & Equal to & \\
-		& \verb|x >= y| & Greater than or equal to & \\
-		& \verb|x > y| & Less than & \\
+		& \verb|x is y| & \verb|binIs| & Is (something like equal to) & Cannot be chained \\
+		& \verb|x !is y| & \verb|binIsNot| & Is not & \\
+		& \verb|x in y| & \verb|binIn| & In & \\
+		& \verb|x !in y| & \verb|binNotIn| & Not in & \\
+		& \verb|x != y| & \verb|binNeq| & Not equal to & \\
+		\cline{2-5}
+		& \verb|x < y| & \verb|binLess| & Less than & Left to right, \\
+		& \verb|x <= y| & \verb|binLeq| & Less than or equal to & specific chaining rules \\
+		& \verb|x == y| & \verb|binEq| & Equal to & \\
+		& \verb|x >= y| & \verb|binGeq| & Greater than or equal to & \\
+		& \verb|x > y| & \verb|binGrt| & Less than & \\
 	\hline
 	
 	7
-		& \verb|x && y| & Logical AND & Left to right, \\
-		& \verb$x || y$ & Logical OR & only the same \\
+		& \verb|x && y| & \verb|binLogAnd| & Logical AND & Left to right, \\
+		& \verb$x || y$ & \verb|binLogOr| & Logical OR & only the same \\
 	\hline
 	
 	8
-		& \verb|x ? y : z| & Ternary conditional & Cannot be chained \\
+		& \verb|x ? y : z| & \verb|tern| & Ternary conditional & Cannot be chained \\
 	\hline
 	
 	9
-		& \verb|x = y| & Assignment & Right to left, \\
-		& \verb|x := y| & Reference assignment & only the same \\
-		\cline{2-4}
-		& \verb|x += y| && Cannot be chained \\
-		& \verb|x -= y| && \\
-		& \verb|x *= y| && \\
-		& \verb|x /= y| && \\
-		& \verb|x %= y| && \\
-		& \verb|x &= y| && \\
-		& \verb$x |= y$ && \\
-		& \verb|x ^= y| && \\
-		& \verb|x <<= y| && \\
-		& \verb|x >>= y| && \\
-		& \verb|x <<<= y| && \\
-		& \verb|x >>>= y| && \\
+		& \verb|x = y| & \verb|assign| & Assignment & Right to left, \\
+		& \verb|x := y| & \verb|refAssign| & Reference assignment & only the same \\
+		\cline{2-5}
+		& \verb|x += y| & \verb|plusAssign| & Various assignments & Cannot be chained \\
+		& \verb|x -= y| & \verb|minusAssign| && \\
+		& \verb|x *= y| & \verb|multAssign| && \\
+		& \verb|x /= y| & \verb|divAssign| && \\
+		& \verb|x %= y| & \verb|modAssign| && \\
+		& \verb|x &= y| & \verb|andAssign| && \\
+		& \verb$x |= y$ & \verb|orAssign| && \\
+		& \verb|x ^= y| & \verb|xorAssign| && \\
+		& \verb|x <<= y| & \verb|lSftAssign| && \\
+		& \verb|x >>= y| & \verb|rSftAssign| && \\
+		& \verb|x <<<= y| & \verb|lRotAssign| && \\
+		& \verb|x >>>= y| & \verb|rRotAssign| && \\
 	\hline
-	
-	10
-		& \verb|x .. y| & Range separator (only in array subscript args) & Cannot be chained \\
+		
+	10 (cannot use P9)
+		& \verb|x .. y| & \verb|range| & Range separator (only in array subscript args) & Cannot be chained \\
 	\hline
 	
 	11
-		& \verb|x, y| & Comma & Left to right \\
+		& \verb|x, y| & & Comma & Left to right \\
 \end{centeredRefTabular}
 
 \paragraph{Associativity -- explanation}
@@ -281,13 +290,15 @@ void main() {
 \end{compactitem}
 
 \paragraph{Operator precedence specialities}
-In order to improve code readability, it is prohibited to use priority 3 and 4 operators as priority 5 operands -- you must wrap them in the parentheses.
+In order to improve code readability, it is prohibited to use priority 3 and 4 operations as priority 5 operands -- you must wrap them in the parentheses.
 \begin{code}
 x + y >> z; // Error
 (x + y) >> z; // Ok
 \end{code}
 
-\paragraph{Comparison operators chaining} Comparison operators can be chained in monotonous order:
+Also, you cannot use P9 operations as operands in the \verb|[args]| operator.
+
+\subsection{Comparison operators chaining} Comparison operators can be chained in monotonous order:
 \begin{code}
 // (Almost) equivalent with (a > b) && (b >= c) && (c == d) && (d >= e) && (e > f)
 a > b >= c == d >= e > f;
@@ -301,7 +312,76 @@ a > b < c;
 
 When chaining comparison operators, the expressions in form \inlineCode{x == y > z} are internally rewritten to \inlineCode{(x == y) && (x > z)} (supports user overloaded operators), except the \verb|x|, \verb|y| and \verb|z| expressions are evaluated only once.
 
-\section{Variable declarations (in functions)}
+\section{Operator overloading}
+
+\begin{code}
+enum Operator {
+	funcCall,
+	brackets,
+	dispatch,
+	preNot,
+	// etc
+	;
+	
+@public:
+	enum : This.Set {
+		unary = preNot | suffNot | preMinus /* etc */,
+		unaryPre = preNot | preMinus | preTilde /* etc */,
+		unarySuff = suffNot | suffMult | suffAnd /* etc */,
+		
+		binary = binMult | binDiv | binMod /* etc */,
+		anyAssign = assign | refAssign | plusAssign /* etc */
+	}	
+}
+\end{code}
+
+All operators can be overloaded by the programmer. This is done by overloading/implementing function:
+\begin{code}
+auto #operator( @ctime Operator op, auto args ... );
+\end{code}
+
+So for example, you can overload all unary operators at once using:
+\begin{code}
+auto #operator( @ctime Operator op, auto& args ... )
+	if( op is :unary )
+{
+	reutrn referencedValue.#operator( op, ::args );
+}
+\end{code}
+
+or you can overload one exact operator:
+\begin{code}
+Int16 #operator( Operator.preNot ) {
+	return !referencedValue;	
+}
+Int16 #operator( Operator("x++") ) {
+	return !referencedValue;	
+}
+\end{code}
+
+You can also make overloads virtual (for one exact setup):
+\begin{code}
+class A {
+	@public @abstract Void #operator( Operator.plusAssign, A& other );
+}
+
+@final class B : @public A {
+	@public @override Void #operator( Operator.plusAssign, A& other ) {
+		// code here	
+	}
+}
+\end{code}
+
+\paragraph{TODO} The range operator, operator parameter restrictions, overload selection
+
+\section{Variable declarations}
+\begin{grammar}
+	\grDef{InexprVarDecl} ( \gr{UnaryExpr} | \gr{AutoType} ) \token{Identifier} [ \gr{VarDeclCtor} ] \\
+	\grDef{AutoType} \kwd{auto} [ \kwd{\&} ] [ \kwd{!} ] \\
+	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | \kwd{=} \gr{Expression} \\
+\end{grammar}
+
+\subsection{Inexpr variable declarations}
 
 \chapter{Functions}
 \begin{grammar}
@@ -489,7 +569,8 @@ enum DecorationContext {
 	controlStatement,
 	codeBlock;
 	
-	enum : DecorationContext.Set {
+@public:
+	enum : Set {
 		typeDeclaration = classDeclaration | enumDeclaration	
 	}
 }
@@ -571,7 +652,7 @@ A function parameter decorated with \decorator{ctime} is a compile-time paramete
 
 Compile-time parameter's values must be known at compile time. Compile-time parameters can be mutable.
 
-Technically, a function with compile-time arguments is a function template.
+Technically, a function with compile-time parameter is a function template.
 
 \begin{code}
 // 'y' and 't' parameters are compile-time
@@ -680,7 +761,7 @@ In the \decorationContext{parameterDeclaration} context, the parameter is made c
 class HashTable( Type Key, Type Value ) {
 
 @public:
-	T!& #operator!( NATI_Operator op := "x[args]", @autoCtime Key key ) {
+	T!& #operator!( Operator("x[args]"), @autoCtime Key key ) {
 		Offset hash = key.#hash() % tableSize_;	
 		
 		// Locating the record here 
