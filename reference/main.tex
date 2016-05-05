@@ -22,6 +22,11 @@
 \@starttoc{toc}
 \makeatother
 
+\chapter{Introduction}
+NATI is an imperative programming language supporting OO and Functional paradigms. Currently, only transcompilation to C++ is available. In future, a LLVM backend integration is planned.
+
+NATI is a practical tool for practical programmers. With NATI, you can write effective and readable code quite fast. Although the language itself builds on a significant abstraction, the functionality behind it is still close to HW. If you know the language, you can pretty well determine what assembly each line of your code generates.
+
 \chapter{Lexical}
 In the normal code, NATI accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
 
@@ -42,13 +47,14 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 \section{Keywords} \label{keywords}
 Most of the keywords are not actually used in the language, but they might be in the future.
 \begin{code}
-alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, true, try, type, while, with, yield
+alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, true, try, while, with, yield
 \end{code}
 
 \section{Literals}
 \begin{grammar}
-	\grDef{Literal} \gr{LiteralBase} [ \token{Identifier} ] \\
-	\grDef{LiteralBase} \gr{StringLiteral} \\
+	\grDef{Literal} \gr{UnitLiteral} [ \token{Identifier} ] \\
+		\grAltLn \gr{BooleanLiteral} \\
+	\grDef{UnitLiteral} \gr{StringLiteral} \\
 		\grAltLn \gr{IntLiteral} \\
 		\grAltLn \gr{BinLiteral} \\
 		\grAltLn \gr{OctLiteral} \\
@@ -56,9 +62,13 @@ alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate
 		\grAltLn \gr{FloatLiteral} \\
 \end{grammar}
 
-\paragraph{See also} \nameref{literalUnits}
+\subsection{Boolean literals}
+\begin{grammar}
+	\grDef{BooleanLiteral} \kwd{true} | \kwd{false}
+\end{grammar}
 
-\subsection{Integer literal}
+
+\subsection{Integer literals}
 \begin{grammar}
 	\tokenDef{IntLiteral} \verb|-?[0-9]+| \\
 	\tokenDef{BinLiteral} \verb|0b[01]+| \\
@@ -80,14 +90,38 @@ For non-decimal systems, smallest unsigned variant is used.
 0xa01 // UInt16
 \end{code}
 
-\subsection{Float literal}
+\subsection{Float literals}
 \begin{grammar}
-	\tokenDef{FloatLiteral} \verb|[0-9]*\.[0-9]+|
+	\tokenDef{FloatLiteral} \verb|-?[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?|
 \end{grammar}
 
 \paragraph{Data type} Float literal is always of type \type{Float64}. It is recommended to use the \verb|f| \hyperref[literalUnits]{literal unit} for casting to \type{Float32}.
 
-\paragraph{TODO} string literals, boolean literals, literal units
+\subsection{Literal units}
+NATI supports a syntactical construct we call 'literal units'. A programmer can add an \token{Identifier} after a literal.
+
+A function
+\begin{code}
+@ctime auto #literalUnit( String unit, auto literal );
+\end{code}
+is then called where the first argument is the \token{Identifier} used and the second is the literal value. The whole expression value is the result of the function call.
+
+\begin{code}
+@ctime Float32[ String ] lengthUnits = [
+	"km": 1e3, "m": 1, "dm": 1e-1, "cm": 1e-2, "mm": 1e-3
+];
+	
+@ctime Length #literalUnit( String unit, Float32 value )
+	if( unit in lengthUnits.keys && isNumericType( value ) )
+{
+	// Length is a class that stores a length in m in a Float32 type
+	return Length( value * lengthUnits[ unit ] );
+}
+
+Length len = 32.5 cm;
+\end{code}
+
+\paragraph{TODO} string literals
 
 \section{Comments}
 \begin{grammar}
@@ -168,6 +202,7 @@ void main() {
 		\grAltLn \gr{AtomExpr} \{ \gr{P1Op} \} \\
 	
 	\grDef{AtomExpr} \token{Identifier} \\
+		\grAltLn \gr{Literal} \\
 		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
 	
 	\\
@@ -707,7 +742,7 @@ A class decorated with \decorator{ctime} is a compile-time class. A compile-time
 @public:
 	Void #ctor!( Function F ) {
 		returnType = F.#returnType;
-		parameterTypes = F.#parameters.map( ( x ) => x.type );
+		parameterTypes = F.#parameters.map( x => x.type );
 	}
 	
 @public:
