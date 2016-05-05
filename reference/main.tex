@@ -47,13 +47,14 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 \section{Keywords} \label{keywords}
 Most of the keywords are not actually used in the language, but they might be in the future.
 \begin{code}
-alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, true, try, while, with, yield
+alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, null, return, scope, singleton, switch, template, this, throw, true, try, while, with, yield
 \end{code}
 
 \section{Literals}
 \begin{grammar}
 	\grDef{Literal} \gr{UnitLiteral} [ \token{Identifier} ] \\
-		\grAltLn \gr{BooleanLiteral} \\
+		\grAltLn \kwd{true} | \kwd{false} \\
+		\grAltLn \kwd{null} \\
 	\grDef{UnitLiteral} \gr{StringLiteral} \\
 		\grAltLn \gr{IntLiteral} \\
 		\grAltLn \gr{BinLiteral} \\
@@ -61,12 +62,6 @@ alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate
 		\grAltLn \gr{HexLiteral} \\
 		\grAltLn \gr{FloatLiteral} \\
 \end{grammar}
-
-\subsection{Boolean literals}
-\begin{grammar}
-	\grDef{BooleanLiteral} \kwd{true} | \kwd{false}
-\end{grammar}
-
 
 \subsection{Integer literals}
 \begin{grammar}
@@ -97,31 +92,45 @@ For non-decimal systems, smallest unsigned variant is used.
 
 \paragraph{Data type} Float literal is always of type \type{Float64}. It is recommended to use the \verb|f| \hyperref[literalUnits]{literal unit} for casting to \type{Float32}.
 
-\subsection{Literal units}
-NATI supports a syntactical construct we call 'literal units'. A programmer can add an \token{Identifier} after a literal.
+\subsection{User-defined literals}
+NATI supports a syntactical construct that allows users to define their own literals. The user defined literal is then represented by a standard NATI literal followed by an identifier.
 
 A function
 \begin{code}
-@ctime auto #literalUnit( String unit, auto literal );
+@ctime auto #userLiteral( String suffix, String value, UserLiteralSource source );
 \end{code}
-is then called where the first argument is the \token{Identifier} used and the second is the literal value. The whole expression value is the result of the function call.
+is then called where the first argument is the \token{Identifier} used and the second is the literal value (stringified).
+
+\begin{code}
+enum class UserLiteralSource {
+	stringLiteral,
+	intLiteral,
+	binLiteral,
+	octLiteral,
+	hexLiteral,
+	floatLiteral;
+	
+	enum : Set {
+		number = stringLiteral | floatLiteral;	
+	}
+}
+\end{code}
 
 \begin{code}
 @ctime Float32[ String ] lengthUnits = [
 	"km": 1e3, "m": 1, "dm": 1e-1, "cm": 1e-2, "mm": 1e-3
 ];
 	
-@ctime Length #literalUnit( String unit, Float32 value )
-	if( unit in lengthUnits.keys && isNumericType( value ) )
+@ctime Length #userLiteral( String suffix, String value, UserLiteralSource source )
+	if( source is UserLiteralSource.number suffix in lengthUnits.keys )
 {
-	// Length is a class that stores a length in m in a Float32 type
-	return Length( value * lengthUnits[ unit ] );
+	return Length( value.to( Float32 ) * lengthUnits[ unit ] );
 }
 
 Length len = 32.5 cm;
 \end{code}
 
-\paragraph{TODO} string literals
+\paragraph{TODO} string literals, char literals
 
 \section{Comments}
 \begin{grammar}
@@ -138,11 +147,6 @@ void main() {
 	thisIsACode();
 }
 \end{code}
-
-\chapter{Syntactic}
-\begin{grammar}
-	\grDef{ExtendedIdentifier} \token{Identifier} \{ \kwd{.} \token{Identifier} \}
-\end{grammar}
 
 \chapter{Expressions}
 \begin{grammar}
@@ -411,7 +415,11 @@ class A {
 
 \section{Variable declarations}
 \begin{grammar}
-	\grDef{InexprVarDecl} ( \gr{UnaryExpr} | \gr{AutoType} ) \token{Identifier} [ \gr{VarDeclCtor} ] \\
+	\grDef{InexprVarDecl} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
+	\grDef{VarDeclCmd} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
+		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
+	\\
+	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{UnaryExpr} | \gr{AutoType} ) \\
 	\grDef{AutoType} \kwd{auto} [ \kwd{\&} ] [ \kwd{!} ] \\
 	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | \kwd{=} \gr{Expression} \\
 \end{grammar}
@@ -420,19 +428,29 @@ class A {
 
 \chapter{Functions}
 \begin{grammar}
-	\grDef{FunctionDecl} ( \gr{P1Expr} | \kwd{auto} ) [ \kwd{\&} ] \token{Identifier} \gr{ParentCommaExpr} [ \gr{CommandBlock} ] \\
+	\grDef{FunctionDecl} \gr{TypeExpr} \token{Identifier} \gr{ParentCommaExpr} ( \gr{FunctionDefPart} | \kwd{;} ) \\
+	\grDef{FunctionDefPart} [ \kwd{if} \kwd{(} \gr{Expression} \kwd{)} ] \gr{CommandBlock} \\
+	\\
+	\grDef{CommandBlock} \kwd{\{} \{ \gr{Command} \} \kwd{\}} \\
+	\grDef{Command} \gr{VarDeclCmd} \\
+		\grAltLn \gr{CommaExpression} \kwd{;} \\
 \end{grammar}
+
+\section{Variadic functions}
+
+\section{The \kwd{auto} keyword}
 
 \chapter{Modules}
 \begin{grammar}
-	\grDef{ModuleEntry} \kwd{module} \gr{ExtendedIdentifier} \kwd{;} \{ \gr{ModuleLvlDecl} \} \\
+	\grDef{ModuleEntry} \kwd{module} \gr{ModuleIdentifier} \kwd{;} \{ \gr{ModuleLvlDecl} \} \\
+	\grDef{ModuleIdentifier} \token{Identifier} \{ \kwd{.} \token{Identifier} \} \\
 	\\
 	\grDef{ModuleLvlDecl} \gr{ModuleLvlDeclBlock} \\
 		\grAltLn \gr{ImportStmt} \\
 		\grAltLn \gr{FunctionDecl} \\
 		\grAltLn \gr{ScopeDecorationStmt} \\
 	\grDef{ScopeDecorationStmt} \{ \gr{Decoration} \}+ \kwd{:} \\
-	\grDef{ModuleLvlDeclBlock} \kwd{\{} \gr{ModuleLvlDecl} \kwd{\}} \\
+	\grDef{ModuleLvlDeclBlock} \{ \gr{Decoration} \} \kwd{\{} \gr{ModuleLvlDecl} \kwd{\}} \\
 \end{grammar}
 
 The program is divided into modules. Each module begins with a module declaration statement.
@@ -440,7 +458,7 @@ The program is divided into modules. Each module begins with a module declaratio
 module package.package.moduleName;
 \end{code}
 
-The \gr{ExtendedIdentifier} in the \gr{ModuleEntry} then works as an identifier for the module. Multiple modules with the same identifier are not allowed.
+The \gr{ModuleIdentifier} in the \gr{ModuleEntry} then works as an identifier for the module. Multiple modules with the same identifier are not allowed.
 
 \paragraph{Filesystem representation} Module identifier has to correspond with the directory structure the source file is in and the source file name has to be same as the module name (case sensitive). For example, having set up \verb|project/src| and \verb|project/include| source file directories, module \verb|straw.nati.main| has to be in file \verb|project/src/straw/nati/main.nati| or \verb|project/include/straw/nati/main.nati|.
 
@@ -448,7 +466,7 @@ The \gr{ExtendedIdentifier} in the \gr{ModuleEntry} then works as an identifier 
 
 \section{Imports} \label{imports}
 \begin{grammar}
-	\grDef{ImportStmt} \kwd{import} \gr{ExtendedIdentifier} \kwd{;}
+	\grDef{ImportStmt} \{ \gr{Decoration} \} \kwd{import} \gr{ModuleIdentifier} \kwd{;}
 \end{grammar}
 
 Using the \kwd{import} statement, you can make symbols other modules accessible for the current scope.
