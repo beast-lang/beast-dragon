@@ -156,7 +156,7 @@ void main() {
 	\\
 	
 	\grDef{ParentCommaExpr} \kwd{(} [ \gr{ParentCommaExprItem} \{ \kwd{,} \gr{ParentCommaExprItem} \} ] \kwd{)} \\
-	\grDef{ParentCommaExprItem} \gr{InexprVarDecl} | [ \kwd{::} ] \gr{Expression} \\
+	\grDef{ParentCommaExprItem} ( \gr{InexprVarDecl} | \gr{Expression} ) [ \kwd{...} ] \\
 	
 \end{grammar}
 
@@ -196,16 +196,16 @@ void main() {
 		\grAltLn \gr{UnaryExpr} \kwd{\%} \gr{UnaryExpr} \\
 	
 	\grDef{UnaryExpr} \gr{P1Expr} \\
-		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{*} | \kwd{\&} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
+		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
 		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} ) \\
-		\grAltLn \gr{P1Expr} \{ \kwd{\&} | \kwd{*} | \kwd{!} \}+ \\
+		\grAltLn \gr{P1Expr} \{ \kwd{@} | \kwd{!} \}+ \\
 		\grAltLn \gr{InlineVarDecl} \\
 		\grAltLn \kwd{\$} \\
 	
 	\grDef{P1Expr} \gr{AtomExpr} \\
 		\grAltLn \gr{AtomExpr} \{ \gr{P1Op} \} \\
 	
-	\grDef{AtomExpr} \token{Identifier} \\
+	\grDef{AtomExpr} [ \kwd{:} ] \token{Identifier} \\
 		\grAltLn \gr{Literal} \\
 		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
 	
@@ -233,8 +233,6 @@ void main() {
 		& \verb|!x| & \verb|preNot| & Logical NOT & Cannot be chained \\
 		& \verb|-x| & \verb|preMinus| & Sign negation & \\
 		& \verb|~x| & \verb|preTilde| & Bitwise NOT & \\
-		& \verb|*x| & \verb|preMult| & Dereference & \\
-		& \verb|&x| & \verb|preAnd| & Adress of & \\
 		& \verb|++x| & \verb|preInc| & Prefix increment & \\
 		& \verb|--x| & \verb|preDec| & Prefix decrement & \\
 		\cline{2-5}
@@ -242,8 +240,7 @@ void main() {
 		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
 		\cline{2-5}
 		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
-		& \verb|x*| & \verb|suffMult| & Pointer of type & \\
-		& \verb|x&| & \verb|suffAnd| & Reference of type & \\
+		& \verb|x@| & \verb|suffAnd| & Reference type & \\
 		\cline{2-5}
 		& \verb|$| & \verb|dollar| & Array size & \\
 	\hline
@@ -381,7 +378,7 @@ auto #operator( @ctime Operator op, auto args ... );
 
 So for example, you can overload all unary operators at once using:
 \begin{code}
-auto #operator( @ctime Operator op, auto& args ... )
+auto #operator( @ctime Operator op, auto@ args ... )
 	if( op is :unary )
 {
 	reutrn referencedValue.#operator( op, ::args );
@@ -401,11 +398,11 @@ Int16 #operator( Operator("x++") ) {
 You can also make overloads virtual (for one exact setup):
 \begin{code}
 class A {
-	@public @abstract Void #operator( Operator.plusAssign, A& other );
+	@public @abstract Void #operator( Operator.plusAssign, A@ other );
 }
 
 @final class B : @public A {
-	@public @override Void #operator( Operator.plusAssign, A& other ) {
+	@public @override Void #operator( Operator.plusAssign, A@ other ) {
 		// code here	
 	}
 }
@@ -420,7 +417,7 @@ class A {
 		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
 	\\
 	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{UnaryExpr} | \gr{AutoType} ) \\
-	\grDef{AutoType} \kwd{auto} [ \kwd{\&} ] [ \kwd{!} ] \\
+	\grDef{AutoType} \kwd{auto} [ \kwd{@} ] [ \kwd{!} ] \\
 	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | \kwd{=} \gr{Expression} \\
 \end{grammar}
 
@@ -439,6 +436,8 @@ class A {
 \section{Variadic functions}
 
 \section{The \kwd{auto} keyword}
+
+\section{Parameter namespace accessor (\texttt{:ident})}
 
 \chapter{Modules}
 \begin{grammar}
@@ -814,7 +813,7 @@ In the \decorationContext{parameterDeclaration} context, the parameter is made c
 class HashTable( Type Key, Type Value ) {
 
 @public:
-	T!& #operator!( Operator("x[args]"), @autoCtime Key key ) {
+	T!@ #operator!( Operator("x[args]"), @autoCtime Key key ) {
 		Offset hash = key.#hash() % tableSize_;	
 		
 		// Locating the record here 
