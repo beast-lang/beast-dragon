@@ -1,5 +1,6 @@
 *.aux
 *.out
-reference/main.synctex.gz
 *.toc
+reference/main.synctex.gz
 reference/main.pdf
+.idea/workspace.xml

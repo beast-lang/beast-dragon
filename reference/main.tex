@@ -894,6 +894,14 @@ T!@ #new( @ctime Type T ) {
 
 decorator.ctime or decorator( ctime )
 module.straw.nati.test or module( straw.nati.test )
+
+class null {
+	@public @static	T #implicitCast( Type T )
+		if( T is Pointer )
+	{
+		return T(0);
+	}
+}
 \end{code}
 
 \end{document}          
