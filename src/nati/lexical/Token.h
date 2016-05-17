@@ -8,6 +8,7 @@ namespace nati {
 	enum class TokenType {
 		none, ///< Erroreous state
 		identifier,
+		keyword,
 		eof
 	};
 
@@ -20,6 +21,7 @@ namespace nati {
 		TokenType type;
 		union {
 			Identifier identifier;
+			Keyword keyword;
 		};
 
 	};

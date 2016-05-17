@@ -2,24 +2,15 @@
 
 namespace nati {
 
-	IdentifierTable *identifierTable = NULL;
+	IdentifierTable *identifierTable = nullptr;
 
-	IdentifierTableRecord::IdentifierTableRecord( const std::string &str, bool isKeyword /* = false */ ) {
+	IdentifierTableRecord::IdentifierTableRecord( const std::string &str, Keyword keyword ) {
 		this->str = str;
-		this->isKeyword = isKeyword;
+		this->keyword = keyword;
+	}
 
-		// Compute the hash
-		{
-			// Got this from http://burtleburtle.net/bob/hash/integer.html
-			size_t hash = (size_t) this;
-			hash = ( hash + 0x7ed55d16 ) + ( hash << 12 );
-			hash = ( hash ^ 0xc761c23c ) ^ ( hash >> 19 );
-			hash = ( hash + 0x165667b1 ) + ( hash << 5 );
-			hash = ( hash + 0xd3a2646c ) ^ ( hash << 9 );
-			hash = ( hash + 0xfd7046c5 ) + ( hash << 3 );
-			hash = ( hash ^ 0xb55a4f09 ) ^ ( hash >> 16 );
-			this->hash = hash;
-		}
+	IdentifierTable::IdentifierTable() {
+		registerKeywords();
 	}
 
 	const IdentifierTableRecord *IdentifierTable::obtain( const std::string &str ) {
@@ -27,11 +18,19 @@ namespace nati {
 
 		std::unique_ptr< const IdentifierTableRecord > &record = table_[ str ];
 		if( !record )
-			record = std::unique_ptr< const IdentifierTableRecord >( new IdentifierTableRecord( str ) );
+			record.reset( new IdentifierTableRecord( str ) );
 
 		mutex_.unlock();
 
 		return record.get();
+	}
+
+	void IdentifierTable::registerKeyword( const std::string &str, Keyword keyword ) {
+		table_[ str ].reset( new IdentifierTableRecord( str, keyword ) );
+	}
+
+	void IdentifierTable::registerKeywords() {
+		registerKeyword( "this", Keyword::this_ );
 	}
 
 }

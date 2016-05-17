@@ -20,10 +20,10 @@ namespace nati {
 	public:
 		const std::string &str() const;
 
+		Keyword keyword() const;
+
 	public:
 		bool operator==( const Identifier &other ) const;
-
-		size_t hash() const;
 
 	private:
 		const IdentifierTableRecord *ptr_;
@@ -31,7 +31,6 @@ namespace nati {
 	};
 
 }
-
 
 
 #endif //NATI_IDENTIFIER_H

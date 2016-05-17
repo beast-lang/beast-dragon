@@ -13,6 +13,7 @@ namespace nati {
 	class Lexer {
 
 	public:
+		/// Sets the source code to :source && resets the lexer
 		void setSource( const std::string &source );
 
 	public:

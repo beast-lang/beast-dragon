@@ -2,7 +2,7 @@
 
 namespace nati {
 
-	__thread Lexer *lexer = NULL;
+	__thread Lexer *lexer = nullptr;
 
 	void Lexer::setSource( const std::string &source ) {
 		source_ = source + '\0';
@@ -67,11 +67,18 @@ namespace nati {
 						break;
 					}
 
-					token_.type = TokenType::identifier;
-					token_.identifier = Identifier( accumulator_.str() );
+					Identifier ident( accumulator_.str() );
+					if( ident.keyword() == Keyword::notAKeyword ) {
+						token_.type = TokenType::identifier;
+						token_.identifier = ident;
+					} else {
+						token_.type = TokenType::keyword;
+						token_.keyword = ident.keyword();
+					}
 					readNextChar = false;
 					break;
 				}
+
 			}
 
 			if( readNextChar )

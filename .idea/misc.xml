@@ -3,10 +3,13 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
     <sourceRoots>
+      <file path="$PROJECT_DIR$/include" />
       <file path="$PROJECT_DIR$/src" />
     </sourceRoots>
     <libraryRoots />
-    <excludeRoots />
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/reference" />
+    </excludeRoots>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />

@@ -17,12 +17,12 @@ namespace nati {
 		return ptr_->str;
 	}
 
-	bool Identifier::operator==( const Identifier &other ) const {
-		return ptr_ == other.ptr_;
+	Keyword Identifier::keyword() const {
+		return ptr_->keyword;
 	}
 
-	size_t Identifier::hash() const {
-		return ptr_->hash;
+	bool Identifier::operator==( const Identifier &other ) const {
+		return ptr_ == other.ptr_;
 	}
 
 }
