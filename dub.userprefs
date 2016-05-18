@@ -1,0 +1,20 @@
+﻿<Properties StartupItem="dub.json">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="app-win" PreferredExecutionTarget="cov" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="src\nati\mgmt\TaskManager.d">
+    <Files>
+      <File FileName="src\nati\lexical\Lexer.d" Line="154" Column="6" />
+      <File FileName="src\nati\lexical\Identifier.d" Line="48" Column="28" />
+      <File FileName="src\nati\mgmt\TaskGuard.d" Line="16" Column="27" />
+      <File FileName="src\nati\mgmt\TaskManager.d" Line="29" Column="26" />
+      <File FileName="src\nati\main.d" Line="7" Column="30" />
+      <File FileName="src\nati\etc\ptrHash.d" Line="13" Column="2" />
+      <File FileName="src\nati\lexical\Operator.d" Line="13" Column="2" />
+      <File FileName="src\nati\lexical\Token.d" Line="40" Column="28" />
+      <File FileName="src\nati\etc\atomic.d" Line="14" Column="2" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
