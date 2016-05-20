@@ -54,14 +54,12 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 \section{Keywords} \label{keywords}
 Most of the keywords are not actually used in the language, but they might be in the future.
 \begin{code}
-alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, false, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, null, return, scope, singleton, switch, template, this, throw, true, try, while, with, yield
+alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, try, while, with, yield
 \end{code}
 
 \section{Literals}
 \begin{grammar}
 	\grDef{Literal} \gr{UnitLiteral} [ \token{Identifier} ] \\
-		\grAltLn \kwd{true} | \kwd{false} \\
-		\grAltLn \kwd{null} \\
 	\grDef{UnitLiteral} \gr{StringLiteral} \\
 		\grAltLn \gr{IntLiteral} \\
 		\grAltLn \gr{BinLiteral} \\
@@ -69,6 +67,12 @@ alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate
 		\grAltLn \gr{HexLiteral} \\
 		\grAltLn \gr{FloatLiteral} \\
 \end{grammar}
+
+\subsection{Boolean 'literals'}
+NATI does provide \inlineCode{true} and \inlineCode{false}, however those are not keywords or literals, but just \decoratorRef{ctime} variables defined from the runtime library. That means that they can be redefined.
+
+\subsection{The 'null' 'literal'}
+The \inlineCode{null} is a \typeRef{Type} which is statically implicitly castable to pointer or reference of any type. It is not a keyword; it is defined in runtime library and thus can be redefined.
 
 \subsection{Integer literals}
 \begin{grammar}
@@ -78,7 +82,7 @@ alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate
 	\tokenDef{HexLiteral} \verb|0x[0-9a-fA-F]+|
 \end{grammar}
 
-\paragraph{Data type} Type of a literal is always the smallest signed type possible. If the number doesn't fit in the signed variant but fits in the unsigned variant with the same size, the unsigned variant is used. If the required bit count exceeds 128, a \type{BigInt} type is used.
+\paragraph{Data type} Type of a literal is always the smallest signed type possible. If the number doesn't fit in the signed variant but fits in the unsigned variant with the same size, the unsigned variant is used. If the required bit count exceeds 128, a \typeRef{BigInt} type is used.
 
 For non-decimal systems, smallest unsigned variant is used.
 
@@ -97,7 +101,7 @@ For non-decimal systems, smallest unsigned variant is used.
 	\tokenDef{FloatLiteral} \verb|-?[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?|
 \end{grammar}
 
-\paragraph{Data type} Float literal is always of type \type{Float64}. It is recommended to use the \verb|f| for casting to \type{Float32}.
+\paragraph{Data type} Float literal is always of type \typeRef{Float64}. It is recommended to use the \verb|f| for casting to \typeRef{Float32}.
 
 \subsection{User-defined literals} \label{userDefinedLiterals}
 NATI supports a syntactical construct that allows users to define their own literals. The user defined literal is then represented by a standard NATI literal followed by an identifier.
@@ -709,10 +713,17 @@ The \decoratorRef{public}, \decoratorRef{protected} and \decoratorRef{private} d
 \subsection{The \decoratorRef{ctime} (and \decoratorRef{autoCtime}) decorator} \label{decorator:ctime}
 Generally, the \decoratorRef{ctime} decorator is related with compile time execution. It supports multiple contexts and depending on the context, its semantics can slightly change.
 
-\paragraph{Compile-time parameters}
-A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter. In some cases, parameters don't have to be decorated with \decoratorRef{ctime} -- class, enum, template parameters are always compile-time and decorating them with \decoratorRef{ctime} even results in warning.
+\paragraph{Axioms overview}
+\begin{itemize}
+	\item A compile-time variable's value is always known at compile time (=> cannot change during runtme).
+	\item A compile-time function is always evaluated in compile time. That implies that parameters must be known at compile time.
+	\item A compile-time variable's value cannot be changed at runtime. A compile-time function cannot be executed at runtime.
+\end{itemize}
 
-Compile-time parameter's values must be known at compile time. Compile-time parameters can be mutable.
+\paragraph{Compile-time parameters}
+A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter. In some cases, parameters don't have to be decorated with \decoratorRef{ctime} -- class, enum and template parameters are always compile-time, so the \decoratorRef{ctime} is implicit and decorating them with it results in warning.
+
+Compile-time parameter's values must always be known at compile time. Compile-time parameters can be mutable.
 
 Technically, a function with compile-time parameter is a function template.
 
@@ -726,7 +737,7 @@ Void f( Int32 x, @ctime Int32 y, @ctime Type t ) {
 For more info, see \nameref{ctime:parameter}.
 
 \paragraph{Compile-time variables}
-A variable decorated with \decoratorRef{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable}. A compile-time variable can be of a \hyperref[ctime:class]{compile-time type}. You can not define a compile-time variable as a dynamic member of a non-compile-time class.
+A variable decorated with \decoratorRef{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable} (global compile-time variables can not be mutable). A compile-time variable can be of a \hyperref[ctime:class]{compile-time type} (a non-compile-time variable can not be of a~compile-time type). You can not define a compile-time variable as a dynamic member of a non-compile-time class.
 
 \begin{code}
 @ctime Type! t = Int32;
@@ -740,8 +751,6 @@ For more info, see \nameref{ctime:variable}.
 
 \paragraph{Compile-time functions}
 A function decorated with \decoratorRef{ctime} is a compile-time function. A compile-time function is always executed at compile time. It can return a \hyperref[ctime:class]{compile-time type}. Its parameters and all variables used in its body are compile-time and the \decoratorRef{ctime} decorator should be omitted (a warning is shown otherwise).
-
-Because of some reasons, 
 
 \begin{code}
 @ctime Type TypeIntersection( Type t1, Type t2 ) {
@@ -761,10 +770,10 @@ Because of some reasons,
 For more info, see \nameref{ctime:function}
 
 \paragraph{Compile-time classes}
-A class decorated with \decoratorRef{ctime} is a compile-time class. A compile-time class can exists only during compilation. All its member functions are \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decoratorRef{ctime} decorator should be omitted).
+A class decorated with \decoratorRef{ctime} is a compile-time class. Any instance of a compile-time class is a compile-time instance/variable. All its member functions are \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decoratorRef{ctime} decorator should be omitted).
 
 \begin{code}
-@ctime class FunctionInfo {
+@ctime class MyFunctionInfo {
 
 @public:
 	Void #ctor!( Function F ) {
