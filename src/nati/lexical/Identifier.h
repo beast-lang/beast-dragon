@@ -10,11 +10,10 @@ namespace nati {
 	 * Class wrapping the 'Identifier' token.
 	 * Identifier ::= #?[a-zA-Z_][a-zA-Z_0-9]*
 	 */
-	class Identifier {
+	class Identifier final {
 
 	public:
 		Identifier( const std::string &str );
-
 		Identifier( const Identifier &other );
 
 	public:

@@ -25,7 +25,10 @@ namespace nati {
 		// Clear the accumulator
 		accumulator_.str( std::string() );
 		accumulator_.clear();
+
 		token_.type = TokenType::none;
+
+		state_ = LexerState::init;
 
 		while( true ) {
 			char ch = *sourceIterator_; ///< Currently processed character
@@ -71,9 +74,11 @@ namespace nati {
 					if( ident.keyword() == Keyword::notAKeyword ) {
 						token_.type = TokenType::identifier;
 						token_.identifier = ident;
+
 					} else {
 						token_.type = TokenType::keyword;
 						token_.keyword = ident.keyword();
+
 					}
 					readNextChar = false;
 					break;

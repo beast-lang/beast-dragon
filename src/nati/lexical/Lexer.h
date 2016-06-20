@@ -10,7 +10,7 @@ namespace nati {
 	/**
 	 * Well... a lexer. Based on a FSM.
 	 */
-	class Lexer {
+	class Lexer final {
 
 	public:
 		/// Sets the source code to :source && resets the lexer

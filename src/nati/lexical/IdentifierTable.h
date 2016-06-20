@@ -9,7 +9,7 @@
 
 namespace nati {
 
-	class IdentifierTableRecord {
+	class IdentifierTableRecord final {
 
 	public:
 		IdentifierTableRecord( const std::string &str, Keyword keyword = Keyword::notAKeyword );
@@ -25,7 +25,7 @@ namespace nati {
 	 * A singleton class containing all identifiers that occured in the project.
 	 * Every identifier is registred only once -> you can compare identifiers with IdentifierTableRecord pointer only (no string comparison needed)
 	 */
-	class IdentifierTable {
+	class IdentifierTable final {
 
 	public:
 		IdentifierTable();

@@ -23,16 +23,28 @@
 \makeatother
 
 \chapter{Introduction}
-NATI is an imperative, stuctured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C++ is available. In future, a LLVM backend integration is planned.
+NATI is an imperative, structured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C++ is available. In future, a LLVM backend integration is planned.
 
 NATI is a practical tool for practical programmers. With NATI, you can write effective and readable code quite fast. Although the language itself builds on a significant abstraction, the functionality behind it is still close to HW. If you know the language, you can pretty well determine what assembly each line of your code generates.
 
 Basic language classification:
 \begin{itemize}
 	\item Imperative
-	\item Classes are instances of the \verb|Type| class
+	\item Classes are instances of \verb|Type| class
 	\item Statically typed
 \end{itemize}
+
+\section{Why choose NATI}
+\begin{itemize}
+	\item \textbf{Good programming practices} NATI gently pushes you into writing your code readable and understandable.
+	\item \textbf{Compile-time magic} In NATI, you can do many things much better in compile time. It has compile-time reflection, you can execute almost any function in compile time, ...
+\end{itemize}
+
+\subsection{Why choose NATI over C++}
+\begin{itemize}
+	\item \textbf{Modules} In NATI, you don't have to write separate header and source files and struggle with keeping them synchronized.
+\end{itemize}
+
 
 \chapter{Lexical}
 In a normal code, NATI accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
@@ -52,9 +64,13 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 \end{itemize}
 
 \section{Keywords} \label{keywords}
-Most of the keywords are not actually used in the language, but they might be in the future.
 \begin{code}
-alias, auto, blueprint, break, case, class, continue, debug, decorator, delegate, do, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, try, while, with, yield
+alias, auto, break, case, class, continue, else, enum, except, finally, for, if, import, in, is, module, return, switch, this, throw, try, while
+\end{code}
+
+\subsection{Reserved words}
+\begin{code}
+asm, auto, blueprint, debug, decorator, delegate, do, foreach, function, generic, goto, loop, scope, singleton, template, this, with, yield
 \end{code}
 
 \section{Literals}
@@ -77,14 +93,12 @@ The \inlineCode{null} is a \typeRef{Type} which is statically implicitly castabl
 \subsection{Integer literals}
 \begin{grammar}
 	\tokenDef{IntLiteral} \verb|-?[0-9]+| \\
-	\tokenDef{BinLiteral} \verb|0b[01]+| \\
-	\tokenDef{OctLiteral} \verb|0o[0-7]+| \\
-	\tokenDef{HexLiteral} \verb|0x[0-9a-fA-F]+|
+	\tokenDef{BinLiteral} \verb|-?0b[01]+| \\
+	\tokenDef{OctLiteral} \verb|-?0o[0-7]+| \\
+	\tokenDef{HexLiteral} \verb|-?0x[0-9a-fA-F]+|
 \end{grammar}
 
-\paragraph{Data type} Type of a literal is always the smallest signed type possible. If the number doesn't fit in the signed variant but fits in the unsigned variant with the same size, the unsigned variant is used. If the required bit count exceeds 128, a \typeRef{BigInt} type is used.
-
-For non-decimal systems, smallest unsigned variant is used.
+\paragraph{Data type} Type of a literal is always the smallest signed type possible. If the number doesn't fit in the signed variant but fits in the unsigned variant with the same size, the unsigned variant is used (doesn't apply to negative literals). If the required bit count exceeds 128, a \typeRef{BigInt} type is used.
 
 \begin{code}
 10 // Int8
@@ -101,19 +115,19 @@ For non-decimal systems, smallest unsigned variant is used.
 	\tokenDef{FloatLiteral} \verb|-?[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?|
 \end{grammar}
 
-\paragraph{Data type} Float literal is always of type \typeRef{Float64}. It is recommended to use the \verb|f| for casting to \typeRef{Float32}.
+\paragraph{Data type} Float literal is always of type \typeRef{Float64}. It is recommended to use the \verb|f| for casting to \typeRef{Float32} (alternatively, you can use the explicit cast).
 
 \subsection{User-defined literals} \label{userDefinedLiterals}
 NATI supports a syntactical construct that allows users to define their own literals. The user defined literal is then represented by a standard NATI literal followed by an identifier.
 
-A function
+An appropriate function with prototype
 \begin{code}
-@ctime auto #userLiteral( String suffix, String value, UserLiteralSource source );
+@ctime auto #literal( String suffix, String value, Literal type );
 \end{code}
-is then called where the first argument is the \token{Identifier} used and the second is the literal value (stringified).
+is then called where the first argument is the \token{Identifier} used, the second is the literal value (stringified) and the third is the type of the literal.
 
 \begin{code}
-enum UserLiteralSource {
+enum Literal {
 	stringLiteral,
 	intLiteral,
 	binLiteral,
@@ -123,7 +137,7 @@ enum UserLiteralSource {
 	
 @public:
 	enum : Set {
-		number = stringLiteral | floatLiteral;	
+		number = intLiteral | floatLiteral;	
 	}
 }
 \end{code}
@@ -133,12 +147,13 @@ enum UserLiteralSource {
 	"km": 1e3, "m": 1, "dm": 1e-1, "cm": 1e-2, "mm": 1e-3
 ];
 	
-@ctime Length #userLiteral( String suffix, String value, UserLiteralSource source )
-	if( source is UserLiteralSource.number suffix in lengthUnits.keys )
+@ctime Length #literal( String suffix, String value, Literal type )
+	if( type is :number && suffix in lengthUnits.keys )
 {
 	return Length( value.to( Float32 ) * lengthUnits[ unit ] );
 }
 
+// Here, the #literal function is called with arguments #literal( "cm", "32.5", Literal.floatLiteral )
 Length len = 32.5 cm;
 \end{code}
 
@@ -233,7 +248,7 @@ void main() {
 
 \subsection{Operator precedence}
 \begin{centeredRefTabular}{P{1.5cm} | c | c | p{5cm} | c}
-	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Associativity} \\ \hline
+	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Associativity} \\ \hline \hline
 	
 	1
 		& \verb|x(args)| & \verb|funcCall| & Function call & Left to right \\
@@ -252,7 +267,7 @@ void main() {
 		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
 		\cline{2-5}
 		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
-		& \verb|x@| & \verb|suffAnd| & Reference type & \\
+		& \verb|x@| & \verb|suffAt| & Reference type & \\
 		\cline{2-5}
 		& \verb|$| & \verb|dollar| & Array size & \\
 	\hline
@@ -281,7 +296,7 @@ void main() {
 	\hline
 	
 	6
-		& \verb|x is y| & \verb|binIs| & Is (something like equal to) & Cannot be chained \\
+		& \verb|x is y| & \verb|binIs| & Is (similar to equal to) & Cannot be chained \\
 		& \verb|x !is y| & \verb|binIsNot| & Is not & \\
 		& \verb|x in y| & \verb|binIn| & In & \\
 		& \verb|x !in y| & \verb|binNotIn| & Not in & \\
@@ -390,10 +405,23 @@ auto #operator( @ctime Operator op, auto args ... );
 
 So for example, you can overload all unary operators at once using:
 \begin{code}
-auto #operator( @ctime Operator op, auto@ args ... )
-	if( op is :unary )
-{
-	reutrn referencedValue.#operator( op, ::args );
+@final class UnaryProxy( Type T ) {
+	
+@public:
+	Void #ctor( T@ value ) {
+		referencedValue = value;
+	}
+	
+@public:
+	auto #operator( @ctime Operator op, auto@ args ... )
+		if( op is :unary )
+	{
+		return referencedValue.#operator( op, args ... );
+	}
+	
+@private:
+	T! referencedValue;
+	
 }
 \end{code}
 
@@ -407,20 +435,67 @@ Int16 #operator( Operator("x++") ) {
 }
 \end{code}
 
-You can also make overloads virtual (for one exact setup; see \ref{virtualCtimeFunctions}):
+You can also make operator overload implementations virtual:
 \begin{code}
-class A {
+@base class A {
 	@public @abstract Void #operator( Operator.plusAssign, A@ other );
 }
 
 @final class B : @public A {
-	@public @override Void #operator( Operator.plusAssign, A@ other ) {
+	@public @override Void #operator( Operator.plusAssign , A@ other ) {
 		// code here	
 	}
 }
 \end{code}
 
 \paragraph{TODO} The range operator, operator parameter restrictions, overload selection
+
+\section{Symbol lookup (identifier resolution)}
+Assume following situation:
+\begin{code}
+module a;
+import b;
+	
+Int8 x;
+
+@base class C {
+	
+@public:
+	Int8 x;
+	
+@public:
+	@virtual Void f() {
+		// Code here
+	}
+	Void f(Int8 arg) {
+		// Code here	
+	}
+	
+}
+
+Void f() {
+	// Code here	
+}
+
+$\moduleSep$
+module b;
+import a;
+
+Int8 x;
+
+@final class D : @public C {
+
+@public:
+	@override Void f() {
+		
+	}
+	Void f(Int16 arg) {
+	}
+	
+}
+\end{code}
+
+\paragraph{The '\inlineCode{:ident}' accessor}
 
 \section{Variable declarations}
 \begin{grammar}
@@ -450,6 +525,21 @@ class A {
 \section{The \kwd{auto} keyword}
 
 \section{Parameter namespace accessor (\texttt{:ident})}
+
+\chapter{Types}
+
+\subsection{Pointers vs. references}
+\begin{centeredRefTabular}{l | c | c}
+	\textbf{Property} & \textbf{Reference} & \textbf{Pointer} \\ \hline \hline
+	
+	Pointer arithmetics & no & yes \\ \hline
+	Can be \inlineCode{null} & yes & yes \\ \hline
+	Rebindable & yes & yes \\ \hline
+	Binding & \inlineCode{ref := val} & \inlineCode{ptr = \&val} \\
+		& or \inlineCode{ref := \&val} & \\ \hline
+	Member access & \inlineCode{ref.mem} & \inlineCode{ptr.data.mem} \\
+
+\end{centeredRefTabular}
 
 \chapter{Modules}
 \begin{grammar}
@@ -569,6 +659,8 @@ Void eFunc() {
 \end{code}
 
 \chapter{Decorators}
+TODO: noWarning, final, abstract, base, virtual, override, static
+
 \begin{grammar}
 	\grDef{Decoration} \kwd{@} \token{Identifier} [ \gr{ArgumentList} ]
 \end{grammar}
@@ -580,7 +672,7 @@ In module level, there are three ways of how to apply a decorator:
 \begin{code}
 module a;
 
-class C {
+@final class C {
 	
 // Scope decoration
 @decoratorA @decoratorB:
@@ -656,7 +748,7 @@ In the example, it would first try to apply the decorator in  \decorationContext
 \subsection{Decorator conflicts}
 \textbf{You can not apply two decorators that are incompatible.} The most common case are the \hyperref[accessModifierDecorators]{access modifier decorators}.
 \begin{code}
-class C {
+@final class C {
 
 @public:
 	@private Int8 a; // Error - @public and @private decorators are incompatible
@@ -681,7 +773,7 @@ Access modifier decorators specify where a symbol is accessible from. They only 
 \paragraph{\decoratorRef{friend}} \label{decorator:friend} The \decoratorRef{friend} decorator exclusively allows access to one scope symbol, specified as the parameter. This overrides the \decoratorRef{protected} or \decoratorRef{private} access restriction.
 
 \begin{code}
-class C {
+@base class C {
 	@private @friend( func3 ) Int8 x;
 	@protected Int16 func() {
 		return 32000;
@@ -689,7 +781,7 @@ class C {
 	@public Int32 y;
 }
 
-class D : @public C {
+@final class D : @public C {
 	
 @public:
 	Void func2() {
@@ -716,8 +808,12 @@ Generally, the \decoratorRef{ctime} decorator is related with compile time execu
 \paragraph{Axioms overview}
 \begin{itemize}
 	\item A compile-time variable's value is always known at compile time (=> cannot change during runtme).
-	\item A compile-time function is always evaluated in compile time. That implies that parameters must be known at compile time.
-	\item A compile-time variable's value cannot be changed at runtime. A compile-time function cannot be executed at runtime.
+	\item A compile-time function is always evaluated in compile time. That implies that parameters must be known at compile time. The return type is also compile-time.
+	\item Some runtime functions can be executed at compile time.
+	\item There is a difference between a compile-time function and a function executed at compile time.
+	\item A compile-time variable is implicitly castable to const runtime variable.
+	\item A compile-time class can only contain compile-time fields.
+	\item A compile-time class can ontain runtime functions, but those cannot modify class' fields (they can only be const).
 \end{itemize}
 
 \paragraph{Compile-time parameters}
@@ -750,7 +846,9 @@ t str = "asd"; // y is of type String
 For more info, see \nameref{ctime:variable}.
 
 \paragraph{Compile-time functions}
-A function decorated with \decoratorRef{ctime} is a compile-time function. A compile-time function is always executed at compile time. It can return a \hyperref[ctime:class]{compile-time type}. Its parameters and all variables used in its body are compile-time and the \decoratorRef{ctime} decorator should be omitted (a warning is shown otherwise).
+A function decorated with \decoratorRef{ctime} is a compile-time function. A compile-time function is always executed at compile time. It returns a \hyperref[ctime:class]{compile-time type}. Its parameters and all variables used in its body are compile-time.
+
+The \decoratorRef{ctime} decorator should be omitted in parameter, variable and return type declaration; a warning is shown otherwise.
 
 \begin{code}
 @ctime Type TypeIntersection( Type t1, Type t2 ) {
@@ -773,7 +871,7 @@ For more info, see \nameref{ctime:function}
 A class decorated with \decoratorRef{ctime} is a compile-time class. Any instance of a compile-time class is a compile-time instance/variable. All its member functions are \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decoratorRef{ctime} decorator should be omitted).
 
 \begin{code}
-@ctime class MyFunctionInfo {
+@final @ctime class MyFunctionInfo {
 
 @public:
 	Void #ctor!( Function F ) {
@@ -829,7 +927,7 @@ In \decorationContextRef{classDeclaration} and \decorationContextRef{enumDeclara
 
 In the \decorationContextRef{parameterDeclaration} context, the parameter is made compile-time whenever the function is called with a parameter value that is known at compile time.
 \begin{code}
-class HashTable( Type Key, Type Value ) {
+@final class HashTable( Type Key, Type Value ) {
 
 @public:
 	T!@ #operator!( Operator("x[args]"), @autoCtime Key key ) {
@@ -867,6 +965,14 @@ The decorator can not be used in any other contexts.
 	\item The \verb|_| symbol can be used in identifiers as a separator (for example class \verb|PizzaIngredient_Cheese|).
 \end{itemize}
 
+\section{Further recommended code style}
+\begin{itemize}
+	\item Indent with tabs (so anyone can set up tab size based on his preferences)
+	\item Spaces in statements like this: \inlineCode{if( expr ) \{}, opening brace on the same line
+	\item Spaces around operators: \inlineCode{x + y}
+	\item Decorators on the same line with decorated symbols.
+\end{itemize}
+
 \chapter{Plans for the future}
 \begin{itemize}
 	\item Aliased imports
@@ -887,10 +993,11 @@ The decorator can not be used in any other contexts.
 \begin{itemize}
 	\item Virtual functions, when a class is virtual
 	\item Overloading rules, identifier resolution rules -- single resolution possible rule? (exception for same modules)
-	\item \decoratorRef{noWarning}
+	\item \decoratorRef{noWarning(W103)}
 	\item \decoratorRef{label} (for break, continue nested)
+	\item \decoratorRef{notNull}
 	\item \verb|#| prefixed identifiers (rules, restrictions) + \verb|to|
-	\item NATI practices \& styling guide
+	\item \inlineCode{class X : @public @final Y}
 \end{itemize}
 
 \section{Random thoughts scrapbook}
@@ -908,6 +1015,9 @@ class null {
 	@public @static	T #implicitCast( Type T )
 		if( T is Pointer )
 	{
+		module.this
+		module.straw.nati.functionInAnotherModule();
+		module( "asd.test" ).functionInAnotherModule();
 		return T(0);
 	}
 }

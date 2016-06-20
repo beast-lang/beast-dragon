@@ -6,7 +6,11 @@
 
 namespace nati {
 
-	class TaskGuard {
+	/**
+	 * TaskGuard is a class that wraps functionality of keeping info about a certain task (for example parsing a file, compiling some part of code, ...)
+	 * It keeps track if the task is done or in WIP, and using its functionality, it ensures that a task gets done only once.
+	 */
+	class TaskGuard final {
 
 	private:
 		using Flags = std::uint8_t;
@@ -36,7 +40,7 @@ namespace nati {
 		void markFinished();
 
 	private:
-		std::atomic<Flags> flags_;
+		std::atomic<Flags> flags_{ 0 };
 
 	};
 

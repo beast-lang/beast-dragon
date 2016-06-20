@@ -12,13 +12,13 @@ namespace nati {
 		eof
 	};
 
-	class Token {
+	class Token final {
 
 	public:
 		operator bool() const;
 
 	public:
-		TokenType type;
+		TokenType type = TokenType::none;
 		union {
 			Identifier identifier;
 			Keyword keyword;
