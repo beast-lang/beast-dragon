@@ -4,26 +4,19 @@ namespace nati {
 
 	__thread Lexer *lexer = nullptr;
 
-	void Lexer::setSource( const std::string &source ) {
+	UnexpectedTokenException::UnexpectedTokenException( TokenType whatExpected ) {
+		// TODO
+	}
+
+
+	void Lexer::setSource( const String &source ) {
 		source_ = source + '\0';
 		sourceIterator_ = source_.begin();
 	}
 
-	const Token &Lexer::token() const {
-		return token_;
-	}
-
-	bool Lexer::isToken( TokenType type ) const {
-		return token_.type == type;
-	}
-
-	void Lexer::expectToken( TokenType type ) const {
-		// TODO
-	}
-
 	void Lexer::nextToken() {
 		// Clear the accumulator
-		accumulator_.str( std::string() );
+		accumulator_.str( String() );
 		accumulator_.clear();
 
 		token_.type = TokenType::none;
@@ -50,8 +43,13 @@ namespace nati {
 					switch( ch ) {
 
 						case '\0': {
-							token_.type = TokenType::eof;
+							token_ = TokenType::eof;
 							readNextChar = false;
+							break;
+						}
+
+						case '.': {
+							token_ = TokenType::dot;
 							break;
 						}
 
@@ -72,11 +70,11 @@ namespace nati {
 
 					Identifier ident( accumulator_.str() );
 					if( ident.keyword() == Keyword::notAKeyword ) {
-						token_.type = TokenType::identifier;
+						token_ = TokenType::identifier;
 						token_.identifier = ident;
 
 					} else {
-						token_.type = TokenType::keyword;
+						token_ = TokenType::keyword;
 						token_.keyword = ident.keyword();
 
 					}

@@ -3,12 +3,28 @@
 
 #include <mutex>
 #include <cstdarg>
+#include <string>
+#include <condition_variable>
+#include <vector>
 
 #define __LINE_STR__ __LINE_STR2__(__LINE__)
 #define __LINE_STR2__(x) __LINE_STR3__(x)
 #define __LINE_STR3__(x) #x
 
 using LockGuard = std::unique_lock<std::mutex>;
+using MutexCondition = std::condition_variable;
+using Mutex = std::mutex;
+
+using String = std::string;
+
+template<typename T>
+using UniquePtr = std::unique_ptr<T>;
+
+template<typename T>
+using SharedPtr = std::shared_ptr<T>;
+
+template<typename T>
+using List = std::vector<T>;
 
 /**
  * "Condition should be true, otherwise something is wrong."

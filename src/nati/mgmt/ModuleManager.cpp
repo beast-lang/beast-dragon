@@ -2,6 +2,6 @@
 
 namespace nati {
 
-
+	ModuleManager *moduleManager = nullptr;
 
 }

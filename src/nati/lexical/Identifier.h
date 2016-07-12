@@ -1,7 +1,7 @@
 #ifndef NATI_IDENTIFIER_H
 #define NATI_IDENTIFIER_H
 
-#include <string>
+#include <nati/utility.h>
 #include "IdentifierTable.h"
 
 namespace nati {
@@ -13,11 +13,12 @@ namespace nati {
 	class Identifier final {
 
 	public:
-		Identifier( const std::string &str );
+		Identifier();
+		Identifier( const String &str );
 		Identifier( const Identifier &other );
 
 	public:
-		const std::string &str() const;
+		const String &str() const;
 
 		Keyword keyword() const;
 

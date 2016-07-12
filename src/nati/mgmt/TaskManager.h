@@ -1,16 +1,13 @@
 #ifndef NATI_TASKMANAGER_H
 #define NATI_TASKMANAGER_H
 
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-#include <vector>
-#include <set>
-#include "TaskGuard.h"
+#include <functional>
+#include <nati/utility.h>
 
 namespace nati {
 
 	class TaskContext;
+	class TaskGuard;
 
 	using TaskManagerTask = std::function<void()>;
 
@@ -25,7 +22,7 @@ namespace nati {
 		/**
 		 * Suspends the current worker fiber and marks it for waking up after :task is complete.
 		 *
-		 * @remark This function is thread-safe.
+		 * @note This function is thread-safe.
 		 */
 		void waitForTask( TaskGuard *task );
 
@@ -33,7 +30,7 @@ namespace nati {
 		 * Wakes all fibers that were working for the :task (doesn't have to happen immidiately).
 		 * If no task is waiting, this function should not be called.
 		 *
-		 * @remark This function is thread-safe.
+		 * @note This function is thread-safe.
 		 */
 		void notifyTaskIsFinished( TaskGuard *task );
 
@@ -44,11 +41,11 @@ namespace nati {
 		/**
 		 * Mutex for acessing contexts
 		 */
-		std::mutex mutex_;
+		Mutex mutex_;
 		/**
 		 * List of all contexts
 		 */
-		std::vector<TaskContext*> contextList_;
+		List<TaskContext*> contextList_;
 		/**
 		 * Count of idle contexts that have nothing to do.
 		 * @note Idle contexts are waiting on the idleContextCondition_
@@ -61,7 +58,7 @@ namespace nati {
 		/**
 		 * Contexts that are idle are waiting on this condition. They're notified when they get a new job to do or when the program is quitting.
 		 */
-		std::condition_variable idleContextCondition_;
+		MutexCondition idleContextCondition_;
 		/**
 		 * A variable used for passing a task that should be run in a currently woken worker thread
 		 */

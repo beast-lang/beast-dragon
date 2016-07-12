@@ -1,10 +1,9 @@
 #ifndef NATI_IDENTIFIERTABLE_H
 #define NATI_IDENTIFIERTABLE_H
 
-#include <string>
 #include <memory>
 #include <unordered_map>
-#include <mutex>
+#include <nati/utility.h>
 #include "Keyword.h"
 
 namespace nati {
@@ -12,10 +11,10 @@ namespace nati {
 	class IdentifierTableRecord final {
 
 	public:
-		IdentifierTableRecord( const std::string &str, Keyword keyword = Keyword::notAKeyword );
+		IdentifierTableRecord( const String &str, Keyword keyword = Keyword::notAKeyword );
 
 	public:
-		std::string str;
+		String str;
 		/// Stores if the identifier is a keyword; Keyword::notAKeyword if not a keyword
 		Keyword keyword;
 
@@ -35,21 +34,22 @@ namespace nati {
 		 * Creates/returns an identifier record matching the identifier :str.
 		 * This function is thread safe.
 		 * */
-		const IdentifierTableRecord* obtain( const std::string &str );
+		const IdentifierTableRecord *obtain( const String &str );
+
 		/**
 		 * Registers an identifier as a keyword.
 		 *
-		 * @remark This function is not thread safe and should be run only before worker threads start.
+		 * @note This function is not thread safe and should be run only before worker threads start.
 		 */
-		void registerKeyword( const std::string &str, Keyword keyword );
+		void registerKeyword( const String &str, Keyword keyword );
 
 	private:
 		/// This function is only called in the constructor
 		void registerKeywords();
 
 	private:
-		std::unordered_map< std::string, std::unique_ptr< const IdentifierTableRecord > > table_;
-		std::mutex mutex_;
+		std::unordered_map< String, UniquePtr< const IdentifierTableRecord > > table_;
+		Mutex mutex_;
 
 	};
 

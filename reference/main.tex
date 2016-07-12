@@ -1,5 +1,8 @@
 % !TeX spellcheck = en_US
 
+%TODO remove ternary operator
+%TODO ref ? symbol
+
 \include{header}
 \include{mainpage}
 \include{support}
@@ -188,17 +191,14 @@ void main() {
 \end{grammar}
 
 \section{Operators}
-\begin{grammar}
-	\grDef{RangeExpr} \gr{TernExpr} \\
-		\grAltLn \gr{TernExpr} \kwd{..} \gr{TernExpr} \\
+\begin{grammar}	
+	\grDef{AssignExpr} \gr{RangeExpr} \\
+		\grAltLn \gr{RangeExpr} \gr{AssignOpOp} \gr{RangeExpr} \\
+		\grAltLn \gr{RangeExpr} \{ \kwd{=} \gr{RangeExpr} \}+ \\
+		\grAltLn \gr{RangeExpr} \{ \kwd{:=} \gr{RangeExpr} \}+ \\
 	
-	\grDef{AssignExpr} \gr{TernExpr} \\
-		\grAltLn \gr{TernExpr} \gr{AssignOpOp} \gr{TernExpr} \\
-		\grAltLn \gr{TernExpr} \{ \kwd{=} \gr{TernExpr} \}+ \\
-		\grAltLn \gr{TernExpr} \{ \kwd{:=} \gr{TernExpr} \}+ \\
-	
-	\grDef{TernExpr} \gr{LogicExpr} \\
-		\grAltLn \gr{LogicExpr} \kwd{?} \gr{LogicExpr} \kwd{:} \gr{LogicExpr} \\
+	\grDef{RangeExpr} \gr{LogicExpr} \\
+		\grAltLn \gr{LogicExpr} \kwd{..} \gr{LogicExpr} \\
 	
 	\grDef{LogicExpr} \gr{CmpExpr} \\
 		\grAltLn \gr{CmpExpr} \{ \kwd{\&\&} \gr{CmpExpr} \}+ \\
@@ -225,7 +225,7 @@ void main() {
 	\grDef{UnaryExpr} \gr{P1Expr} \\
 		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
 		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} ) \\
-		\grAltLn \gr{P1Expr} \{ \kwd{@} | \kwd{!} \}+ \\
+		\grAltLn \gr{P1Expr} \{ \kwd{?} | \kwd{!} \}+ \\
 		\grAltLn \gr{InlineVarDecl} \\
 		\grAltLn \kwd{\$} \\
 	
@@ -267,7 +267,7 @@ void main() {
 		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
 		\cline{2-5}
 		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
-		& \verb|x@| & \verb|suffAt| & Reference type & \\
+		& \verb|x?| & \verb|suffRef| & Reference type & \\
 		\cline{2-5}
 		& \verb|$| & \verb|dollar| & Array size & \\
 	\hline
@@ -287,7 +287,7 @@ void main() {
 	\multirow{4}{1.5cm}{\centering 5\\(cannot use P3,P4)}
 		& \verb|x & y| & \verb|binAnd| & Bitwise AND & Left to right, \\
 		& \verb$x | y$ & \verb|binOr| & Bitwise OR & only the same \\
-		& \verb|x ^ y| & \verb|binXor| & Bitwise XOR & \\
+		& \verb|x ^ y| & \verb|binXor| & Bitwise XOR / power & \\
 		\cline{2-5}
 		& \verb|x >> y| & \verb|binRSft| & Bitwise right shift & Cannot be chained \\
 		& \verb|x << y| & \verb|binLSft| & Bitwise left shift & \\
@@ -315,7 +315,7 @@ void main() {
 	\hline
 	
 	8
-		& \verb|x ? y : z| & \verb|tern| & Ternary conditional & Cannot be chained \\
+		& \verb|x .. y| & \verb|range| & Range separator & Cannot be chained \\
 	\hline
 	
 	9
@@ -335,12 +335,8 @@ void main() {
 		& \verb|x <<<= y| & \verb|lRotAssign| && \\
 		& \verb|x >>>= y| & \verb|rRotAssign| && \\
 	\hline
-		
-	10 (cannot use P9)
-		& \verb|x .. y| & \verb|range| & Range separator (only in array subscript args) & Cannot be chained \\
-	\hline
 	
-	11
+	10
 		& \verb|x, y| & & Comma & Left to right \\
 \end{centeredRefTabular}
 
@@ -408,12 +404,12 @@ So for example, you can overload all unary operators at once using:
 @final class UnaryProxy( Type T ) {
 	
 @public:
-	Void #ctor( T@ value ) {
+	Void #ctor( T? value ) {
 		referencedValue = value;
 	}
 	
 @public:
-	auto #operator( @ctime Operator op, auto@ args ... )
+	auto #operator( @ctime Operator op, auto$\$$ args ... )
 		if( op is :unary )
 	{
 		return referencedValue.#operator( op, args ... );
@@ -437,7 +433,7 @@ Int16 #operator( Operator("x++") ) {
 
 You can also make operator overload implementations virtual:
 \begin{code}
-@base class A {
+class A {
 	@public @abstract Void #operator( Operator.plusAssign, A@ other );
 }
 
@@ -458,16 +454,16 @@ import b;
 	
 Int8 x;
 
-@base class C {
+class C {
 	
 @public:
 	Int8 x;
 	
 @public:
-	@virtual Void f() {
+	Void f() {
 		// Code here
 	}
-	Void f(Int8 arg) {
+	@final Void f(Int8 arg) {
 		// Code here	
 	}
 	
@@ -672,7 +668,7 @@ In module level, there are three ways of how to apply a decorator:
 \begin{code}
 module a;
 
-@final class C {
+class C {
 	
 // Scope decoration
 @decoratorA @decoratorB:
@@ -773,7 +769,7 @@ Access modifier decorators specify where a symbol is accessible from. They only 
 \paragraph{\decoratorRef{friend}} \label{decorator:friend} The \decoratorRef{friend} decorator exclusively allows access to one scope symbol, specified as the parameter. This overrides the \decoratorRef{protected} or \decoratorRef{private} access restriction.
 
 \begin{code}
-@base class C {
+class C {
 	@private @friend( func3 ) Int8 x;
 	@protected Int16 func() {
 		return 32000;
@@ -930,7 +926,8 @@ In the \decorationContextRef{parameterDeclaration} context, the parameter is mad
 @final class HashTable( Type Key, Type Value ) {
 
 @public:
-	T!@ #operator!( Operator("x[args]"), @autoCtime Key key ) {
+	// You may ask, that the hell is "T!?!" ?! Don't be scared, T! means a mutable type T, T!? means non-mutable reference to mutable type and T!?! means mutable reference to mutable type (mutable reference == you can change where the reference points to using the ':=' operator)
+	T!?! #operator!( Operator("x[args]"), @autoCtime Key key ) {
 		Offset hash = key.#hash() % tableSize_;	
 		
 		// Locating the record here 
@@ -1004,7 +1001,7 @@ The decorator can not be used in any other contexts.
 \begin{code}
 auto max( auto x, x.#type y ) = ( x > y ) ? x : y;
 
-T!@ #new( @ctime Type T ) {
+T!? #new( @ctime Type T ) {
 	return malloc( T.#size ).to( T!@ );
 }
 

@@ -12,14 +12,14 @@ namespace nati {
 	class AST_ExtendedIdentifier final {
 
 	private:
-		AST_ExtendedIdentifier( std::vector< Identifier > &&identifiers );
+		AST_ExtendedIdentifier() {};
 
 	public:
 		static bool canParse();
-		static AST_ExtendedIdentifier *parse();
+		static const AST_ExtendedIdentifier *parse();
 
 	public:
-		const std::vector< Identifier > identifiers;
+		List< Identifier > identifiers;
 
 	};
 

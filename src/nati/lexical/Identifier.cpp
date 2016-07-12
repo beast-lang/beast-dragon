@@ -1,11 +1,14 @@
-
 #include "Identifier.h"
 
 namespace nati {
 
-	using IdentifierTableItem = std::unique_ptr< std::string >;
+	using IdentifierTableItem = std::unique_ptr< String >;
 
-	Identifier::Identifier( const std::string &str ) {
+	Identifier::Identifier() {
+		ptr_ = nullptr;
+	}
+
+	Identifier::Identifier( const String &str ) {
 		ptr_ = identifierTable->obtain( str );
 	}
 
@@ -13,7 +16,7 @@ namespace nati {
 		ptr_ = other.ptr_;
 	}
 
-	const std::string &Identifier::str() const {
+	const String &Identifier::str() const {
 		return ptr_->str;
 	}
 

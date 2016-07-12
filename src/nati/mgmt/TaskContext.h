@@ -2,7 +2,7 @@
 #define NATI_TASKCONTEXT_H
 
 #include <thread>
-#include <condition_variable>
+#include <nati/utility.h>
 
 namespace nati {
 
@@ -34,7 +34,7 @@ namespace nati {
 		/**
 		 * Condition used for waking the thread when it is waiting for another thread
 		 */
-		std::condition_variable condition_;
+		MutexCondition condition_;
 
 	};
 

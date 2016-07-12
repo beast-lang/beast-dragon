@@ -9,12 +9,14 @@ namespace nati {
 		none, ///< Erroreous state
 		identifier,
 		keyword,
+		dot, ///< '.'
 		eof
 	};
 
 	class Token final {
 
 	public:
+		void operator =( TokenType type );
 		operator bool() const;
 
 	public:

@@ -6,20 +6,17 @@ namespace nati {
 	bool AST_ExtendedIdentifier::canParse() {
 		return lexer->isToken( TokenType::identifier );
 	}
-	AST_ExtendedIdentifier* AST_ExtendedIdentifier::parse() {
+	const AST_ExtendedIdentifier* AST_ExtendedIdentifier::parse() {
+		UniquePtr<AST_ExtendedIdentifier> result( new AST_ExtendedIdentifier() );
+
 		lexer->expectToken( TokenType::identifier );
 
-		std::vector< Identifier > result;
-		while( lexer->isToken( TokenType::identifier ) ) {
-			result.push_back( lexer->token().identifier );
-			// TODO
+		while( lexer->isToken( TokenType::dot ) ) {
+			lexer->expectNextToken( TokenType::identifier );
+			result->identifiers.push_back( lexer->token().identifier );
 		}
 
-		return new AST_ExtendedIdentifier( std::move( result ) );
-	}
-
-	AST_ExtendedIdentifier::AST_ExtendedIdentifier( std::vector< Identifier > &&identifiers ) : identifiers( identifiers ) {
-
+		return result.release();
 	}
 
 }

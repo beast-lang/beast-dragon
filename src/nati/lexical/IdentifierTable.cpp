@@ -4,7 +4,7 @@ namespace nati {
 
 	IdentifierTable *identifierTable = nullptr;
 
-	IdentifierTableRecord::IdentifierTableRecord( const std::string &str, Keyword keyword ) {
+	IdentifierTableRecord::IdentifierTableRecord( const String &str, Keyword keyword ) {
 		this->str = str;
 		this->keyword = keyword;
 	}
@@ -13,10 +13,10 @@ namespace nati {
 		registerKeywords();
 	}
 
-	const IdentifierTableRecord *IdentifierTable::obtain( const std::string &str ) {
+	const IdentifierTableRecord *IdentifierTable::obtain( const String &str ) {
 		mutex_.lock();
 
-		std::unique_ptr< const IdentifierTableRecord > &record = table_[ str ];
+		UniquePtr< const IdentifierTableRecord > &record = table_[ str ];
 		if( !record )
 			record.reset( new IdentifierTableRecord( str ) );
 
@@ -25,7 +25,7 @@ namespace nati {
 		return record.get();
 	}
 
-	void IdentifierTable::registerKeyword( const std::string &str, Keyword keyword ) {
+	void IdentifierTable::registerKeyword( const String &str, Keyword keyword ) {
 		table_[ str ].reset( new IdentifierTableRecord( str, keyword ) );
 	}
 
