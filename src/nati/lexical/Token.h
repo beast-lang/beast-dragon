@@ -10,13 +10,21 @@ namespace nati {
 		identifier,
 		keyword,
 		dot, ///< '.'
-		eof
+		eof,
+
+		_cnt
 	};
+
+	const String &tokenTypeStr( TokenType tokenType );
 
 	class Token final {
 
 	public:
-		void operator =( TokenType type );
+		String str() const;
+
+	public:
+		void operator=( TokenType type );
+
 		operator bool() const;
 
 	public:

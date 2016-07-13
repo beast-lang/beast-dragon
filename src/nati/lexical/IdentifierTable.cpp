@@ -30,7 +30,8 @@ namespace nati {
 	}
 
 	void IdentifierTable::registerKeywords() {
-		registerKeyword( "this", Keyword::this_ );
+		for( Keyword kwd = Keyword(0); int(kwd) < int( Keyword::_cnt ); kwd = Keyword( int(kwd) + 1 ) )
+			registerKeyword( keywordStr( kwd ), kwd );
 	}
 
 }

@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/include" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/etc" />
       <excludeFolder url="file://$MODULE_DIR$/reference" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

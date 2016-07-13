@@ -1,7 +1,7 @@
 #ifndef NATI_MODULE_H
 #define NATI_MODULE_H
 
-#include <nati/ast/AST_ExtendedIdentifier.h>
+#include <nati/utility.h>
 
 namespace nati {
 
@@ -12,16 +12,15 @@ namespace nati {
 		 * @param filename Absolute filename of the module file
 		 * @param identifier Expected identifier of the module. After parsing the module, it is checked againts this. Can be null.
 		 */
-		Module( const String &filename, const AST_ExtendedIdentifier *expectedIdentifier );
+		Module( const String &filename, const String &expectedIdentifier );
 
 	public:
 		const String &filename() const;
 
-		const AST_ExtendedIdentifier &identifier() const;
+		const String &identifier() const;
 
 	private:
-		const String filename_;
-		const AST_ExtendedIdentifier *identifier_, *expectedIdentifier_;
+		const String filename_, identifier_, expectedIdentifier_;
 
 	};
 

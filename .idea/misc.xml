@@ -8,6 +8,7 @@
     </sourceRoots>
     <libraryRoots />
     <excludeRoots>
+      <file path="$PROJECT_DIR$/etc" />
       <file path="$PROJECT_DIR$/reference" />
     </excludeRoots>
   </component>

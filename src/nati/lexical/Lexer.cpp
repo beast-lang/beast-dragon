@@ -4,17 +4,14 @@ namespace nati {
 
 	__thread Lexer *lexer = nullptr;
 
-	UnexpectedTokenException::UnexpectedTokenException( TokenType whatExpected ) {
-		// TODO
-	}
-
-
 	void Lexer::setSource( const String &source ) {
 		source_ = source + '\0';
 		sourceIterator_ = source_.begin();
 	}
 
 	void Lexer::nextToken() {
+		expectationList_.clear();
+
 		// Clear the accumulator
 		accumulator_.str( String() );
 		accumulator_.clear();
@@ -90,6 +87,20 @@ namespace nati {
 			if( token_ )
 				return;
 		}
+	}
+
+	void Lexer::unexpectedTokenError() {
+		String message = "Unexpected token (" + token().str() + "); expected ";
+
+		int i = 0;
+		for( const String &exp : expectationList_ ) {
+			if( i++ )
+				message += ( ( i == int( expectationList_.size() - 1 ) ) ? " or " : ", " );
+
+			message += exp;
+		}
+
+		error( "unexpectedToken", message );
 	}
 
 }

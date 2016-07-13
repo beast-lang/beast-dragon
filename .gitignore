@@ -7,4 +7,6 @@ reference/main.pdf
 lib/
 .dub/
 bin/
+etc/
 reference/*.log
+include/boost/

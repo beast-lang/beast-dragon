@@ -6,6 +6,7 @@
 #include <string>
 #include <condition_variable>
 #include <vector>
+#include <unordered_map>
 
 #define __LINE_STR__ __LINE_STR2__(__LINE__)
 #define __LINE_STR2__(x) __LINE_STR3__(x)
@@ -25,6 +26,9 @@ using SharedPtr = std::shared_ptr<T>;
 
 template<typename T>
 using List = std::vector<T>;
+
+template<typename Key, typename T>
+using Map = std::unordered_map<Key, T>;
 
 /**
  * "Condition should be true, otherwise something is wrong."

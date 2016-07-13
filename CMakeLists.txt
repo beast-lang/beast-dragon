@@ -14,3 +14,4 @@ add_executable(nati ${SOURCE_FILES})
 
 # Boost doesn't compile on cygwin without this
 target_compile_definitions(nati PRIVATE _BSD_SOURCE)
+target_link_libraries(nati boost_filesystem boost_system)

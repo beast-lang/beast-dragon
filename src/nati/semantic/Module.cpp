@@ -2,7 +2,7 @@
 
 namespace nati {
 
-	Module::Module( const String &filename, const AST_ExtendedIdentifier *expectedIdentifier ) :
+	Module::Module( const String &filename, const String &expectedIdentifier ) :
 		filename_( filename ),
 		expectedIdentifier_( expectedIdentifier ) {
 
@@ -12,8 +12,8 @@ namespace nati {
 		return filename_;
 	}
 
-	const AST_ExtendedIdentifier &Module::identifier() const {
-		return *identifier_;
+	const String &Module::identifier() const {
+		return identifier_;
 	}
 
 }
