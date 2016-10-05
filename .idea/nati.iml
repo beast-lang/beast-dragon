@@ -12,12 +12,12 @@
     <orderEntry type="module-library">
       <library name="Header Search Paths">
         <CLASSES>
-          <root url="file://D:/Programy/Cygwin/lib/gcc/x86_64-pc-cygwin/5.3.0/include" />
+          <root url="file://D:/Programy/Cygwin/lib/gcc/x86_64-pc-cygwin/5.4.0/include" />
           <root url="file://D:/Programy/Cygwin/usr/include" />
           <root url="file://D:/Programy/Cygwin/usr/local/include" />
         </CLASSES>
         <SOURCES>
-          <root url="file://D:/Programy/Cygwin/lib/gcc/x86_64-pc-cygwin/5.3.0/include" />
+          <root url="file://D:/Programy/Cygwin/lib/gcc/x86_64-pc-cygwin/5.4.0/include" />
           <root url="file://D:/Programy/Cygwin/usr/include" />
           <root url="file://D:/Programy/Cygwin/usr/local/include" />
         </SOURCES>

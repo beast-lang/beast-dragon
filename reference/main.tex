@@ -40,14 +40,33 @@ Basic language classification:
 \section{Why choose NATI}
 \begin{itemize}
 	\item \textbf{Good programming practices} NATI gently pushes you into writing your code readable and understandable.
-	\item \textbf{Compile-time magic} In NATI, you can do many things much better in compile time. It has compile-time reflection, you can execute almost any function in compile time, ...
+	\item \textbf{Compile-time magic} In NATI, you can do many things much more comfortably using compile time function execution.
+	\item \textbf{Language reflection} NATI has easy ways to get information about symbols, list class members, etc.
+	\item \textbf{Modules} In NATI, you don't have to write separate header and source files and struggle with keeping them consistent.
 \end{itemize}
 
-\subsection{Why choose NATI over C++}
+\section{Inspiration}
+\paragraph{Inspiration from C++}
 \begin{itemize}
-	\item \textbf{Modules} In NATI, you don't have to write separate header and source files and struggle with keeping them synchronized.
+	\item Class system
+	\item Most of the syntax
+	\item \hyperref[userDefinedLiterals]{User-defined literals}
 \end{itemize}
 
+\paragraph{Inspiration from D}
+\begin{itemize}
+	\item Module system
+	\item Compile time function execution
+\end{itemize}
+
+\paragraph{Ideas not directly inspired by other languages}
+\begin{itemize}
+	\item Overall collaboration of compile-time function execution
+	\item Language reflection
+	\item The \hyperref[colonAccessor]{\kwd{:}} accessor
+	\item The \hyperref[constantValueParameter]{constant value function parameters}	
+	\item Decorators
+\end{itemize}
 
 \chapter{Lexical}
 In a normal code, NATI accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
@@ -68,12 +87,12 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 
 \section{Keywords} \label{keywords}
 \begin{code}
-alias, auto, break, case, class, continue, else, enum, except, finally, for, if, import, in, is, module, return, switch, this, throw, try, while
+alias, auto, break, case, class, continue, else, enum, for, if, import, in, is, module, return, switch, this, while
 \end{code}
 
 \subsection{Reserved words}
 \begin{code}
-asm, auto, blueprint, debug, decorator, delegate, do, foreach, function, generic, goto, loop, scope, singleton, template, this, with, yield
+asm, auto, blueprint, debug, decorator, delegate, do, except, finally, foreach, function, generic, goto, loop, scope, singleton, template, throw, try, with, yield
 \end{code}
 
 \section{Literals}
@@ -409,7 +428,7 @@ So for example, you can overload all unary operators at once using:
 	}
 	
 @public:
-	auto #operator( @ctime Operator op, auto$\$$ args ... )
+	auto #operator( @ctime Operator op, auto args ... )
 		if( op is :unary )
 	{
 		return referencedValue.#operator( op, args ... );
@@ -444,54 +463,130 @@ class A {
 }
 \end{code}
 
-\paragraph{TODO} The range operator, operator parameter restrictions, overload selection
+\paragraph{TODO} The range operator, operator parameter restrictions, overload selection, dollar operator
 
-\section{Symbol lookup (identifier resolution)}
-Assume following situation:
+\section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
+Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
+
+\begin{code}
+Void f() {}$\label{codeLine:overloadSets1:fDecl}$
+
+Void main() {
+	f();$\label{codeLine:overloadSets1:fCall}$	
+}
+\end{code}
+
+Here, when processing the function call on line \ref{codeLine:overloadSets1:fCall}, the compiler starts with identifier \inlineCode{f}. It constructs an overloadset which in this case only contains the function \inlineCode{f} defined on line \ref{codeLine:overloadSets1:fDecl}. Then, it sees parentheses, so it will look up for operator \inlineCode{x(args)} in the previous overloadset and put everything it has found to a new overloadset. Then, a process which selects the best matching overload is performed (will be described later in this chapter).
+
+Now let's explain that process step by step.
+
+\subsection{Full identifier resolution} \label{fullIdentifierResolution}
+When there's an expression that starts with an identifier (\gr{AtomExpr}, the \token{Identifier} alternative), a full resolution is performed for it. This is done by searching symbols with the desired identifier in various scopes. As soon as a match is found, the resolution ends, resulting all matching symbols in the currently searched set of scopes.
+
+The rules that decide which scopes will be looked for are following:
+
+\textbf{Function scopes}
+\begin{enumerate}
+	\item Current scope
+	\item Parent scope (recursive); if the current scope is a nested function (lambda) root, all parent function scopes are skipped except when the lambda does capture all outer scope variables
+\end{enumerate}
+
+\textbf{Object (class, enum, ...) scopes}
+\begin{enumerate}
+	\item Current object scope and scopes of all ancestors of the current object (whether the member is static or not is not taken into consideration in this phase). Parent scopes are not searched recursively.
+	\item Scope imports of the current object and all its ancestors (scope imports are not implemented as a language feature in the current version, however some language-defined classes use them internally) and all ancestors of all the scope imports
+	\item Parent scope (recursive)
+\end{enumerate}
+
+\textbf{Module level scopes (modules, templates)}
+\begin{enumerate}
+	\item Current scope
+	\item Parent scope (recursive)
+\end{enumerate}
+
+\begin{comment}
+\textbf{Namespace scopes}
+\begin{enumerate}
+	\item Current scope and scopes of all namespaces with the same (full) identifier in any of the modules that have been imported in the identifier resolution scope (that means also all imports derived from parent scopes).
+	\item Parent scope (recursive)
+\end{enumerate}
+\end{comment}
+
+\textbf{If no results are found, root scopes of all imported modules are searched.} If nothing is found even then, identifier resolution ends with an error.
+
+\begin{comment}
 \begin{code}
 module a;
-import b;
-	
-Int8 x;
 
-class C {
-	
-@public:
-	Int8 x;
-	
-@public:
-	Void f() {
-		// Code here
-	}
-	@final Void f(Int8 arg) {
-		// Code here	
-	}
-	
-}
+Void a() {}
+Void b() {}
 
 Void f() {
-	// Code here	
+	// First, we search in the current scope (inside the function) -> not found
+	// Then, we search in the parent scope (which is the module scope) -> found function a
+	a();
+	
+	Int32 a;
+	
+	// Now when we search in the current scope, we find variable a
+	a = 5;
 }
 
 $\moduleSep$
 module b;
-import a;
 
-Int8 x;
+Void a() {}
 
-@final class D : @public C {
+class C {
 
 @public:
-	@override Void f() {
+	Void a() {}
+	Void c() {}
+	Void f() {
 		
-	}
-	Void f(Int16 arg) {
+	}	
+	
+}
+
+class D : @public C {
+	
+@public:
+	Void c() {}
+	Void g() {
+		
 	}
 	
 }
 \end{code}
+\end{comment}
 
-\paragraph{The '\inlineCode{:ident}' accessor}
+\subsection{Scoped identifier resolution} \label{scopedIdentifierResolution}
+Scoped identifier resolution is used in \gr{P1Op}, the \kwd{.} \token{Identifier} alternative. The resolution is performed for the \token{Identifier} and in a scope the preceding \gr{AtomExpr} evaluates to.
+
+The scoped identifier resolution is similar to the full identifier resolution, except it doesn't look into parent scopes at all.
+
+\subsection{The '\inlineCode{:ident}' accessor} \label{colonAccessor}
+This language construct can only be used in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an object the parameter is expected to be type of}.
+
+\begin{code}
+enum Enum {
+	a, b, c, d
+}
+
+Void f( Enum e ) {}
+
+Void main() {
+	// Following lines are semantically identical
+	f( Enum.a );
+	f( :a );	
+}
+\end{code}
+
+This of course does not work with \kwd{auto} parameters (they are ignored in the overload resolution).
+
+\subsection{Overload resolution}
+
+
 
 \section{Variable declarations}
 \begin{grammar}
@@ -500,7 +595,7 @@ Int8 x;
 		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
 	\\
 	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{UnaryExpr} | \gr{AutoType} ) \\
-	\grDef{AutoType} \kwd{auto} [ \kwd{@} ] [ \kwd{!} ] \\
+	\grDef{AutoType} \kwd{auto} [ \kwd{?} ] [ \kwd{!} ] \\
 	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | \kwd{=} \gr{Expression} \\
 \end{grammar}
 
@@ -531,8 +626,8 @@ Int8 x;
 	Pointer arithmetics & no & yes \\ \hline
 	Can be \inlineCode{null} & yes & yes \\ \hline
 	Rebindable & yes & yes \\ \hline
-	Binding & \inlineCode{ref := val} & \inlineCode{ptr = \&val} \\
-		& or \inlineCode{ref := \&val} & \\ \hline
+	Binding & \inlineCode{ref := val} & \inlineCode{ptr = val.#ptr} \\
+		& or \inlineCode{ref := val.#ptr} & \\ \hline
 	Member access & \inlineCode{ref.mem} & \inlineCode{ptr.data.mem} \\
 
 \end{centeredRefTabular}
@@ -804,12 +899,12 @@ Generally, the \decoratorRef{ctime} decorator is related with compile time execu
 \paragraph{Axioms overview}
 \begin{itemize}
 	\item A compile-time variable's value is always known at compile time (=> cannot change during runtme).
-	\item A compile-time function is always evaluated in compile time. That implies that parameters must be known at compile time. The return type is also compile-time.
+	\item A compile-time function is always evaluated at compile time. That implies that parameters must be known at compile time. The return type is also compile-time.
 	\item Some runtime functions can be executed at compile time.
 	\item There is a difference between a compile-time function and a function executed at compile time.
 	\item A compile-time variable is implicitly castable to const runtime variable.
-	\item A compile-time class can only contain compile-time fields.
-	\item A compile-time class can ontain runtime functions, but those cannot modify class' fields (they can only be const).
+	\item A compile-time class contains compile-time variables.
+	\item A compile-time class can contain runtime functions, but those cannot modify class' fields (they can only be const).
 \end{itemize}
 
 \paragraph{Compile-time parameters}
@@ -1005,6 +1100,16 @@ T!? #new( @ctime Type T ) {
 	return malloc( T.#size ).to( T!@ );
 }
 
+auto I1 = Int8;
+auto I2 = Int16;
+auto I4 = Int32;
+auto I8 = Int64;
+auto I16 = Int128;
+
+Int8.#identifier == "Int8"
+I8.#identifier == "I8"
+I8.#name = "Int8"
+
 decorator.ctime or decorator( ctime )
 module.straw.nati.test or module( straw.nati.test )
 
@@ -1018,6 +1123,23 @@ class null {
 		return T(0);
 	}
 }
+
+class Void {}
+
+
+// X class
+class X( Int32 i ) {
+}
+
+X(5).#type == Class
+X(5).#template == X
+X.#type == ClassTemplate
+X.#identifier == "X"
+X(5).#name == "X"
+X(5).#identifier == null
+
+// Overloadsets
+I8
 \end{code}
 
 \end{document}          
