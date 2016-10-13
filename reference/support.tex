@@ -3,7 +3,6 @@
 % Grammar
 \newcounter{grammarRule}
 \NewEnviron{grammar}{
-	\hspace{0.5cm}
 	{\ttfamily \small
 	\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
 		\BODY
@@ -58,11 +57,9 @@
 } 
 \lstnewenvironment{code}{
 	\hspace{0mm}
-}{
-	\nobreak\nopagebreak
-	\begin{center}
-		\putref
-	\end{center}
+}{%
+	\nobreak\nopagebreak\centerline{\putref}
+	\vspace{3mm}
 } 
 
 \newcommand{\inlineCode}[1]{\lstinline[basicstyle=\ttfamily,language=nati,keepspaces,breakatwhitespace=true,breaklines=true]{#1}}

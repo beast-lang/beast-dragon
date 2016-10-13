@@ -31,11 +31,11 @@ NATI is an imperative, structured, modular programming language supporting OO an
 NATI is a practical tool for practical programmers. With NATI, you can write effective and readable code quite fast. Although the language itself builds on a significant abstraction, the functionality behind it is still close to HW. If you know the language, you can pretty well determine what assembly each line of your code generates.
 
 Basic language classification:
-\begin{itemize}
+\begin{compactitem}
 	\item Imperative
 	\item Classes are instances of \verb|Type| class
 	\item Statically typed
-\end{itemize}
+\end{compactitem}
 
 \section{Why choose NATI}
 \begin{itemize}
@@ -47,26 +47,26 @@ Basic language classification:
 
 \section{Inspiration}
 \paragraph{Inspiration from C++}
-\begin{itemize}
+\begin{compactitem}
 	\item Class system
 	\item Most of the syntax
 	\item \hyperref[userDefinedLiterals]{User-defined literals}
-\end{itemize}
+\end{compactitem}
 
 \paragraph{Inspiration from D}
-\begin{itemize}
+\begin{compactitem}
 	\item Module system
 	\item Compile time function execution
-\end{itemize}
+\end{compactitem}
 
 \paragraph{Ideas not directly inspired by other languages}
-\begin{itemize}
+\begin{compactitem}
 	\item Overall collaboration of compile-time function execution
 	\item Language reflection
 	\item The \hyperref[colonAccessor]{\kwd{:}} accessor
 	\item The \hyperref[constantValueParameter]{constant value function parameters}	
 	\item Decorators
-\end{itemize}
+\end{compactitem}
 
 \chapter{Lexical}
 In a normal code, NATI accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
@@ -390,6 +390,139 @@ a > b < c;
 
 When chaining comparison operators, the expressions in form \inlineCode{x == y > z} are internally rewritten to \inlineCode{(x == y) && (x > z)} (supports user overloaded operators), except the \verb|x|, \verb|y| and \verb|z| expressions are evaluated only once.
 
+\section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
+Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
+
+\begin{code}
+	Void f() {}$\label{codeLine:overloadSets1:fDecl}$
+	
+	Void main() {
+		f();$\label{codeLine:overloadSets1:fCall}$	
+	}
+\end{code}
+
+Here, when processing the function call on line \ref{codeLine:overloadSets1:fCall}, the compiler starts with identifier \inlineCode{f}. It constructs an overloadset which contains the function \inlineCode{f} defined on line \ref{codeLine:overloadSets1:fDecl}. Then, it sees parentheses, so it will look up for operator \inlineCode{x(args)} in the previous overloadset and put everything it has found to a new overloadset. Then, a process which selects the best matching overload is performed (will be described later in this chapter).
+
+Now let's explain that process step by step.
+
+\subsection{Full identifier resolution} \label{fullIdentifierResolution}
+When there's an expression that starts with an identifier (\gr{AtomExpr}, the \token{Identifier} alternative), a full resolution is performed for it. This is done by searching symbols with the desired identifier in various scopes. As soon as a match is found, the resolution ends, resulting an overloadset with all matching symbols in the currently searched set of scopes.
+
+The rules that decide which scopes will be looked for are following:
+
+\paragraph{Function scopes}
+\begin{enumerate}
+	\item Current scope
+	\item Parent scope (recursive); if the current scope is a nested function (lambda) root, all parent function scopes are skipped except when the lambda does capture all outer scope variables
+\end{enumerate}
+
+\paragraph{Object (class, enum, ...) scopes}
+\begin{enumerate}
+	\item Current object scope and scopes of all ancestors of the current object (whether the member is static or not is not taken into consideration in this phase). Parent scopes are not searched recursively.
+	\item Scope imports of the current object and all its ancestors (scope imports are not implemented as a language feature in the current version, however some language-defined classes use them internally) and all ancestors of all the scope imports
+	\item Parent scope (recursive)
+\end{enumerate}
+
+\paragraph{Module level scopes (modules, templates)}
+\begin{enumerate}
+	\item Current scope
+	\item Parent scope (recursive)
+\end{enumerate}
+
+\begin{comment}
+\textbf{Namespace scopes}
+\begin{compactenum}
+\item Current scope and scopes of all namespaces with the same (full) identifier in any of the modules that have been imported in the identifier resolution scope (that means also all imports derived from parent scopes).
+\item Parent scope (recursive)
+\end{compactenum}
+\end{comment}
+
+\textbf{If no results are found, root scopes of all imported modules are searched.} If nothing is found even then, identifier resolution ends with an error.
+
+\begin{comment}
+\begin{code}
+module a;
+
+Void a() {}
+Void b() {}
+
+Void f() {
+// First, we search in the current scope (inside the function) -> not found
+// Then, we search in the parent scope (which is the module scope) -> found function a
+a();
+
+Int32 a;
+
+// Now when we search in the current scope, we find variable a
+a = 5;
+}
+
+$\moduleSep$
+module b;
+
+Void a() {}
+
+class C {
+
+@public:
+Void a() {}
+Void c() {}
+Void f() {
+
+}	
+
+}
+
+class D : @public C {
+
+@public:
+Void c() {}
+Void g() {
+
+}
+
+}
+\end{code}
+\end{comment}
+
+\subsection{Scoped identifier resolution} \label{scopedIdentifierResolution}
+The scoped identifier resolution is similar to the full identifier resolution, except it doesn't look into parent scopes at all.
+
+\subsection{The '\inlineCode{:ident}' accessor} \label{colonAccessor}
+This language construct can only be used in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an object the parameter is expected to be type of}.
+
+\begin{code}
+	enum Enum {
+		a, b, c, d
+	}
+	
+	Void f( Enum e ) {}
+	
+	Void main() {
+		// Following lines are semantically identical
+		f( Enum.a );
+		f( :a );	
+	}
+\end{code}
+
+This of course does not work with \kwd{auto} parameters (they are ignored in the overload resolution).
+
+\subsection{Overload resolution}
+Overload resolution is performed every time the compiler needs to match arguments to a function overload. The process is performed over an overloadset where all items must accept arguments (error is shown otherwise).
+
+Note that not only functions accept arguments - for example parametric classes (similar to template classes) also accept arguments (they can however be considered to be compile-time functions returning a class as they are indistinguishable from them).
+
+Overload resolution consists of these steps:
+\begin{enumerate}
+	\item Overloads that do not match given arguments are ignored
+	\item If there are overloads that do not require any extra implicit argument casts in relation to any other overload, leave only those and ignore others
+	\item If there are any non-static overloads, ignore all static overloads
+	\item If there are any direct overloads (not using scope imports), ignore all overloads that come from scope import values
+	\item If there are any non-const overloads, ignore all const overloads
+\end{enumerate}
+
+If there's more than one overload remaining after application of the process mentioned above, the "ambiguous overloads" error occurs.
+
 \section{Operator overloading}
 
 \begin{code}
@@ -413,7 +546,7 @@ enum Operator {
 }
 \end{code}
 
-All operators can be overloaded by the programmer. This is done by overloading/implementing function:
+All operators can be overloaded. This is done by overloading/implementing function:
 \begin{code}
 auto #operator( @ctime Operator op, auto args ... );
 \end{code}
@@ -457,136 +590,13 @@ class A {
 }
 
 @final class B : @public A {
-	@public @override Void #operator( Operator.plusAssign , A@ other ) {
+	@public @override Void #operator( Operator.plusAssign, A@ other ) {
 		// code here	
 	}
 }
 \end{code}
 
 \paragraph{TODO} The range operator, operator parameter restrictions, overload selection, dollar operator
-
-\section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
-Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
-
-\begin{code}
-Void f() {}$\label{codeLine:overloadSets1:fDecl}$
-
-Void main() {
-	f();$\label{codeLine:overloadSets1:fCall}$	
-}
-\end{code}
-
-Here, when processing the function call on line \ref{codeLine:overloadSets1:fCall}, the compiler starts with identifier \inlineCode{f}. It constructs an overloadset which in this case only contains the function \inlineCode{f} defined on line \ref{codeLine:overloadSets1:fDecl}. Then, it sees parentheses, so it will look up for operator \inlineCode{x(args)} in the previous overloadset and put everything it has found to a new overloadset. Then, a process which selects the best matching overload is performed (will be described later in this chapter).
-
-Now let's explain that process step by step.
-
-\subsection{Full identifier resolution} \label{fullIdentifierResolution}
-When there's an expression that starts with an identifier (\gr{AtomExpr}, the \token{Identifier} alternative), a full resolution is performed for it. This is done by searching symbols with the desired identifier in various scopes. As soon as a match is found, the resolution ends, resulting all matching symbols in the currently searched set of scopes.
-
-The rules that decide which scopes will be looked for are following:
-
-\textbf{Function scopes}
-\begin{enumerate}
-	\item Current scope
-	\item Parent scope (recursive); if the current scope is a nested function (lambda) root, all parent function scopes are skipped except when the lambda does capture all outer scope variables
-\end{enumerate}
-
-\textbf{Object (class, enum, ...) scopes}
-\begin{enumerate}
-	\item Current object scope and scopes of all ancestors of the current object (whether the member is static or not is not taken into consideration in this phase). Parent scopes are not searched recursively.
-	\item Scope imports of the current object and all its ancestors (scope imports are not implemented as a language feature in the current version, however some language-defined classes use them internally) and all ancestors of all the scope imports
-	\item Parent scope (recursive)
-\end{enumerate}
-
-\textbf{Module level scopes (modules, templates)}
-\begin{enumerate}
-	\item Current scope
-	\item Parent scope (recursive)
-\end{enumerate}
-
-\begin{comment}
-\textbf{Namespace scopes}
-\begin{enumerate}
-	\item Current scope and scopes of all namespaces with the same (full) identifier in any of the modules that have been imported in the identifier resolution scope (that means also all imports derived from parent scopes).
-	\item Parent scope (recursive)
-\end{enumerate}
-\end{comment}
-
-\textbf{If no results are found, root scopes of all imported modules are searched.} If nothing is found even then, identifier resolution ends with an error.
-
-\begin{comment}
-\begin{code}
-module a;
-
-Void a() {}
-Void b() {}
-
-Void f() {
-	// First, we search in the current scope (inside the function) -> not found
-	// Then, we search in the parent scope (which is the module scope) -> found function a
-	a();
-	
-	Int32 a;
-	
-	// Now when we search in the current scope, we find variable a
-	a = 5;
-}
-
-$\moduleSep$
-module b;
-
-Void a() {}
-
-class C {
-
-@public:
-	Void a() {}
-	Void c() {}
-	Void f() {
-		
-	}	
-	
-}
-
-class D : @public C {
-	
-@public:
-	Void c() {}
-	Void g() {
-		
-	}
-	
-}
-\end{code}
-\end{comment}
-
-\subsection{Scoped identifier resolution} \label{scopedIdentifierResolution}
-Scoped identifier resolution is used in \gr{P1Op}, the \kwd{.} \token{Identifier} alternative. The resolution is performed for the \token{Identifier} and in a scope the preceding \gr{AtomExpr} evaluates to.
-
-The scoped identifier resolution is similar to the full identifier resolution, except it doesn't look into parent scopes at all.
-
-\subsection{The '\inlineCode{:ident}' accessor} \label{colonAccessor}
-This language construct can only be used in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an object the parameter is expected to be type of}.
-
-\begin{code}
-enum Enum {
-	a, b, c, d
-}
-
-Void f( Enum e ) {}
-
-Void main() {
-	// Following lines are semantically identical
-	f( Enum.a );
-	f( :a );	
-}
-\end{code}
-
-This of course does not work with \kwd{auto} parameters (they are ignored in the overload resolution).
-
-\subsection{Overload resolution}
-
-
 
 \section{Variable declarations}
 \begin{grammar}
@@ -792,7 +802,7 @@ class C {
 There are multiple different contexts in which decorators can be used. Most decorators can't be used in all the contexts.
 
 The contexts are following:
-\begin{itemize}
+\begin{compactitem}
 	\item Module level declaration
 	\item Variable declaration
 	\item Function declaration
@@ -801,7 +811,7 @@ The contexts are following:
 	\item Enum declaration
 	\item Control statement (\kwd{if}, \kwd{for}, \kwd{while}, ...)
 	\item Block of code (\verb|{ /* code here */ }|)
-\end{itemize}
+\end{compactitem}
 
 \begin{code}
 enum DecorationContext {
@@ -1066,7 +1076,7 @@ The decorator can not be used in any other contexts.
 \end{itemize}
 
 \chapter{Plans for the future}
-\begin{itemize}
+\begin{compactitem}
 	\item Aliased imports
 	\item Namespaces
 	\item User decorators
@@ -1079,10 +1089,10 @@ The decorator can not be used in any other contexts.
 	\item Compiler support for documentation comments?
 	\item Compiler outputs intellisense data?
 	\item Compiler caching
-\end{itemize}
+\end{compactitem}
 
 \section{Documentation to-do}
-\begin{itemize}
+\begin{compactitem}
 	\item Virtual functions, when a class is virtual
 	\item Overloading rules, identifier resolution rules -- single resolution possible rule? (exception for same modules)
 	\item \decoratorRef{noWarning(W103)}
@@ -1090,7 +1100,7 @@ The decorator can not be used in any other contexts.
 	\item \decoratorRef{notNull}
 	\item \verb|#| prefixed identifiers (rules, restrictions) + \verb|to|
 	\item \inlineCode{class X : @public @final Y}
-\end{itemize}
+\end{compactitem}
 
 \section{Random thoughts scrapbook}
 \begin{code}
