@@ -37,6 +37,9 @@ Basic language classification:
 	\item Statically typed
 \end{compactitem}
 
+\paragraph{Pronounciation}
+NATI is to be pronounced \textipa{nO:ti}, that means same as 'naughty'.
+
 \section{Why choose NATI}
 \begin{itemize}
 	\item \textbf{Good programming practices} NATI gently pushes you into writing your code readable and understandable.
@@ -48,7 +51,7 @@ Basic language classification:
 \section{Inspiration}
 \paragraph{Inspiration from C++}
 \begin{compactitem}
-	\item Class system
+	\item Class system, multiple inheritance
 	\item Most of the syntax
 	\item \hyperref[userDefinedLiterals]{User-defined literals}
 \end{compactitem}
@@ -204,8 +207,8 @@ void main() {
 	
 	\\
 	
-	\grDef{ParentCommaExpr} \kwd{(} [ \gr{ParentCommaExprItem} \{ \kwd{,} \gr{ParentCommaExprItem} \} ] \kwd{)} \\
-	\grDef{ParentCommaExprItem} ( \gr{InexprVarDecl} | \gr{Expression} ) [ \kwd{...} ] \\
+	\grDef{ParentCommaExpr} \kwd{(} [ \gr{PrntCommaExprItem} \{ \kwd{,} \gr{PrntCommaExprItem} \} [ \kwd{,} ] ] \kwd{)} \\
+	\grDef{PrntCommaExprItem} ( \gr{InexprVarDecl} | \gr{Expression} ) [ \kwd{...} ] \\
 	
 \end{grammar}
 
@@ -254,14 +257,15 @@ void main() {
 	\grDef{AtomExpr} [ \kwd{:} ] \token{Identifier} \\
 		\grAltLn \gr{Literal} \\
 		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
+		\grAltLn \kwd{[} [ \gr{ArrayLiteralExpr} \{ \kwd{,} \gr{ArrayLiteralExpr} \} [ \kwd{,} ] ] \kwd{]} \\
 	
-	\\
+	\grDef{ArrayLiteralExpr} \gr{RangeExpr} [ \kwd{=>} \gr{RangeExpr} ] \\
 	
 	\grDef{AssignOpOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
 		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
 	
 	\grDef{P1Op} \gr{ParentCommaExpr} \\
-		\grAltLn \kwd{[} [ \gr{RangeExpr} \{ \kwd{,} \gr{RangeExpr} ] \kwd{]} \\
+		\grAltLn \kwd{[} [ \gr{RangeExpr} \{ \kwd{,} \gr{RangeExpr} \} [ \kwd{,} ] ] \kwd{]} \\
 		\grAltLn \kwd{.} \token{Identifier} \\
 \end{grammar}
 
@@ -285,74 +289,74 @@ void main() {
 		& \verb|x++| & \verb|suffInc| & Suffix increment & Cannot be chained \\
 		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
 		\cline{2-5}
-		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
-		& \verb|x?| & \verb|suffRef| & Reference type & \\
+		& \verb|x!| & (not overloadable) & Mutable type & Left to right \\
+		& \verb|x?| & (not overloadable) & Reference type & \\
 		\cline{2-5}
-		& \verb|$| & \verb|dollar| & Array size & \\
+		& \verb|$| & \verb|dollar| & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
 	\hline
 	
 	3
-		& \verb|x * y| & \verb|binMult| & Multiplication & Left to right \\
-		& \verb|x / y| & \verb|binDiv| & Division \\
+		& \verb|x * y| & \verb|binMult(R)| & Multiplication & Left to right \\
+		& \verb|x / y| & \verb|binDiv(R)| & Division \\
 		\cline{2-5}
-		& \verb|x % y| & \verb|binMod| & Modulo & Cannot be chained \\
+		& \verb|x % y| & \verb|binMod(R)| & Modulo & Cannot be chained \\
 	\hline
 	
 	4
-		& \verb|x + y| & \verb|binPlus| & Addition & Left to right \\
-		& \verb|x - y| & \verb|binMinus| & Subtraction & \\
+		& \verb|x + y| & \verb|binPlus(R)| & Addition & Left to right \\
+		& \verb|x - y| & \verb|binMinus(R)| & Subtraction & \\
 	\hline
 	
 	\multirow{4}{1.5cm}{\centering 5\\(cannot use P3,P4)}
-		& \verb|x & y| & \verb|binAnd| & Bitwise AND & Left to right, \\
-		& \verb$x | y$ & \verb|binOr| & Bitwise OR & only the same \\
-		& \verb|x ^ y| & \verb|binXor| & Bitwise XOR / power & \\
+		& \verb|x & y| & \verb|binAnd(R)| & Bitwise AND & Left to right, \\
+		& \verb$x | y$ & \verb|binOr(R)| & Bitwise OR & only the same \\
+		& \verb|x ^ y| & \verb|binXor(R)| & Bitwise XOR / power & \\
 		\cline{2-5}
-		& \verb|x >> y| & \verb|binRSft| & Bitwise right shift & Cannot be chained \\
-		& \verb|x << y| & \verb|binLSft| & Bitwise left shift & \\
-		& \verb|x >>> y| & \verb|binRRot| & Bitwise right circular shift & \\
-		& \verb|x <<< y| & \verb|binLRot| & Bitwise left circular shift & \\
+		& \verb|x >> y| & \verb|binRSft(R)| & Bitwise right shift & Cannot be chained \\
+		& \verb|x << y| & \verb|binLSft(R)| & Bitwise left shift & \\
+		& \verb|x >>> y| & \verb|binRRot(R)| & Bitwise right circular shift & \\
+		& \verb|x <<< y| & \verb|binLRot(R)| & Bitwise left circular shift & \\
 	\hline
 	
 	6
-		& \verb|x is y| & \verb|binIs| & Is (similar to equal to) & Cannot be chained \\
-		& \verb|x !is y| & \verb|binIsNot| & Is not & \\
-		& \verb|x in y| & \verb|binIn| & In & \\
-		& \verb|x !in y| & \verb|binNotIn| & Not in & \\
-		& \verb|x != y| & \verb|binNeq| & Not equal to & \\
+		& \verb|x is y| & \verb|binIs(R)| & Is (similar to equal to) & Cannot be chained \\
+		& \verb|x !is y| & \verb|binIsNot(R)| & Is not & \\
+		& \verb|x in y| & \verb|binIn(R)| & In & \\
+		& \verb|x !in y| & \verb|binNotIn(R)| & Not in & \\
+		& \verb|x != y| & \verb|binNeq(R)| & Not equal to & \\
 		\cline{2-5}
-		& \verb|x < y| & \verb|binLess| & Less than & Left to right, \\
-		& \verb|x <= y| & \verb|binLeq| & Less than or equal to & specific chaining rules \\
-		& \verb|x == y| & \verb|binEq| & Equal to & \\
-		& \verb|x >= y| & \verb|binGeq| & Greater than or equal to & \\
-		& \verb|x > y| & \verb|binGrt| & Less than & \\
+		& \verb|x < y| & \verb|binLess(R)| & Less than & Left to right, \\
+		& \verb|x <= y| & \verb|binLeq(R)| & Less than or equal to & specific chaining rules \\
+		& \verb|x == y| & \verb|binEq(R)| & Equal to & \\
+		& \verb|x >= y| & \verb|binGeq(R)| & Greater than or equal to & \\
+		& \verb|x > y| & \verb|binGrt(R)| & Less than & \\
 	\hline
 	
 	7
-		& \verb|x && y| & \verb|binLogAnd| & Logical AND & Left to right, \\
-		& \verb$x || y$ & \verb|binLogOr| & Logical OR & only the same \\
+		& \verb|x && y| & \verb|binLogAnd(R)| & Logical AND & Left to right, \\
+		& \verb$x || y$ & \verb|binLogOr(R)| & Logical OR & only the same \\
 	\hline
 	
 	8
-		& \verb|x .. y| & \verb|range| & Range separator & Cannot be chained \\
+		& \verb|x .. y| & (not overloadable) & Range & Cannot be chained \\
 	\hline
 	
 	9
-		& \verb|x = y| & \verb|assign| & Assignment & Right to left, \\
-		& \verb|x := y| & \verb|refAssign| & Reference assignment & only the same \\
+		& \verb|x = y| & \verb|assign(R)| & Assignment & Right to left, \\
+		& \verb|x := y| & \verb|refAssign(R)| & Reference assignment & only the same \\
 		\cline{2-5}
-		& \verb|x += y| & \verb|plusAssign| & Various assignments & Cannot be chained \\
-		& \verb|x -= y| & \verb|minusAssign| && \\
-		& \verb|x *= y| & \verb|multAssign| && \\
-		& \verb|x /= y| & \verb|divAssign| && \\
-		& \verb|x %= y| & \verb|modAssign| && \\
-		& \verb|x &= y| & \verb|andAssign| && \\
-		& \verb$x |= y$ & \verb|orAssign| && \\
-		& \verb|x ^= y| & \verb|xorAssign| && \\
-		& \verb|x <<= y| & \verb|lSftAssign| && \\
-		& \verb|x >>= y| & \verb|rSftAssign| && \\
-		& \verb|x <<<= y| & \verb|lRotAssign| && \\
-		& \verb|x >>>= y| & \verb|rRotAssign| && \\
+		& \verb|x += y| & \verb|plusAssign(R)| & Various assignments & Cannot be chained \\
+		& \verb|x -= y| & \verb|minusAssign(R)| && \\
+		& \verb|x *= y| & \verb|multAssign(R)| && \\
+		& \verb|x /= y| & \verb|divAssign(R)| && \\
+		& \verb|x %= y| & \verb|modAssign(R)| && \\
+		& \verb|x &= y| & \verb|andAssign(R)| && \\
+		& \verb$x |= y$ & \verb|orAssign(R)| && \\
+		& \verb|x ^= y| & \verb|xorAssign(R)| && \\
+		& \verb|x <<= y| & \verb|lSftAssign(R)| && \\
+		& \verb|x >>= y| & \verb|rSftAssign(R)| && \\
+		& \verb|x <<<= y| & \verb|lRotAssign(R)| && \\
+		& \verb|x >>>= y| & \verb|rRotAssign(R)| && \\
 	\hline
 	
 	10
@@ -437,7 +441,7 @@ The rules that decide which scopes will be looked for are following:
 \end{compactenum}
 \end{comment}
 
-\textbf{If no results are found, root scopes of all imported modules are searched.} If nothing is found even then, identifier resolution ends with an error.
+\textbf{If no results are found, root scopes of all imported modules are searched.} If nothing is found even then, identifier resolution ends with an empty result (or error, depending on use case).
 
 \begin{comment}
 \begin{code}
@@ -523,6 +527,9 @@ Overload resolution consists of these steps:
 
 If there's more than one overload remaining after application of the process mentioned above, the "ambiguous overloads" error occurs.
 
+\subsection{Resolution application on expressions}
+Application of the resolutions will be described in the next chapter for each operator.
+
 \section{Operator overloading}
 
 \begin{code}
@@ -541,6 +548,7 @@ enum Operator {
 		unarySuff = suffNot | suffMult | suffAnd /* etc */,
 		
 		binary = binMult | binDiv | binMod /* etc */,
+		binaryRight = binMultR | binDivR | binModR /* etc */,
 		anyAssign = assign | refAssign | plusAssign /* etc */
 	}	
 }
@@ -583,7 +591,7 @@ Int16 #operator( Operator("x++") ) {
 }
 \end{code}
 
-You can also make operator overload implementations virtual:
+You can also make operator overload implementations virtual (if they don't contain any ctime variables):
 \begin{code}
 class A {
 	@public @abstract Void #operator( Operator.plusAssign, A@ other );
@@ -596,7 +604,171 @@ class A {
 }
 \end{code}
 
-\paragraph{TODO} The range operator, operator parameter restrictions, overload selection, dollar operator
+\subsection{The '\inlineCode{x.ident}' (dispatch) operator}
+Consider expression
+\begin{code}
+x.ident
+\end{code}
+
+Here, \inlineCode{x} is the left operand and the \inlineCode{ident} is the right operand.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the left operand overloadset contains only one record (or error).
+	\item Perform a scoped identifier resolution for the left operand scope, looking for the \inlineCode{ident}; return the results if any.
+	\item If the resolution resulted an empty overloadset, try calling (left operand scope identifier resolution + overload resolution + call)\\ \inlineCode{instance.#operator( Operator.dispatch, "ident" )}
+	\item If it fails, show an error
+\end{enumerate}
+
+\paragraph{Consequences}
+The \inlineCode{x.ident} operator can result with multiple overloads. You can implement a dispatch function.
+
+\begin{code}
+class Vector( UInt16 dimensions ) {
+
+@public:
+	Float32! data[ dimensions ];
+	
+	(...)
+	
+	auto #operator( Operator.dispatch, @ctime String str )
+		if( str.allMatch( x => "xyz".contains( x ) ) )
+	{
+		@ctime Offset[ Char ] translationArray = [
+			'x' => 0,
+			'y' => 1,
+			'z' => 2
+		];
+		
+		Vector( str.length )	result;
+		foreach( Offset i, Char ch; str )
+			result.data[ i ] = data[ translationArray[ ch ] ];
+			
+		return result;
+	}
+			
+
+}
+
+Void main() {
+	Vector( 3 ) v1( 1, 2, 3 );
+	auto v2 = v1.xxx; // v2 = ( 1, 1, 1 )
+	auto v3 = v1.zyx; // v3 = ( 3, 2, 1 )
+}
+\end{code}
+
+\paragraph{TODO} Exceptions used for overload filtering
+
+\subsection{The '\inlineCode{x(args)}' (funcCall) operator}
+Consider expression
+\begin{code}
+a.f( arg1, arg2 )
+\end{code}
+
+Here, \inlineCode{a.f} is the left operand and \inlineCode{arg1} and \inlineCode{arg2} are the parameter operands.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item \textbf{Do not} check if the left operand overloadset contains only one record. This means that the \inlineCode{x.f} expression can have more overloads in the overloadset. \inlineCode{funcCall} is the \textbf{only operator that allows this,} any other operator requires its operands to have single overload.
+	\item For each overload in the right operand overloadset, perform scope identifier resolution for \inlineCode{#operator}, and join all the results into one overloadset.
+	\item For the overloadset from the previous step, perform an overload resolution with parameters \\\inlineCode{( Operator.funcCall, arg1, arg2 )}.
+	\item Call the resulting overload (or error).
+\end{enumerate}
+
+\paragraph{Consequences}
+Behavior described above makes the overloading work. \\The \inlineCode{func.#operator( Operator.funcCall, args )} function is equivalent to the function \inlineCode{func}.
+
+There are some corner cases whose behavior might be confusing for some people:
+\begin{code}
+class C {
+	@public Void #operator( Operator.funcCall, Int8 x ) { /* ... */	}
+	@public Void #operator( Operator.funcCall, String x ) { /* ... */	}
+}
+class D {
+	@public Void #operator( Operator.funcCall, String x ) { /* ... */	}
+}
+
+C a;
+D a;
+
+Void main() {
+	a( 8 ); // This code is actually okay; Resolution of 'a' returns two overloads, which the operator 'x(args)' can accept and it chooses the right function overload.
+	a( "asd" ); // Ambiguous; could either mean C( "asd" ) or D( "asd" )
+}
+\end{code}
+
+\paragraph{Inline variable declarations}
+You can use variable declaration as a parameter. The declared variable is valid from the point declaration to end of current scope.
+\begin{code}
+{
+	JsonDocument doc = JSON.parse( stringData, Bool isOkay );
+	if( !isOkay )
+		throw;
+}
+\end{code}
+
+\paragraph{The '\inlineCode{x ...}' operator} is used for 'expading' a value across multiple parameter slots. It does so using standard iterating process performed at ctime.
+\begin{code}
+Void f( Int32 a, Int32 b, Int32 c ) { /* ... */ }
+Void g( String x, Int32 a ) { /* ... */ }
+
+Void main() {
+	f( [ 1, 2, 3 ] ... ); // Valid, the array is iterated at compile time and each value is passed as a separate parameter
+	g( tuple( "5", 12 ) ... ); // Valid
+}
+\end{code}
+
+\paragraph{TODO} The \inlineCode{...} 'operator'
+
+\subsection{The '\inlineCode{x[args]}' (brackets) operator}
+Consider expression
+\begin{code}
+	x[ arg1, arg2 ]
+\end{code}
+
+Here, the \inlineCode{x} is the left operand and \inlineCode{arg1} and \inlineCode{arg2} are the parameters.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the left operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#operator( Operator.brackets, arg1, arg2 )} (or error).
+\end{enumerate}
+
+\paragraph{The dollar operator}
+In the bracket parameters, you can use the \inlineCode{\$} operator. It doesn't need any operands. It translates to \inlineCode{x.#operator( Operator.dollar, Offset paramId )} where \inlineCode{paramId} is the index of the parameter the dollar operator was used in (starting from 0).
+
+\subsection{Unary operators}
+Consider expression
+\begin{code}
+	++x
+\end{code}
+
+Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#operator( op )} (or error).
+\end{enumerate}
+
+\subsection{Binary (and assign) operators}
+Consider expression
+\begin{code}
+	x + y
+\end{code}
+
+Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operand and \inlineCode{+} is the operator.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#operator( op, y )}.
+	\item If previous step did not found any matching overload, resolve and call \inlineCode{y.#operator( opR, x )} (or error).
+\end{enumerate}
+
+Every binary operator has two records in the \inlineCode{Operator} enum -- one that ends with the \inlineCode{R} and one that does not. The \inlineCode{R} here means right. For the expression shown above, the compiler would call \inlineCode{x.#operator( Operator.binPlus, y )}, eventually \inlineCode{y.#operator( Operator.binPlusR, x )}.
+
+\paragraph{TODO} The range operator, operator parameter restrictions, overload selection, dollar operator, filtering overloads
 
 \section{Variable declarations}
 \begin{grammar}
@@ -1100,6 +1272,7 @@ The decorator can not be used in any other contexts.
 	\item \decoratorRef{notNull}
 	\item \verb|#| prefixed identifiers (rules, restrictions) + \verb|to|
 	\item \inlineCode{class X : @public @final Y}
+	\item Array literals
 \end{compactitem}
 
 \section{Random thoughts scrapbook}
