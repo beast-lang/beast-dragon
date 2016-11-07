@@ -94,8 +94,15 @@
 \usepackage{setspace}
 \usepackage{rotating}
 \usepackage{longtable}
-\usepackage{ltablex}
+\usepackage{ltablex}\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{adjustbox}
+
 \newcolumntype{P}[1]{>{\centering}p{#1}}
+
+\newcommand{\rotableheader}[1]{\rotatebox{90}{\bf #1}}
 
 % Fix for - not working properly in cline
 \usepackage{etoolbox}

@@ -1,8 +1,5 @@
 % !TeX spellcheck = en_US
 
-%TODO remove ternary operator
-%TODO ref ? symbol
-
 \include{header}
 \include{mainpage}
 \include{support}
@@ -90,7 +87,7 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 
 \section{Keywords} \label{keywords}
 \begin{code}
-alias, auto, break, case, class, continue, else, enum, for, if, import, in, is, module, return, switch, this, while
+alias, auto, break, case, class, continue, delete, else, enum, for, if, import, in, is, module, new, return, switch, this, while
 \end{code}
 
 \subsection{Reserved words}
@@ -203,6 +200,8 @@ void main() {
 \chapter{Expressions}
 \begin{grammar}
 	\grDef{Expression} \gr{AssignExpr} \\
+		\grAltLn \token{Identifier} \kwd{->} \gr{AssignExpr} \\
+		
 	\grDef{CommaExpression} \gr{Expression} \{ \kwd{,} \gr{Expression} \} \\
 	
 	\\
@@ -216,6 +215,7 @@ void main() {
 \begin{grammar}	
 	\grDef{AssignExpr} \gr{RangeExpr} \\
 		\grAltLn \gr{RangeExpr} \gr{AssignOpOp} \gr{RangeExpr} \\
+		\grAltLn \gr{RangeExpr} \kwd{=>} \gr{RangeExpr} \\
 		\grAltLn \gr{RangeExpr} \{ \kwd{=} \gr{RangeExpr} \}+ \\
 		\grAltLn \gr{RangeExpr} \{ \kwd{:=} \gr{RangeExpr} \}+ \\
 	
@@ -289,8 +289,8 @@ void main() {
 		& \verb|x++| & \verb|suffInc| & Suffix increment & Cannot be chained \\
 		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
 		\cline{2-5}
-		& \verb|x!| & (not overloadable) & Mutable type & Left to right \\
-		& \verb|x?| & (not overloadable) & Reference type & \\
+		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
+		& \verb|x?| & \verb|suffRef| & Reference type & \\
 		\cline{2-5}
 		& \verb|$| & \verb|dollar| & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
 	\hline
@@ -357,6 +357,8 @@ void main() {
 		& \verb|x >>= y| & \verb|rSftAssign(R)| && \\
 		& \verb|x <<<= y| & \verb|lRotAssign(R)| && \\
 		& \verb|x >>>= y| & \verb|rRotAssign(R)| && \\
+		\cline{2-5}
+		& \verb|x => y| & (not overloadable) & Association & Cannot be chained \\
 	\hline
 	
 	10
@@ -394,6 +396,9 @@ a > b < c;
 
 When chaining comparison operators, the expressions in form \inlineCode{x == y > z} are internally rewritten to \inlineCode{(x == y) && (x > z)} (supports user overloaded operators), except the \verb|x|, \verb|y| and \verb|z| expressions are evaluated only once.
 
+\paragraph{Evaluation order}
+Operands are evaluated left to right, if not specified otherwise.
+
 \section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
 Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
 
@@ -421,6 +426,8 @@ The rules that decide which scopes will be looked for are following:
 \end{enumerate}
 
 \paragraph{Object (class, enum, ...) scopes}
+Please note that object's dynamic and static fields are in separate scopes (depends if you're accessing an instance or an object). You can somewhat mix them using \decoratorRef{dynamicAccess}.
+
 \begin{enumerate}
 	\item Current object scope and scopes of all ancestors of the current object (whether the member is static or not is not taken into consideration in this phase). Parent scopes are not searched recursively.
 	\item Scope imports of the current object and all its ancestors (scope imports are not implemented as a language feature in the current version, however some language-defined classes use them internally) and all ancestors of all the scope imports
@@ -519,6 +526,7 @@ Note that not only functions accept arguments - for example parametric classes (
 Overload resolution consists of these steps:
 \begin{enumerate}
 	\item Overloads that do not match given arguments are ignored
+	\item If there are any non-compiler-generated overloads, ignore all compiler-generated overloads (implicit constructors etc)
 	\item If there are overloads that do not require any extra implicit argument casts in relation to any other overload, leave only those and ignore others
 	\item If there are any non-static overloads, ignore all static overloads
 	\item If there are any direct overloads (not using scope imports), ignore all overloads that come from scope import values
@@ -531,7 +539,6 @@ If there's more than one overload remaining after application of the process men
 Application of the resolutions will be described in the next chapter for each operator.
 
 \section{Operator overloading}
-
 \begin{code}
 enum Operator {
 	funcCall,
@@ -634,14 +641,14 @@ class Vector( UInt16 dimensions ) {
 	auto #operator( Operator.dispatch, @ctime String str )
 		if( str.allMatch( x => "xyz".contains( x ) ) )
 	{
-		@ctime Offset[ Char ] translationArray = [
+		@ctime Index[ Char ] translationArray = [
 			'x' => 0,
 			'y' => 1,
 			'z' => 2
 		];
 		
 		Vector( str.length )	result;
-		foreach( Offset i, Char ch; str )
+		foreach( Index i, Char ch; str )
 			result.data[ i ] = data[ translationArray[ ch ] ];
 			
 		return result;
@@ -668,34 +675,22 @@ a.f( arg1, arg2 )
 Here, \inlineCode{a.f} is the left operand and \inlineCode{arg1} and \inlineCode{arg2} are the parameter operands.
 
 \paragraph{Behavior}
+Behavior of this operator varies on the properties of the overloadset.
+
+If the overload set contains only functions:
 \begin{enumerate}
-	\item \textbf{Do not} check if the left operand overloadset contains only one record. This means that the \inlineCode{x.f} expression can have more overloads in the overloadset. \inlineCode{funcCall} is the \textbf{only operator that allows this,} any other operator requires its operands to have single overload.
-	\item For each overload in the right operand overloadset, perform scope identifier resolution for \inlineCode{#operator}, and join all the results into one overloadset.
-	\item For the overloadset from the previous step, perform an overload resolution with parameters \\\inlineCode{( Operator.funcCall, arg1, arg2 )}.
+	\item Perform an overload resolution with parameters \inlineCode{( arg1, arg2 )}.
 	\item Call the resulting overload (or error).
 \end{enumerate}
 
+If not:
+\begin{enumerate}
+	\item Check if the left operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{a.f.#operator( Operator.funcCall, arg1, arg2 )}.
+\end{enumerate}
+
 \paragraph{Consequences}
-Behavior described above makes the overloading work. \\The \inlineCode{func.#operator( Operator.funcCall, args )} function is equivalent to the function \inlineCode{func}.
-
-There are some corner cases whose behavior might be confusing for some people:
-\begin{code}
-class C {
-	@public Void #operator( Operator.funcCall, Int8 x ) { /* ... */	}
-	@public Void #operator( Operator.funcCall, String x ) { /* ... */	}
-}
-class D {
-	@public Void #operator( Operator.funcCall, String x ) { /* ... */	}
-}
-
-C a;
-D a;
-
-Void main() {
-	a( 8 ); // This code is actually okay; Resolution of 'a' returns two overloads, which the operator 'x(args)' can accept and it chooses the right function overload.
-	a( "asd" ); // Ambiguous; could either mean C( "asd" ) or D( "asd" )
-}
-\end{code}
+Behavior described above makes the function overloading work.
 
 \paragraph{Inline variable declarations}
 You can use variable declaration as a parameter. The declared variable is valid from the point declaration to end of current scope.
@@ -707,7 +702,7 @@ You can use variable declaration as a parameter. The declared variable is valid 
 }
 \end{code}
 
-\paragraph{The '\inlineCode{x ...}' operator} is used for 'expading' a value across multiple parameter slots. It does so using standard iterating process performed at ctime.
+\paragraph{The '\inlineCode{x ...}' operator} is used for 'expading' a value across multiple parameter slots. It does so using \hyperref[iterators]{standard iterating process} performed at ctime.
 \begin{code}
 Void f( Int32 a, Int32 b, Int32 c ) { /* ... */ }
 Void g( String x, Int32 a ) { /* ... */ }
@@ -717,8 +712,6 @@ Void main() {
 	g( tuple( "5", 12 ) ... ); // Valid
 }
 \end{code}
-
-\paragraph{TODO} The \inlineCode{...} 'operator'
 
 \subsection{The '\inlineCode{x[args]}' (brackets) operator}
 Consider expression
@@ -734,8 +727,10 @@ Here, the \inlineCode{x} is the left operand and \inlineCode{arg1} and \inlineCo
 	\item Resolve and call \inlineCode{x.#operator( Operator.brackets, arg1, arg2 )} (or error).
 \end{enumerate}
 
-\paragraph{The dollar operator}
-In the bracket parameters, you can use the \inlineCode{\$} operator. It doesn't need any operands. It translates to \inlineCode{x.#operator( Operator.dollar, Offset paramId )} where \inlineCode{paramId} is the index of the parameter the dollar operator was used in (starting from 0).
+\subsection{The '\inlineCode{\$}' (dollar) operator}
+In the bracket parameters, you can use the \inlineCode{\$} operator.
+
+It doesn't take any operands and translates to \inlineCode{x.#operator( Operator.dollar, Index paramId )} where \inlineCode{paramId} is the index of the parameter the dollar operator was used in (starting from 0).
 
 \subsection{Unary operators}
 Consider expression
@@ -768,7 +763,11 @@ Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operan
 
 Every binary operator has two records in the \inlineCode{Operator} enum -- one that ends with the \inlineCode{R} and one that does not. The \inlineCode{R} here means right. For the expression shown above, the compiler would call \inlineCode{x.#operator( Operator.binPlus, y )}, eventually \inlineCode{y.#operator( Operator.binPlusR, x )}.
 
-\paragraph{TODO} The range operator, operator parameter restrictions, overload selection, dollar operator, filtering overloads
+\subsection{The '\inlineCode{x .. y}' (range) operator}
+This operator is almost equivalent to \inlineCode{Range( x.#type )( x, y )}, except it infers the Range type from expected parameter type if possible.
+
+\subsection{The '\inlineCode{x => y}' (association) operator}
+This operator is almost equivalent to \inlineCode{Association( x.#type, y.#type )( x, y )}, except it infers the Association types from expected parameter type if possible.
 
 \section{Variable declarations}
 \begin{grammar}
@@ -973,8 +972,11 @@ class C {
 \subsection{Decoration contexts} \label{decorationContexts}
 There are multiple different contexts in which decorators can be used. Most decorators can't be used in all the contexts.
 
+%TODO change
+
 The contexts are following:
 \begin{compactitem}
+	\item Import attributes
 	\item Module level declaration
 	\item Variable declaration
 	\item Function declaration
@@ -1205,7 +1207,7 @@ In the \decorationContextRef{parameterDeclaration} context, the parameter is mad
 @public:
 	// You may ask, that the hell is "T!?!" ?! Don't be scared, T! means a mutable type T, T!? means non-mutable reference to mutable type and T!?! means mutable reference to mutable type (mutable reference == you can change where the reference points to using the ':=' operator)
 	T!?! #operator!( Operator("x[args]"), @autoCtime Key key ) {
-		Offset hash = key.#hash() % tableSize_;	
+		Index hash = key.#hash() % tableSize_;	
 		
 		// Locating the record here 
 	}
@@ -1266,7 +1268,6 @@ The decorator can not be used in any other contexts.
 \section{Documentation to-do}
 \begin{compactitem}
 	\item Virtual functions, when a class is virtual
-	\item Overloading rules, identifier resolution rules -- single resolution possible rule? (exception for same modules)
 	\item \decoratorRef{noWarning(W103)}
 	\item \decoratorRef{label} (for break, continue nested)
 	\item \decoratorRef{notNull}
@@ -1324,5 +1325,17 @@ X(5).#identifier == null
 // Overloadsets
 I8
 \end{code}
+
+\subsection{Possible lists}
+
+\begin{centeredRefTabular}{l | P{5cm} || c || c | c || c | c | c || c | c}
+	\textbf{List type} & \textbf{Allocation method} & \rotableheader{Reasonable item count} & \rotableheader{FIFO} & \rotableheader{LIFO} & \rotableheader{Index access} & \rotableheader{Fast insert} & \rotableheader{Fast delete} & \rotableheader{Constant item address} & \rotableheader{Keeps order} \\ \hline \hline
+	Array & $2^n$ & 1k & & * & * & & & & * \\ \hline
+	Lazy array (swap delete) & $2^n$ & 10k & & & & * & * & & \\ \hline
+	Linked list & $n$ or $2^n$ & $\infty$ & * & * & & * & * & * & * \\ \hline
+	Tree & $n$ or $2^n$ & $\infty$ & * & * & & * & * & * & * \\ \hline
+\end{centeredRefTabular}
+
+\paragraph{Container names} container, array, list, collection, tree, table, hash, associativeXX, set
 
 \end{document}          
