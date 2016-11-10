@@ -1,0 +1,8 @@
+- Zdůvodnit a rozepsat věci, které jsou jinak oproti normálním jazykům
+- Přidat klíčové slovo mutable?
+- Prvky moderních jazyků - zmínit v ISP (i když nebudou v programu)
+- Nástroje pro tvorbu parserů stačí na pár odstavců
+- ISP zhruba 10 - 15 stran
+- Psát to jako pro kolegu, který by v mé práci měl pokračovat
+- Soustředit se na dokumentaci @ctime funkce a funkce za doby kompilace
+- Přidat nějakou literaturu - odkazy

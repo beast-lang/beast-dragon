@@ -92,7 +92,7 @@ alias, auto, break, case, class, continue, delete, else, enum, for, if, import, 
 
 \subsection{Reserved words}
 \begin{code}
-asm, auto, blueprint, debug, decorator, delegate, do, except, finally, foreach, function, generic, goto, loop, scope, singleton, template, throw, try, with, yield
+asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, except, finally, foreach, function, generic, goto, loop, scope, singleton, template, throw, try, with, yield
 \end{code}
 
 \section{Literals}
@@ -207,7 +207,7 @@ void main() {
 	\\
 	
 	\grDef{ParentCommaExpr} \kwd{(} [ \gr{PrntCommaExprItem} \{ \kwd{,} \gr{PrntCommaExprItem} \} [ \kwd{,} ] ] \kwd{)} \\
-	\grDef{PrntCommaExprItem} ( \gr{InexprVarDecl} | \gr{Expression} ) [ \kwd{...} ] \\
+	\grDef{PrntCommaExprItem} \{ \gr{Decoration} \} \gr{Expression} [ \kwd{...} ] \\
 	
 \end{grammar}
 
@@ -240,9 +240,12 @@ void main() {
 	\grDef{SumExpr} \gr{MultExpr} \\
 		\grAltLn \gr{MultExpr} \{ ( \kwd{+} | \kwd{-} ) \gr{MultExpr} \}+ \\
 	
-	\grDef{MultExpr} \gr{UnaryExpr} \\
-		\grAltLn \gr{UnaryExpr} \{ ( \kwd{*} | \kwd{/} ) \gr{UnaryExpr} \}+ \\
-		\grAltLn \gr{UnaryExpr} \kwd{\%} \gr{UnaryExpr} \\
+	\grDef{MultExpr} \gr{VarDeclExpr} \\
+		\grAltLn \gr{VarDeclExpr} \{ ( \kwd{*} | \kwd{/} ) \gr{VarDeclExpr} \}+ \\
+		\grAltLn \gr{VarDeclExpr} \kwd{\%} \gr{VarDeclExpr} \\
+		
+	\grDef{VarDeclExpr} \gr{UnaryExpr} \\
+		\grAltLn \gr{UnaryExpr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
 	
 	\grDef{UnaryExpr} \gr{P1Expr} \\
 		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
@@ -265,7 +268,7 @@ void main() {
 		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
 	
 	\grDef{P1Op} \gr{ParentCommaExpr} \\
-		\grAltLn \kwd{[} [ \gr{RangeExpr} \{ \kwd{,} \gr{RangeExpr} \} [ \kwd{,} ] ] \kwd{]} \\
+		\grAltLn \kwd{[} [ \gr{Expression} \{ \kwd{,} \gr{Expression} \} [ \kwd{,} ] ] \kwd{]} \\
 		\grAltLn \kwd{.} \token{Identifier} \\
 \end{grammar}
 
@@ -296,18 +299,23 @@ void main() {
 	\hline
 	
 	3
+		& \verb|x ident( args )| & (not overloadable) & In-expression variable declaration & Cannot be chained \\
+		
+	\hline
+	
+	4
 		& \verb|x * y| & \verb|binMult(R)| & Multiplication & Left to right \\
 		& \verb|x / y| & \verb|binDiv(R)| & Division \\
 		\cline{2-5}
 		& \verb|x % y| & \verb|binMod(R)| & Modulo & Cannot be chained \\
 	\hline
 	
-	4
+	5
 		& \verb|x + y| & \verb|binPlus(R)| & Addition & Left to right \\
 		& \verb|x - y| & \verb|binMinus(R)| & Subtraction & \\
 	\hline
 	
-	\multirow{4}{1.5cm}{\centering 5\\(cannot use P3,P4)}
+	\multirow{4}{1.5cm}{\centering 6\\(cannot use P3,P4)}
 		& \verb|x & y| & \verb|binAnd(R)| & Bitwise AND & Left to right, \\
 		& \verb$x | y$ & \verb|binOr(R)| & Bitwise OR & only the same \\
 		& \verb|x ^ y| & \verb|binXor(R)| & Bitwise XOR / power & \\
@@ -318,7 +326,7 @@ void main() {
 		& \verb|x <<< y| & \verb|binLRot(R)| & Bitwise left circular shift & \\
 	\hline
 	
-	6
+	7
 		& \verb|x is y| & \verb|binIs(R)| & Is (similar to equal to) & Cannot be chained \\
 		& \verb|x !is y| & \verb|binIsNot(R)| & Is not & \\
 		& \verb|x in y| & \verb|binIn(R)| & In & \\
@@ -332,16 +340,16 @@ void main() {
 		& \verb|x > y| & \verb|binGrt(R)| & Less than & \\
 	\hline
 	
-	7
+	8
 		& \verb|x && y| & \verb|binLogAnd(R)| & Logical AND & Left to right, \\
 		& \verb$x || y$ & \verb|binLogOr(R)| & Logical OR & only the same \\
 	\hline
 	
-	8
+	9
 		& \verb|x .. y| & (not overloadable) & Range & Cannot be chained \\
 	\hline
 	
-	9
+	10
 		& \verb|x = y| & \verb|assign(R)| & Assignment & Right to left, \\
 		& \verb|x := y| & \verb|refAssign(R)| & Reference assignment & only the same \\
 		\cline{2-5}
@@ -361,7 +369,7 @@ void main() {
 		& \verb|x => y| & (not overloadable) & Association & Cannot be chained \\
 	\hline
 	
-	10
+	11
 		& \verb|x, y| & & Comma & Left to right \\
 \end{centeredRefTabular}
 
@@ -518,7 +526,7 @@ This language construct can only be used in parameter lists. When used, a \textb
 
 This of course does not work with \kwd{auto} parameters (they are ignored in the overload resolution).
 
-\subsection{Overload resolution}
+\subsection{Overload resolution} \label{overloadResolution}
 Overload resolution is performed every time the compiler needs to match arguments to a function overload. The process is performed over an overloadset where all items must accept arguments (error is shown otherwise).
 
 Note that not only functions accept arguments - for example parametric classes (similar to template classes) also accept arguments (they can however be considered to be compile-time functions returning a class as they are indistinguishable from them).
@@ -526,10 +534,10 @@ Note that not only functions accept arguments - for example parametric classes (
 Overload resolution consists of these steps:
 \begin{enumerate}
 	\item Overloads that do not match given arguments are ignored
-	\item If there are any non-compiler-generated overloads, ignore all compiler-generated overloads (implicit constructors etc)
-	\item If there are overloads that do not require any extra implicit argument casts in relation to any other overload, leave only those and ignore others
+	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset (auto arguments are always considered as implicit casted)
 	\item If there are any non-static overloads, ignore all static overloads
 	\item If there are any direct overloads (not using scope imports), ignore all overloads that come from scope import values
+	\item If there are any non-compiler-generated overloads, ignore all compiler-generated overloads (implicit constructors etc)
 	\item If there are any non-const overloads, ignore all const overloads
 \end{enumerate}
 
@@ -680,7 +688,7 @@ Behavior of this operator varies on the properties of the overloadset.
 If the overload set contains only functions:
 \begin{enumerate}
 	\item Perform an overload resolution with parameters \inlineCode{( arg1, arg2 )}.
-	\item Call the resulting overload (or error).
+	\item Call the only resulting overload (or error).
 \end{enumerate}
 
 If not:
@@ -769,9 +777,11 @@ This operator is almost equivalent to \inlineCode{Range( x.#type )( x, y )}, exc
 \subsection{The '\inlineCode{x => y}' (association) operator}
 This operator is almost equivalent to \inlineCode{Association( x.#type, y.#type )( x, y )}, except it infers the Association types from expected parameter type if possible.
 
+\subsection{The 'x, y' (comma) operator}
+Operands separated by the comma are evaluated from left to right. Value of the rightmost operand is returned.
+
 \section{Variable declarations}
 \begin{grammar}
-	\grDef{InexprVarDecl} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
 	\grDef{VarDeclCmd} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
 		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
 	\\
@@ -780,7 +790,70 @@ This operator is almost equivalent to \inlineCode{Association( x.#type, y.#type 
 	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | \kwd{=} \gr{Expression} \\
 \end{grammar}
 
-\subsection{Inexpr variable declarations}
+Declaring a variable is a thing well known from other programming languages. Declaring a variable consists of two tasks:
+\begin{compactenum}
+	\item Allocating space for it (heap or stack)
+	\item Calling the constructor -- evaluating \inlineCode{var.#ctor( args );}
+\end{compactenum}
+
+There are three syntactical alternatives of how to declare a variable:
+\begin{compactitem}
+	\item \inlineCode{Type var;} results in calling the implicit constructor \inlineCode{var.#ctor();} if presents, yield an error otherwise.
+	\item \inlineCode{Type var( arg1, arg2 );} obviously calls \inlineCode{var.#ctor( arg1, arg2 );}
+	\item \inlineCode{Type var = val;} calls \inlineCode{var.#ctor( val );}
+\end{compactitem}
+
+\paragraph{Auto declarations}
+When using \inlineCode{auto} instead of type, the type is inferred from the first argument of \gr{ParentCommaExpr} (which must be the only one) or from the value type of the \gr{Expression} after the \kwd{=}. Multiple declarations per one auto keyword are acceptable, each inferring its own type.
+
+\paragraph{In-expression variable declarations}
+In NATI, you can declare variables inside expressions.
+
+\subsection{Variable lifetime}
+When variable's lifetime ends, it's implicit destructor \inlineCode{var.#dtor();} is called.
+
+\paragraph{Local variables}
+Local variables are destroyed as soon as their scope ends. Although this is straightforward in most cases, there are some that require further explanations:
+\begin{itemize}
+	\item Variables declared inside \textbf{if} conditions are destroyed after the end of the if statement, including following else statements.
+	\begin{code}
+if( Int32 i( getNumber() ) == 5 ) {
+		
+} else if( i == 4 ) {
+	
+} // i is destroyed here
+	\end{code}
+
+	\item Variables declared inside \textbf{where} conditions are destroyed at the end of every iteration as they are declared at the beginning of every iteration.
+	\begin{code}
+while( ( Int32! x = 0 )++ < 32 ) {
+	// This is WRONG! x is created every iteration, so its value for each iteration is 1. This loop would not end.
+}
+
+foreach( x; 0 .. 32 ) {
+	// This loop is correct and much nicer
+}
+	\end{code}
+
+	\item For variables declared inside \textbf{for}:
+	\begin{compactitem}
+		\item Variables in the initialization part are destroyed after the loop end
+		\item Variables in the condition part are created before each iteration and destroyed after each iteration
+		\item Variables in the post-loop part are destroyed just after the post-loop part is executed
+	\end{compactitem}
+
+	\item For variables inside \textbf{foreach}:
+	\begin{compactitem}
+		\item Variables in the variable declaration part are created before each iteration and destroyed after each iteration
+		\item Variables in the iterated expression part are destroyed when the foreach ends.
+	\end{compactitem}
+
+	\item Variables inside the \textbf{switch} expression part are destroyed when the switch ends.
+\end{itemize}
+
+\paragraph{Static variables} are destroyed when the program ends in the reverse order they were constructed.
+
+\paragraph{Static \decoratorRef{ctime} variables} are never destroyed (they were created before the program started).
 
 \chapter{Functions}
 \begin{grammar}
@@ -934,7 +1007,7 @@ Void eFunc() {
 TODO: noWarning, final, abstract, base, virtual, override, static
 
 \begin{grammar}
-	\grDef{Decoration} \kwd{@} \token{Identifier} [ \gr{ArgumentList} ]
+	\grDef{Decoration} \kwd{@} \token{Identifier} [ \gr{ParentCommaExpr} ]
 \end{grammar}
 
 Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code.
@@ -963,65 +1036,45 @@ class C {
 }
 \end{code}
 
-\paragraph{Scope decorations} Decorators are applied to all statements following the decoration up to next scope decoration or current scope end. You can not use scope decorations directly in the module root scope.
+\paragraph{Scope decorations} Decorators are applied to all statements following the decoration up to next scope decoration or current scope end. You cannot use scope decorations directly in the module root scope.
 
 \paragraph{Block decorations} Decorators are applied to all statements in the block.
 
 \paragraph{Statement decorations} Decorators are applied to the statement that follows the decoration.
 
 \subsection{Decoration contexts} \label{decorationContexts}
-There are multiple different contexts in which decorators can be used. Most decorators can't be used in all the contexts.
+The concept of decorators wraps up lot of possibilities and functionality. In order to make things work, it is necessary to define different types of decorators, each altering the program in a different, unique way. In NATI, these decorator subtypes are called \textit{decorator contexts}. Each decorator is defined for one particular context. However decorator identifiers are overloadable, so it is possible to define multiple decorators for different contexts with the same name.
 
-%TODO change
-
-The contexts are following:
-\begin{compactitem}
-	\item Import attributes
-	\item Module level declaration
-	\item Variable declaration
-	\item Function declaration
-	\item Parameter declaration
-	\item Class declaration
-	\item Enum declaration
-	\item Control statement (\kwd{if}, \kwd{for}, \kwd{while}, ...)
-	\item Block of code (\verb|{ /* code here */ }|)
-\end{compactitem}
-
+The contexts are following (decorators of contexts commented with "system only" cannot be defined by the programmer):
 \begin{code}
 enum DecorationContext {
-	importDecoration,
-	moduleLevelDeclaration,
-	parameterDeclaration,
-	variableDeclaration,
-	functionDeclaration,
-	classDeclaration,
-	enumDeclaration,
-	typeDecoration,
-	controlStatement,
-	codeBlock;
-	
-@public:
-	enum : Set {
-		typeDeclaration = classDeclaration | enumDeclaration	
-	}
+	importModifier, // system only
+	parameterModifier, // system only
+	functionModifier, // system only
+	classModifier, // system only
+	enumModifier, // system only
+	variableModifier, // system only
+	accessModifier,
+	fieldWrapper,
+	typeWrapper,
+	controlStatementModifier, // system only
+	codeBlockModifier // system only
 }
 \end{code} \label{enum:DecorationContext}
 
-\subsection{Context ambiguity resolution} In some cases, the context the decorator is used in can be ambiguous. Consider following example:
-\begin{code}
-Void f( @ctime Int8 param ) {
-	// Code here
-}
-\end{code}
+\subsection{Decorator overloading}
+Decorators can take parameters, just like functions (\inlineCode{@decoration} is equivalent to \inlineCode{@decoration()}). The behavior is following:
+\begin{enumerate}
+	\item Overloads that do not match given arguments are ignored
+	\item Find overload that has lowest-value context (as ordered in the \enumRef{DecorationContext} enum) and remove overloads that are of different context
+	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset (auto arguments are always considered as implicit casted)
+	\item Apply the only overload remaining (or error)
+\end{enumerate}
 
-Here, the \decoratorRef{ctime} decorator can be considered to be used in either \decorationContextRef{parameter\-Declaration}, \decorationContextRef{variable\-Decl\-aration} or \decorationContextRef{typeDecoration} context. How is it decided? The compiler tries to apply the decorator on contexts in order they are defined in the \enumRef{DecorationContext} enum, looking for a first valid match. If the decorator doesn't support any of the contexts available, an error is shown. This means that \textbf{you can't apply a decorator on a stuff the decorator doesn't support}. In some other langauges, the decorator would simply be ignored, but this does not apply for NATI.
-
-In the example, it would first try to apply the decorator in  \decorationContextRef{parameterDeclaration} context. Because the \decoratorRef{ctime} decorator doesn't support that context, it would try the  \decorationContextRef{variableDeclaration} context, which is supported, so the resolving would succeed.
-
-\paragraph{Decorator ordering by context} In order to improve code readability and programmer awareness, it is enforced by the compiler that decorations are ordered by the context they're used in (the order is specified in the \enumRef{DecorationContext} enum).
+\paragraph{Decorator ordering by context} In order to improve code readability and programmers' awareness, it is enforced by the compiler that decorations are ordered by the context they're used in (the order is specified in the \enumRef{DecorationContext} enum).
 
 \subsection{Decorator conflicts}
-\textbf{You can not apply two decorators that are incompatible.} The most common case are the \hyperref[accessModifierDecorators]{access modifier decorators}.
+\textbf{You cannot apply two decorators that are incompatible.} The most common case are the \hyperref[accessModifierDecorators]{access modifier decorators}.
 \begin{code}
 @final class C {
 
@@ -1041,11 +1094,13 @@ Access modifier decorators specify where a symbol is accessible from. They only 
 
 \paragraph{\decoratorRef{public}} \label{decorator:public} Symbols with the \decoratorRef{public} access modifier are accessible from everywhere.
 
-\paragraph{\decoratorRef{private}} \label{decorator:private} Symbols with the \decoratorRef{private} access modifier are accessible only from the current scope.
+\paragraph{\decoratorRef{private}} \label{decorator:private} Symbols with the \decoratorRef{private} access modifier are accessible only from the current scope (and it's subscopes).
 
 \paragraph{\decoratorRef{protected}} \label{decorator:protected} The \decoratorRef{protected} only makes sense when used in classes. It makes symbols accessible from the current scope, its subscopes and any scope that derives from any of its subscopes.
 
-\paragraph{\decoratorRef{friend}} \label{decorator:friend} The \decoratorRef{friend} decorator exclusively allows access to one scope symbol, specified as the parameter. This overrides the \decoratorRef{protected} or \decoratorRef{private} access restriction.
+\paragraph{\decoratorRef{friend}} \label{decorator:friend} The \decoratorRef{friend} decorator exclusively allows access to one scope symbol, specified as the parameter. This rule has higher priority than \decoratorRef{protected} or \decoratorRef{private}.
+
+Syntax: \inlineCode{@friend( Symbol friend )}
 
 \begin{code}
 class C {
@@ -1082,7 +1137,7 @@ Generally, the \decoratorRef{ctime} decorator is related with compile time execu
 
 \paragraph{Axioms overview}
 \begin{itemize}
-	\item A compile-time variable's value is always known at compile time (=> cannot change during runtme).
+	\item A compile-time variable's value is always known at compile time (=> cannot change during runtime).
 	\item A compile-time function is always evaluated at compile time. That implies that parameters must be known at compile time. The return type is also compile-time.
 	\item Some runtime functions can be executed at compile time.
 	\item There is a difference between a compile-time function and a function executed at compile time.
@@ -1094,7 +1149,7 @@ Generally, the \decoratorRef{ctime} decorator is related with compile time execu
 \paragraph{Compile-time parameters}
 A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter. In some cases, parameters don't have to be decorated with \decoratorRef{ctime} -- class, enum and template parameters are always compile-time, so the \decoratorRef{ctime} is implicit and decorating them with it results in warning.
 
-Compile-time parameter's values must always be known at compile time. Compile-time parameters can be mutable.
+Compile-time parameter values must always be known at compile time. Compile-time parameters can be mutable.
 
 Technically, a function with compile-time parameter is a function template.
 
@@ -1108,14 +1163,19 @@ Void f( Int32 x, @ctime Int32 y, @ctime Type t ) {
 For more info, see \nameref{ctime:parameter}.
 
 \paragraph{Compile-time variables}
-A variable decorated with \decoratorRef{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable} (global compile-time variables can not be mutable). A compile-time variable can be of a \hyperref[ctime:class]{compile-time type} (a non-compile-time variable can not be of a~compile-time type). You can not define a compile-time variable as a dynamic member of a non-compile-time class.
+A variable decorated with \decoratorRef{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable} (global compile-time variables cannot be mutable). A compile-time variable can be of a \hyperref[ctime:class]{compile-time type} (a non-compile-time variable cannot be of a~compile-time type). You cannot define a compile-time variable as a dynamic member of a non-compile-time class.
+
+In order to prevent confusion, it is prohibited to work with runtime variables and manipulate (change values of) @ctime variables in the same expression.
 
 \begin{code}
-@ctime Type! t = Int32;
-t x = 5; // x is of type Int32
-t = String;
+@ctime Type! t = Int32; // t is a mutable @ctime variable that can hold types.
+
+t x = 5; // Now we declared a variable x of type t (which is Int32). It is a runtime variable.
+
+t = String; // We're changing the @ctime variable here
 t str = "asd"; // y is of type String
-@ctime t str2 = "lol"; // str2 is compile-time and of type String
+
+@ctime t str2 = "lol"; // str2 is compile time variable of type String
 \end{code}
 
 For more info, see \nameref{ctime:variable}.
@@ -1143,7 +1203,7 @@ The \decoratorRef{ctime} decorator should be omitted in parameter, variable and 
 For more info, see \nameref{ctime:function}
 
 \paragraph{Compile-time classes}
-A class decorated with \decoratorRef{ctime} is a compile-time class. Any instance of a compile-time class is a compile-time instance/variable. All its member functions are \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decoratorRef{ctime} decorator should be omitted).
+A class decorated with \decoratorRef{ctime} is a compile-time class. Any instance of a compile-time class is a compile-time instance/variable. All its mutable member functions must be \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decoratorRef{ctime} decorator should be omitted).
 
 \begin{code}
 @final @ctime class MyFunctionInfo {
@@ -1166,7 +1226,7 @@ For more info, see \nameref{ctime:class}.
 \paragraph{Compile-time control statements}
 A control statement decorated with \decoratorRef{ctime} is a compile-time control statement. In a compile-time control statement, \textbf{expressions in the statement are evaluated in compile-time, but the statement bodies are evaluated at runtime}.
 
-All variables declared in the statement expressions are compile-time. They should be decorated with the \decoratorRef{ctime} decorator (a warning is shown otherwise).
+All variables declared in the statement expressions are compile-time. They don't need to be decorated with the \decoratorRef{ctime} decorator.
 
 \begin{code}
 @ctime Type! t = Int8;
@@ -1175,15 +1235,10 @@ if( 3 == 5 )
 	t = Int16; // Warning: compile-time variable modification inside a runtime control statement
 
 // t == Int16 here
-
-@ctime if( 4 == 5 )	
-	t = Int32;
-	
-// t == Int16
 \end{code}
 
 \begin{code}
-@ctime for( @ctime Int16 x = 0; x < 20; x ++ ) {
+@ctime for( Int16 x = 0; x < 20; x ++ ) {
 	// x is a compile-time variable
 	writeln( "lol" );
 	// The code generated from this would be twenty writeln("lol") calls
@@ -1192,6 +1247,12 @@ if( 3 == 5 )
 for( Int16 x = 0; x < 20; x ++ ) {
 	// x is a runtime variable, the loop is executed at runtime	
 }
+
+@ctime for( Int16 x = 0; x < 20; x ++ ) @ctime {
+	// x is a compile-time variable and this entire block is also executed at compile-time (the "lol" is written into compiler console)
+	writeln( "lol" );
+}
+
 \end{code}
 
 \paragraph{Compile-time code block} A code block decorated with the \decoratorRef{ctime} is executed at compile time. All variables declared in it are compile time and they should not be decorated with the \decoratorRef{ctime} decorator.
@@ -1219,8 +1280,8 @@ Void main() {
 	
 	table[ stdin.read() ] = 5;
 	
-	// Here the #key parameter is known at compile time, so the function is optimized (the hash calculation is performed at compile time)
 	table[ "key" ] = 10;
+	// On the previous line the #key parameter is known at compile time, so the function is optimized (the hash calculation is performed at compile time)
 }
 \end{code}
 
@@ -1228,7 +1289,7 @@ In the \decorationContextRef{functionDeclaration} context, the function is made 
 
 In the \decorationContextRef{variableDeclaration} context, the variable is made compile time if its type is compile time.
 
-The decorator can not be used in any other contexts.
+The decorator cannot be used in any other contexts.
 
 \chapter{NATI practices \& styling guide}
 
