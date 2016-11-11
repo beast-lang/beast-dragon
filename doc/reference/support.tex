@@ -1,0 +1,65 @@
+% !TeX root = main.tex
+
+% Grammar
+\newcounter{grammarRule}
+\NewEnviron{grammar}{
+	{\ttfamily \small
+	\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
+		\BODY
+	\end{tabularx}}%
+	\nopagebreak%
+	\begin{center}
+		\putref
+	\end{center}
+}
+\newcommand{\grDef}[1]{\rule{0mm}{5mm}\refstepcounter{grammarRule}\label{gr:#1}#1&::=&}
+\newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&&}
+\newcommand{\grAltLn}{&&| }
+\newcommand{\grLn}{&&\hspace{1cm}}
+
+\newcommand{\gr}[1]{\hyperref[gr:#1]{\texttt{#1}}}
+\newcommand{\kwd}[1]{'\textbf{\texttt{#1}}'}
+\newcommand{\token}[1]{\hyperref[tok:#1]{\textit{\texttt{#1}}}}
+\newcommand{\typeRef}[1]{\hyperref[type:#1]{\texttt{#1}}}
+
+\newcommand{\decoratorRef}[1]{\hyperref[decorator:#1]{\texttt{@#1}}}
+\newcommand{\decorationContextRef}[1]{\hyperref[decorationContexts]{\texttt{#1}}}
+\newcommand{\enumRef}[1]{\hyperref[enum:#1]{\texttt{#1}}}
+
+\newcommand{\moduleSep}{/* - - - - - - - - DIFFERENT MODULE - - - - - - - - */}
+
+% Code
+
+\lstdefinelanguage{nati}
+{
+	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, do, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+
+\lstset{% 
+	basicstyle=\ttfamily\small, 
+	language=nati,
+	breaklines=true,
+	breakatwhitespace=true,
+	breakautoindent=true,
+	breakindent=5mm,
+	escapeinside=$$,
+	numbers=left,
+	numberstyle=\small\ttfamily,
+	numbersep=3mm,
+	tabsize=2,
+	frame=leftline,
+	framesep=2mm,
+	xleftmargin=8mm,
+} 
+\lstnewenvironment{code}{
+	\hspace{0mm}
+}{%
+	\nobreak\nopagebreak\centerline{\putref}
+	\vspace{3mm}
+} 
+
+\newcommand{\inlineCode}[1]{\lstinline[basicstyle=\ttfamily,language=nati,keepspaces,breakatwhitespace=true,breaklines=true]{#1}}

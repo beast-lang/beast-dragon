@@ -9,7 +9,7 @@
 % Title Page
 \title{NATI (Not All That Innovative) programming language}
 \subtitle{Language specification/reference}
-\author{Daniel Čejchan}
+\author{Daniel 'Danol' Čejchan}
 \date{2016}
 
 
@@ -533,7 +533,7 @@ Note that not only functions accept arguments - for example parametric classes (
 
 Overload resolution consists of these steps:
 \begin{enumerate}
-	\item Overloads that do not match given arguments are ignored
+	\item Overloads that do not match given arguments are ignored (also considering constness)
 	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset (auto arguments are always considered as implicit casted)
 	\item If there are any non-static overloads, ignore all static overloads
 	\item If there are any direct overloads (not using scope imports), ignore all overloads that come from scope import values

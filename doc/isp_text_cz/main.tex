@@ -1,0 +1,58 @@
+% !TeX spellcheck = cs_CZ
+
+\include{header}
+\include{mainpage}
+\include{support}
+
+\setlength\extrarowheight{2pt}
+
+% Title Page
+\title{Prekladač nového modulárního jazyka}
+\subtitle{Semestrální projekt}
+\author{Daniel Čejchan | xcejch00}
+\date{ZS 2016/2017}
+
+
+\begin{document}
+\mainpage
+%\renewcommand{\clearpage}{}
+
+\chapter{Obsah}
+\makeatletter
+\@starttoc{toc}
+\makeatother
+
+\chapter{Úvod}
+Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka NATI a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
+
+Programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{http://dlang.org/}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
+
+\section{Motivace}
+Mou hlavní motivací je nespokojenost se stávajícími programovacími jazyky. Programování mám jako koníčka už od nějakých dvanácti let, a tak jsem ještě před nastoupením na FIT získal nějaké zkušenosti z psaní aplikací v Object Pascalu (Delphi), C++ (Qt, SDL + OpenGL) a PHP (webové aplikace). FIT pak můj repertoár (i když jen rámcově) rozšířil na valnou většinu dnes používaných jazyků. Bohužel jsem ale nenarazil na žádný, který by splňoval mé požadavky.
+
+\paragraph{Jméno jazyka}
+Když jsem poslal první návrh jazyka mému kamarádovi, jeho první reakce byla "Not all that innovative".
+
+\paragraph{Jazyk D}
+Mému srdci nejbližší jazyk, na který jsem ve svém pátrání narazil, byl jazyk D. Jedná se o kompilovaný jazyk vycházející z C++ (binárky jsou do jisté míry kompatibilní) s velice podobnou syntaxí. Největší rozdíly jsou modulový systém\footnote{http://dlang.org/spec/module.html} (zdrojový kód je rozdělen do modulů, které se vzájemně, i rekurzivně, importují; odpadá nutnost psát hlavičkové soubory), značně rozšířená funkčnost metaprogramování s šablonami a~rozšířená schopnost vykonávat funkce za doby kompilace.
+
+D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem narazil na strop možnosti (ačkoli byl značně výš než třeba v C++), kdy některé věci nešly napsat tak jednoduše, jak bych chtěl. Tento jazyk však dokazuje, že tato bariéra může být mnohem dál. Já ji chci ve svém jazyku ještě více posunout. 
+
+\chapter{Vlastnosti jazyka}
+Nejdříve musíme určit základní rámce, ve kterých budeme operovat.
+
+\paragraph{Použití jazyka}
+Naším cílem je navrhnout tzv. \textit{general purpose language}, tedy jazyk nezaměřený na konkrétní případy užití.
+
+\paragraph{Kompilovaný vs. interpretovaný jazyk}
+Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret. V rámci této práce budeme navrhovat kompilovaný jazyk. Pro zjednodušení práce při psaní překladače (předmětem projektu je jazyk, ne překladač) nebudeme ale překládat přímo do strojového kódu, ale do jazyka C.
+
+\paragraph{Syntaxe jazyka}
+Abychom maximálně usnadnili přechod případných programátorů k našemu jazyku a zkrátili učební křivku, je vhodné se co nejvíce inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet se syntaxe rodiny jazyků C.
+
+\paragraph{Programovací paradigmata}
+Jelikož vycházíme z jazyků C++ a D, přejímáme i jejich paradigmata. Náš jazyk bude tedy
+
+\section{Prvky moderních programovacích jazyků}
+
+\end{document}          

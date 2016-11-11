@@ -1,0 +1,160 @@
+% !TeX root = main.tex
+
+\documentclass[10pt, a4paper, fleqn]{report}
+\usepackage[margin=20mm]{geometry}
+\usepackage{cmap}
+
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{tabto}
+%\usepackage{fullpage}
+\usepackage{float}
+\usepackage[hypcap]{caption}
+\usepackage{tipa}
+
+\usepackage{titling}
+\usepackage{titlesec}
+
+\usepackage{environ}
+\usepackage{verbatim}
+
+\usepackage{ifthen, paralist}
+\usepackage{intcalc}
+
+\usepackage{xcolor}
+
+\usepackage{multicol}
+
+\usepackage{xparse}
+
+% Referencing
+\usepackage[hidelinks]{hyperref}
+\newcommand{\putlabel}{
+	(\arabic{chapter}.\arabic{equation})
+}
+\newcommand{\putref}{
+	\refstepcounter{equation}
+	\putlabel
+}
+
+%math settings
+\usepackage{amsmath}
+\usepackage{mathtools}
+\everymath{\displaystyle}
+\usepackage{MnSymbol}
+\usepackage{wasysym}
+\setlength\delimitershortfall{0pt}
+\setlength\fboxsep{0pt}
+\allowdisplaybreaks
+
+% Font
+\usepackage{pxfonts}
+\usepackage[default]{sourcecodepro}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage{tcolorbox}
+
+%paragraph settings
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.3cm}
+
+\titlespacing*{\chapter}{0em}{0em}{0em}
+\titleformat{\chapter}[block]{\bf\LARGE}{\arabic{chapter} | }{0em}{}
+
+\titlespacing*{\section}{0em}{6mm plus 3mm minus 3mm}{0mm}
+\titlespacing*{\subsection}{0em}{4mm plus 2mm minus 2mm}{0mm}
+\titlespacing*{\paragraph}{0mm}{4mm plus 2mm minus 2mm}{0mm}
+\titleformat{\paragraph}[runin]{\bf}{}{0mm}{}[~~~~]
+
+%circuit settings
+\usepackage{circuitikz}
+\usepackage{sidecap}
+\ctikzset{resistor = european}
+\newenvironment{circuit}{ \refstepcounter{equation}
+	\begin{center}
+	\begin{circuitikz}[scale=0.7]
+	\draw
+}{
+	;
+	\end{circuitikz}
+	
+	\eqlabel
+	\end{center}
+}
+
+%tabular settings
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage[hang,bottom]{footmisc}
+\setlength\extrarowheight{2pt}
+\setlength\footnotemargin{10pt}
+\usepackage{setspace}
+\usepackage{rotating}
+\usepackage{longtable}
+\usepackage{ltablex}\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{adjustbox}
+
+\newcolumntype{P}[1]{>{\centering}p{#1}}
+
+\newcommand{\rotableheader}[1]{\rotatebox{90}{\bf #1}}
+
+% Fix for - not working properly in cline
+\usepackage{etoolbox}
+\preto\tabular{\shorthandoff{-}}
+\preto\longtable{\shorthandoff{-}}
+
+\newenvironment{centeredRefTabular}[1]{
+	\begin{center}
+		\begin{longtable}{#1}	
+}{
+		\end{longtable}~\\*\putref
+	\end{center}
+}
+
+\newenvironment{reftabular}[1]{
+	\begin{center}
+		\begin{tabular}{#1}	
+}{
+		\end{tabular}~\\*\putref
+	\end{center}
+}
+
+% graphics
+\usepackage{graphicx}
+\newcommand{\imagetempl}[3][]{
+
+	\begin{minipage}{\linewidth}
+		\begin{center}
+			\includegraphics[#3]{#2}
+			
+			{\footnotesize \putref #1}
+		\end{center}
+	\end{minipage}
+}
+\newcommand{\image}[2][]{
+	\imagetempl[#1]{#2}{height=4cm}
+}
+\newcommand{\bigimage}[2][]{
+	\imagetempl[#1]{#2}{width=14cm}
+}
+\NewEnviron{diagram}{ \refstepcounter{equation}
+
+	\begin{minipage}{\linewidth}
+		\begin{center}
+			\begin{tikzpicture}
+				\BODY
+			\end{tikzpicture}
+			
+			\eqlabel
+		\end{center}
+	\end{minipage}
+}
+
+% Code
+\usepackage{listings}
