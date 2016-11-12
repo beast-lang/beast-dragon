@@ -1066,7 +1066,7 @@ enum DecorationContext {
 Decorators can take parameters, just like functions (\inlineCode{@decoration} is equivalent to \inlineCode{@decoration()}). The behavior is following:
 \begin{enumerate}
 	\item Overloads that do not match given arguments are ignored
-	\item Find overload that has lowest-value context (as ordered in the \enumRef{DecorationContext} enum) and remove overloads that are of different context
+	\item Find overload that has lowest-index context (as ordered in the \enumRef{DecorationContext} enum) and remove overloads that are of different context
 	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset (auto arguments are always considered as implicit casted)
 	\item Apply the only overload remaining (or error)
 \end{enumerate}

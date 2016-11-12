@@ -1,12 +1,10 @@
-*.aux
-*.out
-*.toc
-reference/main.synctex.gz
-reference/main.pdf
+doc/**/*.aux
+doc/**/*.out
+doc/**/*.toc
+doc/**/*.log
+doc/**/*.synctex.gz
 .idea/workspace.xml
 lib/
-.dub/
 bin/
 etc/
-reference/*.log
 include/boost/
