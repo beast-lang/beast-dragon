@@ -35,7 +35,7 @@ Mému srdci nejbližší jazyk, na který jsem ve svém pátrání narazil, byl 
 
 D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem narazil na strop možnosti (ačkoli byl značně výš než třeba v C++), kdy některé věci nešly napsat tak jednoduše, jak bych chtěl. Tento jazyk však dokazuje, že tato bariéra může být mnohem dál. Já ji chci ve svém jazyku ještě více posunout. 
 
-\chapter{Vlastnosti jazyka}
+\chapter{Vlastnosti a syntaxe jazyka}
 Nejdříve musíme určit základní rysy jazyka, které potom budeme dále rozvíjet.
 
 \paragraph{Použití jazyka}
@@ -52,7 +52,7 @@ Jelikož vycházíme z jazyků C++ a D, přejímáme i jejich paradigmata a zák
 
 \section{Prvky moderních programovacích jazyků}
 
-\subsection{Systém dedičnosti tříd} Jazyky C++ a D mají různě řešené třídní systémy. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a to s dědičností vícenásobnou a případně i virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
+\subsection{Systém dedičnosti tříd} Jazyky C++ a D mají různě řešené třídní systémy. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a to s dědičností vícenásobnou a případně i~virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
 
 Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{https://dlang.org/spec/template-mixin.html} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v určitých případech kontrola přepisování (\textit{overridingu}).
 
@@ -66,5 +66,73 @@ Dá se přemýšlet i o zavedení různých direktiv, které umožňují dále n
 Spousta moderních jazyků (mezi nimi i D) obsahuje garbage collector (dále GC) v základu. Jeho zavedení nenabízí pouze výhody -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
 
 Rozumným kompromisem se jeví být volitelné používání automatické správy paměti. NATI by měl umožňovat efektivní napsání GC jakožto knihovny; GC by tedy mohla být jedna ze základních knihoven jazyka. Tvorba této knihovny ale není předmětem tohoto projektu.
+
+\subsection{Implicitní konstantnost proměnných a propagace konstantnosti}
+Koncept konstantnosti proměnných byl zaveden jednak jako prvek kontroly při psaní kódu, jednak zvětšil potenciál kompilátorů při optimalizování kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje ale napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů nepraktikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti.
+
+Některé jazyky (například Rust\footnote{https://doc.rust-lang.org/nightly/book/mutability.html}) přišly s opačným přístupem -- všechny proměnné jsou implicitně konstantní a programátor musí použít nějakou syntaktickou konstrukci k tomu, aby to změnil.
+
+NATI tento přístup také zavede. V rámci koherence syntaxe jazyka (která je rozvedena v dalších kapitolách tohoto textu), připadají v úvahu dvě možnosti:
+\begin{compactenum}
+	\item Vytvoření dekorátoru v kontextu \inlineCode{typeWrapper}\footnote{Viz specifikace jazyka NATI, oddíl \textit{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
+	\item Vyčlenění operátoru; nejlepším kandidátem je suffixový operátor \inlineCode{Type!}, protože nemá žádnou standardní sémantiku, je nepoužitý a znak vykřičníku je intuitivně asociován s výstrahou, což je zase asociovatelné s mutabilitou.
+\end{compactenum}
+
+Při designu NATI byla zvolena druhá možnost, především kvůli "upovídanosti" kódu a ještě kvůli jednomu důvodu, který je popsán níže.
+
+\paragraph{Propagace konstantnosti} Jazyk D je navržen tak, že je-li ukazatel konstantní (nelze měnit adresu, na kterou ukazuje), je přístup k paměti, na kterou ukazuje, také konstantní. Není tedy možné mít konstantní ukazatel na nekonstantní paměť. Toto je zbytečné limitování; tranzitivní konstantnost se může hodit, ale měla by být volitelná (v NATI má toto opět potenciál pro řešení v dekorátorech).
+
+\paragraph{Výsledky} V NATI tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní ukazatel na nekonstantní data. Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specifikovat mutabilitu dvakrát. Ve dříve navržených dvou případech by to tedy vypadalo takto (syntaxe pro referenci je \inlineCode{Typ?}, viz \ref{pointers}):
+\begin{compactenum}
+	\item \inlineCode{@mut ( @mut Typ )?}
+	\item \inlineCode{Typ!?!}
+\end{compactenum}
+
+Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí. Ačkoli seskupení operátorů \inlineCode{?!?} (mutabilní reference na mutabilní hodnotu) může bezesporu v některých programátorech zpočátku vyvolat zděšení, první varianta je na tom ještě hůř. Po pochopení syntaktických pravidel, která jsou průhledná a jasná, se tato konstrukce ukáže být veskrze jednoduchá. Nicméně je třeba přiznat, že tento případ může pravděpodobně být nejhůře přijímanou věcí v jazyku.
+
+\paragraph{Porovnání syntaxí C++, D a NATI}
+\begin{cppcode}
+// C++
+
+int a, b; // Mutable integer
+const int c, d; // Const integer
+int *e, *f; // Mutable pointer to mutable integer
+const int *g, *h; // Mutable pointer to const integer
+int * const i, * const j; // Const pointer to mutable integer
+const int * const k, * const l; // Const pointer to const integer
+
+\end{cppcode}
+\begin{dcode}
+// D
+
+int a, b; // Mutable integer
+const int c, d; // Const integer
+int* e, f; // Mutable pointer to mutable integer
+const( int )* g, h; // Mutable pointer to const integer
+// const pointer to mutable integer not possible
+const int* k, l; // Const pointer to const integer
+\end{dcode}
+\begin{code}
+// NATI
+
+Int32! a, b; // Mutable integer
+Int32 c, d; // Const integer
+Int32!?! e, f; // Mutable pointer to mutable integer
+Int32?! g, h; // Mutable pointer to const integer
+Int32!? i, j; // Const pointer to mutable integer
+Int32? k, l; // Const pointer to const integer
+\end{code}
+
+\subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
+Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování. Výraz \inlineCode{a * b} může totiž znamenat buď výraz násobení \inlineCode{a} krát \inlineCode{b}, stejně tak ale může znamenat deklaraci proměnné \inlineCode{b} typu ukazatel na \inlineCode{a}~(obdobně i u reference). Očividným řešením je použití jiného znaku pro označování ukazatelů. V NATI je tímto znakem otazník (\inlineCode{?}). V~C++ a D je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost NATI obstarává jiným způsobem (viz \ref{ternary}).
+
+\paragraph{Ukazatel vs. reference}
+Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečnou věc, která by se měla užívat jen v nutných případech. Kromě toho umožnění ukazatelové aritmetiky by mohlo způsobovat konflikty při přetěžování operátorů, což se řeší zavedením dereferencí (oddělí se jmenný prostor funkcí ukazatele od jmenného prostoru odkazovaného typu; místo \inlineCode{ptr.var} je \inlineCode{(*ptr).var}), případně speciálním operátorem pro přístup k prvkům odkazované hodnoty (\inlineCode{ptr->var}). Jako odpověď na toto C++ nabízí pseudotyp reference a D to řeší rozhodnutím, že třídy jsou vždy předávané referencí.
+
+\paragraph{Problematika přístupu C++} Reference v C++ jsou konstantní (mohou ale odkazovat na nekonstantní data). V praxi ale programátor často potřebuje měnit, kam reference ukazuje, a 
+
+\section{Další změny oproti C++/D}
+
+\subsection{Ternární operátor} \label{ternary}
 
 \end{document}          

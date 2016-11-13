@@ -30,6 +30,22 @@
 
 % Code
 
+\lstset{% 
+		basicstyle=\ttfamily\small, 
+		breaklines=true,
+		breakatwhitespace=true,
+		breakautoindent=true,
+		breakindent=5mm,
+		escapeinside=$ $,
+		numbers=left,
+		numberstyle=\small\ttfamily,
+		numbersep=3mm,
+		tabsize=2,
+		frame=leftline,
+		framesep=2mm,
+		xleftmargin=8mm,
+}
+
 \lstdefinelanguage{nati}
 {
 	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, do, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
@@ -38,25 +54,33 @@
 	morecomment=[s]{/*}{*/},
 	morestring=[b]",
 }
-
-\lstset{% 
-	basicstyle=\ttfamily\small, 
-	language=nati,
-	breaklines=true,
-	breakatwhitespace=true,
-	breakautoindent=true,
-	breakindent=5mm,
-	escapeinside=$$,
-	numbers=left,
-	numberstyle=\small\ttfamily,
-	numbersep=3mm,
-	tabsize=2,
-	frame=leftline,
-	framesep=2mm,
-	xleftmargin=8mm,
-} 
 \lstnewenvironment{code}{
 	\hspace{0mm}
+	\lstset{language=nati}
+}{%
+	\nobreak\nopagebreak\centerline{\putref}
+	\vspace{3mm}
+} 
+
+\lstdefinelanguage{d}
+{
+	morekeywords={const, immutable, struct, class, alias, for, foreach, static, if, debug, release, template, mixin, module, import, while, is, in, scope, switch, this, throw, try, with, else, do, finally, function, delegate, asm, int, uint, short, ushort, long, ulong, byte, ubyte},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+\lstnewenvironment{dcode}{
+	\hspace{0mm}
+	\lstset{language=d}
+}{%
+	\nobreak\nopagebreak\centerline{\putref}
+	\vspace{3mm}
+} 
+
+\lstnewenvironment{cppcode}{
+	\hspace{0mm}
+	\lstset{language=c++}
 }{%
 	\nobreak\nopagebreak\centerline{\putref}
 	\vspace{3mm}
