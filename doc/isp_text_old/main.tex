@@ -50,7 +50,7 @@ Abychom maximálně usnadnili přechod případných programátorů k našemu ja
 \paragraph{Programovací paradigmata}
 Jelikož vycházíme z jazyků C++ a D, přejímáme i jejich paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
 
-\section{Prvky moderních programovacích jazyků}
+\section{Běžné prvky programovacích jazyků}
 
 \subsection{Systém dedičnosti tříd} Jazyky C++ a D mají různě řešené třídní systémy. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a to s dědičností vícenásobnou a případně i~virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
 
@@ -88,7 +88,7 @@ Při designu NATI byla zvolena druhá možnost, především kvůli "upovídanos
 	\item \inlineCode{Typ!?!}
 \end{compactenum}
 
-Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí. Ačkoli seskupení operátorů \inlineCode{?!?} (mutabilní reference na mutabilní hodnotu) může bezesporu v některých programátorech zpočátku vyvolat zděšení, první varianta je na tom ještě hůř. Po pochopení syntaktických pravidel, která jsou průhledná a jasná, se tato konstrukce ukáže být veskrze jednoduchá. Nicméně je třeba přiznat, že tento případ může pravděpodobně být nejhůře přijímanou věcí v jazyku.
+Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí. Ačkoli seskupení operátorů \inlineCode{?!?} (mutabilní reference na mutabilní hodnotu) může bezesporu v některých programátorech zpočátku vyvolat zděšení, první varianta je na tom ještě hůř. Po pochopení syntaktických pravidel, která jsou průhledná a jasná, se tato konstrukce ukáže být veskrze jednoduchá. Nicméně je třeba přiznat, že tento případ může pravděpodobně být nejhůře přijímaným prvek v jazyku.
 
 \paragraph{Porovnání syntaxí C++, D a NATI}
 \begin{cppcode}
@@ -129,7 +129,12 @@ Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování.
 \paragraph{Ukazatel vs. reference}
 Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečnou věc, která by se měla užívat jen v nutných případech. Kromě toho umožnění ukazatelové aritmetiky by mohlo způsobovat konflikty při přetěžování operátorů, což se řeší zavedením dereferencí (oddělí se jmenný prostor funkcí ukazatele od jmenného prostoru odkazovaného typu; místo \inlineCode{ptr.var} je \inlineCode{(*ptr).var}), případně speciálním operátorem pro přístup k prvkům odkazované hodnoty (\inlineCode{ptr->var}). Jako odpověď na toto C++ nabízí pseudotyp reference a D to řeší rozhodnutím, že třídy jsou vždy předávané referencí.
 
-\paragraph{Problematika přístupu C++} Reference v C++ jsou konstantní (mohou ale odkazovat na nekonstantní data). V praxi ale programátor často potřebuje měnit, kam reference ukazuje, a 
+\paragraph{Problematika přístupu C++} Reference v C++ jsou konstantní (mohou ale odkazovat na nekonstantní data). V praxi ale programátor často potřebuje měnit hodnotu odkazu, a musí se proto uchylovat ke standardním ukazatelům s jejich ukazatelovou aritmetikou a jinou syntaxí pro přístup ke členům odkazovaného typu.
+
+\paragraph{Problematika přístupu D} D k tomuto problému přistupuje třemi způsoby:
+\begin{compactenum}
+	\item 
+\end{compactenum}
 
 \section{Další změny oproti C++/D}
 
