@@ -7,12 +7,17 @@ Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla v
 Programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
 
 \section{Motivace}
+Jazyk C++ je stále jedním z nejpoužívanějších jazyků\footnote{Podle \url{http://www.tiobe.com/tiobe-index/}}. 
+
+\begin{comment}
 Mou hlavní motivací je nespokojenost se stávajícími programovacími jazyky. Programování mám jako koníčka už od nějakých dvanácti let, a tak jsem ještě před nastoupením na FIT získal nějaké zkušenosti z psaní aplikací v Object Pascalu (Delphi), C++ (Qt, SDL + OpenGL) a PHP (webové aplikace). FIT pak můj repertoár (i když jen rámcově) rozšířil na valnou většinu dnes používaných jazyků. Bohužel jsem ale nenarazil na žádný, který by splňoval mé požadavky. Rozhodl jsem se tedy využít nutnost napsání bakalářské práce k~uskutečnění mého dlouholetého snu.
 
 \paragraph{Jazyk D}
 Mému srdci nejbližší jazyk, na který jsem ve svém pátrání narazil, byl jazyk D. Jedná se o kompilovaný jazyk vycházející z C++ (binárky jsou do jisté míry kompatibilní) s~velice podobnou syntaxí. Největší rozdíly jsou modulový systém\footnote{\url{http://dlang.org/spec/module.html}} (zdrojový kód je rozdělen do modulů, které se vzájemně, i rekurzivně, importují; odpadá nutnost psát hlavičkové soubory), značně rozšířená funkčnost metaprogramování s šablonami a~rozšířená schopnost vykonávat funkce za doby kompilace.
 
 D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem narazil na strop možnosti (ačkoli byl značně výš než třeba v C++), kdy některé věci nešly napsat tak jednoduše, jak bych chtěl. Tento jazyk však dokazuje, že tato bariéra může být mnohem dál. Já ji chci ve svém jazyku ještě více posunout. 
+\end{comment}
+
 
 \section{Cíle}
 
@@ -98,25 +103,77 @@ Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta j
 	Int32? k, l; // Const pointer to const integer
 \end{code}
 
+\subsection{Typová kontrola a konverze typů} %TODO
 
 
 \subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
-Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování. Výraz \inlineCode{a * b} může totiž znamenat buď výraz násobení \inlineCode{a} krát \inlineCode{b}, stejně tak ale může znamenat deklaraci proměnné \inlineCode{b} typu ukazatel na \inlineCode{a}~(obdobně i u reference). Očividným řešením je použití jiného znaku pro označování ukazatelů.
-
-V NATI je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost NATI obstarává jiným způsobem (viz \ref{ternary}); tím pádem je znak otazníku "postradatelný".
-
-\paragraph{Ukazatel vs. reference}
 Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečný prvek, který by se měl užívat jen v nutných případech. Toto se řeší zavedením referencí, které v různých jazycích fungují mírně rozdílně, všeobecně se ale dá říci, že se jedná o ukazatele, které nepodporují ukazatelovou aritmetiku.
 
 V C++ reference neumožňují měnit adresu odkazované paměti. V praxi ale programátor poměrně často potřebuje měnit hodnotu odkazu a~musí se proto uchylovat k ukazatelům, které podporují ukazatelovou aritmetiku a pro přístup k odkazované hodnotě je třeba buď použít dereferenci (která je implementována prefixovým operátorem hvězdička a má tendenci znepřehledňovat kód) nebo speciální syntaktickou konstrukci (místo \inlineCode{x.y} \inlineCode{x->y}) pro přístup k prvkům odkazované hodnoty.
 
-D k problému přistupuje takto:
-\begin{enumerate}
-	\item Třídy jsou vždy předávané odkazem; adresa odkazované paměti se dá měnit, ukazatelová aritmetika není podporována (jako v Javě).
+D k problematice přistupuje takto:
+\begin{itemize}
+	\item Třídy jsou vždy předávané odkazem; adresa odkazované instance třídy se dá měnit, ukazatelová aritmetika není podporována (jako v Javě), přetěžování operátoru \inlineCode{a = b} není povoleno pro třídy jako levé operandy. Kromě tříd existují i struktury, které jsou předávané hodnotou; ty však nepodporují dědičnost.
 	\item Existuje typ ukazatel, který pracuje s ukazatelovou aritmetikou. Pro přístup k odkazovanému prvku je třeba použít dereferenci (\inlineCode{*x}); k prvkům odkazované hodnoty lze použít klasické \inlineCode{x.y} (u C++ je třeba \inlineCode{x->y}). U dvojitého ukazatele je již potřeba použít dereferenci.
 	\item Existuje i reference podobná té v C++, nicméně ta se dá použít pouze v několika málo případech (například v parametrech a návratových typech funkcí)
-\end{enumerate}
+\end{itemize}
+
+Vynucené předávání referencí má ale několik nevýhod:
+\begin{itemize}
+	\item Programátor musí zajišťovat konstrukci (případně i destrukci) objektů
+	\item Způsobuje více alokací a dealokací
+	\item Indirekce býva i tam, kde by být nemusela
+\end{itemize}
+
+\paragraph{Řešení NATI} 
+NATI má umožňovat nízkoúrovňové programování, typ ukazatel s ukazatelovou aritmetikou je tedy nutné zavést. Na druhou stranu je ale vhodné nabídnout alternativu pro "běžné" případy užití, které se většinou týkají vytváření instancí tříd na haldě a manipulace s nimi. Proto náš jazyk nabízí dva ukazatelové typy, kterým říkáme ukazatel a reference.
+
+Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování. Výraz \inlineCode{a * b} může totiž znamenat buď výraz násobení \inlineCode{a} krát \inlineCode{b}, stejně tak ale může znamenat deklaraci proměnné \inlineCode{b} typu ukazatel na \inlineCode{a}~(obdobně i u reference). Nejjednodušším řešením je použití jiného znaku pro označování ukazatelů.
+
+V NATI je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost NATI obstarává jiným způsobem\footnote{Viz \ref{ternary}}; tím pádem je znak otazníku "postradatelný".
+
+Ukazatel funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}\footnote{Identifikátor se ještě zvažuje}. Přístup k prvkům odkazované hodnoty je možný pouze pomocí dereference. K získání ukazatele se také, kvůli stejným důvodům, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Typ?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer(Type referencedType)}.
+
+Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazované adresy (může mít i hodnotu \inlineCode{null}). Neumožňuje zanořování -- nelze definovat referenci na referenci (ukazatel na referenci ale možný je). Chová se stejně jako odkazovaná hodnota až na několik výjimek:
+\begin{itemize}
+	\item Je přetížen operátor \inlineCode{ref := var}, který je určen pro změnu odkazované adresy reference.
+	\item Je přetížen operátor \inlineCode{ref is null}, který navrací, zda má reference hodnotu \inlineCode{null}.
+	\item \inlineCode{ref.addr} vrací ukazatel na odkazovaný objekt. \inlineCode{ref.refAddr} vrací ukazatel na referenci.
+	\item Reference umožňují explicitní konverzi na reference předků odkazovaného typu.
+\end{itemize}
+
+Všechny typy jsou implicitně konvertibilní na referenci a reference je explicitně konvertibilní na odkazovaný typ.
+
+Reference v NATI pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné, když to nepotřebuje. K programování na nižší úrovni se dá použít konvenční ukazatel (typ \inlineCode{Pointer( T )}).
+
+\subsection{Dekorátory}
+
+\subsection{Vykonávání fukncí za doby kompilace}
+
+\subsection{Metaprogramování}
+
+\paragraph{Deklarace s \inlineDCode{if} v D}
+
+\subsection{Mixiny}
+
+\subsection{Unified function call syntax (UFCS)}
+
+\subsection{Systém výjimek}
+
+\subsection{Lambda výrazy}
+
+\subsection{Standardní knihovna}
 
 \section{Další změny oproti C++/D}
 
+\subsection{Konstrukce \inlineCode{:ident}}
+
+\subsection{Znak \inlineCode{\#} v identifikátorech}
+
 \subsection{Ternární operátor} \label{ternary}
+
+\subsection{Konstrukce \inlineCode{switch}}
+
+\subsection{Řetězcové literály}
+
+\subsection{Typy IntXX, BinaryXX a Index}

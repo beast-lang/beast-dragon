@@ -30,19 +30,19 @@
 
 % Code
 \lstset{% 
-		basicstyle=\fontfamily{SourceCodePro-T\sourcecodepro@figurestyle}\selectfont\small, 
-		breaklines=true,
-		breakatwhitespace=true,
-		breakautoindent=true,
-		breakindent=5mm,
-		escapeinside=$ $,
-		numbers=left,
-		numberstyle=\fontfamily{SourceCodePro-T\sourcecodepro@figurestyle}\selectfont\small,
-		numbersep=3mm,
-		tabsize=2,
-		frame=leftline,
-		framesep=2mm,
-		xleftmargin=8mm,
+	basicstyle=\fontfamily{SourceCodePro-T\sourcecodepro@figurestyle}\selectfont\small, 
+	breaklines=true,
+	breakatwhitespace=true,
+	breakautoindent=true,
+	breakindent=5mm,
+	escapeinside=$ $,
+	numbers=left,
+	numberstyle=\fontfamily{SourceCodePro-T\sourcecodepro@figurestyle}\selectfont\small,
+	numbersep=3mm,
+	tabsize=2,
+	frame=leftline,
+	framesep=2mm,
+	xleftmargin=8mm,
 }
 
 \lstdefinelanguage{nati}
@@ -57,10 +57,14 @@
 	\hspace{0mm}
 	\lstset{language=nati}
 }{%
-	\nobreak\nopagebreak\centerline{\putref}
 	\vspace{3mm}
 } 
-\newcommand{\inlineCode}[1]{\lstinline[basicstyle=\ttfamily,language=nati,keepspaces,breakatwhitespace=true,breaklines=true]{#1}}
+\newcommand{\inlineCode}[1]{\lstinline[%
+	language=nati,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
 
 \lstdefinelanguage{d}
 {
@@ -74,14 +78,24 @@
 	\hspace{0mm}
 	\lstset{language=d}
 }{%
-	\nobreak\nopagebreak\centerline{\putref}
 	\vspace{3mm}
 } 
+\newcommand{\inlineDCode}[1]{\lstinline[%
+	language=d,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
 
 \lstnewenvironment{cppcode}{
 	\hspace{0mm}
 	\lstset{language=c++}
 }{%
-	\nobreak\nopagebreak\centerline{\putref}
 	\vspace{3mm}
-} 
+}
+\newcommand{\inlineCppCode}[1]{\lstinline[%
+	language=c++,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}

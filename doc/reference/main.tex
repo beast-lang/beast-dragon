@@ -787,7 +787,7 @@ Operands separated by the comma are evaluated from left to right. Value of the r
 	\\
 	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{UnaryExpr} | \gr{AutoType} ) \\
 	\grDef{AutoType} \kwd{auto} [ \kwd{?} ] [ \kwd{!} ] \\
-	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | \kwd{=} \gr{Expression} \\
+	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
 \end{grammar}
 
 Declaring a variable is a thing well known from other programming languages. Declaring a variable consists of two tasks:
@@ -801,6 +801,7 @@ There are three syntactical alternatives of how to declare a variable:
 	\item \inlineCode{Type var;} results in calling the implicit constructor \inlineCode{var.#ctor();} if presents, yield an error otherwise.
 	\item \inlineCode{Type var( arg1, arg2 );} obviously calls \inlineCode{var.#ctor( arg1, arg2 );}
 	\item \inlineCode{Type var = val;} calls \inlineCode{var.#ctor( val );}
+	\item \inlineCode{Type var := val;} calls \inlineCode{var.#ctor( Operator.refAssign, val );} %TODO change first argument to something more reasonable (singleton?)
 \end{compactitem}
 
 \paragraph{Auto declarations}

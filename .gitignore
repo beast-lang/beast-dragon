@@ -3,6 +3,7 @@ doc/**/*.out
 doc/**/*.toc
 doc/**/*.log
 doc/**/*.synctex.gz
+doc/**/*.ptc
 .idea/workspace.xml
 lib/
 bin/
