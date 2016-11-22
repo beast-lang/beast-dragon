@@ -36,7 +36,7 @@ Abychom maximálně usnadnili přechod případných programátorů k našemu ja
 \paragraph{Programovací paradigmata}
 Jelikož vycházíme z jazyků C++ a D, přejímáme i jejich paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
 
-\section{Běžné prvky programovacích jazyků}
+\section{Existující prvky programovacích jazyků}
 
 \subsection{Systém dedičnosti tříd} Jazyky C++ a D mají různě řešené třídní systémy. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a to s dědičností vícenásobnou a případně i~virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
 
@@ -51,14 +51,14 @@ Dá se přemýšlet i o zavedení různých direktiv, které umožňují dále n
 \subsection{Automatická správa paměti -- garbage collector}
 Spousta moderních jazyků (mezi nimi i D) obsahuje garbage collector (dále GC) v základu. Jeho zavedení nenabízí pouze výhody -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
 
-Rozumným kompromisem se jeví být volitelné používání automatické správy paměti. NATI by měl umožňovat efektivní napsání GC jakožto knihovny; GC by tedy mohla být jedna ze základních knihoven jazyka. Tvorba této knihovny ale není předmětem tohoto projektu.
+Rozumným kompromisem se jeví být volitelné používání automatické správy paměti. NATI by měl umožňovat efektivní napsání GC přímo v jazyce; GC by tedy mohla být jedna ze základních knihoven jazyka. Vzhledem k už tak velkému rozsahu plánované práce je však GC jen plánem do budoucna.
 
 \subsection{Implicitní konstantnost proměnných a propagace konstantnosti}
-Koncept konstantnosti proměnných byl zaveden jednak jako prvek kontroly při psaní kódu, jednak zvětšil potenciál kompilátorů při optimalizování kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje ale napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů nepraktikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti.
+Koncept konstantnosti proměnných byl zaveden jednak jako prvek kontroly při psaní kódu, jednak zvětšil potenciál kompilátorů při optimalizování kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje ale napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů neaplikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti.
 
 Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/nightly/book/mutability.html}}) přišly s opačným přístupem -- všechny proměnné jsou implicitně konstantní a programátor musí použít nějakou syntaktickou konstrukci k tomu, aby to změnil. NATI tento přístup také zavede. V rámci koherence syntaxe jazyka (která je rozvedena v dalších kapitolách tohoto textu), připadají v úvahu dvě možnosti:
 \begin{enumerate}
-	\item Vytvoření dekorátoru v kontextu \inlineCode{typeWrapper}\footnote{Viz specifikace jazyka NATI, oddíl \textit{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
+	\item Vytvoření dekorátoru v kontextu \inlineCode{typeWrapper}\footnote{\NatiRef{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
 	\item Vyčlenění operátoru; nejlepším kandidátem je suffixový operátor \inlineCode{Type!}, protože nemá žádnou standardní sémantiku, je nepoužitý a znak vykřičníku je intuitivně asociován s výstrahou, což je zase asociovatelné s mutabilitou.
 \end{enumerate}
 
@@ -72,7 +72,7 @@ V NATI tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní 
 	\item \inlineCode{Typ!?!}
 \end{enumerate}
 
-Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí. Ačkoli seskupení operátorů \inlineCode{?!?} (mutabilní reference na mutabilní hodnotu) může bezesporu v některých programátorech zpočátku vyvolat zděšení, první varianta je na tom ještě hůř. Po pochopení syntaktických pravidel, která jsou průhledná a jasná, se tato konstrukce ukáže být veskrze jednoduchá. Nicméně je třeba přiznat, že tento případ může pravděpodobně být nejhůře přijímaným prvek v jazyku.
+Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí -- dochází zde ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis je jasné a jednoduché pravidlo a značně snižuje potřebu využívat závorek.
 
 \paragraph{Srovnání syntaxe C++, D a NATI}
 \begin{cppcode}
@@ -103,13 +103,29 @@ Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta j
 	Int32? k, l; // Const pointer to const integer
 \end{code}
 
-\subsection{Typová kontrola a konverze typů} %TODO
+\subsection{Typová kontrola a konverze typů}
+NATI má podobný mechanismus typových kontrol jako jazyky C++ a D:
+\begin{itemize}
+	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCastTo} nebo \inlineCode{#implicitCastFrom})\footnote{\NatiRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \natiRef{Overload resolution}}.
+	\item Typy mohou být explicitně konvertibilní do jiných typů (funkce \inlineCode{#explicitCastTo} a~\inlineCode{#explicitCastFrom}). K explicitnímu přetypování se používá výhradně funkce \inlineCode{a.to( Type )} (lze použít i k implicitnímu přetypování).
+\end{itemize}
 
+Důvodem k jiné syntaxi oproti C++ je opět snaha o zjednodušení pravidel a zvýšení přehlednosti kódu.
+
+\begin{cppcode}
+// C++
+const int x = *( ( const int* )( voidPtr ) );
+\end{cppcode}
+
+\begin{code}
+// NATI
+Int32 x = voidRef.to( Int32? );
+\end{code}
 
 \subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
 Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečný prvek, který by se měl užívat jen v nutných případech. Toto se řeší zavedením referencí, které v různých jazycích fungují mírně rozdílně, všeobecně se ale dá říci, že se jedná o ukazatele, které nepodporují ukazatelovou aritmetiku.
 
-V C++ reference neumožňují měnit adresu odkazované paměti. V praxi ale programátor poměrně často potřebuje měnit hodnotu odkazu a~musí se proto uchylovat k ukazatelům, které podporují ukazatelovou aritmetiku a pro přístup k odkazované hodnotě je třeba buď použít dereferenci (která je implementována prefixovým operátorem hvězdička a má tendenci znepřehledňovat kód) nebo speciální syntaktickou konstrukci (místo \inlineCode{x.y} \inlineCode{x->y}) pro přístup k prvkům odkazované hodnoty.
+V C++ reference neumožňují měnit adresu odkazované paměti. V praxi ale programátor poměrně často potřebuje měnit hodnotu odkazu a~musí se proto uchylovat k ukazatelům, které podporují ukazatelovou aritmetiku a pro přístup k odkazované hodnotě je třeba buď použít dereferenci (která je implementována prefixovým operátorem \inlineCppCode{*ptr} a má tendenci znepřehledňovat kód) nebo speciální syntaktickou konstrukci (místo \inlineCppCode{x.y} \inlineCppCode{x->y}) pro přístup k prvkům odkazované hodnoty.
 
 D k problematice přistupuje takto:
 \begin{itemize}
@@ -138,7 +154,7 @@ Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazovan�
 \begin{itemize}
 	\item Je přetížen operátor \inlineCode{ref := var}, který je určen pro změnu odkazované adresy reference.
 	\item Je přetížen operátor \inlineCode{ref is null}, který navrací, zda má reference hodnotu \inlineCode{null}.
-	\item \inlineCode{ref.addr} vrací ukazatel na odkazovaný objekt. \inlineCode{ref.refAddr} vrací ukazatel na referenci.
+	\item \inlineCode{ref.addr} vrací ukazatel na referenci objekt. \inlineCode{ref.refAddr} vrací ukazatel na odkazovaný objekt.
 	\item Reference umožňují explicitní konverzi na reference předků odkazovaného typu.
 \end{itemize}
 
@@ -162,9 +178,11 @@ Reference v NATI pokrývají naprostou většinu případů užití ukazatelů p
 
 \subsection{Lambda výrazy}
 
+\subsection{Traits}
+
 \subsection{Standardní knihovna}
 
-\section{Další změny oproti C++/D}
+\section{Nové a netypické koncepty}
 
 \subsection{Konstrukce \inlineCode{:ident}}
 
@@ -174,6 +192,73 @@ Reference v NATI pokrývají naprostou většinu případů užití ukazatelů p
 
 \subsection{Konstrukce \inlineCode{switch}}
 
+\subsection{Vnořovatelné komentáře}
+
 \subsection{Řetězcové literály}
 
 \subsection{Typy IntXX, BinaryXX a Index}
+
+\chapter{Koncept ctime}
+Tento koncept je nový pro jazyk NATI. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
+
+Tento koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá zbytek. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce NATI dekorátor \inlineCode{@ctime}.
+
+\section{Dedukce axiomů}
+
+Začneme jednoduchým příkladem:
+\begin{code}
+@ctime Int x = 8;
+\end{code}
+
+Zde je vše jasné. Proměnná je konstantní, takže se nemůže měnit; po celou dobu její existence je její hodnota osm.
+
+\subsection{Datové závislosti}
+Uvedeme další jednoduchý příklad:
+\begin{code}
+@ctime Int x = console.readNumber();
+\end{code}
+
+Zde je zřejmé, že proměnná \inlineCode{x} nemůže splňovat podmínky konceptu ctime. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu. Z tohoto příkladu vyplývá, že ctime proměnná nemůže být datově závislá na volání (alespoň některých) funkcí.
+
+\begin{code}
+Int add( Int x, Int y ) {
+	return x + y;
+}
+
+Void main() {
+	@ctime Int a = add( 5, 3 );
+}
+\end{code}
+V tomto příkladě lze hodnotu proměnné \inlineCode{a} určit. Ctime proměnná tedy může být datově závislá na volání funkcí, ale jen některých.
+
+\begin{code}
+Int foo( Int x ) {
+	if( x < 3 )
+		return console.readNumber();
+
+	return x + 1;
+}
+
+Void main() {
+	@ctime Int a = foo( 5 );
+	@ctime Int b = foo( 3 );
+}
+\end{code}
+
+Tento příklad ukazuje, že to, zda funkce lze použít pro výpočet hodnot ctime proměnných, může záležet na předaných parametrech.
+
+Funkce tedy k výpočtu hodnot ctime proměnných všeobecně mohou být použity. To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo závisí na externích datech (soubory, čas, vstup uživatele, ...). Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s trochu jiným účelem.
+
+\subsection{Konstantnost}
+Nyní zauvažujme nad tím, co se stane, když budeme chtít měnit hodnoty ctime proměnných:
+
+\begin{code}
+@ctime Int! x = 8;
+/* code here */
+x = 3;
+/* code here */
+\end{code}
+
+Tento případ je také v pořádku
+
+\section{Konečný přehled axiomů}

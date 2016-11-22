@@ -9,3 +9,6 @@ lib/
 bin/
 etc/
 include/boost/
+*.bbl
+*.blg
+*.exe

@@ -87,7 +87,7 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 
 \section{Keywords} \label{keywords}
 \begin{code}
-alias, auto, break, case, class, continue, delete, else, enum, for, if, import, in, is, module, new, return, switch, this, while
+alias, auto, break, case, class, continue, else, enum, for, if, import, in, is, module, return, switch, this, while
 \end{code}
 
 \subsection{Reserved words}
@@ -470,7 +470,7 @@ Void f() {
 // Then, we search in the parent scope (which is the module scope) -> found function a
 a();
 
-Int32 a;
+Int a;
 
 // Now when we search in the current scope, we find variable a
 a = 5;
@@ -533,10 +533,14 @@ Note that not only functions accept arguments - for example parametric classes (
 
 Overload resolution consists of these steps:
 \begin{enumerate}
-	\item Overloads that do not match given arguments are ignored (also considering constness)
-	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset (auto arguments are always considered as implicit casted)
+	\item Overloads that do not match given arguments are ignored (also considering constness and staticness)
+	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset
+	\begin{itemize}
+		\item \inlineCode{auto} arguments are treated as implicit casted
+		\item Arguments containing \inlineCode{:ident} accessor are also treated as implicit casted
+	\end{itemize}
+	\item Find minimal scope import nesting level in the overloadset; remove all overloads with higher nesting levels (overloads that are not from scope imports have higher priority)
 	\item If there are any non-static overloads, ignore all static overloads
-	\item If there are any direct overloads (not using scope imports), ignore all overloads that come from scope import values
 	\item If there are any non-compiler-generated overloads, ignore all compiler-generated overloads (implicit constructors etc)
 	\item If there are any non-const overloads, ignore all const overloads
 \end{enumerate}
@@ -712,8 +716,8 @@ You can use variable declaration as a parameter. The declared variable is valid 
 
 \paragraph{The '\inlineCode{x ...}' operator} is used for 'expading' a value across multiple parameter slots. It does so using \hyperref[iterators]{standard iterating process} performed at ctime.
 \begin{code}
-Void f( Int32 a, Int32 b, Int32 c ) { /* ... */ }
-Void g( String x, Int32 a ) { /* ... */ }
+Void f( Int a, Int b, Int c ) { /* ... */ }
+Void g( String x, Int a ) { /* ... */ }
 
 Void main() {
 	f( [ 1, 2, 3 ] ... ); // Valid, the array is iterated at compile time and each value is passed as a separate parameter
@@ -818,7 +822,7 @@ Local variables are destroyed as soon as their scope ends. Although this is stra
 \begin{itemize}
 	\item Variables declared inside \textbf{if} conditions are destroyed after the end of the if statement, including following else statements.
 	\begin{code}
-if( Int32 i( getNumber() ) == 5 ) {
+if( Int i( getNumber() ) == 5 ) {
 		
 } else if( i == 4 ) {
 	
@@ -827,7 +831,7 @@ if( Int32 i( getNumber() ) == 5 ) {
 
 	\item Variables declared inside \textbf{where} conditions are destroyed at the end of every iteration as they are declared at the beginning of every iteration.
 	\begin{code}
-while( ( Int32! x = 0 )++ < 32 ) {
+while( ( Int! x = 0 )++ < 32 ) {
 	// This is WRONG! x is created every iteration, so its value for each iteration is 1. This loop would not end.
 }
 
@@ -874,6 +878,8 @@ foreach( x; 0 .. 32 ) {
 
 \chapter{Types}
 
+\subsection{Type casting}
+
 \subsection{Pointers vs. references}
 \begin{centeredRefTabular}{l | c | c}
 	\textbf{Property} & \textbf{Reference} & \textbf{Pointer} \\ \hline \hline
@@ -881,10 +887,11 @@ foreach( x; 0 .. 32 ) {
 	Pointer arithmetics & no & yes \\ \hline
 	Can be \inlineCode{null} & yes & yes \\ \hline
 	Rebindable & yes & yes \\ \hline
-	Binding & \inlineCode{ref := val} & \inlineCode{ptr = val.#ptr} \\
-		& or \inlineCode{ref := val.#ptr} & \\ \hline
-	Member access & \inlineCode{ref.mem} & \inlineCode{ptr.data.mem} \\
-
+	Binding & \inlineCode{ref := val} & \inlineCode{ptr = val.addr} \\
+		& or \inlineCode{ref := val.addr} & \\
+		& or \inlineCode{ref := ref2} & \\ \hline
+	Member access & \inlineCode{ref.mem} & \inlineCode{ptr.data.mem} \\ \hline
+	Dereference & (implicit cast) & \inlineCode{ptr.data} \\
 \end{centeredRefTabular}
 
 \chapter{Modules}
@@ -1156,7 +1163,7 @@ Technically, a function with compile-time parameter is a function template.
 
 \begin{code}
 // 'y' and 't' parameters are compile-time
-Void f( Int32 x, @ctime Int32 y, @ctime Type t ) {
+Void f( Int x, @ctime Int y, @ctime Type t ) {
 	
 }
 \end{code}
@@ -1169,9 +1176,9 @@ A variable decorated with \decoratorRef{ctime} is a compile-time variable. Compi
 In order to prevent confusion, it is prohibited to work with runtime variables and manipulate (change values of) @ctime variables in the same expression.
 
 \begin{code}
-@ctime Type! t = Int32; // t is a mutable @ctime variable that can hold types.
+@ctime Type! t = Int; // t is a mutable @ctime variable that can hold types.
 
-t x = 5; // Now we declared a variable x of type t (which is Int32). It is a runtime variable.
+t x = 5; // Now we declared a variable x of type t (which is Int). It is a runtime variable.
 
 t = String; // We're changing the @ctime variable here
 t str = "asd"; // y is of type String
@@ -1277,7 +1284,7 @@ In the \decorationContextRef{parameterDeclaration} context, the parameter is mad
 }
 
 Void main() {
-	HashTable( String, Int32 )! table;
+	HashTable( String, Int )! table;
 	
 	table[ stdin.read() ] = 5;
 	
@@ -1291,6 +1298,16 @@ In the \decorationContextRef{functionDeclaration} context, the function is made 
 In the \decorationContextRef{variableDeclaration} context, the variable is made compile time if its type is compile time.
 
 The decorator cannot be used in any other contexts.
+
+\chapter{Ctime}
+Ctime is a powerful concept introduced in NATI. It provides a form of metaprogramming, but that's not all what it does.
+
+\paragraph{Basic idea}
+The ctime concept has one simple idea: to introduce a \textbf{type of variables of which value can be deduced at any line of code} (without having to run the program).
+
+These variables will are called ctime variables in NATI.
+
+\paragraph{Consequences} Consequences of this one simple rule are following:
 
 \chapter{NATI practices \& styling guide}
 
@@ -1345,6 +1362,9 @@ auto max( auto x, x.#type y ) = ( x > y ) ? x : y;
 T!? #new( @ctime Type T ) {
 	return malloc( T.#size ).to( T!@ );
 }
+
+auto Int = Int32;
+auto Float = Float32;
 
 auto I1 = Int8;
 auto I2 = Int16;
