@@ -1,6 +1,9 @@
 % !TeX spellcheck = cs_CZ
 % !TeX root = projekt.tex
 
+\newcommand{\ctime}{\inlineCode{@ctime}\xspace}
+\newcommand{\nonctime}{ne-\inlineCode{@ctime}\xspace}
+
 \chapter{Úvod}
 Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka NATI a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
 
@@ -97,10 +100,10 @@ Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta j
 	// NATI
 	Int32! a, b; // Mutable integer
 	Int32 c, d; // Const integer
-	Int32!?! e, f; // Mutable pointer to mutable integer
-	Int32?! g, h; // Mutable pointer to const integer
-	Int32!? i, j; // Const pointer to mutable integer
-	Int32? k, l; // Const pointer to const integer
+	Int32!?! e, f; // Mutable reference to mutable integer
+	Int32?! g, h; // Mutable reference to const integer
+	Int32!? i, j; // Const reference to mutable integer
+	Int32? k, l; // Const reference to const integer
 \end{code}
 
 \subsection{Typová kontrola a konverze typů}
@@ -198,27 +201,28 @@ Reference v NATI pokrývají naprostou většinu případů užití ukazatelů p
 
 \subsection{Typy IntXX, BinaryXX a Index}
 
-\chapter{Koncept ctime}
-Tento koncept je nový pro jazyk NATI. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
+\chapter{Koncept líhnutí kódu (\textit{code~hatching})}
+Toto je nový koncept navržený pro jazyk NATI. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
 
-Tento koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá zbytek. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce NATI dekorátor \inlineCode{@ctime}.
+Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řada důsledků. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce NATI dekorátor \ctime.
+
+Vykonávání kódu tak probíhá ve dvou fázích -- hodnoty proměnných označených dekorátorem \ctime jsou odvozeny již za doby překladu, zbytek je vypočítáván za běhu samotného programu. \textbf{Toto se dá připodobnit k líhnutí vajec}, kdy se zárodek vyvíjí za skořápkou, ukryt před světem, a světlo světa spatří až jako vyvinutý jedinec.
 
 \section{Dedukce axiomů}
-
-Začneme jednoduchým příkladem:
+Máme vyřčenou základní myšlenku -- hodnoty proměnných označených dekorátorem \ctime musíme být schopni odvodit již během kompilace; nyní tuto myšlenku budeme rozvádět. Začneme jednoduchým příkladem:
 \begin{code}
 @ctime Int x = 8;
 \end{code}
 
 Zde je vše jasné. Proměnná je konstantní, takže se nemůže měnit; po celou dobu její existence je její hodnota osm.
 
-\subsection{Datové závislosti}
-Uvedeme další jednoduchý příklad:
+\subsection{Datové závislosti} \label{ctimeDataDependency}
+Další jednoduchý příklad:
 \begin{code}
-@ctime Int x = console.readNumber();
+@ctime Int x = console.read( Int );
 \end{code}
 
-Zde je zřejmé, že proměnná \inlineCode{x} nemůže splňovat podmínky konceptu ctime. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu. Z tohoto příkladu vyplývá, že ctime proměnná nemůže být datově závislá na volání (alespoň některých) funkcí.
+Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~tohoto příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání (alespoň některých) funkcí.
 
 \begin{code}
 Int add( Int x, Int y ) {
@@ -229,12 +233,12 @@ Void main() {
 	@ctime Int a = add( 5, 3 );
 }
 \end{code}
-V tomto příkladě lze hodnotu proměnné \inlineCode{a} určit. Ctime proměnná tedy může být datově závislá na volání funkcí, ale jen některých.
+V tomto příkladě lze hodnotu proměnné \inlineCode{a} určit. \ctime tedy můžou být datově závislé na volání funkcí, ale jen některých.
 
 \begin{code}
 Int foo( Int x ) {
 	if( x < 3 )
-		return console.readNumber();
+		return console.read( Int );
 
 	return x + 1;
 }
@@ -245,20 +249,114 @@ Void main() {
 }
 \end{code}
 
-Tento příklad ukazuje, že to, zda funkce lze použít pro výpočet hodnot ctime proměnných, může záležet na předaných parametrech.
+Tento příklad ukazuje, že to, zda funkce lze použít pro výpočet hodnot \ctime proměnných, může záležet na předaných parametrech.
 
-Funkce tedy k výpočtu hodnot ctime proměnných všeobecně mohou být použity. To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo závisí na externích datech (soubory, čas, vstup uživatele, ...). Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s trochu jiným účelem.
+\textbf{Funkce tedy k výpočtu hodnot \ctime proměnných všeobecně mohou být použity.} To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo závisí na externích datech (soubory, čas, vstup uživatele, ...). Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s~trochu jiným účelem.
+
+Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Ano, hodnoty \nonctime proměnných mohou přesto být odvoditelné bez nutnosti spuštění programu, nicméně ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat to pouze z kódu, v praxi by toto však značně zpomalilo kompilaci. Předpokládejme tedy, že \textbf{hodnoty všech proměnných, které nejsou \ctime, se před spuštěním programu nedají odvodit.}
 
 \subsection{Konstantnost}
-Nyní zauvažujme nad tím, co se stane, když budeme chtít měnit hodnoty ctime proměnných:
+Nyní zauvažujme nad tím, co se stane, když budeme chtít měnit hodnoty \ctime proměnných:
 
 \begin{code}
 @ctime Int! x = 8;
 /* code here */
-x = 3;
+x += 2;
 /* code here */
 \end{code}
 
-Tento případ je také v pořádku
+Zde je také všechno v pořádku. Ctime proměnné tedy nemusí být vždy konstantní.
 
-\section{Konečný přehled axiomů}
+\begin{code}
+@static @ctime Int! x = 5;
+
+Void foo() {
+	@ctime Int! y = 5;
+	console.write( x, y, '\n' );
+	y += 3;
+	x += 3;
+	console.write( x, y, '\n' );
+}
+
+Void foo2() {
+	x += 2;
+}
+
+Void main() {
+	while( true ) {
+		if( console.read( Int ) < 2 )
+			foo();
+		else
+			foo2();
+	}
+}
+\end{code}
+
+Tady už narážíme na problém. Za doby kompilace nemůžeme zjistit hodnotu proměnné \inlineCode{x}, protože se přičítá na základě uživatelského vstupu. Nekonstantní statické proměnné se nedají ohlídat, \textbf{\ctime statické proměnné tedy musí být vždy konstantní}.
+
+\subsection{Podmínky a cykly}
+Větvení \textit{if-then-else} a cykly sdílejí stejný princip -- různé chování na základě nějakého výrazu. Z pohledu našeho problému se řídí stejnými pravidly.
+
+\begin{code}
+Void main() {
+	@ctime Int! x = 5;
+	
+	while( x < 6 ) $\label{ctime:branch:1}$
+		x += 3;
+
+	Int y = console.read( Int );
+	if( y < 2 ) $\label{ctime:branch:2}$
+		x += 8;
+}
+\end{code}
+
+Z řádku \ref{ctime:branch:1} je patrné, že větvení v rámci \ctime proměnných je možné. Řádek \ref{ctime:branch:2} zase ukazuje, že to není možné vždy. Pokud je větvení datově závislé na výrazu, jehož hodnota se dá odvodit za doby kompilace (dále jen \ctime výrazu), mohou být v jeho těle přítomny \ctime proměnné. Pro usnadnění práce kompilátoru a zpřehlednění kódu NATI vyžaduje, aby \ctime větvení byly označeny dekorátorem (jinak se k nim přistupuje jako k \nonctime, viz dále).
+
+Problematika je ale trochu složitější:
+
+\begin{code}
+Void main() {
+	@ctime Int! y = 6;
+
+	while( console.read( Int ) < 5 ) {
+		@ctime Int! z = 3;
+				
+		console.write( y );	$\label{ctime:branch:3}$
+		console.write( z );
+		
+		z += 4;
+		console.write( z + y );
+		
+		y += 2;
+	}
+}
+\end{code}
+
+Zde máme proměnnou \inlineCode{z}, která je definovaná v těle \nonctime cyklu. Nicméně takovéto použití proměnné jako v příkladu naše požadavky nenarušuje, stejně tak čtení z proměnné \inlineCode{y} na řádku \ref{ctime:branch:3}. V \nonctime větveních tedy mohou být použity \ctime proměnné a dokonce i definovány nekonstantní \ctime proměnné. Pravidlo, které se z tohoto příkladu dá vyvodit, je že \textbf{v tělech \nonctime větvení nelze měnit hodnoty \ctime proměnných deklarovaných mimo tělo.}
+
+\subsection{Reference}
+
+\subsection{Přetypování na \nonctime}
+
+\section{Konečný přehled pravidel}
+\begin{enumerate}
+	\item \ctime proměnné nemohou být jakkoli (datově) závislé na proměnných, které nejsou \ctime. 
+	\item Statické \ctime proměnné musí být konstantní
+	\item Větvení může být \ctime, pokud je výraz v nich datově závislý pouze na \ctime proměnných
+	\begin{enumerate}
+		\item Těla \ctime větvení nejsou nijak omezena
+		\item V tělech \nonctime větvení se nemůže měnit data \ctime proměnných, které byly deklarovány mimo tělo (lze je číst)
+	\end{enumerate}
+\end{enumerate}
+
+\section{Potenciály konceptu}
+
+\subsection{Vykonávání funkcí za doby kompilace}
+
+\subsection{Šablonování a unifikace šablonových a klasických parametrů}
+
+\subsection{Typové proměnné}
+
+\subsection{\ctime třídy}
+
+\subsection{Reflexe kódu}

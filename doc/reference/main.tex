@@ -327,7 +327,7 @@ void main() {
 	\hline
 	
 	7
-		& \verb|x is y| & \verb|binIs(R)| & Is (similar to equal to) & Cannot be chained \\
+		& \verb|x is y| & \verb|binIs(R)| & Is (pattern matching) & Cannot be chained \\
 		& \verb|x !is y| & \verb|binIsNot(R)| & Is not & \\
 		& \verb|x in y| & \verb|binIn(R)| & In & \\
 		& \verb|x !in y| & \verb|binNotIn(R)| & Not in & \\
@@ -1140,7 +1140,7 @@ Void func3() {
 \paragraph{Inter-compatibility}
 The \decoratorRef{public}, \decoratorRef{protected} and \decoratorRef{private} decorators are not compatible with any decorator from the three (this also means you can't apply them twice). Also, \decoratorRef{friend} and \decoratorRef{public} decorators are not compatible.
 
-\subsection{The \decoratorRef{ctime} (and \decoratorRef{autoCtime}) decorator} \label{decorator:ctime}
+\subsection{The \decoratorRef{ctime} (and \decoratorRef{autoCtime}) decorator} \label{decorator:ctime} \label{decorator:autoCtime}
 Generally, the \decoratorRef{ctime} decorator is related with compile time execution. It supports multiple contexts and depending on the context, its semantics can slightly change.
 
 \paragraph{Axioms overview}
@@ -1299,6 +1299,8 @@ In the \decorationContextRef{variableDeclaration} context, the variable is made 
 
 The decorator cannot be used in any other contexts.
 
+\subsection{The \decoratorRef{noscope} decorator} \label{decorator:noscope}
+
 \chapter{Ctime}
 Ctime is a powerful concept introduced in NATI. It provides a form of metaprogramming, but that's not all what it does.
 
@@ -1406,6 +1408,15 @@ X(5).#identifier == null
 
 // Overloadsets
 I8
+
+// Constantization
+Void foo() {
+	Int! x = 5;
+	x += 3;
+	constantize x;
+	
+	x += 3; // Error: x is constant
+}
 \end{code}
 
 \subsection{Possible lists}
