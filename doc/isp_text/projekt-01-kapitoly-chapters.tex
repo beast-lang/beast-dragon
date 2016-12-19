@@ -67,7 +67,7 @@ Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/night
 
 Při designu NATI byla zvolena druhá možnost, především kvůli "upovídanosti" kódu a~ještě kvůli jednomu důvodu, který je popsán níže.
 
-\paragraph{Propagace konstantnosti} Jazyk D je navržen tak, že je-li ukazatel konstantní (nelze měnit adresu, na kterou ukazuje), je přístup k paměti, na kterou ukazuje, také konstantní. Není tedy možné mít konstantní ukazatel na nekonstantní paměť. Toto je zbytečné limitování; tranzitivní konstantnost se může hodit, ale měla by být volitelná (v NATI má toto opět potenciál pro řešení v dekorátorech).
+\paragraph{Propagace konstantnosti} \label{constPropagation} Jazyk D je navržen tak, že je-li ukazatel konstantní (nelze měnit adresu, na kterou ukazuje), je přístup k paměti, na kterou ukazuje, také konstantní. Není tedy možné mít konstantní ukazatel na nekonstantní paměť. Toto je zbytečné limitování; tranzitivní konstantnost se může hodit, ale měla by být volitelná (v NATI má toto opět potenciál pro řešení v dekorátorech).
 
 V NATI tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní ukazatel na nekonstantní data. Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specifikovat mutabilitu dvakrát. Ve dříve navržených dvou případech by to tedy vypadalo takto (syntaxe pro referenci je \inlineCode{Typ?}, viz \ref{pointers}):
 \begin{enumerate}
@@ -75,7 +75,7 @@ V NATI tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní 
 	\item \inlineCode{Typ!?!}
 \end{enumerate}
 
-Alternativou by bylo třeba ještě zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí -- dochází zde ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis je jasné a jednoduché pravidlo a značně snižuje potřebu využívat závorek.
+Jednou z alternativ by bylo zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí -- dochází tam ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis je jasný a jednoduchý a~značně snižuje potřebu využívat závorek.
 
 \paragraph{Srovnání syntaxe C++, D a NATI}
 \begin{cppcode}
@@ -151,19 +151,18 @@ Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování.
 
 V NATI je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost NATI obstarává jiným způsobem\footnote{Viz \ref{ternary}}; tím pádem je znak otazníku "postradatelný".
 
-Ukazatel funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}\footnote{Identifikátor se ještě zvažuje}. Přístup k prvkům odkazované hodnoty je možný pouze pomocí dereference. K získání ukazatele se také, kvůli stejným důvodům, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Typ?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer(Type referencedType)}.
+Ukazatel funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu a nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}. Přístup k prvkům odkazované hodnoty je možný pouze pomocí dereference. K získání ukazatele se také, kvůli stejným důvodům jako u dereference, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Typ?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer(Type referencedType)}.
 
-Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazované adresy (může mít i hodnotu \inlineCode{null}). Neumožňuje zanořování -- nelze definovat referenci na referenci (ukazatel na referenci ale možný je). Chová se stejně jako odkazovaná hodnota až na několik výjimek:
+Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazované adresy (může mít i hodnotu \inlineCode{null}). Neumožňuje zanořování -- nelze definovat referenci na referenci (ukazatel na referenci ale možný je). Chová se stejně jako odkazovaná hodnota, až na několik výjimek:
 \begin{itemize}
-	\item Je přetížen operátor \inlineCode{ref := var}, který je určen pro změnu odkazované adresy reference.
+	\item Je přetížen operátor \inlineCode{ref := var} a \inlineCode{ref := null}, který je určen pro změnu odkazované adresy reference.
 	\item Je přetížen operátor \inlineCode{ref is null}, který navrací, zda má reference hodnotu \inlineCode{null}.
-	\item \inlineCode{ref.addr} vrací ukazatel na referenci objekt. \inlineCode{ref.refAddr} vrací ukazatel na odkazovaný objekt.
-	\item Reference umožňují explicitní konverzi na reference předků odkazovaného typu.
+	\item \inlineCode{ref.addr} vrací ukazatel na referenci. \inlineCode{ref.refAddr} vrací ukazatel na odkazovaný objekt.
 \end{itemize}
 
-Všechny typy jsou implicitně konvertibilní na referenci a reference je explicitně konvertibilní na odkazovaný typ.
+Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho předků) a~reference je explicitně konvertibilní na odkazovaný typ.
 
-Reference v NATI pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné, když to nepotřebuje. K programování na nižší úrovni se dá použít konvenční ukazatel (typ \inlineCode{Pointer( T )}).
+Reference v NATI pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
 
 \subsection{Dekorátory}
 
@@ -222,7 +221,7 @@ Další jednoduchý příklad:
 @ctime Int x = console.read( Int );
 \end{code}
 
-Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~tohoto příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání (alespoň některých) funkcí.
+Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~tohoto příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání alespoň některých funkcí.
 
 \begin{code}
 Int add( Int x, Int y ) {
@@ -233,7 +232,7 @@ Void main() {
 	@ctime Int a = add( 5, 3 );
 }
 \end{code}
-V tomto příkladě lze hodnotu proměnné \inlineCode{a} určit. \ctime tedy můžou být datově závislé na volání funkcí, ale jen některých.
+V tomto příkladě lze hodnotu proměnné \inlineCode{a} určit. \ctime proměnné tedy můžou být datově závislé na volání funkcí, ale jen některých.
 
 \begin{code}
 Int foo( Int x ) {
@@ -249,11 +248,13 @@ Void main() {
 }
 \end{code}
 
-Tento příklad ukazuje, že to, zda funkce lze použít pro výpočet hodnot \ctime proměnných, může záležet na předaných parametrech.
+Tento příklad ukazuje, že to, zda funkci lze použít pro výpočet hodnot \ctime proměnných, může záležet na předaných parametrech.
 
-\textbf{Funkce tedy k výpočtu hodnot \ctime proměnných všeobecně mohou být použity.} To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo závisí na externích datech (soubory, čas, vstup uživatele, ...). Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s~trochu jiným účelem.
+\textbf{Funkce tedy k výpočtu hodnot \ctime proměnných všeobecně mohou být použity.} To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo závisí na externích datech (soubory, čas, vstup uživatele, ...).
 
-Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Ano, hodnoty \nonctime proměnných mohou přesto být odvoditelné bez nutnosti spuštění programu, nicméně ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat to pouze z kódu, v praxi by toto však značně zpomalilo kompilaci. Předpokládejme tedy, že \textbf{hodnoty všech proměnných, které nejsou \ctime, se před spuštěním programu nedají odvodit.}
+Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s~trochu jiným účelem.
+
+Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Hodnoty \nonctime proměnných mohou sice být odvoditelné bez nutnosti spuštění programu, ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat to pouze z~kódu, v praxi by toto však značně zpomalilo kompilaci. Předpokládejme tedy, že \textbf{hodnoty všech proměnných, které nejsou \ctime, se před spuštěním programu nedají odvodit.}
 
 \subsection{Konstantnost}
 Nyní zauvažujme nad tím, co se stane, když budeme chtít měnit hodnoty \ctime proměnných:
@@ -292,10 +293,10 @@ Void main() {
 }
 \end{code}
 
-Tady už narážíme na problém. Za doby kompilace nemůžeme zjistit hodnotu proměnné \inlineCode{x}, protože se přičítá na základě uživatelského vstupu. Nekonstantní statické proměnné se nedají ohlídat, \textbf{\ctime statické proměnné tedy musí být vždy konstantní}.
+Tady už narážíme na problém. Za doby kompilace nemůžeme zjistit hodnotu proměnné \inlineCode{x}, protože se mění na základě uživatelského vstupu (podle výsledku \inlineCode{console.read( Int )} se totiž volá buď funkce \inlineCode{foo} nebo \inlineCode{foo2}, kde každá manipuluje s proměnnou \inlineCode{x}). Nekonstantní statické proměnné se nedají ohlídat, \textbf{\ctime statické proměnné tedy musí být vždy konstantní}.
 
 \subsection{Podmínky a cykly}
-Větvení \textit{if-then-else} a cykly sdílejí stejný princip -- různé chování na základě nějakého výrazu. Z pohledu našeho problému se řídí stejnými pravidly.
+Větvení \textit{if-then-else} a cykly sdílejí stejný princip -- různé chování na základě hodnoty nějakého výrazu. Pravidla odvozená v tomto oddílu platí pro všechna větvení stejně.
 
 \begin{code}
 Void main() {
@@ -332,24 +333,89 @@ Void main() {
 }
 \end{code}
 
-Zde máme proměnnou \inlineCode{z}, která je definovaná v těle \nonctime cyklu. Nicméně takovéto použití proměnné jako v příkladu naše požadavky nenarušuje, stejně tak čtení z proměnné \inlineCode{y} na řádku \ref{ctime:branch:3}. V \nonctime větveních tedy mohou být použity \ctime proměnné a dokonce i definovány nekonstantní \ctime proměnné. Pravidlo, které se z tohoto příkladu dá vyvodit, je že \textbf{v tělech \nonctime větvení nelze měnit hodnoty \ctime proměnných deklarovaných mimo tělo.}
+Zde máme proměnnou \inlineCode{z}, která je definovaná v těle \nonctime cyklu. Nicméně takovéto použití proměnné naše požadavky nenarušuje, stejně tak čtení z proměnné \inlineCode{y} na řádku \ref{ctime:branch:3}. V \nonctime větveních tedy mohou být použity \ctime proměnné a dokonce i definovány nekonstantní \ctime proměnné. Pravidlo, které se z tohoto příkladu dá vyvodit, je že \textbf{v tělech \nonctime větvení nelze měnit hodnoty \ctime proměnných deklarovaných mimo něj.}
 
-\subsection{Reference}
+\subsection{Tranzitivita \ctime}
+Je zřejmé, že je-li proměnná \ctime programátorem definovaného třídního typu, musí být pro danou proměnnou všechny třídní proměnné toho typu také \ctime.
+
+\begin{code}
+class C {
+	Int x, y;
+}
+
+Void main() {
+	@ctime C c;
+	c.x = 5; // c.x is @ctime
+}
+\end{code}
+
+\subsection{Reference a dynamické alokace}
+Pro praktickou demonstraci tohoto problému je již třeba složitější příklad:
+\begin{code}
+class BinaryTreeNode {
+	
+@public:
+	String key;
+	Int! value;
+	BinaryTreeNode!?! left, right;
+	
+}
+	
+class BinaryTree {
+
+@public:
+	BinaryTreeNode!?! root;
+	
+@public:
+	Void insert!( String key, Int value ) { ... }
+	
+	/// BinaryTree[ "key" ] lookup
+	Int #operator( Operator.brackets, String key ) { ... }
+
+}
+
+BinaryTree sampleTree() {
+	BinaryTree result;
+	result.insert( "nati", 3 ); $\label{ctime:ref:2}$
+	result.insert( "best", 5 ); $\label{ctime:ref:3}$
+	
+	result.top.data = 10;
+}
+
+@static @ctime BinaryTree tree = sampleTree(); $\label{ctime:ref:1}$
+
+Void main() {
+	console.write( tree["nati"] ); // the tree is @ctime, so the compiler is capable of looking up value in the binary tree at compile time, making this code extremely fast when running
+	
+	tree.root.value = 7; // tree is const, but tree.root is not $\label{ctime:ref:4}$
+}
+\end{code}
+
+Zde jsme si na řádku \ref{ctime:ref:1} definovali \ctime proměnnou \inlineCode{tree}.  Třída \inlineCode{BinaryTree} potřebuje pro svou správnou funkčnost i bloky dynamicky alokované paměti (listy stromu; v~kódu to explicitně uvedeno není, nicméně z jeho sémantiky to vyplývá). Ty pro správnou funkčnost stromu také musí splňovat podmínky \ctime. Ačkoli by teoreticky bylo možné mít \ctime ukazatel na \nonctime paměť (za doby kompilace by se vědělo, kam ukazatel odkazuje, ale ne, co na té paměti je), výhodnější je udělat \ctime tranzitivní i přes ukazatele a reference. Pokud bychom to takto nenastavili, kód příkladu tohoto oddílu by pro fuknčnost vyžadoval zvláštní úpravy, nebo by nemohl fungovat vůbec.
+
+Protože \inlineCode{tree} je statická \ctime proměnná, musí být konstantní. Dynamicky alokované bloky (listy stromu) vytvořené při její inicializaci tedy také musí být konstantní. Toto ale neplatí zcela -- během inicializace proměnné \inlineCode{tree} (během vykonávání funkce \inlineCode{sampleTree} za doby kompilace) s bloky normálně manipulujeme (řádky \ref{ctime:ref:2} a \ref{ctime:ref:3}). Tyto bloky se tedy stávají konstantními až \textit{po} dokončení inicializace. Zde vyvstává problém -- v naší třídě \inlineCode{BinaryTree} je ukazatel na dynamicky alokovaný blok typu \inlineCode{BinaryTreeItem!?!} -- odkazovaná paměť je z odkazu mutabilní. Řádek \ref{ctime:ref:4} je tedy technicky korektní, i když by podle výše uvedených myšlenek neměl být.
+
+Jak tedy zajistit, aby se po inicializaci proměnné \inlineCode{tree} nedalo k jejím listům přistupovat přes mutabilní reference? Tento problém by se dal vyřešit zavedením vynucené tranzitivity konstantnosti referencí a ukazatelů -- tedy že při konstantní referenci/ukazateli by se odkazovaná paměť automaticky brala jako také konstantní. V oddílu \ref{constPropagation} jsme ale rozhodli, že jazyk NATI nebude vynucovat propagaci konstantnosti přes reference -- programátor si ji musí zajistit sám tam, kde je to potřeba. U binárního stromu je logické, že je-li konstantní strom, měly by jeho listy být také konstantní; v případě programátorem definovaných typů ale nelze zaručit, že je mutabilita korektně ošetřena.
+
+Při kompilaci se konstantní statické proměnné v některých kompilátorech umísťují do tzv. \textit{.text section} ve výsledném binárním souboru. Stránky paměti načtené z těchto sekcí jsou chráněny operačním systémem proti zápisu a pokus o zapsání do nich vyvolává běhovou chybu (\textit{segfault/access violation}). NATI řeší problém obdobným způsobem -- při pokusu o~zápis do paměti (během kompilace), která byla alokována během inicializace statické \ctime (nebo i jen konstantní) proměnné, mimo dobu inicializace zmíněné proměnné vyvolá kompilátor chybu. Ochrana se dá například ještě rozšířit o zákaz existence mutabilních referencí a ukazatelů na dané bloky; v současné fázi návrhu jazyka ještě ale není jisté, zda by toto omezení nemohlo způsobit nějaké komplikace.
 
 \subsection{Přetypování na \nonctime}
 
-\section{Konečný přehled pravidel}
+\section{Přehled odvozených pravidel}
 \begin{enumerate}
 	\item \ctime proměnné nemohou být jakkoli (datově) závislé na proměnných, které nejsou \ctime. 
 	\item Statické \ctime proměnné musí být konstantní
 	\item Větvení může být \ctime, pokud je výraz v nich datově závislý pouze na \ctime proměnných
 	\begin{enumerate}
 		\item Těla \ctime větvení nejsou nijak omezena
-		\item V tělech \nonctime větvení se nemůže měnit data \ctime proměnných, které byly deklarovány mimo tělo (lze je číst)
+		\item V tělech \nonctime větvení se nemůže měnit data \ctime proměnných, které byly deklarovány mimo něj (ale lze je číst)
 	\end{enumerate}
+	\item Je-li proměnná \ctime, jsou všechny její třídní proměnné také \ctime.
+	\item Je-li reference nebo ukazatel \ctime, paměť, na kterou odkazuje, je také \ctime.
+	\item Po inicializaci statické \ctime proměnné nelze zapisovat do paměti, která byla během její inicializace alokována. 
 \end{enumerate}
 
-\section{Potenciály konceptu}
+\section{Potenciál a důsledky konceptu}
 
 \subsection{Vykonávání funkcí za doby kompilace}
 
@@ -357,6 +423,8 @@ Zde máme proměnnou \inlineCode{z}, která je definovaná v těle \nonctime cyk
 
 \subsection{Typové proměnné}
 
-\subsection{\ctime třídy}
+\subsection{\ctime funkce a třídy}
 
 \subsection{Reflexe kódu}
+
+\section{Implementační detaily}
