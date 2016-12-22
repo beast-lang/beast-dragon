@@ -5,9 +5,11 @@
 \newcommand{\nonctime}{ne-\inlineCode{@ctime}\xspace}
 
 \chapter{Úvod}
-Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka NATI a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
+Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
 
 Programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
+
+Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletní specifikace jazyka, kompilátor vytvořený v rámci bakalářské práce ale implementuje pouze její podmnožinu -- některé příklady tedy kompilátor není schopný zpracovat.
 
 \section{Motivace}
 Jazyk C++ je stále jedním z nejpoužívanějších jazyků\footnote{Podle \url{http://www.tiobe.com/tiobe-index/}}. 
@@ -47,37 +49,53 @@ Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen t
 
 Ačkoli je implementace systému vícenásobné dědičnosti tak, jak je například v C++, složitější, její implementace je uskutečnitelná, kód nezpomaluje a fakticky rozšiřuje možnosti jazyka. C++ model dědičnosti umí vše, co umí Javovský model, a ještě víc.
 
-Jazyk NATI tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak je možné, že v rámci bakalářské práce nebude plně implementován.
+Jazyk Beast tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak je možné, že v rámci bakalářské práce nebude plně implementován.
 
 Dá se přemýšlet i o zavedení různých direktiv, které umožňují dále nastavovat tento systém -- tedy například přidat možnost nastavení zamezení generování tabulky virtuálních metod, atp.
 
 \subsection{Automatická správa paměti -- garbage collector}
 Spousta moderních jazyků (mezi nimi i D) obsahuje garbage collector (dále GC) v základu. Jeho zavedení nenabízí pouze výhody -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
 
-Rozumným kompromisem se jeví být volitelné používání automatické správy paměti. NATI by měl umožňovat efektivní napsání GC přímo v jazyce; GC by tedy mohla být jedna ze základních knihoven jazyka. Vzhledem k už tak velkému rozsahu plánované práce je však GC jen plánem do budoucna.
+Rozumným kompromisem se jeví být volitelné používání automatické správy paměti. Beast by měl umožňovat efektivní napsání GC přímo v jazyce; GC by tedy mohla být jedna ze základních knihoven jazyka. Vzhledem k už tak velkému rozsahu plánované práce je však GC jen plánem do budoucna.
 
 \subsection{Implicitní konstantnost proměnných a propagace konstantnosti}
 Koncept konstantnosti proměnných byl zaveden jednak jako prvek kontroly při psaní kódu, jednak zvětšil potenciál kompilátorů při optimalizování kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje ale napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů neaplikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti.
 
-Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/nightly/book/mutability.html}}) přišly s opačným přístupem -- všechny proměnné jsou implicitně konstantní a programátor musí použít nějakou syntaktickou konstrukci k tomu, aby to změnil. NATI tento přístup také zavede. V rámci koherence syntaxe jazyka (která je rozvedena v dalších kapitolách tohoto textu), připadají v úvahu dvě možnosti:
+Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/nightly/book/mutability.html}}) přišly s opačným přístupem -- všechny proměnné jsou implicitně konstantní a programátor musí použít nějakou syntaktickou konstrukci k tomu, aby to změnil. Beast tento přístup také zavede. V rámci koherence syntaxe jazyka (která je rozvedena v dalších kapitolách tohoto textu), připadají v úvahu dvě možnosti:
 \begin{enumerate}
-	\item Vytvoření dekorátoru v kontextu \inlineCode{typeWrapper}\footnote{\NatiRef{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
+	\item Vytvoření dekorátoru v kontextu \inlineCode{typeWrapper}\footnote{\BeastRef{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
 	\item Vyčlenění operátoru; nejlepším kandidátem je suffixový operátor \inlineCode{Type!}, protože nemá žádnou standardní sémantiku, je nepoužitý a znak vykřičníku je intuitivně asociován s výstrahou, což je zase asociovatelné s mutabilitou.
 \end{enumerate}
 
-Při designu NATI byla zvolena druhá možnost, především kvůli "upovídanosti" kódu a~ještě kvůli jednomu důvodu, který je popsán níže.
+Při designu Beastu byla zvolena druhá možnost, především kvůli "upovídanosti" kódu a~ještě kvůli jednomu důvodu, který je popsán níže.
 
-\paragraph{Propagace konstantnosti} \label{constPropagation} Jazyk D je navržen tak, že je-li ukazatel konstantní (nelze měnit adresu, na kterou ukazuje), je přístup k paměti, na kterou ukazuje, také konstantní. Není tedy možné mít konstantní ukazatel na nekonstantní paměť. Toto je zbytečné limitování; tranzitivní konstantnost se může hodit, ale měla by být volitelná (v NATI má toto opět potenciál pro řešení v dekorátorech).
+\paragraph{Propagace konstantnosti} \label{constPropagation} Jazyk D je navržen tak, že je-li ukazatel konstantní (nelze měnit adresu, na kterou ukazuje), je přístup k paměti, na kterou ukazuje, také konstantní. Není tedy možné mít konstantní ukazatel na nekonstantní paměť. Tento mechanismus se nejvíce projevuje při konstantním referencování dat:
+\begin{dcode}
+// D
+class C {
+	int *x;
+}
 
-V NATI tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní ukazatel na nekonstantní data. Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specifikovat mutabilitu dvakrát. Ve dříve navržených dvou případech by to tedy vypadalo takto (syntaxe pro referenci je \inlineCode{Typ?}, viz \ref{pointers}):
+void main() {
+	C c = new C;
+	c.x = new int( 5 );
+	
+	const C c2 = c;
+	*c2.x = 6; // Error: cannot modify const expression *c2.x
+}
+\end{dcode}
+
+Toto je zbytečné limitování; tranzitivní konstantnost může být v některých případech užitečná, nicméně existují případy užití, ve kterých je překážkou. V Beastu tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní ukazatel na nekonstantní data.
+
+Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specifikovat mutabilitu dvakrát. Syntaktický zápis pro takovou referenci by vypadal takto (syntaxe pro referenci je \inlineCode{Typ?}, viz \ref{pointers}; příklady reflektují alternativy syntaktického zápisu referencí, které jsou uvedené výše v tomto oddílu):
 \begin{enumerate}
 	\item \inlineCode{@mut ( @mut Typ )?}
 	\item \inlineCode{Typ!?!}
 \end{enumerate}
 
-Jednou z alternativ by bylo zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí -- dochází tam ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis je jasný a jednoduchý a~značně snižuje potřebu využívat závorek.
+Další možností by bylo zcela využít gramatiku C++, nicméně ta je všeobecně považována za velice matoucí -- dochází tam ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis je jasný a jednoduchý a~značně snižuje potřebu využívat závorek.
 
-\paragraph{Srovnání syntaxe C++, D a NATI}
+\paragraph{Srovnání syntaxe C++, D a Beast}
 \begin{cppcode}
 	// C++
 	int a, b; // Mutable integer
@@ -97,7 +115,7 @@ Jednou z alternativ by bylo zcela využít gramatiku C++, nicméně ta je všeob
 	const int* k, l; // Const pointer to const integer
 \end{dcode}
 \begin{code}
-	// NATI
+	// Beast
 	Int32! a, b; // Mutable integer
 	Int32 c, d; // Const integer
 	Int32!?! e, f; // Mutable reference to mutable integer
@@ -107,9 +125,9 @@ Jednou z alternativ by bylo zcela využít gramatiku C++, nicméně ta je všeob
 \end{code}
 
 \subsection{Typová kontrola a konverze typů}
-NATI má podobný mechanismus typových kontrol jako jazyky C++ a D:
+Beast má podobný mechanismus typových kontrol jako jazyky C++ a D:
 \begin{itemize}
-	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCastTo} nebo \inlineCode{#implicitCastFrom})\footnote{\NatiRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \natiRef{Overload resolution}}.
+	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCastTo} nebo \inlineCode{#implicitCastFrom})\footnote{\BeastRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \beastRef{Overload resolution}}.
 	\item Typy mohou být explicitně konvertibilní do jiných typů (funkce \inlineCode{#explicitCastTo} a~\inlineCode{#explicitCastFrom}). K explicitnímu přetypování se používá výhradně funkce \inlineCode{a.to( Type )} (lze použít i k implicitnímu přetypování).
 \end{itemize}
 
@@ -121,7 +139,7 @@ const int x = *( ( const int* )( voidPtr ) );
 \end{cppcode}
 
 \begin{code}
-// NATI
+// Beast
 Int32 x = voidRef.to( Int32? );
 \end{code}
 
@@ -144,12 +162,12 @@ Vynucené předávání referencí má ale několik nevýhod:
 	\item Indirekce býva i tam, kde by být nemusela
 \end{itemize}
 
-\paragraph{Řešení NATI} 
-NATI má umožňovat nízkoúrovňové programování, typ ukazatel s ukazatelovou aritmetikou je tedy nutné zavést. Na druhou stranu je ale vhodné nabídnout alternativu pro "běžné" případy užití, které se většinou týkají vytváření instancí tříd na haldě a manipulace s nimi. Proto náš jazyk nabízí dva ukazatelové typy, kterým říkáme ukazatel a reference.
+\paragraph{Řešení Beastu} 
+Beast má umožňovat nízkoúrovňové programování, typ ukazatel s ukazatelovou aritmetikou je tedy nutné zavést. Na druhou stranu je ale vhodné nabídnout alternativu pro "běžné" případy užití, které se většinou týkají vytváření instancí tříd na haldě a manipulace s nimi. Proto náš jazyk nabízí dva ukazatelové typy, kterým říkáme ukazatel a reference.
 
 Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování. Výraz \inlineCode{a * b} může totiž znamenat buď výraz násobení \inlineCode{a} krát \inlineCode{b}, stejně tak ale může znamenat deklaraci proměnné \inlineCode{b} typu ukazatel na \inlineCode{a}~(obdobně i u reference). Nejjednodušším řešením je použití jiného znaku pro označování ukazatelů.
 
-V NATI je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost NATI obstarává jiným způsobem\footnote{Viz \ref{ternary}}; tím pádem je znak otazníku "postradatelný".
+V Beastu je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost Beast obstarává jiným způsobem\footnote{Viz \ref{ternary}}; tím pádem je znak otazníku "postradatelný".
 
 Ukazatel funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu a nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}. Přístup k prvkům odkazované hodnoty je možný pouze pomocí dereference. K získání ukazatele se také, kvůli stejným důvodům jako u dereference, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Typ?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer(Type referencedType)}.
 
@@ -160,9 +178,9 @@ Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazovan�
 	\item \inlineCode{ref.addr} vrací ukazatel na referenci. \inlineCode{ref.refAddr} vrací ukazatel na odkazovaný objekt.
 \end{itemize}
 
-Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho předků) a~reference je explicitně konvertibilní na odkazovaný typ.
+Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho předků) a~reference je explicitně konvertibilní na odkazovaný typ. Reference jsou implicitně konvertibilní na reference předků odkazované třídy a explicitně konvertibilní na referenci jakéhokoli typu; při těchto explicitních konverzích probíhá dynamická typová kontrola a jejich výsledek může být \inlineCode{null}.
 
-Reference v NATI pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
+Reference v Beastu pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
 
 \subsection{Dekorátory}
 
@@ -180,7 +198,7 @@ Reference v NATI pokrývají naprostou většinu případů užití ukazatelů p
 
 \subsection{Lambda výrazy}
 
-\subsection{Traits}
+\subsection{Rysy (traits)}
 
 \subsection{Standardní knihovna}
 
@@ -201,9 +219,9 @@ Reference v NATI pokrývají naprostou většinu případů užití ukazatelů p
 \subsection{Typy IntXX, BinaryXX a Index}
 
 \chapter{Koncept líhnutí kódu (\textit{code~hatching})}
-Toto je nový koncept navržený pro jazyk NATI. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
+Toto je nový koncept navržený pro jazyk Beast. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
 
-Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řada důsledků. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce NATI dekorátor \ctime.
+Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řada důsledků. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce Beast dekorátor \ctime.
 
 Vykonávání kódu tak probíhá ve dvou fázích -- hodnoty proměnných označených dekorátorem \ctime jsou odvozeny již za doby překladu, zbytek je vypočítáván za běhu samotného programu. \textbf{Toto se dá připodobnit k líhnutí vajec}, kdy se zárodek vyvíjí za skořápkou, ukryt před světem, a světlo světa spatří až jako vyvinutý jedinec.
 
@@ -311,7 +329,7 @@ Void main() {
 }
 \end{code}
 
-Z řádku \ref{ctime:branch:1} je patrné, že větvení v rámci \ctime proměnných je možné. Řádek \ref{ctime:branch:2} zase ukazuje, že to není možné vždy. Pokud je větvení datově závislé na výrazu, jehož hodnota se dá odvodit za doby kompilace (dále jen \ctime výrazu), mohou být v jeho těle přítomny \ctime proměnné. Pro usnadnění práce kompilátoru a zpřehlednění kódu NATI vyžaduje, aby \ctime větvení byly označeny dekorátorem (jinak se k nim přistupuje jako k \nonctime, viz dále).
+Z řádku \ref{ctime:branch:1} je patrné, že větvení v rámci \ctime proměnných je možné. Řádek \ref{ctime:branch:2} zase ukazuje, že to není možné vždy. Pokud je větvení datově závislé na výrazu, jehož hodnota se dá odvodit za doby kompilace (dále jen \ctime výrazu), mohou být v jeho těle přítomny \ctime proměnné. Pro usnadnění práce kompilátoru a zpřehlednění kódu Beast vyžaduje, aby \ctime větvení byly označeny dekorátorem (jinak se k nim přistupuje jako k \nonctime, viz dále).
 
 Problematika je ale trochu složitější:
 
@@ -340,7 +358,7 @@ Je zřejmé, že je-li proměnná \ctime programátorem definovaného třídníh
 
 \begin{code}
 class C {
-	Int x, y;
+	@public Int x, y;
 }
 
 Void main() {
@@ -349,7 +367,7 @@ Void main() {
 }
 \end{code}
 
-\subsection{Reference a dynamické alokace}
+\subsection{Reference a dynamické alokace} \label{ctime:ref}
 Pro praktickou demonstraci tohoto problému je již třeba složitější příklad:
 \begin{code}
 class BinaryTreeNode {
@@ -376,7 +394,7 @@ class BinaryTree {
 
 BinaryTree sampleTree() {
 	BinaryTree result;
-	result.insert( "nati", 3 ); $\label{ctime:ref:2}$
+	result.insert( "beast", 3 ); $\label{ctime:ref:2}$
 	result.insert( "best", 5 ); $\label{ctime:ref:3}$
 	
 	result.top.data = 10;
@@ -385,7 +403,7 @@ BinaryTree sampleTree() {
 @static @ctime BinaryTree tree = sampleTree(); $\label{ctime:ref:1}$
 
 Void main() {
-	console.write( tree["nati"] ); // the tree is @ctime, so the compiler is capable of looking up value in the binary tree at compile time, making this code extremely fast when running
+	console.write( tree["beast"] ); // the tree is @ctime, so the compiler is capable of looking up value in the binary tree at compile time, making this code extremely fast when running
 	
 	tree.root.value = 7; // tree is const, but tree.root is not $\label{ctime:ref:4}$
 }
@@ -395,36 +413,246 @@ Zde jsme si na řádku \ref{ctime:ref:1} definovali \ctime proměnnou \inlineCod
 
 Protože \inlineCode{tree} je statická \ctime proměnná, musí být konstantní. Dynamicky alokované bloky (listy stromu) vytvořené při její inicializaci tedy také musí být konstantní. Toto ale neplatí zcela -- během inicializace proměnné \inlineCode{tree} (během vykonávání funkce \inlineCode{sampleTree} za doby kompilace) s bloky normálně manipulujeme (řádky \ref{ctime:ref:2} a \ref{ctime:ref:3}). Tyto bloky se tedy stávají konstantními až \textit{po} dokončení inicializace. Zde vyvstává problém -- v naší třídě \inlineCode{BinaryTree} je ukazatel na dynamicky alokovaný blok typu \inlineCode{BinaryTreeItem!?!} -- odkazovaná paměť je z odkazu mutabilní. Řádek \ref{ctime:ref:4} je tedy technicky korektní, i když by podle výše uvedených myšlenek neměl být.
 
-Jak tedy zajistit, aby se po inicializaci proměnné \inlineCode{tree} nedalo k jejím listům přistupovat přes mutabilní reference? Tento problém by se dal vyřešit zavedením vynucené tranzitivity konstantnosti referencí a ukazatelů -- tedy že při konstantní referenci/ukazateli by se odkazovaná paměť automaticky brala jako také konstantní. V oddílu \ref{constPropagation} jsme ale rozhodli, že jazyk NATI nebude vynucovat propagaci konstantnosti přes reference -- programátor si ji musí zajistit sám tam, kde je to potřeba. U binárního stromu je logické, že je-li konstantní strom, měly by jeho listy být také konstantní; v případě programátorem definovaných typů ale nelze zaručit, že je mutabilita korektně ošetřena.
+Jak tedy zajistit, aby se po inicializaci proměnné \inlineCode{tree} nedalo k jejím listům přistupovat přes mutabilní reference? Tento problém by se dal vyřešit zavedením vynucené tranzitivity konstantnosti referencí a ukazatelů -- tedy že při konstantní referenci/ukazateli by se odkazovaná paměť automaticky brala jako také konstantní. V oddílu \ref{constPropagation} jsme ale rozhodli, že jazyk Beast nebude vynucovat propagaci konstantnosti přes reference -- programátor si ji musí zajistit sám tam, kde je to potřeba. U binárního stromu je logické, že je-li konstantní strom, měly by jeho listy být také konstantní; v případě programátorem definovaných typů ale nelze zaručit, že je mutabilita korektně ošetřena.
 
-Při kompilaci se konstantní statické proměnné v některých kompilátorech umísťují do tzv. \textit{.text section} ve výsledném binárním souboru. Stránky paměti načtené z těchto sekcí jsou chráněny operačním systémem proti zápisu a pokus o zapsání do nich vyvolává běhovou chybu (\textit{segfault/access violation}). NATI řeší problém obdobným způsobem -- při pokusu o~zápis do paměti (během kompilace), která byla alokována během inicializace statické \ctime (nebo i jen konstantní) proměnné, mimo dobu inicializace zmíněné proměnné vyvolá kompilátor chybu. Ochrana se dá například ještě rozšířit o zákaz existence mutabilních referencí a ukazatelů na dané bloky; v současné fázi návrhu jazyka ještě ale není jisté, zda by toto omezení nemohlo způsobit nějaké komplikace.
+Při kompilaci se konstantní statické proměnné v některých kompilátorech umísťují do tzv. \textit{.text section} ve výsledném binárním souboru. Stránky paměti načtené z těchto sekcí jsou chráněny operačním systémem proti zápisu a pokus o zapsání do nich vyvolává běhovou chybu (\textit{segfault/access violation}). Beast řeší problém obdobným způsobem -- při pokusu o~zápis do paměti (během kompilace), která byla alokována během inicializace statické \ctime (nebo i jen konstantní) proměnné, mimo dobu inicializace zmíněné proměnné vyvolá kompilátor chybu. Dalším prvkem ochrany je zákaz existence mutabilních referencí a ukazatelů na dané bloky mimo rámec inicializované proměnné.
 
-\subsection{Přetypování na \nonctime}
+\subsection{Konverze na \nonctime}
+Je vhodné objasnit, že dekorátor \inlineCode{@ctime} není modifikátor typu (\inlineCode{typeModifier}\footnote{\BeastRef{Decoration contexts}}), ale modifikátor proměnné/parametru (\inlineCode{parameterModifier}/\inlineCode{variableModifier}). To znamená, že typy proměnných \inlineCode{ref} a \inlineCode{cref} v příkladu \ref{ctime:nonctime:3} jsou shodné (\inlineCode{ref.#type == cref.#type == Int!?}). Zákaz přiřazování výrazů závislých na \nonctime datech do \ctime proměnných je řešen jinak než typovou kontrolou.
+
+\begin{code}[\label{ctime:nonctime:3}]
+Void main() {
+	@ctime Int! x = 3;
+	
+	@ctime Int!? cref := x;
+	cref = 9; $\label{ctime:nonctime:1}$
+	
+	Int!? ref := cref; $\label{ctime:nonctime:2}$
+	
+	if( console.read( Int ) < 5 )
+		ref := 8;
+		
+	@ctime Int y = x;
+}
+\end{code}
+
+Výše uvedený příklad neporušuje žádné z pravidel, které jsme si již odvodili, nicméně hodnota proměnné \inlineCode{y} již není odvoditelná během kompilace, protože se hodnota proměnné \inlineCode{x}~může změnit na základě uživatelského vstupu. Přiřazení do \inlineCode{cref} na řádku \ref{ctime:nonctime:1} je v pořádku; kontrola nad daty se ztrácí při inicializaci proměnné \inlineCode{ref} na řádku \ref{ctime:nonctime:2}. Aby se tomuto předešlo, zavedeme pravidlo, že \textbf{na \ctime data nelze odkazovat \nonctime referencí/ukazatelem na mutabilní typ}.
+
+Toto pravidlo ale není dostatečné:
+\begin{code}
+class C {
+	@public Int! x;
+}
+
+class D {
+	@public C!?! c = new C;
+}
+
+Void main() {
+	@ctime D d;
+	
+	D? dref := d;
+	dref.c.x = 5;
+}
+\end{code}
+
+Zde jsme toto pravidlo neporušili, ale přesto se nám opět podařilo porušit axiom pro \ctime. Zavedeme tedy další pravidlo: \textbf{odkaz na \ctime data nelze uložit do \nonctime reference/ukazatele, pokud všechny třídní proměnné typu reference/ukazatel v odkazovaném typu nejsou konstantní}.
+
+Toto pravidlo se ale také dá obejít:
+\begin{code}
+class C {
+	@public Int x;
+}
+
+class C2 : C {
+	@public Int!? y = new Int;
+}
+
+class D {
+	@public C? c = new C2;
+}
+
+Void main() {
+	@ctime D d;
+	
+	D? dref := d;
+	dref.c.to( C2? ).y = 5;
+}
+\end{code}
+
+Řešení tohoto problému už je značně problematické. Kvůli způsobu implementace by zápis do paměti připadající \ctime datům vedl k nedefinovanému chování aplikace, takže je třeba mu zabránit. Všem těmto komplikacím by se předešlo vynucením tranzitivity konstantnosti přes referenci a vzniká tak dilema, zda tranzitivitu vynutit i za cenu omezení možností programátora, nebo ponechat programátorovi místo, kde by se nechtěně mohl "střelil do nohy". Na základě názoru, že "jazyk má sloužit programátorovi, ne programátor jazyku" se autor přiklání spíše k variantě nevynucovat tranzitivitu.
+
+\subsection{Třídní \ctime proměnné}
+Zvažme možnost existence nestatických \ctime proměnných ve třídách:
+\begin{code}
+class C {
+	
+@public:
+	@ctime Int! y = 0;
+	
+@public:
+	Void foo!() {
+		y += 3;
+	}
+	
+}
+
+Void main() {
+	C! c, c2;
+	
+	C!?! cref = select( console.read( Int ) < 4, c, c2 );
+	cref.foo();
+}
+\end{code}
+
+Z příkladu lze odvodit, že myšlenka není uskutečnitelná. Volání funkce \inlineCode{foo} je datově závislé na uživatelském vstup a nedá se tomu zabránit jinak, než označením proměnných \inlineCode{c}~a~\inlineCode{c2} jako \ctime (což by znemožnilo použití \inlineCode{console.read}). I kdybychom zavedli "\ctime" funkce, které jako parametry přijímají pouze \ctime data, k ničemu by nám to nebylo. Toto se dá chápat i tak, že funkce \inlineCode{foo} obsahuje skrytý parametr -- odkaz na instanci třídy. Protože proměnná \inlineCode{cref} není \ctime, právě tento parametr by porušoval axiom \ctime.
 
 \section{Přehled odvozených pravidel}
 \begin{enumerate}
 	\item \ctime proměnné nemohou být jakkoli (datově) závislé na proměnných, které nejsou \ctime. 
-	\item Statické \ctime proměnné musí být konstantní
-	\item Větvení může být \ctime, pokud je výraz v nich datově závislý pouze na \ctime proměnných
+	\item Statické \ctime proměnné musí být konstantní.
+	\item Větvení může být \ctime, pokud je výraz v nich datově závislý pouze na \ctime proměnných.
 	\begin{enumerate}
-		\item Těla \ctime větvení nejsou nijak omezena
-		\item V tělech \nonctime větvení se nemůže měnit data \ctime proměnných, které byly deklarovány mimo něj (ale lze je číst)
+		\item Těla \ctime větvení nejsou nijak omezena.
+		\item V tělech \nonctime větvení se nemůže měnit data \ctime proměnných, které byly deklarovány mimo něj (ale lze je číst).
 	\end{enumerate}
 	\item Je-li proměnná \ctime, jsou všechny její třídní proměnné také \ctime.
 	\item Je-li reference nebo ukazatel \ctime, paměť, na kterou odkazuje, je také \ctime.
-	\item Po inicializaci statické \ctime proměnné nelze zapisovat do paměti, která byla během její inicializace alokována. 
+	\item Po inicializaci statické \ctime proměnné nelze zapisovat do paměti, která byla během její inicializace alokována.
+	\item Ukládání \ctime proměnných do \nonctime proměnných má další omezení:
+	\begin{enumerate}
+		\item Na \ctime data nelze odkazovat \nonctime referencí/ukazatelem na mutabilní typ.
+		\item Odkaz na \ctime data nelze uložit do \nonctime reference/ukazatele, pokud všechny třídní proměnné typu reference/ukazatel v odkazovaném typu nejsou konstantní.
+	\end{enumerate}
+	\item Třída (\nonctime) nemůže obsahovat nestatické \ctime proměnné.
 \end{enumerate}
 
 \section{Potenciál a důsledky konceptu}
+Když už máme odvozená pravidla, můžeme si ukázat, co všechno nám tento koncept umožňuje.
 
-\subsection{Vykonávání funkcí za doby kompilace}
+\subsection{Optimalizace kódu}
+Pokud kompilátor zná hodnoty \ctime proměnných již za doby kompilace, logicky může výpočet jejich hodnot vynechat při běhu. Kód
 
-\subsection{Šablonování a unifikace šablonových a klasických parametrů}
+\begin{code}
+Void main() {
+	@ctime Bignum myPrime = nthPrimeNumber( 1286345 );
+	console.write( myPrime );
+}
+\end{code}
+
+se vyoptimalizuje do
+
+\begin{code}
+Void main() {
+	console.write( 20264747 );
+}
+\end{code}
+
+Toto samozřejmě umí hodně současných programovacích jazyků. Dekorátor \inlineCode{@ctime} ale dává programátorovi pevnější kontrolu nad optimalizacemi.
 
 \subsection{Typové proměnné}
+Díky tomu, že kompilátor zná hodnotu \ctime proměnné v každém bodě již během kompilace, může měnit chování \ctime proměnné na základě její hodnoty. To umožňuje zavedení mutabilních typových proměnných. Všechny třídy jsou v jazyce Beast instancemi třidy \inlineCode{Type} (i samotná třída \inlineCode{Type} je svou vlastní instancí). Identifikátory tříd jsou ekvivalentní konstantním typovým proměnným.
+
+\begin{code}
+Void main() {
+	@ctime Type T = Int16;
+	
+	@ctime if( VERSION > 15 )
+		T = Int32;
+		
+	T x = 4;
+}
+\end{code}
+
+\begin{code}
+class C {
+	@static Int! x;
+}
+
+class D {
+	@static Int! y;
+}
+
+void Main() {
+	@ctime Type T = C;
+	T.x = 5;
+	
+	T = D;
+	D.y = 8;
+}
+\end{code}
+
+Typová proměnná může existovat pouze jako \ctime.
+
+\subsection{Šablonování a unifikace šablonových a klasických parametrů}
+Koncept \ctime se dá jednoduše využít i pro parametry šablon (v parametrech šablon není třeba používat dekorátor \inlineCode{@ctime}).
+
+\begin{code}
+class TreeNode( Type Key, Type Value, Int childrenCount ) {
+	
+@public:
+	Key! key;
+	Value! value;
+	This?!?[ childrenCount ] children;
+	
+}
+\end{code}
+
+Díky prakticky nulovému rozdílu v syntaxi \ctime a \nonctime proměnných lze šablonové a standardní parametry funkcí zapisovat do stejných závorek a libovolně je míchat:
+\begin{code}
+T readFromBuffer( Buffer!? buf, @ctime Type T ) {
+	T? result = buf.ptr.to( T? );
+	buf.ptr += T.#size;
+	return result;
+}
+
+Void main() {
+	Buffer! buf;
+	buf.readFromFile( File( "in.txt", :read ) ); 
+	Int i = readFromBuffer( buf, Int );
+}
+\end{code}
+
+Dokonce lze vytvořit i speciální dekorátor, v Beastu pojmenovaný \inlineCode{@autoctime}, který argument bere jako \ctime, pokud to je možné:
+\begin{code}
+Index regexFind( String pattern, @autoctime String regex ) {
+	// regex implementation
+}
+
+Void main() {
+	Index r1 = regexFind( console.read( String ), "Y[a-z]+l" ); // Regex argument is known at compile time, so it is considered to be @ctime and the regex parsing is done at compile time
+	
+	Index r2 = regexFind( console.read( String ), console.read( String ) ); // No optimizations here
+}
+\end{code}
+
+Pomocí klíčového slova \inlineCode{auto} může funkce přijmout hodnotu jakéhokoli typu
+\begin{cppcode}
+// C++
+template< typename T1, typename T2 >
+inline auto max( T1 a, T2 b ) {
+	return ( a  > b ) ? a : b;
+}
+\end{cppcode}
+
+\begin{code}
+// Beast
+@inline auto max( auto a, auto b ) = select( a > b, a, b );
+\end{code}
 
 \subsection{\ctime funkce a třídy}
+Pro usnadnění práce programátora se zavádí i podpora dekorátoru \inlineCode{@ctime} pro funkce a~třídy.
+
+\ctime funkce mají všechny argumenty, návratovou hodnotu, stejně tak i veškerý kód uvnitř automaticky \ctime a není tedy třeba všechny prvky takto dekorovat.
+
+Proměnné \ctime tříd mohou být pouze \ctime. Všechny proměnné a funkce \ctime tříd jsou \ctime.
 
 \subsection{Reflexe kódu}
+Koncept také umožňuje reflexi. Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member(String identifier)}, které reflexi zajišťují. Jejich dokumentaci naleznete v referenci jazyka.
 
-\section{Implementační detaily}
+\section{Implementace konceptu}
+\begin{itemize}
+	\item šablonové parametry - bitové porovnávání
+	\item paměť musí existovat
+	\item sémantická kontrola neprošlých \ctime větví se neprovádí
+\end{itemize}

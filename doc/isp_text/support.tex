@@ -1,32 +1,21 @@
 % !TeX root = projekt.tex
 
-% Grammar
-\newcounter{grammarRule}
-\NewEnviron{grammar}{
-	{\ttfamily \small
-	\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
-		\BODY
-	\end{tabularx}}%
-	\nopagebreak%
-	\begin{center}
-		\putref
-	\end{center}
+% References
+\newcommand{\eqlabel}[1][]{
+	\small
+	(\arabic{chapter}.\arabic{equation}) #1
 }
-\newcommand{\grDef}[1]{\rule{0mm}{5mm}\refstepcounter{grammarRule}\label{gr:#1}#1&::=&}
-\newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&&}
-\newcommand{\grAltLn}{&&| }
-\newcommand{\grLn}{&&\hspace{1cm}}
-
-\newcommand{\gr}[1]{\hyperref[gr:#1]{\texttt{#1}}}
-\newcommand{\kwd}[1]{'\textbf{\texttt{#1}}'}
-\newcommand{\token}[1]{\hyperref[tok:#1]{\textit{\texttt{#1}}}}
-\newcommand{\typeRef}[1]{\hyperref[type:#1]{\texttt{#1}}}
-
-\newcommand{\decoratorRef}[1]{\hyperref[decorator:#1]{\texttt{@#1}}}
-\newcommand{\decorationContextRef}[1]{\hyperref[decorationContexts]{\texttt{#1}}}
-\newcommand{\enumRef}[1]{\hyperref[enum:#1]{\texttt{#1}}}
-
-\newcommand{\moduleSep}{/* - - - - - - - - DIFFERENT MODULE - - - - - - - - */}
+\newcommand{\putref}[1][]{
+	\refstepcounter{equation}
+	\eqlabel[#1]
+}
+\newcommand{\putrefCentered}[1][]{
+	\centering
+	\refstepcounter{equation}
+	\eqlabel[#1]
+	\par
+}
+\renewcommand{\theequation}{\arabic{chapter}.\arabic{equation}}
 
 % Code
 \lstset{% 
@@ -45,22 +34,24 @@
 	xleftmargin=8mm,
 }
 
-\lstdefinelanguage{nati}
+\lstdefinelanguage{beast}
 {
 	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, do, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
 	sensitive=true,
 	morecomment=[l]{//},
 	morecomment=[s]{/*}{*/},
 	morestring=[b]",
+	alsoletter={\#}
 }
-\lstnewenvironment{code}{
+\lstnewenvironment{code}[1][]{
 	\hspace{0mm}
-	\lstset{language=nati}
+	\lstset{language=beast}
 }{%
+	\putrefCentered[#1]
 	\vspace{3mm}
 } 
 \newcommand{\inlineCode}[1]{\lstinline[%
-	language=nati,
+	language=beast,
 	keepspaces,
 	breakatwhitespace=true,
 	breaklines=true
@@ -74,10 +65,11 @@
 	morecomment=[s]{/*}{*/},
 	morestring=[b]",
 }
-\lstnewenvironment{dcode}{
+\lstnewenvironment{dcode}[1][]{
 	\hspace{0mm}
 	\lstset{language=d}
 }{%
+	\putrefCentered[#1]
 	\vspace{3mm}
 } 
 \newcommand{\inlineDCode}[1]{\lstinline[%
@@ -87,10 +79,11 @@
 	breaklines=true
 	]{#1}}
 
-\lstnewenvironment{cppcode}{
+\lstnewenvironment{cppcode}[1][]{
 	\hspace{0mm}
 	\lstset{language=c++}
 }{%
+	\putrefCentered[#1]
 	\vspace{3mm}
 }
 \newcommand{\inlineCppCode}[1]{\lstinline[%
@@ -101,5 +94,5 @@
 	]{#1}}
 
 
-\newcommand{\natiRef}[1]{viz specifikace jazyka NATI (v příloze), oddíl \textit{#1}}
-\newcommand{\NatiRef}[1]{Viz specifikace jazyka NATI (v příloze), oddíl \textit{#1}}
+\newcommand{\beastRef}[1]{viz specifikace jazyka Beast (v příloze), oddíl \textit{#1}}
+\newcommand{\BeastRef}[1]{Viz specifikace jazyka Beast (v příloze), oddíl \textit{#1}}

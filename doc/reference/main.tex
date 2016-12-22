@@ -7,7 +7,7 @@
 \setlength\extrarowheight{2pt}
 
 % Title Page
-\title{NATI (Not All That Innovative) programming language}
+\title{BEAST programming language}
 \subtitle{Language specification/reference}
 \author{Daniel 'Danol' Čejchan}
 \date{2016}
@@ -19,13 +19,14 @@
 
 \chapter{Table of contents}
 \makeatletter
+\setcounter{tocdepth}{1}
 \@starttoc{toc}
 \makeatother
 
 \chapter{Introduction}
-NATI is an imperative, structured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C++ is available. In future, a LLVM backend integration is planned.
+BEAST is an imperative, structured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C++ is available. In future, a LLVM backend integration is planned.
 
-NATI is a practical tool for practical programmers. With NATI, you can write effective and readable code quite fast. Although the language itself builds on a significant abstraction, the functionality behind it is still close to HW. If you know the language, you can pretty well determine what assembly each line of your code generates.
+BEAST is a practical tool for practical programmers. With BEAST, you can write effective and readable code quite fast. Although the language itself builds on a significant abstraction, the functionality behind it is still close to HW. If you know the language, you can pretty well determine what assembly each line of your code generates.
 
 Basic language classification:
 \begin{compactitem}
@@ -34,15 +35,12 @@ Basic language classification:
 	\item Statically typed
 \end{compactitem}
 
-\paragraph{Pronounciation}
-NATI is to be pronounced \textipa{nO:ti}, that means same as 'naughty'.
-
-\section{Why choose NATI}
+\section{Why choose BEAST}
 \begin{itemize}
-	\item \textbf{Good programming practices} NATI gently pushes you into writing your code readable and understandable.
-	\item \textbf{Compile-time magic} In NATI, you can do many things much more comfortably using compile time function execution.
-	\item \textbf{Language reflection} NATI has easy ways to get information about symbols, list class members, etc.
-	\item \textbf{Modules} In NATI, you don't have to write separate header and source files and struggle with keeping them consistent.
+	\item \textbf{Good programming practices} BEAST gently pushes you into writing your code readable and understandable.
+	\item \textbf{Compile-time magic} In BEAST, you can do many things much more comfortably using compile time function execution.
+	\item \textbf{Language reflection} BEAST has easy ways to get information about symbols, list class members, etc.
+	\item \textbf{Modules} In BEAST, you don't have to write separate header and source files and struggle with keeping them consistent.
 \end{itemize}
 
 \section{Inspiration}
@@ -69,7 +67,7 @@ NATI is to be pronounced \textipa{nO:ti}, that means same as 'naughty'.
 \end{compactitem}
 
 \chapter{Lexical}
-In a normal code, NATI accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
+In a normal code, BEAST accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
 
 \begin{grammar}
 	\tokenDef{Whitespace} \verb|[\n\t ]+|
@@ -107,7 +105,7 @@ asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, exce
 \end{grammar}
 
 \subsection{Boolean 'literals'}
-NATI does provide \inlineCode{true} and \inlineCode{false}, however those are not keywords or literals, but just \decoratorRef{ctime} variables defined from the runtime library. That means that they can be redefined.
+BEAST does provide \inlineCode{true} and \inlineCode{false}, however those are not keywords or literals, but just \decoratorRef{ctime} variables defined from the runtime library. That means that they can be redefined.
 
 \subsection{The 'null' 'literal'}
 The \inlineCode{null} is a \typeRef{Type} which is statically implicitly castable to pointer or reference of any type. It is not a keyword; it is defined in runtime library and thus can be redefined.
@@ -140,7 +138,7 @@ The \inlineCode{null} is a \typeRef{Type} which is statically implicitly castabl
 \paragraph{Data type} Float literal is always of type \typeRef{Float64}. It is recommended to use the \verb|f| for casting to \typeRef{Float32} (alternatively, you can use the explicit cast).
 
 \subsection{User-defined literals} \label{userDefinedLiterals}
-NATI supports a syntactical construct that allows users to define their own literals. The user defined literal is then represented by a standard NATI literal followed by an identifier.
+BEAST supports a syntactical construct that allows users to define their own literals. The user defined literal is then represented by a standard BEAST literal followed by an identifier.
 
 An appropriate function with prototype
 \begin{code}
@@ -246,6 +244,7 @@ void main() {
 		
 	\grDef{VarDeclExpr} \gr{UnaryExpr} \\
 		\grAltLn \gr{UnaryExpr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
+		\grAltLn \kwd{new} \gr{UnaryExpr} [ \gr{ParentCommaExpr} ] \\
 	
 	\grDef{UnaryExpr} \gr{P1Expr} \\
 		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
@@ -273,104 +272,104 @@ void main() {
 \end{grammar}
 
 \subsection{Operator precedence}
-\begin{centeredRefTabular}{P{1.5cm} | c | c | p{5cm} | c}
+\begin{centeredRefTabular}{P{1.5cm} | c | c | p{4cm} | c}
 	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Associativity} \\ \hline \hline
 	
 	1
-		& \verb|x(args)| & \verb|funcCall| & Function call & Left to right \\
-		& \verb|x[args]| & \verb|brackets| & Array subscripting & \\
-		& \verb|x.ident| & \verb|dispatch| & Attribute access & \\
+		& \inlineCode{x(args)} & \inlineCode{funcCall} & Function call & Left to right \\
+		& \inlineCode{x[args]} & \inlineCode{brackets} & Array subscripting & \\
+		& \inlineCode{x.ident} & \inlineCode{dispatch} & Attribute access & \\
 	\hline
 	
 	2
-		& \verb|!x| & \verb|preNot| & Logical NOT & Cannot be chained \\
-		& \verb|-x| & \verb|preMinus| & Sign negation & \\
-		& \verb|~x| & \verb|preTilde| & Bitwise NOT & \\
-		& \verb|++x| & \verb|preInc| & Prefix increment & \\
-		& \verb|--x| & \verb|preDec| & Prefix decrement & \\
+		& \inlineCode{!x} & \inlineCode{preNot} & Logical NOT & Cannot be chained \\
+		& \inlineCode{-x} & \inlineCode{preMinus} & Sign negation & \\
+		& \inlineCode{x} & \inlineCode{preTilde} & Bitwise NOT & \\
+		& \inlineCode{++x} & \inlineCode{preInc} & Prefix increment & \\
+		& \inlineCode{--x} & \inlineCode{preDec} & Prefix decrement & \\
 		\cline{2-5}
-		& \verb|x++| & \verb|suffInc| & Suffix increment & Cannot be chained \\
-		& \verb|x--| & \verb|suffDec| & Suffix decrement & \\
+		& \inlineCode{x++} & \inlineCode{suffInc} & Suffix increment & Cannot be chained \\
+		& \inlineCode{x--} & \inlineCode{suffDec} & Suffix decrement & \\
 		\cline{2-5}
-		& \verb|x!| & \verb|suffNot| & Mutable type & Left to right \\
-		& \verb|x?| & \verb|suffRef| & Reference type & \\
+		& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & Left to right \\
+		& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
 		\cline{2-5}
-		& \verb|$| & \verb|dollar| & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
+		& \inlineCode{\$} & \inlineCode{dollar} & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
 	\hline
 	
 	3
-		& \verb|x ident( args )| & (not overloadable) & In-expression variable declaration & Cannot be chained \\
-		
+		& \inlineCode{x id( args )} & (not overloadable) & In-expression variable declaration & Cannot be chained \\
+		& \inlineCode{new x( args )} & \inlineCode{new_} & Dynamic construction & \\
 	\hline
 	
 	4
-		& \verb|x * y| & \verb|binMult(R)| & Multiplication & Left to right \\
-		& \verb|x / y| & \verb|binDiv(R)| & Division \\
+		& \inlineCode{x * y} & \inlineCode{binMult(R)} & Multiplication & Left to right \\
+		& \inlineCode{x / y} & \inlineCode{binDiv(R)} & Division \\
 		\cline{2-5}
-		& \verb|x % y| & \verb|binMod(R)| & Modulo & Cannot be chained \\
+		& \inlineCode{x \% y} & \inlineCode{binMod(R)} & Modulo & Cannot be chained \\
 	\hline
 	
 	5
-		& \verb|x + y| & \verb|binPlus(R)| & Addition & Left to right \\
-		& \verb|x - y| & \verb|binMinus(R)| & Subtraction & \\
+		& \inlineCode{x + y} & \inlineCode{binPlus(R)} & Addition & Left to right \\
+		& \inlineCode{x - y} & \inlineCode{binMinus(R)} & Subtraction & \\
 	\hline
 	
-	\multirow{4}{1.5cm}{\centering 6\\(cannot use P3,P4)}
-		& \verb|x & y| & \verb|binAnd(R)| & Bitwise AND & Left to right, \\
-		& \verb$x | y$ & \verb|binOr(R)| & Bitwise OR & only the same \\
-		& \verb|x ^ y| & \verb|binXor(R)| & Bitwise XOR / power & \\
+	\multirow{4}{1.5cm}{\centering 6\\(cannot use P3, P4)}
+		& \inlineCode{x & y} & \inlineCode{binAnd(R)} & Bitwise AND & Left to right, \\
+		& \inlineCode{x | y} & \inlineCode{binOr(R)} & Bitwise OR & only the same \\
+		& \inlineCode{x ^ y} & \inlineCode{binXor(R)} & Bitwise XOR / power & \\
 		\cline{2-5}
-		& \verb|x >> y| & \verb|binRSft(R)| & Bitwise right shift & Cannot be chained \\
-		& \verb|x << y| & \verb|binLSft(R)| & Bitwise left shift & \\
-		& \verb|x >>> y| & \verb|binRRot(R)| & Bitwise right circular shift & \\
-		& \verb|x <<< y| & \verb|binLRot(R)| & Bitwise left circular shift & \\
+		& \inlineCode{x >> y} & \inlineCode{binRSft(R)} & Bitwise right shift & Cannot be chained \\
+		& \inlineCode{x << y} & \inlineCode{binLSft(R)} & Bitwise left shift & \\
+		& \inlineCode{x >>> y} & \inlineCode{binRRot(R)} & Bitwise right circular shift & \\
+		& \inlineCode{x <<< y} & \inlineCode{binLRot(R)} & Bitwise left circular shift & \\
 	\hline
 	
 	7
-		& \verb|x is y| & \verb|binIs(R)| & Is (pattern matching) & Cannot be chained \\
-		& \verb|x !is y| & \verb|binIsNot(R)| & Is not & \\
-		& \verb|x in y| & \verb|binIn(R)| & In & \\
-		& \verb|x !in y| & \verb|binNotIn(R)| & Not in & \\
-		& \verb|x != y| & \verb|binNeq(R)| & Not equal to & \\
+		& \inlineCode{x is y} & \inlineCode{binIs(R)} & Is (pattern matching) & Cannot be chained \\
+		& \inlineCode{x !is y} & \inlineCode{binIsNot(R)} & Is not & \\
+		& \inlineCode{x in y} & \inlineCode{binIn(R)} & In & \\
+		& \inlineCode{x !in y} & \inlineCode{binNotIn(R)} & Not in & \\
+		& \inlineCode{x != y} & \inlineCode{binNeq(R)} & Not equal to & \\
 		\cline{2-5}
-		& \verb|x < y| & \verb|binLess(R)| & Less than & Left to right, \\
-		& \verb|x <= y| & \verb|binLeq(R)| & Less than or equal to & specific chaining rules \\
-		& \verb|x == y| & \verb|binEq(R)| & Equal to & \\
-		& \verb|x >= y| & \verb|binGeq(R)| & Greater than or equal to & \\
-		& \verb|x > y| & \verb|binGrt(R)| & Less than & \\
+		& \inlineCode{x < y} & \inlineCode{binLess(R)} & Less than & Left to right, \\
+		& \inlineCode{x <= y} & \inlineCode{binLeq(R)} & Less than or equal to & specific chaining rules \\
+		& \inlineCode{x == y} & \inlineCode{binEq(R)} & Equal to & \\
+		& \inlineCode{x >= y} & \inlineCode{binGeq(R)} & Greater than or equal to & \\
+		& \inlineCode{x > y} & \inlineCode{binGrt(R)} & Less than & \\
 	\hline
 	
 	8
-		& \verb|x && y| & \verb|binLogAnd(R)| & Logical AND & Left to right, \\
-		& \verb$x || y$ & \verb|binLogOr(R)| & Logical OR & only the same \\
+		& \inlineCode{x && y} & \inlineCode{binLogAnd(R)} & Logical AND & Left to right, \\
+		& \inlineCode{x || y} & \inlineCode{binLogOr(R)} & Logical OR & only the same \\
 	\hline
 	
 	9
-		& \verb|x .. y| & (not overloadable) & Range & Cannot be chained \\
+		& \inlineCode{x .. y} & (not overloadable) & Range & Cannot be chained \\
 	\hline
 	
 	10
-		& \verb|x = y| & \verb|assign(R)| & Assignment & Right to left, \\
-		& \verb|x := y| & \verb|refAssign(R)| & Reference assignment & only the same \\
+		& \inlineCode{x = y} & \inlineCode{assign(R)} & Assignment & Right to left, \\
+		& \inlineCode{x := y} & \inlineCode{refAssign(R)} & Reference assignment & only the same \\
 		\cline{2-5}
-		& \verb|x += y| & \verb|plusAssign(R)| & Various assignments & Cannot be chained \\
-		& \verb|x -= y| & \verb|minusAssign(R)| && \\
-		& \verb|x *= y| & \verb|multAssign(R)| && \\
-		& \verb|x /= y| & \verb|divAssign(R)| && \\
-		& \verb|x %= y| & \verb|modAssign(R)| && \\
-		& \verb|x &= y| & \verb|andAssign(R)| && \\
-		& \verb$x |= y$ & \verb|orAssign(R)| && \\
-		& \verb|x ^= y| & \verb|xorAssign(R)| && \\
-		& \verb|x <<= y| & \verb|lSftAssign(R)| && \\
-		& \verb|x >>= y| & \verb|rSftAssign(R)| && \\
-		& \verb|x <<<= y| & \verb|lRotAssign(R)| && \\
-		& \verb|x >>>= y| & \verb|rRotAssign(R)| && \\
+		& \inlineCode{x += y} & \inlineCode{plusAssign(R)} & Various assignments & Cannot be chained \\
+		& \inlineCode{x -= y} & \inlineCode{minusAssign(R)} && \\
+		& \inlineCode{x *= y} & \inlineCode{multAssign(R)} && \\
+		& \inlineCode{x /= y} & \inlineCode{divAssign(R)} && \\
+		& \inlineCode{x \%= y} & \inlineCode{modAssign(R)} && \\
+		& \inlineCode{x &= y} & \inlineCode{andAssign(R)} && \\
+		& \inlineCode{x |= y} & \inlineCode{orAssign(R)} && \\
+		& \inlineCode{x ^= y} & \inlineCode{xorAssign(R)} && \\
+		& \inlineCode{x <<= y} & \inlineCode{lSftAssign(R)} && \\
+		& \inlineCode{x >>= y} & \inlineCode{rSftAssign(R)} && \\
+		& \inlineCode{x <<<= y} & \inlineCode{lRotAssign(R)} && \\
+		& \inlineCode{x >>>= y} & \inlineCode{rRotAssign(R)} && \\
 		\cline{2-5}
-		& \verb|x => y| & (not overloadable) & Association & Cannot be chained \\
+		& \inlineCode{x => y} & (not overloadable) & Association & Cannot be chained \\
 	\hline
 	
 	11
-		& \verb|x, y| & & Comma & Left to right \\
+		& \inlineCode{x, y} & & Comma & Left to right \\
 \end{centeredRefTabular}
 
 \paragraph{Associativity -- explanation}
@@ -742,7 +741,7 @@ Here, the \inlineCode{x} is the left operand and \inlineCode{arg1} and \inlineCo
 \subsection{The '\inlineCode{\$}' (dollar) operator}
 In the bracket parameters, you can use the \inlineCode{\$} operator.
 
-It doesn't take any operands and translates to \inlineCode{x.#operator( Operator.dollar, Index paramId )} where \inlineCode{paramId} is the index of the parameter the dollar operator was used in (starting from 0).
+It doesn't take any operands and translates to \inlineCode{x.#operator( Operator.dollar, Index paramId )} where \inlineCode{paramId} is the index of the bracket parameter the dollar operator was used in (starting from 0).
 
 \subsection{Unary operators}
 Consider expression
@@ -812,7 +811,7 @@ There are three syntactical alternatives of how to declare a variable:
 When using \inlineCode{auto} instead of type, the type is inferred from the first argument of \gr{ParentCommaExpr} (which must be the only one) or from the value type of the \gr{Expression} after the \kwd{=}. Multiple declarations per one auto keyword are acceptable, each inferring its own type.
 
 \paragraph{In-expression variable declarations}
-In NATI, you can declare variables inside expressions.
+In BEAST, you can declare variables inside expressions.
 
 \subsection{Variable lifetime}
 When variable's lifetime ends, it's implicit destructor \inlineCode{var.#dtor();} is called.
@@ -863,12 +862,17 @@ foreach( x; 0 .. 32 ) {
 \chapter{Functions}
 \begin{grammar}
 	\grDef{FunctionDecl} \gr{TypeExpr} \token{Identifier} \gr{ParentCommaExpr} ( \gr{FunctionDefPart} | \kwd{;} ) \\
-	\grDef{FunctionDefPart} [ \kwd{if} \kwd{(} \gr{Expression} \kwd{)} ] \gr{CommandBlock} \\
+	\grDef{FunctionDefPart} [ \gr{FunctionDefConstraint} ] ( \gr{CommandBlock} | \kwd{=} Expression )\\
+	\grDef{FunctionDefConstraint} \kwd{if} \kwd{(} \gr{Expression} \kwd{)} \\
 	\\
 	\grDef{CommandBlock} \kwd{\{} \{ \gr{Command} \} \kwd{\}} \\
 	\grDef{Command} \gr{VarDeclCmd} \\
 		\grAltLn \gr{CommaExpression} \kwd{;} \\
 \end{grammar}
+
+\section{Definition constraint}
+
+\section{One-line function definition}
 
 \section{Variadic functions}
 
@@ -914,7 +918,7 @@ module package.package.moduleName;
 
 The \gr{ModuleIdentifier} in the \gr{ModuleEntry} then works as an identifier for the module. Multiple modules with the same identifier are not allowed.
 
-\paragraph{Filesystem representation} Module identifier has to correspond with the directory structure the source file is in and the source file name has to be same as the module name (case sensitive). For example, having set up \verb|project/src| and \verb|project/include| source file directories, module \verb|straw.nati.main| has to be in file \verb|project/src/straw/nati/main.nati| or \verb|project/include/straw/nati/main.nati|.
+\paragraph{Filesystem representation} Module identifier has to correspond with the directory structure the source file is in and the source file name has to be same as the module name (case sensitive). For example, having set up \verb|project/src| and \verb|project/include| source file directories, module \verb|straw.beast.main| has to be in file \verb|project/src/straw/beast/main.beast| or \verb|project/include/straw/beast/main.beast|.
 
 \paragraph{Naming convention} Modules should be named in lower-CamelCase. This is not enforced, however disobeying this rule results in a warning.
 
@@ -1051,7 +1055,7 @@ class C {
 \paragraph{Statement decorations} Decorators are applied to the statement that follows the decoration.
 
 \subsection{Decoration contexts} \label{decorationContexts}
-The concept of decorators wraps up lot of possibilities and functionality. In order to make things work, it is necessary to define different types of decorators, each altering the program in a different, unique way. In NATI, these decorator subtypes are called \textit{decorator contexts}. Each decorator is defined for one particular context. However decorator identifiers are overloadable, so it is possible to define multiple decorators for different contexts with the same name.
+The concept of decorators wraps up lot of possibilities and functionality. In order to make things work, it is necessary to define different types of decorators, each altering the program in a different, unique way. In BEAST, these decorator subtypes are called \textit{decorator contexts}. Each decorator is defined for one particular context. However decorator identifiers are overloadable, so it is possible to define multiple decorators for different contexts with the same name.
 
 The contexts are following (decorators of contexts commented with "system only" cannot be defined by the programmer):
 \begin{code}
@@ -1302,16 +1306,66 @@ The decorator cannot be used in any other contexts.
 \subsection{The \decoratorRef{noscope} decorator} \label{decorator:noscope}
 
 \chapter{Ctime}
-Ctime is a powerful concept introduced in NATI. It provides a form of metaprogramming, but that's not all what it does.
+Ctime is a powerful concept introduced in BEAST. It provides a form of metaprogramming, but that's not all what it does.
 
 \paragraph{Basic idea}
 The ctime concept has one simple idea: to introduce a \textbf{type of variables of which value can be deduced at any line of code} (without having to run the program).
 
-These variables will are called ctime variables in NATI.
+These variables will are called ctime variables in BEAST.
 
 \paragraph{Consequences} Consequences of this one simple rule are following:
 
-\chapter{NATI practices \& styling guide}
+\chapter{Language reflection}
+
+\section{Overloadsets}
+\begin{code}
+Overloadset #overloadset
+Symbol #matchOverload( args )
+
+class Overloadset {
+}
+\end{code}
+
+\section{Symbols}
+\begin{code}
+String #identifier
+Type #type
+SymbolMetadata #symbol
+
+class SymbolMetadata {
+
+}
+\end{code}
+
+\section{Classes}
+\begin{code}
+String #className // Can be null for anonymous classes
+ClassMetadata #class
+Overloadset #member( String identifier )
+
+class ClassMetadata {
+}
+\end{code}
+
+\section{Function}
+\begin{code}
+Type #returnType
+Type #returnType( args )
+FunctionMetadata #function
+Type #argType( Index index )
+String #argIdentifier( Index index )
+Bool #isVariadic
+
+class FunctionMetadata {
+	
+@public:
+	String identifier;
+	
+	
+}
+\end{code}
+
+\chapter{BEAST practices \& styling guide}
 
 \begin{itemize}
 	\item Class and enum names are in \verb|UpperCamelCase|.
@@ -1362,7 +1416,7 @@ These variables will are called ctime variables in NATI.
 auto max( auto x, x.#type y ) = ( x > y ) ? x : y;
 
 T!? #new( @ctime Type T ) {
-	return malloc( T.#size ).to( T!@ );
+	return malloc( T.#size ).to( T!? );
 }
 
 auto Int = Int32;
@@ -1379,14 +1433,14 @@ I8.#identifier == "I8"
 I8.#name = "Int8"
 
 decorator.ctime or decorator( ctime )
-module.straw.nati.test or module( straw.nati.test )
+module.straw.beast.test or module( straw.beast.test )
 
 class null {
 	@public @static	T #implicitCast( Type T )
 		if( T is Pointer )
 	{
 		module.this
-		module.straw.nati.functionInAnotherModule();
+		module.straw.beast.functionInAnotherModule();
 		module( "asd.test" ).functionInAnotherModule();
 		return T(0);
 	}

@@ -7,7 +7,6 @@
 	\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
 		\BODY
 	\end{tabularx}}%
-	\nopagebreak%
 	\begin{center}
 		\putref
 	\end{center}
@@ -18,7 +17,7 @@
 \newcommand{\grLn}{&&\hspace{1cm}}
 
 \newcommand{\gr}[1]{\hyperref[gr:#1]{\texttt{#1}}}
-\newcommand{\kwd}[1]{'\textbf{\texttt{#1}}'}
+\newcommand{\kwd}[1]{'\texttt{\textbf{#1}}'}
 \newcommand{\token}[1]{\hyperref[tok:#1]{\textit{\texttt{#1}}}}
 \newcommand{\typeRef}[1]{\hyperref[type:#1]{\texttt{#1}}}
 
@@ -30,18 +29,19 @@
 
 % Code
 
-\lstdefinelanguage{nati}
+\lstdefinelanguage{beast}
 {
 	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, module, new, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
 	sensitive=true,
 	morecomment=[l]{//},
 	morecomment=[s]{/*}{*/},
 	morestring=[b]",
+	alsoletter={\#}
 }
 
 \lstset{% 
 	basicstyle=\ttfamily\small, 
-	language=nati,
+	language=beast,
 	breaklines=true,
 	breakatwhitespace=true,
 	breakautoindent=true,
@@ -62,4 +62,4 @@
 	\vspace{3mm}
 } 
 
-\newcommand{\inlineCode}[1]{\lstinline[basicstyle=\ttfamily,language=nati,keepspaces,breakatwhitespace=true,breaklines=true]{#1}}
+\newcommand{\inlineCode}[1]{\lstinline[basicstyle=\ttfamily,language=beast,keepspaces,breakatwhitespace=true,breaklines=true]{#1}}
