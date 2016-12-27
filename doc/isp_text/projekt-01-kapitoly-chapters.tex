@@ -5,14 +5,14 @@
 \newcommand{\nonctime}{ne-\inlineCode{@ctime}\xspace}
 
 \chapter{Úvod}
-Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
+Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky. Prvkem jazyka, na kterou se tato práce zaměřuje, je nový koncept "líhnutí kódu", který poskytuje rozsáhlé možnosti metaprogramování.
 
 Programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
 
-Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletní specifikace jazyka, kompilátor vytvořený v rámci bakalářské práce ale implementuje pouze její podmnožinu -- některé příklady tedy kompilátor není schopný zpracovat.
+Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletní specifikace jazyka, případně pracují s fiktivní standardní knihovnou; kompilátor vytvořený v~rámci bakalářské práce ale implementuje pouze její podmnožinu -- většinu uvedených kódů tedy kompilátor není schopný zpracovat.
 
 \section{Motivace}
-Jazyk C++ je stále jedním z nejpoužívanějších jazyků\footnote{Podle \url{http://www.tiobe.com/tiobe-index/}}. 
+Kompilované jazyky jsou základním stavebním kamenem softwarového průmyslu. 
 
 \begin{comment}
 Mou hlavní motivací je nespokojenost se stávajícími programovacími jazyky. Programování mám jako koníčka už od nějakých dvanácti let, a tak jsem ještě před nastoupením na FIT získal nějaké zkušenosti z psaní aplikací v Object Pascalu (Delphi), C++ (Qt, SDL + OpenGL) a PHP (webové aplikace). FIT pak můj repertoár (i když jen rámcově) rozšířil na valnou většinu dnes používaných jazyků. Bohužel jsem ale nenarazil na žádný, který by splňoval mé požadavky. Rozhodl jsem se tedy využít nutnost napsání bakalářské práce k~uskutečnění mého dlouholetého snu.
@@ -140,7 +140,7 @@ const int x = *( ( const int* )( voidPtr ) );
 
 \begin{code}
 // Beast
-Int32 x = voidRef.to( Int32? );
+Int x = voidRef.to( Int? );
 \end{code}
 
 \subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
@@ -550,7 +550,7 @@ Void main() {
 
 Toto samozřejmě umí hodně současných programovacích jazyků. Dekorátor \inlineCode{@ctime} ale dává programátorovi pevnější kontrolu nad optimalizacemi.
 
-\subsection{Typové proměnné}
+\subsection{Typové proměnné} \label{ctime:typeVars}
 Díky tomu, že kompilátor zná hodnotu \ctime proměnné v každém bodě již během kompilace, může měnit chování \ctime proměnné na základě její hodnoty. To umožňuje zavedení mutabilních typových proměnných. Všechny třídy jsou v jazyce Beast instancemi třidy \inlineCode{Type} (i samotná třída \inlineCode{Type} je svou vlastní instancí). Identifikátory tříd jsou ekvivalentní konstantním typovým proměnným.
 
 \begin{code}
@@ -647,12 +647,108 @@ Pro usnadnění práce programátora se zavádí i podpora dekorátoru \inlineCo
 
 Proměnné \ctime tříd mohou být pouze \ctime. Všechny proměnné a funkce \ctime tříd jsou \ctime.
 
-\subsection{Reflexe kódu}
+\subsection{Reflexe kódu} \label{ctime:reflection}
 Koncept také umožňuje reflexi. Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member(String identifier)}, které reflexi zajišťují. Jejich dokumentaci naleznete v referenci jazyka.
 
 \section{Implementace konceptu}
+Nyní zvažme, jak by se tento koncept dal implementovat do kompilátoru.
+
+Je zřejmé, že hodnoty \ctime proměnných se budou vypočítávat již během kompilace pomocí interpretu zabudovaného do kompilátoru.
+
+Možnosti \ctime jsou díky \hyperref[ctime:typeVars]{typovým proměnným} a \hyperref[ctime:reflection]{reflexi kódu} větší, než co je možné udělat za běhu aplikace; v rámci \ctime se sémantika příkazů může měnit na základě vykonání jiného \ctime kódu. Kdybychom zpracování \ctime chtěli realizovat klasickým interpretem, který přijímá bajtkód, zjistili bychom, že takový kód, který by dokázal pojmout veškerou funkčnost konceptu líhnutí kódu, by v podstatě odpovídal abstraktnímu syntaktickému stromu.
+
+Tento \ctime~"interpret" bude nutně pomalejší než konvenční interprety, protože jeho součástí je kompletní sémantická analýza. Jakmile se ale zbavíme \ctime proměnných, můžeme program klasicky převést do bajtkódu a ten poté zpracovávat konvenčním interpretem, který je rychlejší. Pro větší rychlost kompilace by tedy kompilátor jazyka Beast měl mít dva interprety: první (dále interpret prvního stupně) pracující přímo nad AST schopný pracovat i s \ctime proměnnými a~druhý (dále interpret druhého stupně) pracující nad bajtkódem. Tyto interprety se dokonce mohou postupně aplikovat na stejnou funkci:
+
+\begin{code}
+Int pow( Int x, @ctime Int exp ) {
+	Int! result = 1;
+	
+	@ctime foreach( expTmp; 0 .. exp )
+		result *= x;
+		
+	return result;
+}
+
+@ctime Int powed = pow( 5, 3 );
+\end{code}
+
+Výše uvedený kód by po interpretaci funkce \inlineCode{pow( 5, 3 )} pomocí \ctime interpretu vypadal (bez optimalizací) takto:
+
+\begin{code}
+Int pow( Int x, 3 ) {
+	Int! result = 1;
+	result *= x;
+	result *= x;
+	result *= x;
+	return result;
+}
+\end{code}
+
+Po spuštění druhého stupně interpretace (které by předcházela generace bajtkódu) by funkce už navrátila hodnotu 125, která by se uložila do proměnné \inlineCode{powed}. V tomto konkrétním případě je vhodnější celou funkci vykonat pomocí pomalejšího \ctime interpretu (protože generování bajtkódu a jeho následné vykonání je ve výsledku pomalejší), nicméně v~případech, kdy by se funkce \inlineCode{pow} se stejnou hodnotou druhého parametru (který je \ctime) volala vícekrát, je výhodnější použít dvoustupňovou interpretaci.
+
+Bližší studium této problematiky je mimo rámec této práce. V demonstračním kompilátoru je z časových důvodů implementován pouze interpret prvního stupně. I přes faktickou existenci pouze jednoho interpretu zaveďme termíny "interpretace prvního stupně," kterým je myšleno zpracování \ctime kódu, a "interpretace druhého stupně," který referuje na vykonávání standardních funkcí za doby kompilace.
+
+\subsection{\ctime proměnné a \nonctime reference}
+Nelze tvrdit, že \ctime proměnné jsou čistě záležitostí kompilace. V momentě, kdy uložíme adresu \ctime proměnné do \nonctime reference/ukazatele (toto může nastat například i~při předávání \ctime dat jako argumentů typu reference při volání \nonctime funkcí), tak abychom zajistili funkčnost reference, musíme data této proměnné (a všech dalších proměnných, na které odkazuje) umístit do paměti i při běhu programu. Data referencovaných nestatických \ctime proměnných ve funkcích musí být uložena na zásobníku. Ačkoli je veškerý \ctime kód vykonáván interpretem prvního stupně, výsledky a dokonce i některé mezistavy musí být kopírovány při běhu aplikace.
+
+Uvažme příklad:
+
+\begin{code}
+Void write( Int? val ) {
+	console.write( val );
+}
+	
+Void main() {
+	@ctime Int! x = 3; $\label{ctime:impl:ref:1}$
+	write( x ); $\label{ctime:impl:ref:2}$
+	x += factorial( 10 ); $\label{ctime:impl:ref:3}$
+	x += 5; $\label{ctime:impl:ref:5}$
+	write( x ); $\label{ctime:impl:ref:4}$
+}
+\end{code}
+
+Řádky \ref{ctime:impl:ref:1}, \ref{ctime:impl:ref:3} a \ref{ctime:impl:ref:5} jsou obsluhovány interpretem prvního stupně a řádky \ref{ctime:impl:ref:2} a \ref{ctime:impl:ref:4} se vykonávají až za běhu aplikace. Vzhledem k tomu, že parametr funkce \inlineCode{write} je předáván odkazem, musí existovat místo v paměti, které je funkci předáno a které obsahuje aktuální hodnotu proměnné \inlineCode{x}. Hodnota nemusí být aktualizována vykováváním samotného výpočtu -- mašinerii pro výpočet faktoriálu lze nahradit jednoduchou \textit{mov} nebo \textit{xor} instrukcí -- a~nemusí být aktualizována vždy -- například mezi řádky $\ref{ctime:impl:ref:3}$ a $\ref{ctime:impl:ref:5}$ není žádný \nonctime kód, který by s daty pracoval a není tedy třeba promítat změny $\ref{ctime:impl:ref:3}$ okamžitě do paměti. 
+
+\subsubsection{Paměťové prostory}
+Je třeba také brát v potaz existenci dvou adresových prostorů -- virtuálního, se kterým se pracuje během kompilace, a skutečného, který je zaveden při běhu programu. Interpret v~kompilátoru nutně nemusí být implementován s klasickým adresovým prostorem, pro funkčnost ukazatelové aritmetiky v \ctime se ale jedná o nejintuitivnější řešení a demonstrační kompilátor je tímto způsobem implementován.
+
+\begin{code}
+Void foo() {
+	@ctime Int! x = 3;
+	@ctime Int? ctXRef := x;
+	Int? xRef := x;
+}
+\end{code}
+
+Ve výše uvedeném příkladu je proměnná \inlineCode{cXRef} \ctime, kompilátor tedy musí vědět, kam odkazuje. To při našem návrhu interpretu znamená, že proměnné \inlineCode{x} musí být přiřazena adresa již za doby kompilace. Nedá se předpokládat, že adresa proměnné \inlineCode{x} bude za běhu stejná jako za doby kompilace. Kromě toho za doby kompilace bude proměnná \inlineCode{x} existovat pouze v jedné instanci -- protože funkce \inlineCode{foo} není \ctime, hodnoty lokálních \ctime proměnných budou mít vždy ve stejném místě v kódu stejnou hodnotu; interpretu prvního stupně tedy stačí vykonat \ctime část funkce pouze jednou.
+
+Je tedy třeba zavést mapování z adresového prostoru interpretu prvního stupně do adresového prostoru aplikace, případně interpretu druhého stupně. Toto mapování může mít tři formy:
+\begin{enumerate}
+	\item Mapování adres statických dat (pevná adresa)
+	\item Mapování adres lokálních proměnných (na zásobníku -- \textit{base pointer offset})
+	\item Mapování adres \ctime bloků, které byly dynamicky alokovány při vykonávání \nonctime funkce
+\end{enumerate}
+
+Třetí forma se dá demonstrovat tímto příkladem:
+\begin{code}
+Void foo() {
+	@ctime Int!?! x := new Int!( 5 );
+	console.write( x );
+	x += 5;
+	console.write( x );
+	delete x;
+}
+\end{code}
+
+Zde se při každém volání funkce \inlineCode{foo} dynamicky alokuje proměnná typu \inlineCode{Int}. Protože dynamická alokace je součástí inicializace \ctime proměnné, je obsluhována interpretem prvního stupně. Interpret tím pádem musí zajišťovat (generováním vhodných instrukcí) promítání změn proměnné odkazované z \inlineCode{x} do paměti běžící aplikace. V tomto konkrétním případě je jednoduché odvodit, že adresa je uložena v proměnné \inlineCode{x}, vezmeme-li ale v úvahu vícenásobnou indirekci v \ctime datech a optimalizaci promítání změn (takže změny dat jsou promítány v dávkách, až když je to potřeba -- kompilátor tedy v době promítání již "neví," přes které odkazy se k danému bloku dat dostal), problém na triviálnosti ztrácí.
+
+Naivním řešením tohoto problému je uchovávat adresy všech bloků, které byly dynamicky alokovány při vykonávání \ctime kódu, jako skryté proměnné na zásobníku -- to ale může při větším počtu dynamických alokací způsobovat potíže s místem na zásobníku. Zkoumání efektivnějších řešení této problematiky je ale mimo rámec této práce. Demonstrační kompilátor to řeší právě uvedeným naivním způsobem.
+
+%TODO MALLOCY
+
+\paragraph{\ctime větvení a sémantická kontrola}
 \begin{itemize}
 	\item šablonové parametry - bitové porovnávání
-	\item paměť musí existovat
 	\item sémantická kontrola neprošlých \ctime větví se neprovádí
+	\item typové proměnné
 \end{itemize}
