@@ -239,7 +239,7 @@ Další jednoduchý příklad:
 @ctime Int x = console.read( Int );
 \end{code}
 
-Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~tohoto příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání alespoň některých funkcí.
+Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání alespoň některých funkcí.
 
 \begin{code}
 Int add( Int x, Int y ) {
@@ -311,7 +311,7 @@ Void main() {
 }
 \end{code}
 
-Tady už narážíme na problém. Za doby kompilace nemůžeme zjistit hodnotu proměnné \inlineCode{x}, protože se mění na základě uživatelského vstupu (podle výsledku \inlineCode{console.read( Int )} se totiž volá buď funkce \inlineCode{foo} nebo \inlineCode{foo2}, kde každá manipuluje s proměnnou \inlineCode{x}). Nekonstantní statické proměnné se nedají ohlídat, \textbf{\ctime statické proměnné tedy musí být vždy konstantní}.
+Tady už narážíme na problém. Za doby kompilace nemůžeme zjistit hodnotu proměnné \inlineCode{x}, protože se mění na základě uživatelského vstupu (podle výsledku \inlineCode{console.read(Int)} se totiž volá buď funkce \inlineCode{foo} nebo \inlineCode{foo2}, obě manipulují s proměnnou \inlineCode{x}). Nekonstantní statické proměnné se nedají ohlídat, \textbf{\ctime statické proměnné tedy musí být vždy konstantní}.
 
 \subsection{Podmínky a cykly}
 Větvení \textit{if-then-else} a cykly sdílejí stejný princip -- různé chování na základě hodnoty nějakého výrazu. Pravidla odvozená v tomto oddílu platí pro všechna větvení stejně.
@@ -507,7 +507,7 @@ Void main() {
 
 Z příkladu lze odvodit, že myšlenka není uskutečnitelná. Volání funkce \inlineCode{foo} je datově závislé na uživatelském vstup a nedá se tomu zabránit jinak, než označením proměnných \inlineCode{c}~a~\inlineCode{c2} jako \ctime (což by znemožnilo použití \inlineCode{console.read}). I kdybychom zavedli "\ctime" funkce, které jako parametry přijímají pouze \ctime data, k ničemu by nám to nebylo. Toto se dá chápat i tak, že funkce \inlineCode{foo} obsahuje skrytý parametr -- odkaz na instanci třídy. Protože proměnná \inlineCode{cref} není \ctime, právě tento parametr by porušoval axiom \ctime.
 
-\section{Přehled odvozených pravidel}
+\section{Přehled odvozených pravidel} \label{ctime:rules}
 \begin{enumerate}
 	\item \ctime proměnné nemohou být jakkoli (datově) závislé na proměnných, které nejsou \ctime. 
 	\item Statické \ctime proměnné musí být konstantní.
@@ -526,6 +526,8 @@ Z příkladu lze odvodit, že myšlenka není uskutečnitelná. Volání funkce 
 	\end{enumerate}
 	\item Třída (\nonctime) nemůže obsahovat nestatické \ctime proměnné.
 \end{enumerate}
+
+V dalších oddílech jsou odvozena další dodatečná pravidla. Jejich přehled je uveden v~oddílu \ref{ctime:moreRules}.
 
 \section{Potenciál a důsledky konceptu}
 Když už máme odvozená pravidla, můžeme si ukázat, co všechno nám tento koncept umožňuje.
@@ -585,10 +587,10 @@ void Main() {
 Typová proměnná může existovat pouze jako \ctime.
 
 \subsection{Šablonování a unifikace šablonových a klasických parametrů}
-Koncept \ctime se dá jednoduše využít i pro parametry šablon (v parametrech šablon není třeba používat dekorátor \inlineCode{@ctime}).
+Koncept \ctime se dá jednoduše využít i pro parametry šablon.
 
 \begin{code}
-class TreeNode( Type Key, Type Value, Int childrenCount ) {
+class TreeNode( @ctime Type Key, @ctime Type Value, @ctime Int childrenCount ) {
 	
 @public:
 	Key! key;
@@ -613,9 +615,9 @@ Void main() {
 }
 \end{code}
 
-Dokonce lze vytvořit i speciální dekorátor, v Beastu pojmenovaný \inlineCode{@autoctime}, který argument bere jako \ctime, pokud to je možné:
+Dokonce lze vytvořit i speciální dekorátor, v Beastu pojmenovaný \inlineCode{@autoCtime}, který argument bere jako \ctime, pokud to je možné:
 \begin{code}
-Index regexFind( String pattern, @autoctime String regex ) {
+Index regexFind( String pattern, @autoCtime String regex ) {
 	// regex implementation
 }
 
@@ -643,7 +645,7 @@ inline auto max( T1 a, T2 b ) {
 \subsection{\ctime funkce a třídy}
 Pro usnadnění práce programátora se zavádí i podpora dekorátoru \inlineCode{@ctime} pro funkce a~třídy.
 
-\ctime funkce mají všechny argumenty, návratovou hodnotu, stejně tak i veškerý kód uvnitř automaticky \ctime a není tedy třeba všechny prvky takto dekorovat.
+\ctime funkce mají všechny argumenty, návratovou hodnotu, proměnné a příkazy uvnitř automaticky \ctime a není tedy třeba všechny prvky takto dekorovat.
 
 Proměnné \ctime tříd mohou být pouze \ctime. Všechny proměnné a funkce \ctime tříd jsou \ctime.
 
@@ -744,11 +746,133 @@ Zde se při každém volání funkce \inlineCode{foo} dynamicky alokuje proměnn
 
 Naivním řešením tohoto problému je uchovávat adresy všech bloků, které byly dynamicky alokovány při vykonávání \ctime kódu, jako skryté proměnné na zásobníku -- to ale může při větším počtu dynamických alokací způsobovat potíže s místem na zásobníku. Zkoumání efektivnějších řešení této problematiky je ale mimo rámec této práce. Demonstrační kompilátor to řeší právě uvedeným naivním způsobem.
 
-%TODO MALLOCY
+Demonstrační kompilátor kvůli mapování adres uchovává informace o tom, na kterých místech paměti interpretu jsou ukazatelé a reference (podle volání konstruktorů a destruktorů). 
 
-\paragraph{\ctime větvení a sémantická kontrola}
-\begin{itemize}
-	\item šablonové parametry - bitové porovnávání
-	\item sémantická kontrola neprošlých \ctime větví se neprovádí
-	\item typové proměnné
-\end{itemize}
+Aby se skryly rozdíly mezi adresovým prostorem interpretu a adresovým prostorem za běhu a předešlo se tak případným problémům (například by hašovací tabulka v \ctime generovala hashe na základě hodnot ukazatelů, ale za běhu by adresy byly jiné a tabulka by tím pádem byla neplatná), Beast dává \ctime ukazatelům a referencím následující omezení:
+\begin{enumerate}
+	\item Přetypování mezi referenčním a nereferenčním typem není možné (nelze přetypovat ukazatel/referenci na ordinální typ ani naopak).
+	
+	Toto se dá obejít přetypováním adresy ukazatele na Pointer( Void ) a pak na ordinální typ pomocí kódu \inlineCode{pointer.addr.to( Pointer( Void ) ).to( Pointer( Index ) ).data}, ale tomu se nedá zabránit. Takovéto přetypování programátor používá na vlastni nebezpečí.
+	
+	\item Provnávání (\inlineCode{< > <= >=}, lze \inlineCode{== a !=}) a rozdíl dvou ukazatelů je možný pouze pro ukazatele, které ukazují na stejný blok paměti (v jiných případech kompilátor zobrazí chybu). Toto omezení je kontrolováno interpretem při vykonávání.
+\end{enumerate}
+
+\subsection{\ctime větvení a sémantická kontrola}
+
+Uvažme následující příklad:
+\begin{code}
+class C {
+	Int! x;
+}
+
+class D {
+	Int! y;
+}
+	
+Void main() {
+	@ctime Type T = C;
+	@ctime T a;
+	
+	@ctime if( a.#type == C )
+		a.x = 5;
+	else
+		a.y = 5; $\label{ctime:impl:branch:1}$
+}
+\end{code}
+
+Aby kód správně fungoval, sémantická kontrola v \inlineCode{else} větvi podmínky (řádek \ref{ctime:impl:branch:1}) nesmí proběhnout, protože proměnná \inlineCode{a} nemá člena \inlineCode{y}. Tento případ není okrajovou záležitostí -- v~reálném \ctime kódu by obdobné problémy nastávaly na spoustě míst. \textbf{Sémantická kontrola tedy neprobíhá ve větvích \ctime větvení, které neproběhnou.} Na druhou stranu ale také musí probíhat pro každou iteraci cyklů:
+
+\begin{code}
+class C { 
+	Int! x;
+}
+	
+Void main() {
+	@ctime Type[] arr = [ Int16, Int32, C ];
+	@ctime foreach( Type T; arr ) {
+		T var;
+		
+		@ctime if( T == C )
+			var.x = 5;
+		else
+			var = 5;
+	}
+}
+\end{code}
+
+\subsection{Šablonování}
+Následující dva příklady mají stejný význam a podobnou funkčnost:
+\begin{cppcode}
+// C++
+template< int i >
+int foo( int j ) {
+	return i * i * j;
+}
+\end{cppcode}
+
+\begin{code}
+// Beast
+Int foo( @ctime Int i, Int j ) {
+	return i * i * j;
+}
+\end{code}
+
+\ctime proměnné v tomto příkladu suplují parametry šablon. Po doplnění hodnoty do parametru \inlineCode{i} (který je \ctime, a tedy je třeba znát jeho hodnotu již za doby kompilace), dejme tomu \inlineCode{10}, kompilátor vygeneruje funkci v podobě:
+
+\begin{code}
+Int foo( 5, Int j ) {
+	return 25 * j;
+}
+\end{code}
+
+V případě, že se někde jinde v kódu volá funkce \inlineCode{foo} se \textit{stejnými} \ctime argumenty, zdánlivě není třeba generovat další funkci, protože by se chovala naprosto stejně; kompilátor může využít již vygenerovaný kód. Stejnými \ctime argumenty se myslí bitově shodná data; nelze uvažovat shodu podle operátoru \inlineCode{==}, protože bitově rozdílná data mohou i~přes sémantickou shodu vést k rozdílným výsledkům výpočtu (například i když jsou dva binární stromy shodné, jejich hloubka může být různá a výsledky výpočtů pracujících s hloubkou se nemusí shodovat).
+
+Tvrzení, že bitově stejné \ctime argumenty generují stejné funkce, ale není ve všech případech platné. Uvažme tento příklad:
+\begin{code}
+Int calc( Int x, @ctime Int!? y ) {
+	y ++;
+	return x + y;
+}
+
+Void main() {
+	@ctime Int! y = 1;
+	Int f = 0;
+	f += calc( 5, y ); $\label{ctime:impl:templ:1}$
+	f += calc( 5, y ); $\label{ctime:impl:templ:2}$
+}
+\end{code}
+
+Ačkoli zde funkce \inlineCode{calc} při volání na řádcích \ref{ctime:impl:templ:1} a \ref{ctime:impl:templ:2} přijímá bytově stejné \ctime argumenty, v prvním případě navrací \inlineCode{x + 2} a ve druhém \inlineCode{x + 3}. Nedá se tedy zaručit, že dvě funkce generované ze stejných \ctime argumentů budou totožné, a nejjednodušším způsobem je funkci pokaždé generovat. Na tento problém lze aplikovat řadu optimalizačních algoritmů, jejich rozvedení je ale mimo rámec této práce.
+
+\subsection{Typové proměnné}
+Typové proměnné lze z formálního hlediska považovat za typické \ctime proměnné. Přístup ke statickým prvkům typu, jako například v tomto příkladu:
+
+\begin{code}
+class C {
+	@static @ctime Int x = 5;
+}
+
+class D {
+	@static @ctime Int y = 6;
+}
+	
+Void main() {
+	@ctime Type T = C;
+	console.write( T.x );
+	
+	T = D;
+	console.write( T.y );
+}
+\end{code}
+
+je funkčně ekvivalentní s přepsáním \textit{dispatch} operátoru\footnote{\BeastRef{The '\inlineCode{x.ident}' (dispatch) operator}}. Jediným případem, kdy se typová proměnná liší od ostatních \ctime proměnných, je konstrukt \inlineCode{Type ident( args )} (a~jeho varianty) pro deklaraci proměnné.
+
+
+\section{Přehled doplňujících pravidel} \label{ctime:moreRules}
+Tento přehled pravidel doplňuje ten uvedený v oddílu \ref{ctime:rules}.
+
+\begin{enumerate}
+	\item Je zakázáno přetypovávat \ctime ukazatel na jiný než referenční \ctime typ a naopak.
+	\item Nelze porovnávat (\inlineCode{< > <= >=}, lze \inlineCode{== a !=}) ani vypočítat rozdíl \ctime ukazatelů, které patří do různých alokačních bloků paměti.
+	\item Pro nevykonané \ctime větve se neprovádí sémantická kontrola. U \ctime cyklů se provádí sémantická kontrola pro každou iteraci zvlášť.
+\end{enumerate}

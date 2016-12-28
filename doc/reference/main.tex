@@ -352,7 +352,7 @@ void main() {
 		& \inlineCode{x = y} & \inlineCode{assign(R)} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
 		& \inlineCode{x := y} & \inlineCode{refAssign(R)} & Reference assignment & \\
 		\cline{2-5}
-		& \inlineCode{x += y} & \inlineCode{plusAssign(R)} & Various assignments & \multirow{12}{*}{NOCH} \\
+		& \inlineCode{x += y} & \inlineCode{plusAssign(R)} & \multirow{12}{*}{Various assignments} & \multirow{12}{*}{NOCH} \\
 		& \inlineCode{x -= y} & \inlineCode{minusAssign(R)} && \\
 		& \inlineCode{x *= y} & \inlineCode{multAssign(R)} && \\
 		& \inlineCode{x /= y} & \inlineCode{divAssign(R)} && \\
@@ -534,6 +534,9 @@ Note that not only functions accept arguments - for example parametric classes (
 Overload resolution consists of these steps:
 \begin{enumerate}
 	\item Overloads that do not match given arguments are ignored (also considering constness and staticness)
+	\begin{itemize}
+		\item Constant-value parameters (for example \inlineCode{Void foo( 3, Int x )}) require \ctime arguments. Trying to resolve overload with constant-value parameter with \nonctime argument on the same index results in semantic error.
+	\end{itemize}
 	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset
 	\begin{itemize}
 		\item \inlineCode{auto} arguments are treated as implicit casted
@@ -1160,7 +1163,7 @@ Generally, the \decoratorRef{ctime} decorator is related with compile time execu
 \end{itemize}
 
 \paragraph{Compile-time parameters}
-A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter. In some cases, parameters don't have to be decorated with \decoratorRef{ctime} -- class, enum and template parameters are always compile-time, so the \decoratorRef{ctime} is implicit and decorating them with it results in warning.
+A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter.
 
 Compile-time parameter values must always be known at compile time. Compile-time parameters can be mutable.
 
@@ -1270,9 +1273,9 @@ for( Int16 x = 0; x < 20; x ++ ) {
 
 \paragraph{Compile-time code block} A code block decorated with the \decoratorRef{ctime} is executed at compile time. All variables declared in it are compile time and they should not be decorated with the \decoratorRef{ctime} decorator.
 
-\paragraph{The \decoratorRef{autoCtime} decorator} \label{decorator:autoCtime} This decorator works similar to the \decoratorRef{ctime}, except it only makes things compile-time when it is convenient.
+\paragraph{The \decoratorRef{autoCtime} decorator} \label{decorator:autoCtime} This decorator works similar to the \decoratorRef{ctime}, except it only makes things compile-time when it is possible.
 
-In \decorationContextRef{classDeclaration} and \decorationContextRef{enumDeclaration}, it makes the type compile-time if it derives from a compile-time type or if it has a nonstatic compile-time member. For example, container types should be decorated with \decoratorRef{autoCtime} so they can store compile-time types.
+In \decorationContextRef{classDeclaration} and \decorationContextRef{enumDeclaration}, it makes the type compile-time if it derives from a compile-time type or if it has a nonstatic compile-time member.
 
 In the \decorationContextRef{parameterDeclaration} context, the parameter is made compile-time whenever the function is called with a parameter value that is known at compile time.
 \begin{code}
@@ -1472,6 +1475,16 @@ Void foo() {
 	
 	x += 3; // Error: x is constant
 }
+
+!!!
+class C( @ctime Int x, Int y ) { // y IS A RUNTIME VARIABLE
+
+}
+
+
+@noscope @ctime if( true ) // if does not create scope, so all variables declared in it are available outside its body
+	Int! x;
+	
 \end{code}
 
 \subsection{Possible lists}
