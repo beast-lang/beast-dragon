@@ -232,11 +232,73 @@ void writeToBuffer( Buffer &buf, const T& data ) {
 
 Jazyk Beast tuto konstrukci přejímá beze změn. Bližší dokumentace o této konstrukci v jazyce D je na stránce \url{https://dlang.org/concepts.html}.
 
-\subsection{Mixiny}
+\subsection{Mixins}
+Dalším existujícím konceptem v programovacích jazycích jsou tzv. \textit{mixins}. V podstatě se jedná o prostředek ke "slepému" vkládání/kopírování kódu. Jako příklad poslouží několik kódu z jazyka D, který tento koncept implementuje.
 
-\subsection{Unified function call syntax (UFCS)}
+\begin{dcode}
+// D
+mixin template MyMixin {
+	int a;	
+	void setA( int val ) {
+		a = val;	
+		onAChanged();
+	}
+}
 
-\subsection{Systém výjimek}
+class C {
+public:
+	int b;
+	mixin MyMixin;
+	void onAChanged() {
+		writeln( "C.a changed" );	
+	}
+}
+
+class D {
+public:
+	int c;
+	mixin MyMixin;	
+	void onAChanged() {
+		writeln( "D.a changed" );	
+	}
+}
+
+void main() {
+	import std.stdio;
+	
+	C c = new C;
+	D d = new D;
+	
+	c.setA( 5 );
+	writeln( c.a );
+	
+	d.setA( 9 );
+	writeln( d.a );
+}
+\end{dcode}
+
+Ve výše uvedeném příkladu jsme vytvořili \inlineDCode{mixin template MyMixin}, který jsme následně vložili do tříd \inlineDCode{C} a \inlineDCode{D}. Jak bylo uvedeno dříve, \textit{mixins} jsou velice podobné kopírování textu a~kompilátor se chová téměr stejně, jako kdybychom obsah \inlineDCode{MyMixin} přímo vložili do daných tříd. Tato vlastnost umožňuje do jisté míry suplovat vícenásobné dědění, které jazyk D~nepodporuje (místo toho nabízí \textit{interfaces}, podobně jako Java), nicméně program ztrácí na přehlednosti a bezpečnost kódu je také nižší (delší rozvedení problematiky je mimo rámec této práce).
+
+Jazyk D nabízí ještě jednu formu \textit{mixins} -- jedná se o konstrukt \inlineDCode{mixin( code )}, kde \inlineDCode{code} je výraz, který je za doby kompilace vyhodnocen jako řetězec. Obsah tohoto řetězce je pak vložen na místo konstruktu jako kód.
+
+\begin{dcode}
+// D
+string generateSampleCode( string operator ) {
+	return "a " ~ operator ~ " 4;";	
+}
+
+void main() {
+	int a = 3;
+	mixin( generateSampleCode( "+=" ) ); // Becomes "a += 4";
+	// a == 7
+}
+\end{dcode}
+
+Tato forma \textit{mixin}u společně s vykonáváním funkcí za doby kompilace (CTFE) značně zvyšuje možnosti metaprogramování. V praxi ale bývá kód, který \textit{mixins} využívá, nepřehledný.
+
+Ačkoli jazyk Beast podporuje vícenásobnou dědičnost, koncept \textit{mixins} nabízí rozšíření možností a proto jejich zavedení stojí za úvahu. Z časových důvodů je ale tento koncept prozatím vyloučen. Bližší dokumentace \textit{mixins} v jazyce D je na stránkách \url{https://dlang.org/mixin.html} a \url{https://dlang.org/spec/template-mixin.html}.
+
+\subsection{Výjimky}
 
 \subsection{Lambda výrazy}
 

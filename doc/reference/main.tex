@@ -90,7 +90,7 @@ alias, auto, break, case, class, continue, else, enum, for, if, import, in, is, 
 
 \subsection{Reserved words}
 \begin{code}
-asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, except, finally, foreach, function, generic, goto, loop, scope, singleton, template, throw, try, with, yield
+asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, except, finally, foreach, function, generic, goto, loop, mixin, scope, singleton, template, throw, try, with, yield
 \end{code}
 
 \section{Literals}
@@ -1066,19 +1066,20 @@ The contexts are following (decorators of contexts commented with "system only" 
 enum DecorationContext {
 	importModifier, // system only
 	parameterModifier, // system only
+	accessModifier, // system only for now
+	metadata, // concept, not fully documented
+	fieldWrapper, // concept, not fully documented
+	typeWrapper, // concept, not fully documented
+	typeMixin, // concept, not fully documented
 	functionModifier, // system only
 	classModifier, // system only
 	enumModifier, // system only
 	variableModifier, // system only
-	accessModifier,
-	metadata,
-	fieldWrapper,
-	typeMixin,
-	typeWrapper,
 	controlStatementModifier, // system only
 	codeBlockModifier // system only
 }
 \end{code} \label{enum:DecorationContext}
+%TODO better ordering
 
 %TODO context description
 \subsubsection{The 'importModifier' decoration context}
