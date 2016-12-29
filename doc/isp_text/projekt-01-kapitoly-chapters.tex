@@ -44,6 +44,11 @@ Budeme se inspirovaft jazyky C++ a D, a tím pádem přejímat i jejich paradigm
 \section{Existující prvky programovacích jazyků}
 V oblasti návrhu programovacích jazyků již byla vymyšlena spousta konceptů a kategorizováno mnoho vlastností, které jazyk definují. V tomto oddílu si přiblížíme ty nejznámější z nich a budeme diskutovat o jejich začlenění do našeho programovacího jazyka.
 
+\subsection{Modularita}
+Pro větší projekty, které si jazyk Beast také cílí podporovat, je rozdělení kódu do menších částí -- modulů -- nezbytné. Dřívější přístup, kde u modulů byla oddělená deklarační (hlavičková) a definiční část (například u jazyků Object Pascal a C/C++), byl překonán a~kompilátory moderních jazyků již rozhraní mezi moduly odvozují z definic uvnitř jednotlivých modulů. Tento přístup je praktičtější, protože vytváření a udržování hlavičkových sekcí bylo časově náročné (programátor musel vše psát a upravovat dvakrát).
+
+Jazyk Beast zavede systém modulů podobný jazykům D a Java, kde se pro interakci mezi moduly využívá konstrukce \inlineCode{import moduleName;}.
+
 \subsection{Systém dedičnosti tříd} U kompilovaných jazyků se nejběžněji využívá třídní systém využívající dědičnost a tabulky virtuálních metod. Tohoto konceptu využívají i jazyky C++ a D, nicméně v detailech se poněkud liší. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a~to s~dědičností vícenásobnou a případně i~virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
 
 Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní, které tuto vlastnost do jisté míry supují, nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v určitých případech kontrola přepisování (\textit{overridingu}).
@@ -184,12 +189,48 @@ Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho 
 Reference v Beastu pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
 
 \subsection{Dekorátory}
+Pro tento koncept mívají jazyky, které ho zavádějí, různé pojmenování. V Javě se používá pojem 'anotace,' v~Pythonu 'dekorátory,' v D 'uživatelem definované atributy,' v C\# a Rustu 'atributy.' Všechny zmíněné jazyky používají podobnou syntaktickou konstrukci, která se umísťuje před deklarace proměnných, tříd, typů, atp. Jejich potenciál se jazyk od jazyku liší; souhrnně se ale dá říci, že programátorům umožňují některé z těchto možností:
+\begin{itemize}
+	\item Přiřazování metadat k symbolům; tato metadata pak jazyk umožňuje v době kompilace, případně za běhu, v rámci reflexe získávat.
+	\item Měnit chování symbolů; například přepis volání funkce
+	\item Direktivy kompilátoru -- například \inlineCode{@Override} v Javě
+\end{itemize}
+
+Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Syntaxi dekorátorů převezme z D/Javy (\inlineCode{@identifier}, případně \inlineCode{@identifier(args)}, které se umísťují před deklaraci). Pro koherenci jazyka budou dekorátory využity na všechny direktivy a modifikátory, které jazyk nabízí; například jazyky Java a D používají pro některé direktivy dekorátory (například \inlineCode{@Override}) a pro jiné klíčová slova (například \inlineCppCode{public}).
+
+Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v Beastu \beastRef{Decorators}.
 
 \subsection{Vykonávání fukncí za doby kompilace}
+Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci Konceptu líhnutí kódu (viz kapitola \ref{ctime}).
 
 \subsection{Metaprogramování}
+Metaprogramování je koncept, jehož realizace dává programátorovi možnost přistupovat ke kódu "jako k datům," tedy kód pomocí kódu samotného určitým způsobem číst (například získání seznamu proměnných ve třídě, zjištění návratového typu funkce, atp.) a~přidávat/upravovat (například vytvořit třídy pro binárního stromu nad zadaným typem nebo na základě seznamu proměnných ve třídě vygenerovat funkci, která zajistí korektní serializaci třídy). Do tohoto konceptu spadá například šablonování a reflexe.
 
-\paragraph{Deklarace s \inlineDCode{if} v D}
+Současné kompilované jazyky realizují metaprogramování jen v omezené míře. Jazyk Beast zavádí tzv. Koncept líhnutí kódu (viz kapitola \ref{ctime}), který v tomto směru nabízí mnohem více možností.
+
+\paragraph{Deklarace s \inlineDCode{if} v jazyce D}
+V rámci šablonování nabízí jazyk D velice praktickou konstrukci, kdy se mezi hlavičku a tělo deklarace (třídy, funkce, mixinu, ...) vloží \inlineDCode{if( expr )}, kde \inlineDCode{expr} je logický výraz, který se vyhodnocuje za doby kompilace. Tento výraz může mimo jiné obsahovat šablonové argumenty deklarace a pokud je vyhodnocen jako \inlineDCode{false}, daná deklarace je pro zadané šablonové argumenty považována za neplatnou a je kompilátorem ignorována.
+
+Níže uvedená funkce v jazyce D
+\begin{dcode}
+// D
+void writeToBuffer( T )( Buffer buf, const ref T data )
+	if( isScalarType!T )
+{
+	buf.write( &data, T.sizeof )
+}
+\end{dcode}
+je například platná jen pro skalární typy. Tomuto kódu by odpovídal následující C++ kód až na ono omezení, které typy šablona přijímá -- taková kontrola v mnoha případech v C++ není realizovatelná vůbec a v jiných jen pomocí různých triků, které činí kód nepřehledným.
+
+\begin{cppcode}
+// C++
+template< typename T >
+void writeToBuffer( Buffer &buf, const T& data ) {
+	buf.write( &data, sizeof( T ) );
+}
+\end{cppcode}
+
+Jazyk Beast tuto konstrukci přejímá beze změn. Bližší dokumentace o této konstrukci v jazyce D je na stránce \url{https://dlang.org/concepts.html}.
 
 \subsection{Mixiny}
 
@@ -219,7 +260,7 @@ Reference v Beastu pokrývají naprostou většinu případů užití ukazatelů
 
 \subsection{Typy IntXX, BinaryXX a Index}
 
-\chapter{Koncept líhnutí kódu (\textit{code~hatching})}
+\chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{ctime}
 Toto je nový koncept navržený pro jazyk Beast. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
 
 Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řada důsledků. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce Beast dekorátor \ctime.
@@ -651,7 +692,7 @@ Pro usnadnění práce programátora se zavádí i podpora dekorátoru \inlineCo
 Proměnné \ctime tříd mohou být pouze \ctime. Všechny proměnné a funkce \ctime tříd jsou \ctime.
 
 \subsection{Reflexe kódu} \label{ctime:reflection}
-Koncept také umožňuje reflexi. Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member(String identifier)}, které reflexi zajišťují. Jejich dokumentaci naleznete v referenci jazyka.
+Koncept také umožňuje reflexi; implicitně se jedná o reflexi za doby kompilace, reflexi za doby běhu si programátor může napsat (případně využít knihovnu). Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member( String identifier)}, které reflexi zajišťují. Jejich dokumentaci naleznete v~referenci jazyka.
 
 \section{Implementace konceptu}
 Nyní zvažme, jak by se tento koncept dal implementovat do kompilátoru.
@@ -846,27 +887,7 @@ Void main() {
 Ačkoli zde funkce \inlineCode{calc} při volání na řádcích \ref{ctime:impl:templ:1} a \ref{ctime:impl:templ:2} přijímá bytově stejné \ctime argumenty, v prvním případě navrací \inlineCode{x + 2} a ve druhém \inlineCode{x + 3}. Nedá se tedy zaručit, že dvě funkce generované ze stejných \ctime argumentů budou totožné, a nejjednodušším způsobem je funkci pokaždé generovat. Na tento problém lze aplikovat řadu optimalizačních algoritmů, jejich rozvedení je ale mimo rámec této práce.
 
 \subsection{Typové proměnné}
-Typové proměnné lze z formálního hlediska považovat za typické \ctime proměnné. Přístup ke statickým prvkům typu, jako například v tomto příkladu:
-
-\begin{code}
-class C {
-	@static @ctime Int x = 5;
-}
-
-class D {
-	@static @ctime Int y = 6;
-}
-	
-Void main() {
-	@ctime Type T = C;
-	console.write( T.x );
-	
-	T = D;
-	console.write( T.y );
-}
-\end{code}
-
-je funkčně ekvivalentní s přepsáním \textit{dispatch} operátoru\footnote{\BeastRef{The '\inlineCode{x.ident}' (dispatch) operator}}. Jediným případem, kdy se typová proměnná liší od ostatních \ctime proměnných, je konstrukt \inlineCode{Type ident( args )} (a~jeho varianty) pro deklaraci proměnné.
+Typové proměnné lze z formálního hlediska považovat za typické \ctime proměnné. Jediným případem, kdy se typová proměnná liší od ostatních \ctime proměnných, je konstrukt \inlineCode{Type ident( args )} (a~jeho varianty) pro deklaraci proměnné.
 
 
 \section{Přehled doplňujících pravidel} \label{ctime:moreRules}

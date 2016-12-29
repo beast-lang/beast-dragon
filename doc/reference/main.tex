@@ -1071,19 +1071,28 @@ enum DecorationContext {
 	enumModifier, // system only
 	variableModifier, // system only
 	accessModifier,
+	metadata,
 	fieldWrapper,
+	typeMixin,
 	typeWrapper,
 	controlStatementModifier, // system only
 	codeBlockModifier // system only
 }
 \end{code} \label{enum:DecorationContext}
 
+%TODO context description
+\subsubsection{The 'importModifier' decoration context}
+
 \subsection{Decorator overloading}
 Decorators can take parameters, just like functions (\inlineCode{@decoration} is equivalent to \inlineCode{@decoration()}). The behavior is following:
 \begin{enumerate}
 	\item Overloads that do not match given arguments are ignored
 	\item Find overload that has lowest-index context (as ordered in the \enumRef{DecorationContext} enum) and remove overloads that are of different context
-	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset (auto arguments are always considered as implicit casted)
+	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset
+	\begin{itemize}
+		\item \inlineCode{auto} arguments are treated as implicit casted
+		\item Arguments containing \inlineCode{:ident} accessor are also treated as implicit casted
+	\end{itemize}
 	\item Apply the only overload remaining (or error)
 \end{enumerate}
 
@@ -1149,6 +1158,7 @@ Void func3() {
 The \decoratorRef{public}, \decoratorRef{protected} and \decoratorRef{private} decorators are not compatible with any decorator from the three (this also means you can't apply them twice). Also, \decoratorRef{friend} and \decoratorRef{public} decorators are not compatible.
 
 \subsection{The \decoratorRef{ctime} (and \decoratorRef{autoCtime}) decorator} \label{decorator:ctime} \label{decorator:autoCtime}
+%TODO rework
 Generally, the \decoratorRef{ctime} decorator is related with compile time execution. It supports multiple contexts and depending on the context, its semantics can slightly change.
 
 \paragraph{Axioms overview}
