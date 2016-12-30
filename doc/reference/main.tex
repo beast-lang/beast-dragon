@@ -1020,7 +1020,7 @@ Void eFunc() {
 \end{code}
 
 \chapter{Decorators}
-TODO: noWarning, final, abstract, base, virtual, override, static
+%TODO noWarning, final, abstract, base, virtual, override, static, noScope, virtualBase
 
 \begin{grammar}
 	\grDef{Decoration} \kwd{@} \token{Identifier} [ \gr{ParentCommaExpr} ]
@@ -1029,7 +1029,7 @@ TODO: noWarning, final, abstract, base, virtual, override, static
 Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code.
 
 \section{Decorator application}
-In module level, there are three ways of how to apply a decorator:
+At module level, there are three ways of how to apply a decorator:
 \begin{code}
 module a;
 
@@ -1497,6 +1497,12 @@ class C( @ctime Int x, Int y ) { // y IS A RUNTIME VARIABLE
 	Int! x;
 	
 \end{code}
+
+\paragraph{Multiple inheritance}
+\begin{itemize}
+	\item A base class cannot be inherited twice (in any way, considering the entire inheritance tree); if it is, all inheritances but one must be decorated with \inlineCode{@virtual}. This rule is not applied if the inherited class is an interface (doesn't contain variables)
+	\item Classes don't handle constructing of their virtual base classes
+\end{itemize}
 
 \subsection{Possible lists}
 

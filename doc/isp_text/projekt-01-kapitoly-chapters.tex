@@ -51,11 +51,11 @@ Jazyk Beast zavede systém modulů podobný jazykům D a Java, kde se pro intera
 
 \subsection{Systém dedičnosti tříd} U kompilovaných jazyků se nejběžněji využívá třídní systém využívající dědičnost a tabulky virtuálních metod. Tohoto konceptu využívají i jazyky C++ a D, nicméně v detailech se poněkud liší. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a~to s~dědičností vícenásobnou a případně i~virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
 
-Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní, které tuto vlastnost do jisté míry supují, nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v určitých případech kontrola přepisování (\textit{overridingu}).
+Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní, které tuto vlastnost do jisté míry supují, nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní -- dají se s rozhraními ale kombinovat); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v~určitých případech kontrola přepisování (\textit{overridingu}).
 
 Ačkoli je implementace systému vícenásobné dědičnosti tak, jak je v C++, složitější, její implementace je uskutečnitelná, kód nezpomaluje a fakticky rozšiřuje možnosti jazyka. C++ model dědičnosti umí vše, co umí Javovský model, a ještě víc.
 
-Jazyk Beast tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak je možné, že v rámci bakalářské práce nebude systém plně implementován.
+Jazyk Beast tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak bude systém v rámci demonstračního kompilátoru značně omezen.
 
 \subsection{Automatická správa paměti -- garbage collector}
 Zavedení \textit{garbage collectoru} (dále jen GC) nenabízí pouze výhody -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
@@ -130,7 +130,7 @@ Další možností by bylo zcela využít gramatiku C++, nicméně ta je všeobe
 	Int32? k, l; // Const reference to const integer
 \end{code}
 
-\subsection{Typová kontrola a konverze typů}
+\subsection{Typová kontrola, konverze typů a odvozování typů}
 Beast má podobný mechanismus typových kontrol jako jazyky C++ a D:
 \begin{itemize}
 	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCastTo} nebo \inlineCode{#implicitCastFrom})\footnote{\BeastRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \beastRef{Overload resolution}}.
@@ -148,6 +148,39 @@ const int x = *( ( const int* )( voidPtr ) );
 // Beast
 Int x = voidRef.to( Int? );
 \end{code}
+
+Problémem souvisejícím s tímto tématem je i odvozování typů pro výrazy, u kterých se může typ měnit na základě kontextu. Takovým případem jsou například lambda výrazy v~jazyce D. V něm je platný například tento kód:
+
+\begin{dcode}
+// D
+int function( int ) func = x => x * 2;
+\end{dcode}
+
+Kód \inlineDCode{x => x * 2} je validní syntaktická konstrukce, která definuje funkci, která přijímá jeden parametr a navrací jeho dvojnásobnou hodnotu. Tato konstrukce však samotná neobsahuje dostatečná data pro definici funkce -- ta se vydedukují až na základě kontextu, v~tomto případě podle toho, že se danou lambda funkci pokoušíme uložit do ukazatele na funkci s~konkrétním prototypem.
+
+Při sémantické analýze tedy kompilátor musí při zpracovávání výrazu brát v potaz i to, jaký typ je u výrazu očekáván. Tento fakt může způsobit, že se jeden výraz musí analyzovat vícekrát, například v tomto případě:
+\begin{dcode}
+// D
+import std.stdio;
+
+void foo( int function(int) func ) {
+	writeln( "INT RESULT: ", func( 3 ) );
+}
+
+void foo( string function(int) func ) { $\label{typeInfer:1}$
+	writeln( "STRING RESULT: ", func( 3 ) );
+}
+
+void main() {
+	foo( x => x + 3 );
+}
+\end{dcode}
+
+Zde se sémantická analýza výrazu \inlineDCode{x => x + 3} musí provést pro každé přetížení funkce \inlineDCode{foo} zvlášť. V případě funkce na řádku \ref{typeInfer:1} sémantická analýza selže, protože výraz \inlineDCode{x + 3}, kde \inlineDCode{x} je typu \inlineDCode{int}, je také typu \inlineDCode{int}, který není implicitně konvertibilní na typ \inlineDCode{string}.
+
+Typové odvozování se používá i v dalších případech, například u literálů polí, \inlineDCode{auto} deklaracích, apod. Jazyk Beast cílí podporovat všechny tyto případy, v rámci této práce však z časových důvodů nemusí být do demonstračního kompilátoru zavedeny.
+
+V souvislosti s odvozováním typů zavádí jazyk Beast novou konstrukci \inlineCode{:identifier}, která je popsaná v oddílu \ref{colonIdent}.
 
 \subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
 Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečný prvek, který by se měl užívat jen v nutných případech. Toto se řeší zavedením referencí, které v různých jazycích fungují mírně rozdílně, všeobecně se ale dá říci, že se jedná o ukazatele, které nepodporují ukazatelovou aritmetiku.
@@ -196,7 +229,7 @@ Pro tento koncept mívají jazyky, které ho zavádějí, různé pojmenování.
 	\item Direktivy kompilátoru -- například \inlineCode{@Override} v Javě
 \end{itemize}
 
-Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Syntaxi dekorátorů převezme z D/Javy (\inlineCode{@identifier}, případně \inlineCode{@identifier(args)}, které se umísťují před deklaraci). Pro koherenci jazyka budou dekorátory využity na všechny direktivy a modifikátory, které jazyk nabízí; například jazyky Java a D používají pro některé direktivy dekorátory (například \inlineCode{@Override}) a pro jiné klíčová slova (například \inlineCppCode{public}).
+Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Syntaxi dekorátorů převezme z D/Javy (\inlineCode{@identifier}, případně \inlineCode{@identifier(args)}, které se umísťují před deklaraci). Pro koherenci jazyka budou dekorátory využity na všechny dostupné direktivy a modifikátory pro kompilátor; například jazyky Java a D používají pro některé direktivy dekorátory (například \inlineCode{@Override}) a pro jiné klíčová slova (například \inlineCppCode{public}).
 
 Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v Beastu \beastRef{Decorators}.
 
@@ -277,14 +310,14 @@ void main() {
 }
 \end{dcode}
 
-Ve výše uvedeném příkladu jsme vytvořili \inlineDCode{mixin template MyMixin}, který jsme následně vložili do tříd \inlineDCode{C} a \inlineDCode{D}. Jak bylo uvedeno dříve, \textit{mixins} jsou velice podobné kopírování textu a~kompilátor se chová téměr stejně, jako kdybychom obsah \inlineDCode{MyMixin} přímo vložili do daných tříd. Tato vlastnost umožňuje do jisté míry suplovat vícenásobné dědění, které jazyk D~nepodporuje (místo toho nabízí \textit{interfaces}, podobně jako Java), nicméně program ztrácí na přehlednosti a bezpečnost kódu je také nižší (delší rozvedení problematiky je mimo rámec této práce).
+Ve výše uvedeném příkladu jsme vytvořili \inlineDCode{mixin template MyMixin}, který jsme následně vložili do tříd \inlineDCode{C} a \inlineDCode{D}. Jak bylo uvedeno dříve, \textit{mixins} jsou velice podobné kopírování textu a~kompilátor se chová téměr stejně, jako kdybychom obsah \inlineDCode{MyMixin} přímo vložili do daných tříd. Tato vlastnost umožňuje do jisté míry suplovat vícenásobné dědění, které jazyk D~nepodporuje (místo toho nabízí \textit{interfaces}, podobně jako Java), nicméně program ztrácí na přehlednosti a bezpečnost kódu je nižší. Delší rozvedení problematiky je mimo rámec této práce.
 
 Jazyk D nabízí ještě jednu formu \textit{mixins} -- jedná se o konstrukt \inlineDCode{mixin( code )}, kde \inlineDCode{code} je výraz, který je za doby kompilace vyhodnocen jako řetězec. Obsah tohoto řetězce je pak vložen na místo konstruktu jako kód.
 
 \begin{dcode}
 // D
 string generateSampleCode( string operator ) {
-	return "a " ~ operator ~ " 4;";	
+	return "a " ~ operator ~ " 4;";
 }
 
 void main() {
@@ -299,16 +332,30 @@ Tato forma \textit{mixin}u společně s vykonáváním funkcí za doby kompilace
 Ačkoli jazyk Beast podporuje vícenásobnou dědičnost, koncept \textit{mixins} nabízí rozšíření možností a proto jejich zavedení stojí za úvahu. Z časových důvodů je ale tento koncept prozatím vyloučen. Bližší dokumentace \textit{mixins} v jazyce D je na stránkách \url{https://dlang.org/mixin.html} a \url{https://dlang.org/spec/template-mixin.html}.
 
 \subsection{Výjimky}
+Systém výjimek má napříč jazyky velice podobnou formu využívající konstrukce typu \inlineDCode{try ... catch ... finally} a příkazu typu \inlineDCode{throw}. Koncept je všeobecně známý, není tedy třeba ho tu rozepisovat.
+
+Přestože je systém výjimek takřka nezbytnou součástí moderních programovacích jazyků, tato práce se zaměřuje spíše na implementaci nového Konceptu líhnutí kódu (viz kapitola \ref{ctime}). Výjimky nejsou triviální na implementaci a jejich absence nenarušuje syntaktickou celistvost jazyka a pro demonstrační kompilátor nebude příliš velikým omezením funkčnosti.
 
 \subsection{Lambda výrazy}
+Lambda výrazy, jindy nazývané jako anonymní funkce, jsou jazyková konstrukce umožňující definovat funkce, které nemají identifikátor. Aby tento koncept fungoval, funkce v daném jazyce musí být tzv. \textit{first-class citizens} -- musí s nimi být možné nakládat jako s hodnotami proměnných, tedy ukládat je do proměnných, předávat je jako argumenty nebo je navracet při volání funkcí.
 
-\subsection{Rysy (traits)}
+Mnoho moderních programovacích jazyků lambda výrazy podporuje, mezi nimi i naše vzorové jazyky C++ a D. Realizace základních lambda výrazů je triviální (pomocí ukazatele na funkci), návrh se ale komplikuje, pokud chceme v anonymní funkci používat nestatické proměnné z rámce, ve kterém byla funkce definována. Bližší popis lambda výrazů je mimo rámec této práce. Specifikace jazyka Beast lambda výrazy zahrnuje, z časových důvodů ale v demonstračním kompilátoru zahrnuty nejsou.
+
+\subsection{Rysy (traits) a uniform function call syntax (UFCS)}
+Koncept \textit{traits} se napříč jazyky různí jak syntaxí, tak funkčností. V některých jazycích nemá syntaktickou podporu a je spíše používán jako návrhový vzor (\textit{design pattern}). Všeobecně se jedná o způsob přidávání funkčnosti třídám a~zároveň standardizace této funkčnosti mezi třídami (třída, která implementuje daný \textit{trait}, musí poskytovat jeho funkčnost). Uveďme si několik různých přístupů k tomuto konceptu:
+
+\begin{itemize}
+	\item Jazyk Rust\footnote{Více informací o \textit{traits} v jazyku Rust na adrese \url{https://doc.rust-lang.org/book/traits.html}} na konceptu \textit{traits} zakládá celé objektově orientované paradigma. V~Rustu neexistují třídy; existují pouze struktury (\textit{struct}), které mohou obsahovat pouze proměnné (tedy žádné funkce), \textit{traits}, které obsahují prototypy funkcí, a implementace \textit{traits} pro dané struktury. Definice struktur, \textit{traits} a implementací mohou být v různých modulech.
+	\item Jazyk Scala\footnote{Více informací o \textit{traits} v jazyce Scala na adrese \url{http://joelabrahamsson.com/learning-scala-part-seven-traits/}} využívá \textit{traits} k napodobení vícenásobné dědičnosti.\textit{Traits} zde rozšiřují koncept rozhraní (\textit{interfaces}) o možnost implicitní implementace funkcí a přidání proměnných (které jsou ale 'abstraktní' -- v \textit{trait}u jsou obsaženy pouze jako reference a musí být definovány ve třídě, která \textit{trait} zavádí).
+\end{itemize}
+
+TODO
 
 \subsection{Standardní knihovna}
 
 \section{Nové a netypické koncepty}
 
-\subsection{Konstrukce \inlineCode{:ident}}
+\subsection{Konstrukce \inlineCode{:ident}} \label{colonIdent}
 
 \subsection{Znak \inlineCode{\#} v identifikátorech}
 
