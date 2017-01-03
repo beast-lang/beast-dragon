@@ -90,7 +90,7 @@ alias, auto, break, case, class, continue, else, enum, for, if, import, in, is, 
 
 \subsection{Reserved words}
 \begin{code}
-asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, except, finally, foreach, function, generic, goto, loop, mixin, scope, singleton, template, throw, try, with, yield
+asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, except, extend, finally, foreach, function, generic, goto, loop, mixin, scope, singleton, template, throw, try, with, yield
 \end{code}
 
 \section{Literals}
@@ -537,12 +537,18 @@ Overload resolution consists of these steps:
 	\begin{itemize}
 		\item Constant-value parameters (for example \inlineCode{Void foo( 3, Int x )}) require \ctime arguments. Trying to resolve overload with constant-value parameter with \nonctime argument on the same index results in semantic error.
 	\end{itemize}
-	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset
-	\begin{itemize}
-		\item \inlineCode{auto} arguments are treated as implicit casted
-		\item Arguments containing \inlineCode{:ident} accessor are also treated as implicit casted
-	\end{itemize}
-	\item Find minimal scope import nesting level in the overloadset; remove all overloads with higher nesting levels (overloads that are not from scope imports have higher priority)
+	\item For each overload, rate each argument with a numeric value, representing argument-to-parameter mismatch rate. Remove those overloads whose mismatch rate is higher than match rate of another overload from the set for all arguments. Match rate rules:
+		\begin{enumerate}[label=(\arabic*)]
+			\item Exact value match (see \ref{parameterLiterals})
+			\item Exact type match
+			\item Type deduction needed (for example \inlineCode{foo(x => x + 1)} for prototype \inlineCode{Void foo(Function(Int, Int) func)}) or use of \inlineCode{:ident} accessor (see \ref{colonAccessor})
+			\item Scope import cast needed (see \ref{scopeImports})
+			\item Implicit cast needed			
+			\item Parameter is of \inlineCode{auto} type
+		\end{enumerate}
+		For variadic parameters, the highest mismatch rate across all arguments is considered.
+	
+	\item Find minimal scope import nesting level of an overload in the overloadset; remove all overloads with higher nesting levels (overloads that are not from scope imports have higher priority)
 	\item If there are any non-static overloads, ignore all static overloads
 	\item If there are any non-compiler-generated overloads, ignore all compiler-generated overloads (implicit constructors etc)
 	\item If there are any non-const overloads, ignore all const overloads

@@ -221,7 +221,7 @@ Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho 
 
 Reference v Beastu pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
 
-\subsection{Dekorátory}
+\subsection{Dekorátory} \label{decorators}
 Pro tento koncept mívají jazyky, které ho zavádějí, různé pojmenování. V Javě se používá pojem 'anotace,' v~Pythonu 'dekorátory,' v D 'uživatelem definované atributy,' v C\# a Rustu 'atributy.' Všechny zmíněné jazyky používají podobnou syntaktickou konstrukci, která se umísťuje před deklarace proměnných, tříd, typů, atp. Jejich potenciál se jazyk od jazyku liší; souhrnně se ale dá říci, že programátorům umožňují některé z těchto možností:
 \begin{itemize}
 	\item Přiřazování metadat k symbolům; tato metadata pak jazyk umožňuje v době kompilace, případně za běhu, v rámci reflexe získávat.
@@ -229,14 +229,14 @@ Pro tento koncept mívají jazyky, které ho zavádějí, různé pojmenování.
 	\item Direktivy kompilátoru -- například \inlineCode{@Override} v Javě
 \end{itemize}
 
-Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Syntaxi dekorátorů převezme z D/Javy (\inlineCode{@identifier}, případně \inlineCode{@identifier(args)}, které se umísťují před deklaraci). Pro koherenci jazyka budou dekorátory využity na všechny dostupné direktivy a modifikátory pro kompilátor; například jazyky Java a D používají pro některé direktivy dekorátory (například \inlineCode{@Override}) a pro jiné klíčová slova (například \inlineCppCode{public}).
+Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Syntaxi dekorátorů převezme z D/Javy (\inlineCode{@identifier}, případně \inlineCode{@identifier(args)}, které se umísťují před dekorovanou deklaraci/příkaz/konstrukci). Pro koherenci jazyka budou dekorátory využity na všechny dostupné direktivy a modifikátory pro kompilátor; například jazyky Java a~D~používají pro některé direktivy dekorátory (například \inlineCode{@Override}) a pro jiné klíčová slova (například \inlineCppCode{public}).
 
 Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v Beastu \beastRef{Decorators}.
 
 \subsection{Vykonávání fukncí za doby kompilace}
 Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci Konceptu líhnutí kódu (viz kapitola \ref{ctime}).
 
-\subsection{Metaprogramování}
+\subsection{Metaprogramování} \label{metaprogramming}
 Metaprogramování je koncept, jehož realizace dává programátorovi možnost přistupovat ke kódu "jako k datům," tedy kód pomocí kódu samotného určitým způsobem číst (například získání seznamu proměnných ve třídě, zjištění návratového typu funkce, atp.) a~přidávat/upravovat (například vytvořit třídy pro binárního stromu nad zadaným typem nebo na základě seznamu proměnných ve třídě vygenerovat funkci, která zajistí korektní serializaci třídy). Do tohoto konceptu spadá například šablonování a reflexe.
 
 Současné kompilované jazyky realizují metaprogramování jen v omezené míře. Jazyk Beast zavádí tzv. Koncept líhnutí kódu (viz kapitola \ref{ctime}), který v tomto směru nabízí mnohem více možností.
@@ -341,17 +341,216 @@ Lambda výrazy, jindy nazývané jako anonymní funkce, jsou jazyková konstrukc
 
 Mnoho moderních programovacích jazyků lambda výrazy podporuje, mezi nimi i naše vzorové jazyky C++ a D. Realizace základních lambda výrazů je triviální (pomocí ukazatele na funkci), návrh se ale komplikuje, pokud chceme v anonymní funkci používat nestatické proměnné z rámce, ve kterém byla funkce definována. Bližší popis lambda výrazů je mimo rámec této práce. Specifikace jazyka Beast lambda výrazy zahrnuje, z časových důvodů ale v demonstračním kompilátoru zahrnuty nejsou.
 
-\subsection{Rysy (traits) a uniform function call syntax (UFCS)}
-Koncept \textit{traits} se napříč jazyky různí jak syntaxí, tak funkčností. V některých jazycích nemá syntaktickou podporu a je spíše používán jako návrhový vzor (\textit{design pattern}). Všeobecně se jedná o způsob přidávání funkčnosti třídám a~zároveň standardizace této funkčnosti mezi třídami (třída, která implementuje daný \textit{trait}, musí poskytovat jeho funkčnost). Uveďme si několik různých přístupů k tomuto konceptu:
+\subsection{Rysy (traits)}
+Koncept \textit{traits} (rysy) se napříč jazyky různí jak syntaxí, tak funkčností. V některých jazycích nemá syntaktickou podporu a je spíše používán jako návrhový vzor (\textit{design pattern}). Všeobecně se jedná o způsob přidávání funkčnosti třídám a~zároveň standardizace této funkčnosti mezi třídami (třída, která implementuje daný rys, musí poskytovat jeho funkčnost) mimo konvenční systém dědičnosti. Uveďme si několik různých přístupů k tomuto konceptu:
 
 \begin{itemize}
-	\item Jazyk Rust\footnote{Více informací o \textit{traits} v jazyku Rust na adrese \url{https://doc.rust-lang.org/book/traits.html}} na konceptu \textit{traits} zakládá celé objektově orientované paradigma. V~Rustu neexistují třídy; existují pouze struktury (\textit{struct}), které mohou obsahovat pouze proměnné (tedy žádné funkce), \textit{traits}, které obsahují prototypy funkcí, a implementace \textit{traits} pro dané struktury. Definice struktur, \textit{traits} a implementací mohou být v různých modulech.
-	\item Jazyk Scala\footnote{Více informací o \textit{traits} v jazyce Scala na adrese \url{http://joelabrahamsson.com/learning-scala-part-seven-traits/}} využívá \textit{traits} k napodobení vícenásobné dědičnosti.\textit{Traits} zde rozšiřují koncept rozhraní (\textit{interfaces}) o možnost implicitní implementace funkcí a přidání proměnných (které jsou ale 'abstraktní' -- v \textit{trait}u jsou obsaženy pouze jako reference a musí být definovány ve třídě, která \textit{trait} zavádí).
+	\item Jazyk Rust\footnote{Více informací o \textit{traits} v jazyku Rust na adrese \url{https://doc.rust-lang.org/book/traits.html}} na konceptu \textit{traits} zakládá celé objektově orientované paradigma. V~Rustu neexistují třídy; existují pouze struktury (\textit{struct}), které mohou obsahovat pouze proměnné (tedy žádné funkce), \textit{traits}, které obsahují prototypy funkcí, a implementace \textit{traits} pro dané struktury. Definice struktur, \textit{traits} a implementací mohou být v různých souborech.
+	\begin{rustcode}[Příklad \textit{traits} v jazyce Rust, převzato z~\url{https://doc.rust-lang.org/book/traits.html}]
+// Rust
+struct Circle {
+	x: f64,
+	y: f64,
+	radius: f64,
+}
+
+trait HasArea {
+	fn area(&self) -> f64;
+}
+
+impl HasArea for Circle {
+	fn area(&self) -> f64 {
+		std::f64::consts::PI * (self.radius * self.radius)
+	}
+}
+	\end{rustcode}
+	
+	\item Jazyk Scala\footnote{Více informací o \textit{traits} v jazyce Scala na adrese \url{http://joelabrahamsson.com/learning-scala-part-seven-traits/}} využívá rysy k napodobení vícenásobné dědičnosti (kterou jazyk nepodporuje). \textit{Traits} zde rozšiřují koncept rozhraní (\textit{interfaces}) o možnost implicitní implementace funkcí a přidání proměnných (které jsou ale 'abstraktní' -- v rysu jsou obsaženy pouze jako reference a musí být definovány ve třídě, která rys zavádí).
+	\begin{scalacode}[Příklad \textit{traits} v jazyce Scala, převzato z~\url{https://en.wikibooks.org/wiki/Scala/Traits}]
+trait Person {
+	var name: String
+	var gender: Gender
+	def sendEmail(subject: String, body: String): Unit
+}
+
+class Student extends Person {
+	var name: String
+	var gender: Gender
+	def sendEmail(subject: String, body: String): Unit = {
+		// ...
+	}
+}
+	\end{scalacode}
+
+	\item Jazyk C++ nemá přímou syntaktickou podporu pro \textit{traits}, ale díky šablonám se dají použít jako návrhový vzor.
+	\begin{cppcode}[Aplikace konceptu \textit{traits} v jazyku C++] $\label{traits:1}$
+// Area.h		
+
+template< typename T >
+struct hasTrait_area { static const bool value = false; };
+
+template<typename T>
+double area_calculateArea( const T &t ) {
+	throw;
+}
+
+// Circle.h
+
+class Circle {
+	public: double x = 0, y = 0, radius = 1;
+};
+
+// Definition of trait 'area' for class Circle, possibly in another module
+template<>
+struct hasTrait_area<Circle> { static const bool value = true; };
+
+template<>
+double area_calculateArea<Circle>( const Circle &c ) {
+	return c.radius * c.radius * PI;
+}
+
+// main.c
+#include <Circle.h>
+#include <iostream>
+
+template< typename T >
+void printVariableProperties( const T& var ) {
+	std::cout << "Variable properties:\n";
+	
+	if( hasTrait_area<T>::value )
+		std::cout << "  area: " << area_calculateArea( var ) << "\n";
+}
+
+void main() {
+	C c;
+	printVariableProperties( c );
+}
+	\end{cppcode}
+
+	\item Jazyk D nabízí širší možnosti. \textit{Uniform Function Call Syntax} (dále UFCS), která pro statické funkce s alespoň jedním parametrem, které jsou standardně volány pomocí syntaxe \inlineDCode{foo( arg1, arg2, arg3 )}, připouští alternativní syntaxi volání \inlineDCode{arg1.foo( arg2, arg3 )} (funkce se pak jeví jako třídní), umožňuje využití konceptu \textit{traits} se syntaktickým zápisem, který je bližší standardnímu využití:
+	\begin{dcode}[Aplikace konceptu \textit{traits} v jazyce D]
+// area.d
+enum bool hasTrait_area( T ) = __traits( hasMember, T, "hasTrait_area" );
+
+// circle.d
+struct Circle {
+	
+public:
+	// Trait 'area' for Circle defined inside the object
+	enum hasTrait_area = true;
+	double x = 0, y = 0, radius = 1;
+	double area() const {
+		return radius * radius * 3.14159165358979;	
+	}	
+	
+}
+
+// rectangle.d
+struct Rectangle {
+	public double x = 0, y = 0, w = 1, h = 1;
+}
+
+// Trait 'area' for Rectangle defined outside the object (possibly different module)
+
+/// 'Override' default hasTrait_area with more specific template parameter
+template hasTrait_area( T : Rectangle ) if( is( T == Rectangle ) ) {
+	enum hasTrait_area  = true;
+}
+double area( const ref Rectangle r ) {
+	return r.w * r.h;
+}
+
+
+// main.d
+void printVariableProperties( T )( const ref T var ) {
+	import std.stdio;
+	writeln( "Variable properties:\n" );
+	
+	static if( hasTrait_area!T )
+		writeln( "  area: ", var.area(), "\n" );
+}
+
+void main() {
+	Circle c;
+	Rectangle r;
+	int x;
+	
+	printVariableProperties( c );
+	printVariableProperties( r );
+	printVariableProperties( x );
+}
+	\end{dcode}
+
+	V jazyce D se dá díky jeho možnostem metaprogramování implementovat například i~kontrola, zda daný typ, který o sobě tvrdí, že má zavedený daný rys (\inlineDCode{hasTrait_area!T == true}), skutečně nabízí veškerou funkčnost rysem požadovanou; uvedení příkladu by ale zabíralo příliš místa.
+
 \end{itemize}
 
-TODO
+Jazyk Beast bude podporovat vícenásobnou dědičnost, která obsahuje funkčnost \textit{traits} v takové podobě, jak je zavádí jazyky Rust nebo Scala; \textit{traits} tedy nejsou potřeba.
+
+\subsection{Uniform function call syntax (UFCS)}
+Jak již bylo zmíněno v předchozím oddíle, \textit{uniform function call syntax} (dále UFCS) je přístup, kdy se volání funkcí ve formátech \inlineCode{arg1.foo( arg2, arg3 )} a \inlineCode{foo( arg1, arg2, arg3 )} považuje za ekvivalentní. Je zavedený například v jazycích D (kde platí pouze u~statických funkcí) nebo Rust.
+
+Výhoda zavedení UFCS spočívá v tom, že programátorovi je umožněno přidávat funkčnost typům i mimo jejich definice (uvnitř \inlineCode{class C \{ ... \}}):
+\begin{dcode}[UFCS v jazyce D]
+// D
+struct Circle {
+	double x = 0, y = 0, radius = 1;
+}
+
+double area( const ref Circle c ) {
+	return c.radius * c.radius * PI;
+}
+
+void main() {
+	import std.stdio;
+	
+	Circle c;
+	writeln( area( c ) ); $\label{ufcs:1}$
+	writeln( c.area() ); $\label{ufcs:2}$
+}
+\end{dcode}
+
+Bez zavedení UFCS by kód na řádku \ref{ufcs:2} nebyl platný, bylo by možné používat pouze variantu na řádku \ref{ufcs:1}. To programátora při použití funkce nutí uvažovat, jestli je definovaná v těle třídy, nebo mimo. Pokud se jedná o funkci, která má s typem jasnou souvislost (jako v našem příkladu), dá se tato rozdílná syntaxe považovat za nežádoucí. Přesunutí funkce do těla třídy ale nemusí být vždy vhodné řešení, když:
+\begin{itemize}
+	\item Funkce pracuje nad typem, jehož definici programátor nemůže upravit -- typy definované kompilátorem (\inlineCode{Int}, \inlineCode{String}) nebo knihovnami třetích stran.
+	\item Funkce pracuje nad více typy současně --  pro jazyk Beast to zde znamená, že první parameter je typu \inlineCode{auto}, například funkce
+		\begin{code}
+Double area( auto? entity )
+	if( entity.#type in [ Circle, Rectangle ] )
+{
+	// ...
+}
+		\end{code}
+		je schopná pracovat nad typy \inlineCode{Circle} a \inlineCode{Rectangle}. Přesun funkce do těl tříd by vyžadoval duplikaci stejného kódu (toto by se v dalo řešit pomocí třídní dědičnosti).
+	\item Funkce se používá pouze ve specifických případech; například se nám v některém z~modulů hodí funkce \inlineCode{Bool isDividableByTwo(Int x)}, zavádět ji ale všude by bylo nepraktické.
+\end{itemize}
+
+Výhody UFCS shrnuje pan Walter Bright v jednom ze svých článků \cite{Bright2002}. UFCS nicméně povoluje volání funkce dvěma způsoby, což narušuje jednotnost kódu. V úvahu tedy připadá zavést direktivu kompilátoru (formou dekorátoru, viz \ref{decorators}), která by říkala, že místo "klasické" syntaxe využívá funkce k volání syntaxi pro třídní metody. Pro každou funkci by vždy byla povolena jen jeden ze způsobů volání. Podobně fungují například \textit{extension methods} v C\#.
+
+Jazyk Object Pascal řeší tento problém pomocí tzv. \textit{helper objects}. Objekt, nad kterým funkce pracuje, pak není předáván jako první parametr, ale napodobuje se objektový přístup (\inlinePascalCode{self} a implicitní přístup do jmenného prostoru objektu).
+\begin{pascalcode}
+TObjectHelper = class helper for TObject
+	function Test(): String;
+end;
+
+function TObjectHelper.Test(): String;
+begin
+	Result := 'This is a test';
+end;
+
+var
+	o: TObject;
+begin
+	Writeln( o.Test() );
+end.
+\end{pascalcode}
+
+Tento koncept se podobá \textit{traits} popsaným v předchozím oddílu, je tu však rozdíl: zatímco v \textit{traits} je zavedeno jednotné rozhraní napříč typy a to je potom pro každý typ implementováno, \textit{helper objects} nezavádí žádné jednotné rozhraní, pouze funkčnost.
+
+Jazyk Beast cílí zavést obdobnou funkčnost, z časových důvodů je však její zavedení a~určení přesné finální podoby odloženo.
 
 \subsection{Standardní knihovna}
+Standardní knihovna je velice důležitý prvek jazyka. 
 
 \section{Nové a netypické koncepty}
 
@@ -791,6 +990,27 @@ inline auto max( T1 a, T2 b ) {
 \begin{code}
 // Beast
 @inline auto max( auto a, auto b ) = select( a > b, a, b );
+\end{code}
+
+Jak bylo popsáno v oddílu \ref{metaprogramming}, jazyk Beast zavádí konstrukci \inlineCode{if( expr )}, která se vkládá mezi deklarační část a tělo funkce/třídy. Výraz \inlineCode{expr} je vyhodnocen jako \inlineCode{@ctime Bool} a pokud je jeho hodnota \inlineCode{false}, deklarace je ignorována. Výraz v konstrukci může pracovat i s \ctime argumenty deklarace.
+
+\begin{code}
+Void test( @ctime Int x )
+	if( x < 0 )
+{
+	console.write( "<0" );
+}
+
+Void test( @ctime Int x )
+	if( x >= 0 )
+{
+	console.write( ">=0" );
+}
+
+Void main() {
+	test( -3 ); // Writes "<0"
+	test( 5 ); // Writes ">=0"
+}
 \end{code}
 
 \subsection{\ctime funkce a třídy}

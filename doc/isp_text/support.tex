@@ -40,7 +40,8 @@
 
 \lstdefinelanguage{beast}
 {
-	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, do, else, enum, except, finally, for, foreach, function, generic, goto, if, import, in, is, loop, mixin, module, new, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
+	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, do, else, enum, except, extend, finally, for, foreach, function, generic, goto, if, import, in, is, loop, mixin, module, new, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
+	sensitive=true,
 	sensitive=true,
 	morecomment=[l]{//},
 	morecomment=[s]{/*}{*/},
@@ -97,6 +98,62 @@
 	breaklines=true
 	]{#1}}
 
+
+\lstdefinelanguage{rust}
+{
+	morekeywords={abstract, alignof, as, become, box, break, const, continue, crate, do, else, enum, extern, false, final, fn, for, if, impl, in, let, loop, macro, match, mod, move, mut, offsetof, override, priv, proc, pub, pure, ref, return, Self, self, sizeof, static, struct, super, trait, true, type, typeof, unsafe, unsized, use, virtual, where, while, yield},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+\lstnewenvironment{rustcode}[1][]{
+	\hspace{0mm}
+	\lstset{language=rust}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlineRustCode}[1]{\lstinline[%
+	language=rust,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\lstnewenvironment{scalacode}[1][]{
+	\hspace{0mm}
+	\lstset{language=scala}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlineScalaCode}[1]{\lstinline[%
+	language=scala,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\lstdefinelanguage{objectPascal}
+{
+	morekeywords={begin, end, function, class, record, helper, for, var, const, self},
+	sensitive=false,
+	morecomment=[l]{\#}
+}
+\lstnewenvironment{pascalcode}[1][]{
+	\hspace{0mm}
+	\lstset{language=objectPascal}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlinePascalCode}[1]{\lstinline[%
+	language=objectPascal,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
 
 \newcommand{\beastRef}[1]{viz specifikace jazyka Beast (v příloze), oddíl \textit{#1}}
 \newcommand{\BeastRef}[1]{Viz specifikace jazyka Beast (v příloze), oddíl \textit{#1}}
