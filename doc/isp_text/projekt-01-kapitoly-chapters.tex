@@ -550,21 +550,104 @@ Tento koncept se podobá \textit{traits} popsaným v předchozím oddílu, je tu
 Jazyk Beast cílí zavést obdobnou funkčnost, z časových důvodů je však její zavedení a~určení přesné finální podoby odloženo.
 
 \subsection{Standardní knihovna}
-Standardní knihovna je velice důležitý prvek jazyka. 
+Standardní knihovna je velice důležitý prvek jazyka. Standardizace nejpoužívanějších programovacích vzorů, struktur a funkcí přispívá jak ke kompatibilitě knihoven, tak k celkovému komfortu psaní. Vyhotovení dostatečně obsáhlé standardní knihovny bude dlouhodobým cílem vývoje, pokud by se jazyk uchytil.
+
+\subsection{Kompatibilita s jinými jazyky}
+Pro jazyky všeobecně a pro nové jazyky obzvláště je důležitá možnost využití kódu napsaného v jiném jazyku. Rozbor tohoto tématu je však mimo rámec této práce.
 
 \section{Nové a netypické koncepty}
 
 \subsection{Konstrukce \inlineCode{:ident}} \label{colonIdent}
+Výčty (\textit{enums}) jsou v programovaní běžně rozšířené a poměrně hojně používané. V jazyce C neměly výčty vlastní jmenný prostor, což vedlo ke kolizím jmen. To se řešilo například přidáním prefixu před identifikátory položek, čímž nabývaly na velikosti, znepřehledňovaly kód a zpomalovaly jeho psaní. Prefixy, které odpovídaly zkratkám názvů výčtů (například \inlineCppCode{enum Month} -> \inlineCode{mJanuary}), zase často kolidovaly s prefixy jiných výčtů (například \inlineCppCode{mJanuary} a \inlineCppCode{mRead} od \inlineCppCode{enum MemoryAccess}). C++ nabízí možnost vytvořit výčet s vlastním jmenným prostorem (\inlineCppCode{enum class X}), ale to je prakticky ekvivalentní s přidáním prefixu.
+
+Za příklad si vezměme C++ kód na zápis do souboru pomocí standardní knihovny:
+\begin{cppcode}[Příklad použití výčtů v jazyce C++, převzato z\url{http://www.cplusplus.com/reference/fstream/fstream/open/}, upraveno]
+// C++
+#include <fstream>
+int main () {
+	std::fstream fs;
+	fs.open( "test.txt", std::fstream::in | std::fstream::out | std::fstream::app ); $\label{colonIdent:1}$
+	fs << " more lorem ipsum";
+	fs.close();
+	return 0;
+}
+\end{cppcode}
+
+Zde na řádku \ref{colonIdent:1} musí programátor napsat prefix \inlineCppCode{std::fstream::} dokonce třikrát. Přitom funkce \inlineCppCode{std::fstream::open} přijímá právě jenom hodnoty z tohoto výčtu (sémanticky to zcela zřejmé není, protože C++ standardní chyba nenabízí typ, který by dokázal bezpečně pracovat s prvky výčtu jako s příznaky, jazyk Beast to však bude umožňovat).
+
+Jazyk Beast nabízí elegantní řešení tohoto problému. Zavádí konstrukci \inlineCode{:ident}, která vyhledává zadaný identifikátor ne v aktuálním jmenném prostoru, nýbrž ve jmenném prostoru typu, jehož hodnotu kompilátor očekává. Za předpokladu, že funkce \inlineCode{open} přijímá jako druhý parametr typ \inlineCode{Flags(OpenMode)}, kde \inlineCode{OpenMode} je výčet, a že prvky výčtu jsou z příznakového typu dostupné (toho je docíleno pomocí importu rámců, viz \ref{scopeImport}), může ekvivalentní kód v Beastu vypadat takto:
+\begin{code}
+Void main() {
+	File( "test.txt", :write | :append ).write( " more lorem ipsum" );
+}
+\end{code}
+
+\subsection{Import rámce} \label{scopeImport}
+Tento prvek jazyk Beast převzal z jazyka D, kde je znám jako \inlineDCode{alias this}\footnote{Více o \inlineDCode{alias this} v jazyce D na adrese \url{http://dlang.org/spec/class.html\#AliasThis}}. Typ, v jehož těle je tato konstrukce použita, se pak efektivně stává subtypem instance proměnné typu, který je vyhodnocen výrazem v konstrukci -- je do něj implicitně přetypovatelný, má přístup k jeho členům, atp.
+
+\begin{dcode}[Příklad konstrukce \inlineDCode{alias this} v jazyce D, převzato z~\url{http://dlang.org/spec/class.html\#AliasThis}, upraveno]
+// D
+struct S
+{
+	int x;
+	alias x this;
+}
+
+int foo(int i) { return i * 2; }
+
+void test()
+{
+	S s;
+	s.x = 7;
+	int i = -s;  // i == -7
+	i = s + 8;   // i == 15
+	i = foo(s);  // implicit conversion to int
+}
+\end{dcode}
+
+Jazyk Beast tuto konstrukci také cílí zavést, její přesná syntaktická podoba je ale ještě není rozhodnutá a její zavedení nebude v rámci této práce.
 
 \subsection{Znak \inlineCode{\#} v identifikátorech}
+Jazyk Beast zavádí relativně velké množství kompilátorem definovaných vlastností a členů tříd (funkce pro přetěžování operátorů, konstruktor/destruktor, funkce pro přetypování, prvky poskytující reflexi jazyka, ...). Aby se neomezovala množina identifikátorů, které programátor může použit, všechny identifikátory, které využívá kompilátor nebo které slouží k~reflexi jazyka, začínají znakem \inlineCode{\#}. Tento prostor identifikátorů je dostupný i programátorovi, nicméně jeho doporučené využití se omezuje na výše uvedené.
+
+\begin{code}
+class C {
+
+@public:
+	Void #ctor() {
+		// Constructor	
+	}
+
+	Void #operator( Operator.binPlus, C? other ) {
+		// Overload of a + b
+	}
+
+	Int foo() {
+		foo.#returnType	result = 3; // Language reflection example
+		return resul;
+	}
+	
+}
+\end{code}
 
 \subsection{Ternární operátor} \label{ternary}
+Narozdíl od jazyků C++ a D Beast neposkytuje ternární operátor \inlineCppCode{a ? b : c}. Hlavním důvodem byla potřeba využít lexémy \inlineDCode{?} a \inlineDCode{:} jinde. Místo toho existuje funkce 
+\begin{code}
+auto select(Bool cond1, auto val1, auto defVal)
+\end{code}
+která má stejnou funkčnost (\inlineCode{cond1} odpovídá parametru \inlineDCode{a}, \inlineCode{val1} parametru \inlineDCode{b} a \inlineCode{defVal} parametru \inlineDCode{c}). Tato funkce je navíc rozšiřitelná o libovolný počet podmínek a odpovídajících hodnot -- tedy například 
+\begin{code}
+auto select(Bool cond1, auto val1, Bool cond3, auto val2, Bool cond3, auto val3, auto defVal)
+\end{code}
+Návratová hodnota této funkce odpovídá první hodnotě parametru \inlineCode{valX}, jehož podmínka \inlineCode{condX} je vyhodnocena jako pravda. Vyhodnocování podmínek i výrazů je líné, funkčnost tedy odpovídá zřetězenému použití ternárního operátoru.
 
-\subsection{Konstrukce \inlineCode{switch}}
+Protože pokročilé prvky (líné vyhodnocování výrazů, variadické funkce, \inlineCode{auto} typy), které tato funkce vyžaduje pro implementaci, nebudou v rámci tohoto projektu implementovány (ačkoli v hotové verzi jazyka se s nimi počítá), ani samotná funkce \inlineCode{select} nebude v demonstračním kompilátoru obsažena.
+
+%\subsection{Konstrukce \inlineCode{switch}}
 
 \subsection{Vnořovatelné komentáře}
 
-\subsection{Řetězcové literály}
+%\subsection{Řetězcové literály}
 
 \subsection{Typy IntXX, BinaryXX a Index}
 
