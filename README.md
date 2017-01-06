@@ -6,6 +6,11 @@ This repository contains (everything is WIP):
 * Language reference
 * Bachelor thesis text (thich language is a bachelor thesis) - written in Czech
 
+## Progress
+* C++ transcompiler: 0% (no working prototype)
+* Std library: 0%
+* Language reference: 30%
+
 ## Basic language features
 * Importable modules (no header files like in C++)
 * C++ style multiple inheritance class system

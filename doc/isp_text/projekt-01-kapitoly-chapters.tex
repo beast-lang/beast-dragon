@@ -5,14 +5,16 @@
 \newcommand{\nonctime}{ne-\inlineCode{@ctime}\xspace}
 
 \chapter{Úvod}
-Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky. Prvkem jazyka, na kterou se tato práce zaměřuje, je nový koncept "líhnutí kódu", který poskytuje rozsáhlé možnosti metaprogramování.
+Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
 
-Programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
+Prvkem jazyka, na kterou se tato práce zaměřuje, je nový koncept "líhnutí kódu", který poskytuje rozsáhlé možnosti metaprogramování.
 
-Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletní specifikace jazyka, případně pracují s fiktivní standardní knihovnou; kompilátor vytvořený v~rámci bakalářské práce ale implementuje pouze její podmnožinu -- většinu uvedených kódů tedy kompilátor není schopný zpracovat.
+Navržený programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
 
-\section{Motivace}
-Kompilované jazyky jsou základním stavebním kamenem softwarového průmyslu. 
+Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletní specifikace jazyka, případně pracují se standardní knihovnou (která ještě ani nebyla navržena); kompilátor vytvořený v~rámci bakalářské práce ale implementuje pouze malou část zdokumentované funkčnosti -- většinu uvedených kódů tedy kompilátor není schopný zpracovat.
+
+\paragraph{Motivace a cíl}
+Motivací a současně i cílem této práce je snaha vnést nový pohled do oblasti kompilovaných jazyků, jak celkovou kompozicí jazyka, tak novými nápady, a přiblížit jej akademické komunitě skrze demonstrační kompilátor.
 
 \begin{comment}
 Mou hlavní motivací je nespokojenost se stávajícími programovacími jazyky. Programování mám jako koníčka už od nějakých dvanácti let, a tak jsem ještě před nastoupením na FIT získal nějaké zkušenosti z psaní aplikací v Object Pascalu (Delphi), C++ (Qt, SDL + OpenGL) a PHP (webové aplikace). FIT pak můj repertoár (i když jen rámcově) rozšířil na valnou většinu dnes používaných jazyků. Bohužel jsem ale nenarazil na žádný, který by splňoval mé požadavky. Rozhodl jsem se tedy využít nutnost napsání bakalářské práce k~uskutečnění mého dlouholetého snu.
@@ -23,11 +25,8 @@ Mému srdci nejbližší jazyk, na který jsem ve svém pátrání narazil, byl 
 D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem narazil na strop možnosti (ačkoli byl značně výš než třeba v C++), kdy některé věci nešly napsat tak jednoduše, jak bych chtěl. Tento jazyk však dokazuje, že tato bariéra může být mnohem dál. Já ji chci ve svém jazyku ještě více posunout. 
 \end{comment}
 
-
-\section{Cíle}
-
 \chapter{Vlastnosti a syntaxe jazyka}
-Navrhujeme programovací jazyk. Máme už rámcové představy, co od něj vyžadujeme, a na základě nich se budeme činit další rozhodnutí týkající se jeho vlastností. Nejdříve určíme základní rysy jazyka.
+Navrhujeme programovací jazyk. Máme už rámcové představy, co od něj vyžadujeme, a na základě nich se budeme činit další rozhodnutí týkající se jeho vlastností.
 
 \paragraph{Použití jazyka}
 Naším cílem je navrhnout tzv. \textit{general purpose language}, tedy jazyk nezaměřený na konkrétní případy užití. Cílíme vytvořit "nástupce" jazyka C++, který by se dal použít ve všech případech, kde se dá využít C++ -- tedy i třeba na mikroprocesorových systémech. Složitější struktury se tím pádem budeme snažit řešit spíše vhodnou abstrakcí než zaváděním prvků, které kladou zvýšené nároky na výkon a paměť.
@@ -36,26 +35,26 @@ Naším cílem je navrhnout tzv. \textit{general purpose language}, tedy jazyk n
 Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret. V rámci této práce budeme navrhovat kompilovaný jazyk. Pro zjednodušení práce při psaní překladače nebudeme ale překládat přímo do strojového kódu, ale do jazyka C/C++.
 
 \paragraph{Syntaxe jazyka}
-Abychom maximálně usnadnili přechod případných programátorů k našemu jazyku a zkrátili učební křivku, je vhodné se co nejvíce inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet se syntaxe rodiny jazyků C, které jsou hojně rozšířené a zažité.
+Abychom maximálně usnadnili přechod případných programátorů k našemu jazyku a zkrátili učební křivku, je vhodné se inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet se syntaxe rodiny jazyků C, které jsou hojně rozšířené a zažité. Tento jazyk se inspiruje konkrétně jazyky C++ a D.
 
 \paragraph{Programovací paradigmata}
-Budeme se inspirovaft jazyky C++ a D, a tím pádem přejímat i jejich paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
+Budeme se inspirovat jazyky C++ a D, a tím pádem přejímat i jejich paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
 
 \section{Existující prvky programovacích jazyků}
-V oblasti návrhu programovacích jazyků již byla vymyšlena spousta konceptů a kategorizováno mnoho vlastností, které jazyk definují. V tomto oddílu si přiblížíme ty nejznámější z nich a budeme diskutovat o jejich začlenění do našeho programovacího jazyka.
+V oblasti návrhu programovacích jazyků již bylo navrhnuto mnoho konceptů a kategorizováno mnoho vlastností, které jazyk definují. V tomto oddílu si přiblížíme ty nejznámější z~nich a budeme diskutovat o jejich začlenění do našeho programovacího jazyka.
 
 \subsection{Modularita}
 Pro větší projekty, které si jazyk Beast také cílí podporovat, je rozdělení kódu do menších částí -- modulů -- nezbytné. Dřívější přístup, kde u modulů byla oddělená deklarační (hlavičková) a definiční část (například u jazyků Object Pascal a C/C++), byl překonán a~kompilátory moderních jazyků již rozhraní mezi moduly odvozují z definic uvnitř jednotlivých modulů. Tento přístup je praktičtější, protože vytváření a udržování hlavičkových sekcí bylo časově náročné (programátor musel vše psát a upravovat dvakrát).
 
 Jazyk Beast zavede systém modulů podobný jazykům D a Java, kde se pro interakci mezi moduly využívá konstrukce \inlineCode{import moduleName;}.
 
-\subsection{Systém dedičnosti tříd} U kompilovaných jazyků se nejběžněji využívá třídní systém využívající dědičnost a tabulky virtuálních metod. Tohoto konceptu využívají i jazyky C++ a D, nicméně v detailech se poněkud liší. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a~to s~dědičností vícenásobnou a případně i~virtuální, D~má systém spíše podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
+\subsection{Systém dedičnosti tříd} U kompilovaných jazyků se nejběžněji využívá třídní systém využívající dědičnost a tabulky virtuálních metod. Tohoto konceptu využívají i jazyky C++ a D, nicméně v detailech se poněkud liší. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a~to s~dědičností vícenásobnou a případně i~virtuální, D~má systém podobný Javě -- třídy (\textit{class}) mohou mít maximálně jednoho rodiče, navíc ale existují rozhraní (\textit{interface}), které však nemohou obsahovat proměnné.
 
-Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní, které tuto vlastnost do jisté míry supují, nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní -- dají se s rozhraními ale kombinovat); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v~určitých případech kontrola přepisování (\textit{overridingu}).
+Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní, které tuto vlastnost do jisté míry suplují, nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní -- dají se s rozhraními ale kombinovat); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v~určitých případech kontrola přepisování (\textit{overridingu}).
 
 Ačkoli je implementace systému vícenásobné dědičnosti tak, jak je v C++, složitější, její implementace je uskutečnitelná, kód nezpomaluje a fakticky rozšiřuje možnosti jazyka. C++ model dědičnosti umí vše, co umí Javovský model, a ještě víc.
 
-Jazyk Beast tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak bude systém v rámci demonstračního kompilátoru značně omezen.
+Jazyk Beast tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak bude systém v rámci demonstračního kompilátoru značně omezena.
 
 \subsection{Automatická správa paměti -- garbage collector}
 Zavedení \textit{garbage collectoru} (dále jen GC) nenabízí pouze výhody -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
@@ -69,7 +68,7 @@ Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/night
 
 Je tedy třeba určit syntaktickou konstrukci pro označování nekonstantních proměnných. V rámci koherence syntaxe jazyka (která je rozvedena v dalších kapitolách tohoto textu), připadají  v úvahu dvě možnosti:
 \begin{enumerate}
-	\item Vytvoření dekorátoru v kontextu \inlineCode{typeWrapper}\footnote{\BeastRef{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
+	\item Vytvoření dekorátoru\footnote{\BeastRef{Decorators}} v kontextu \inlineCode{typeWrapper}\footnote{\BeastRef{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
 	\item Vyčlenění operátoru; nejlepším kandidátem je suffixový operátor \inlineCode{Type!}, protože nemá žádnou standardní sémantiku, je nepoužitý a znak vykřičníku je intuitivně asociován s výstrahou, což je zase asociovatelné s mutabilitou.
 \end{enumerate}
 
@@ -122,12 +121,12 @@ Další možností by bylo zcela využít gramatiku C++, nicméně ta je všeobe
 \end{dcode}
 \begin{code}
 	// Beast
-	Int32! a, b; // Mutable integer
-	Int32 c, d; // Const integer
-	Int32!?! e, f; // Mutable reference to mutable integer
-	Int32?! g, h; // Mutable reference to const integer
-	Int32!? i, j; // Const reference to mutable integer
-	Int32? k, l; // Const reference to const integer
+	Int! a, b; // Mutable integer
+	Int c, d; // Const integer
+	Int!?! e, f; // Mutable reference to mutable integer
+	Int?! g, h; // Mutable reference to const integer
+	Int!? i, j; // Const reference to mutable integer
+	Int? k, l; // Const reference to const integer
 \end{code}
 
 \subsection{Typová kontrola, konverze typů a odvozování typů}
@@ -556,6 +555,7 @@ Standardní knihovna je velice důležitý prvek jazyka. Standardizace nejpouž�
 Pro jazyky všeobecně a pro nové jazyky obzvláště je důležitá možnost využití kódu napsaného v jiném jazyku. Rozbor tohoto tématu je však mimo rámec této práce.
 
 \section{Nové a netypické koncepty}
+Beast také zavádí několik prvků, které v programovacích jazycích nejsou zcela běžné. Některé z nich jsou zmíněny v tomto oddílu.
 
 \subsection{Konstrukce \inlineCode{:ident}} \label{colonIdent}
 Výčty (\textit{enums}) jsou v programovaní běžně rozšířené a poměrně hojně používané. V jazyce C neměly výčty vlastní jmenný prostor, což vedlo ke kolizím jmen. To se řešilo například přidáním prefixu před identifikátory položek, čímž nabývaly na velikosti, znepřehledňovaly kód a zpomalovaly jeho psaní. Prefixy, které odpovídaly zkratkám názvů výčtů (například \inlineCppCode{enum Month} -> \inlineCode{mJanuary}), zase často kolidovaly s prefixy jiných výčtů (například \inlineCppCode{mJanuary} a \inlineCppCode{mRead} od \inlineCppCode{enum MemoryAccess}). C++ nabízí možnost vytvořit výčet s vlastním jmenným prostorem (\inlineCppCode{enum class X}), ale to je prakticky ekvivalentní s přidáním prefixu.
@@ -641,15 +641,32 @@ auto select(Bool cond1, auto val1, Bool cond3, auto val2, Bool cond3, auto val3,
 \end{code}
 Návratová hodnota této funkce odpovídá první hodnotě parametru \inlineCode{valX}, jehož podmínka \inlineCode{condX} je vyhodnocena jako pravda. Vyhodnocování podmínek i výrazů je líné, funkčnost tedy odpovídá zřetězenému použití ternárního operátoru.
 
-Protože pokročilé prvky (líné vyhodnocování výrazů, variadické funkce, \inlineCode{auto} typy), které tato funkce vyžaduje pro implementaci, nebudou v rámci tohoto projektu implementovány (ačkoli v hotové verzi jazyka se s nimi počítá), ani samotná funkce \inlineCode{select} nebude v demonstračním kompilátoru obsažena.
+Protože pokročilé prvky (líné vyhodnocování výrazů, variadické funkce, \inlineCode{auto} typy), které tato funkce vyžaduje pro implementaci, nebudou v rámci tohoto projektu implementovány (ačkoli v hotové verzi jazyka se s nimi počítá), ani samotná funkce \inlineCode{select} nebude v~demonstračním kompilátoru obsažena.
 
 %\subsection{Konstrukce \inlineCode{switch}}
 
 \subsection{Vnořovatelné komentáře}
+Na rozdíl od jazyků C++ a Java jazyk Beast umožňuje vnořování komentářů \inlineCode{/* comment */}. Nebyly nalezeny žádné důvody, které by mluvily v neprospěch této vlastnosti, zatímco přínos je zřejmý -- víceřádkové komentáře se hojně používají při "zakomentovávání" kusů kódu (většinou pro testovací účely). Pokud chce programátor "zakomentovat" kód, který již obsahuje zakomentovaný kód, naráží na problém a musí odstranit zavírací "závorky" \inlineCode{*/} vnořených komentářů. Při odkomentování vnějšího bloku je situace ještě horší, protože programátor musí přemýšlet, na jaká místa má znovu přidat zavírací "závorky" vnitřních komentářů.
+
+Jazyk D vnořené komentáře podporuje, ale mají vlastní syntaxi (\inlineDCode{/+ comment +/}).
 
 %\subsection{Řetězcové literály}
 
-\subsection{Typy IntXX, BinaryXX a Index}
+\subsection{Předdefinované typy}
+Jazyk Beast se snaží přisuzovat co největší sémantiku typům, které v základu nabízí. Z~tohoto důvodu odděluje \inlineCode{IntXX} a \inlineCode{BinaryXX} (kde \inlineCode{XX} označuje velikost typu v bitech), kde typy \inlineCode{IntXX} nepodporují bitové operace. Pro bitová pole (příznaky) jazyk nabízí typ \inlineCode{Flags(Type SourceEnum)}, který umí ideálně pracovat nad konkrétním výčtem; práce s bity by tedy měla být potřeba jen v minimu případů.
+
+Jako náhradu za \inlineCppCode{size_t} nabízí jazyk bezznaménkové typy \inlineCode{Index} a \inlineCode{Size}. \inlineCode{Index} je zamýšlen k užití pro ukládání pozic prvků a \inlineCode{Size} pro ukládání informace o velikosti (např. seznamů). V souladu s touto sémantikou byla zavedena následující pravidla:
+\begin{itemize}
+	\item \inlineCode{Size}, \inlineCode{Index} a \inlineCode{IntXX} (s velikostí menší nebo rovnou velikosti ukazatele) jsou mezi sebou explicitně přetypovatelné.
+	\item \inlineCode{Size * IntXX = Size}, obdobně pro \inlineCode{Index}, operátory \inlineCode{\- * /} a prohozené operandy.
+	\item \inlineCode{Size + Size = Size}, totéž pro \inlineCode{Index} a operátory \inlineCode{\- * /} (indexy však nelze násobit/dělit jiným indexem).
+	\item \inlineCode{Index - Size = Index}, totéž pro prohozené operandy.
+	\item \inlineCode{Size - Index} nelze.
+	\item \inlineCode{Index - Index = Size}
+	\item \inlineCode{Pointer(Void) - Pointer(Void) = Size}
+	\item \inlineCode{Pointer(X) - Pointer(X) = Index} pro ostatní typy ukazatelů
+	\item \inlineCode{null} je implicitně přetypovatelné jak do typu \inlineCode{Index}, tak do \inlineCode{Size} a odpovídá hodnotě \inlineCode{\-1}.
+\end{itemize}
 
 \chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{ctime}
 Toto je nový koncept navržený pro jazyk Beast. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
@@ -1271,7 +1288,7 @@ Int foo( @ctime Int i, Int j ) {
 }
 \end{code}
 
-\ctime proměnné v tomto příkladu suplují parametry šablon. Po doplnění hodnoty do parametru \inlineCode{i} (který je \ctime, a tedy je třeba znát jeho hodnotu již za doby kompilace), dejme tomu \inlineCode{10}, kompilátor vygeneruje funkci v podobě:
+\ctime proměnné v tomto příkladu nahrazují parametry šablon. Po doplnění hodnoty do parametru \inlineCode{i} (který je \ctime, a tedy je třeba znát jeho hodnotu již za doby kompilace), kompilátor vygeneruje funkci v podobě (v tomto případě \inlineCode{i = 5}):
 
 \begin{code}
 Int foo( 5, Int j ) {
@@ -1310,3 +1327,8 @@ Tento přehled pravidel doplňuje ten uvedený v oddílu \ref{ctime:rules}.
 	\item Nelze porovnávat (\inlineCode{< > <= >=}, lze \inlineCode{== a !=}) ani vypočítat rozdíl \ctime ukazatelů, které patří do různých alokačních bloků paměti.
 	\item Pro nevykonané \ctime větve se neprovádí sémantická kontrola. U \ctime cyklů se provádí sémantická kontrola pro každou iteraci zvlášť.
 \end{enumerate}
+
+\chapter{Implementace kompilátoru}
+Tato kapitola se věnuje implementaci demonstračního kompilátoru jazyka.
+
+\section{Lexikální a syntaktická analýza}
