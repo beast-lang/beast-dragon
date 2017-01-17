@@ -4,6 +4,11 @@
 \newcommand{\ctime}{\inlineCode{@ctime}\xspace}
 \newcommand{\nonctime}{ne-\inlineCode{@ctime}\xspace}
 
+\renewcommand\chapterautorefname{kapitola}
+\renewcommand\sectionautorefname{oddíl}
+\renewcommand\subsectionautorefname{oddíl}
+\renewcommand\subsubsectionautorefname{oddíl}
+
 \chapter{Úvod}
 Tento dokument popisuje a zdůvodňuje část z mnoha rozhodnutí, která byla vykonána při procesu návrhu programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
 
@@ -26,22 +31,16 @@ D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem 
 \end{comment}
 
 \chapter{Vlastnosti a syntaxe jazyka}
-Navrhujeme programovací jazyk. Máme už rámcové představy, co od něj vyžadujeme, a na základě nich se budeme činit další rozhodnutí týkající se jeho vlastností.
+Navrhujeme programovací jazyk. Máme už rámcové představy, co od něj vyžadujeme, a na základě nich se budeme činit další rozhodnutí týkající se jeho vlastností. Naším cílem je navrhnout jazyk pro obecné použití, "nástupce" jazyka C++, který by se dal použít ve všech případech, kde se dá využít C++ -- tedy i třeba na mikroprocesorových systémech. Složitější struktury se tím pádem budeme snažit řešit spíše vhodnou abstrakcí než zaváděním prvků, které kladou zvýšené nároky na výkon a paměť.
 
-\paragraph{Použití jazyka}
-Naším cílem je navrhnout tzv. \textit{general purpose language}, tedy jazyk nezaměřený na konkrétní případy užití. Cílíme vytvořit "nástupce" jazyka C++, který by se dal použít ve všech případech, kde se dá využít C++ -- tedy i třeba na mikroprocesorových systémech. Složitější struktury se tím pádem budeme snažit řešit spíše vhodnou abstrakcí než zaváděním prvků, které kladou zvýšené nároky na výkon a paměť.
+Budeme navrhovat kompilovaný jazyk. Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret. Pro zjednodušení práce při psaní překladače nebudeme ale překládat přímo do strojového kódu, ale do jazyka C/C++.
 
-\paragraph{Kompilovaný vs. interpretovaný jazyk}
-Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret. V rámci této práce budeme navrhovat kompilovaný jazyk. Pro zjednodušení práce při psaní překladače nebudeme ale překládat přímo do strojového kódu, ale do jazyka C/C++.
-
-\paragraph{Syntaxe jazyka}
-Abychom maximálně usnadnili přechod případných programátorů k našemu jazyku a zkrátili učební křivku, je vhodné se inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet se syntaxe rodiny jazyků C, které jsou hojně rozšířené a zažité. Tento jazyk se inspiruje konkrétně jazyky C++ a D.
-
-\paragraph{Programovací paradigmata}
-Budeme se inspirovat jazyky C++ a D, a tím pádem přejímat i jejich paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
+Abychom maximálně usnadnili přechod případných programátorů k našemu jazyku a~zlepšili parametry křivky učení, je vhodné se inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet ze syntaxe rodiny jazyků C, které jsou hojně rozšířené a zažité. Tento jazyk se inspiruje konkrétně jazyky C++ a D. Z těchto jazyků přejímat i paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
 
 \section{Existující prvky programovacích jazyků}
 V oblasti návrhu programovacích jazyků již bylo navrhnuto mnoho konceptů a kategorizováno mnoho vlastností, které jazyk definují. V tomto oddílu si přiblížíme ty nejznámější z~nich a budeme diskutovat o jejich začlenění do našeho programovacího jazyka.
+
+Informace v tomto oddílu byly čerpány z referencí programovacích jazyků C++\cite{CppRef}, D\cite{DSpec}, Rust\cite{RustRef} a tutoriálových stránek pro jazyky Java\cite{JavaTut}, Scala\cite{ScalaTut}.
 
 \subsection{Modularita}
 Pro větší projekty, které si jazyk Beast také cílí podporovat, je rozdělení kódu do menších částí -- modulů -- nezbytné. Dřívější přístup, kde u modulů byla oddělená deklarační (hlavičková) a definiční část (například u jazyků Object Pascal a C/C++), byl překonán a~kompilátory moderních jazyků již rozhraní mezi moduly odvozují z definic uvnitř jednotlivých modulů. Tento přístup je praktičtější, protože vytváření a udržování hlavičkových sekcí bylo časově náročné (programátor musel vše psát a upravovat dvakrát).
@@ -52,17 +51,18 @@ Jazyk Beast zavede systém modulů podobný jazykům D a Java, kde se pro intera
 
 Ačkoli vícenásobné dědění není třeba často, občas potřeba je a jen těžko se nahrazuje. Rozhraní, které tuto vlastnost do jisté míry suplují, nemohou obsahovat proměnné, což omezuje jejich možnosti. D nabízí ještě jedno řešení -- tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které funguje velice podobně jako kopírování bloků kódu přímo do těla třídy. Toto řešení rozbíjí model dědičnosti (na \textit{mixiny} se nelze odkazovat, nefungují jako rozhraní -- dají se s rozhraními ale kombinovat); navíc, protože jsou vložené funkce prakticky součástí třídy, nefunguje v~určitých případech kontrola přepisování (\textit{overridingu}).
 
-Ačkoli je implementace systému vícenásobné dědičnosti tak, jak je v C++, složitější, její implementace je uskutečnitelná, kód nezpomaluje a fakticky rozšiřuje možnosti jazyka. C++ model dědičnosti umí vše, co umí Javovský model, a ještě víc.
+Ačkoli je implementace systému vícenásobné dědičnosti tak, jak je v C++, složitější, její implementace je uskutečnitelná, kód nezpomaluje (v porovnání s ekvivalentním kódem v~Javě) a fakticky rozšiřuje možnosti jazyka. C++ model dědičnosti umí vše, co umí Javovský model, a ještě víc.
+%TODO přidat podpůrnou referenci - nelze najít
 
 Jazyk Beast tedy bude umožňovat třídní dědičnost, a to způsobem podobným C++. Nicméně implementace systému třídní dědičnosti není primárním cílem projektu, a tak bude systém v rámci demonstračního kompilátoru značně omezena.
 
 \subsection{Automatická správa paměti -- garbage collector}
-Zavedení \textit{garbage collectoru} (dále jen GC) nenabízí pouze výhody -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
+Zavedení \textit{garbage collectoru} (dále jen GC) nenabízí pouze výhody \cite{GarbageCollectionHarmful} -- programy mohou být pomalejší, GC zvyšuje nároky na CPU a paměť (těžko se zavádí v mikroprocesorech); navíc efektivní implementace GC je velice složitá.
 
 Rozumným východiskem se jeví být volitelné používání automatické správy paměti. Beast by měl umožňovat efektivní napsání GC přímo v jazyce; GC by tedy mohla být jedna ze základních knihoven. Vzhledem k už tak velkému rozsahu plánované práce je však GC jen plánem do budoucna.
 
 \subsection{Implicitní konstantnost proměnných a propagace konstantnosti}
-Koncept konstantnosti proměnných byl zaveden jednak jako prvek kontroly při psaní kódu, jednak zvětšil potenciál kompilátorů při optimalizování kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje ale napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů neaplikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti.
+Koncept konstantnosti proměnných byl zaveden jednak jako prvek kontroly při psaní kódu, jednak zvětšil potenciál kompilátorů při optimalizování kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů neaplikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti.
 
 Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/nightly/book/mutability.html}}) přišly s opačným přístupem -- všechny proměnné jsou implicitně konstantní a programátor musí použít nějakou syntaktickou konstrukci k tomu, aby to změnil. Beast tento přístup také zavede.
 
@@ -72,7 +72,7 @@ Je tedy třeba určit syntaktickou konstrukci pro označování nekonstantních 
 	\item Vyčlenění operátoru; nejlepším kandidátem je suffixový operátor \inlineCode{Type!}, protože nemá žádnou standardní sémantiku, je nepoužitý a znak vykřičníku je intuitivně asociován s výstrahou, což je zase asociovatelné s mutabilitou.
 \end{enumerate}
 
-Při designu Beastu byla zvolena druhá možnost, především kvůli "upovídanosti" kódu a~ještě kvůli jednomu důvodu, který je popsán níže.
+Při návrhu jazyka Beast byla zvolena druhá možnost, především kvůli "upovídanosti" kódu a~ještě kvůli jednomu důvodu, který je popsán níže.
 
 \paragraph{Propagace konstantnosti} \label{constPropagation} Jazyk D je navržen tak, že je-li ukazatel konstantní (nelze měnit adresu, na kterou ukazuje), je přístup k paměti, na kterou ukazuje, také konstantní. Není tedy možné mít konstantní ukazatel na nekonstantní paměť. Tento mechanismus se nejvíce projevuje při konstantním referencování dat:
 \begin{dcode}
@@ -90,9 +90,9 @@ void main() {
 }
 \end{dcode}
 
-Toto je zbytečné limitování; tranzitivní konstantnost může být v některých případech užitečná, nicméně existují případy užití, ve kterých je překážkou. V Beastu tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní ukazatel na nekonstantní data.
+Toto je zbytečné limitování; tranzitivní konstantnost může být v některých případech užitečná, nicméně existují případy užití, ve kterých je překážkou. V jazyce Beast tedy nebude vynucená propagace konstantnosti; můžeme mít konstantní ukazatel na nekonstantní data.
 
-Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specifikovat mutabilitu dvakrát. Syntaktický zápis pro takovou referenci by vypadal takto (syntaxe pro referenci je \inlineCode{Typ?}, viz \ref{pointers}; příklady reflektují alternativy syntaktického zápisu referencí, které jsou uvedené výše v tomto oddílu):
+Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specifikovat mutabilitu dvakrát. Syntaktický zápis pro takovou referenci by vypadal takto (syntaxe pro referenci je \inlineCode{Typ?}, viz \autoref{pointers}; příklady reflektují alternativy syntaktického zápisu referencí, které jsou uvedené výše v tomto oddílu):
 \begin{enumerate}
 	\item \inlineCode{@mut ( @mut Typ )?}
 	\item \inlineCode{Typ!?!}
@@ -179,7 +179,7 @@ Zde se sémantická analýza výrazu \inlineDCode{x => x + 3} musí provést pro
 
 Typové odvozování se používá i v dalších případech, například u literálů polí, \inlineDCode{auto} deklaracích, apod. Jazyk Beast cílí podporovat všechny tyto případy, v rámci této práce však z časových důvodů nemusí být do demonstračního kompilátoru zavedeny.
 
-V souvislosti s odvozováním typů zavádí jazyk Beast novou konstrukci \inlineCode{:identifier}, která je popsaná v oddílu \ref{colonIdent}.
+V souvislosti s odvozováním typů zavádí jazyk Beast novou konstrukci \inlineCode{:identifier}, viz \autoref{colonIdent}.
 
 \subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
 Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečný prvek, který by se měl užívat jen v nutných případech. Toto se řeší zavedením referencí, které v různých jazycích fungují mírně rozdílně, všeobecně se ale dá říci, že se jedná o ukazatele, které nepodporují ukazatelovou aritmetiku.
@@ -200,12 +200,12 @@ Vynucené předávání instancí tříd odkazem má ale několik nevýhod:
 	\item Dynamická alokace tříd, které jsou prvky jiných tříd/struktur narušuje lokalitu dat, což může vést k \textit{cache misses} a zpomalení aplikace.
 \end{itemize}
 
-\paragraph{Řešení Beastu} 
+\paragraph{Řešení v jazyce Beast} 
 Beast má umožňovat nízkoúrovňové programování, typ ukazatel s ukazatelovou aritmetikou je tedy nutné zavést. Na druhou stranu je ale vhodné nabídnout alternativu pro "běžné" případy užití, které se většinou týkají vytváření instancí tříd na haldě a manipulace s nimi. Proto jazyk standardně nabízí dva ukazatelové typy, kterým říká ukazatel a reference.
 
 Způsob deklarace ukazatelů je v C++ i D problematický z hlediska parsování. Výraz \inlineCode{a * b} může totiž znamenat buď výraz násobení \inlineCode{a} krát \inlineCode{b}, stejně tak ale může znamenat deklaraci proměnné \inlineCode{b} typu ukazatel na \inlineCode{a}~(obdobně i u reference). Nejjednodušším řešením je použití jiného znaku pro označování ukazatelů.
 
-V Beastu je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost Beast obstarává jiným způsobem\footnote{Viz \ref{ternary}}; tím pádem je znak otazníku "postradatelný".
+V jazyce Beast je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost Beast obstarává jiným způsobem\footnote{Viz \autoref{ternary}}; tím pádem je znak otazníku "postradatelný".
 
 Ukazatel funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu a nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}; přístup k prvkům odkazované hodnoty není možný jiným způsobem. K získání ukazatele se také, kvůli stejným důvodům jako u~dereference, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Typ?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer(Type referencedType)}.
 
@@ -218,7 +218,7 @@ Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazovan�
 
 Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho předků) a~reference je implicitně konvertibilní na odkazovaný typ. Reference jsou implicitně konvertibilní na reference předků odkazované třídy a explicitně konvertibilní na referenci jakéhokoli typu; při těchto explicitních konverzích probíhá dynamická typová kontrola, jejíž výsledek může být \inlineCode{null}.
 
-Reference v Beastu pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
+Reference v jazyce Beast pokrývají naprostou většinu případů užití ukazatelů při programování na vyšších úrovních abstrakce, a to se syntaxí takovou, že programátor nemusí rozlišovat referenci od normální proměnné. K programování na nižší úrovni se dá použít konvenční typ ukazatel \inlineCode{Pointer( T )}.
 
 \subsection{Dekorátory} \label{decorators}
 Pro tento koncept mívají jazyky, které ho zavádějí, různé pojmenování. V Javě se používá pojem 'anotace,' v~Pythonu 'dekorátory,' v D 'uživatelem definované atributy,' v C\# a Rustu 'atributy.' Všechny zmíněné jazyky používají podobnou syntaktickou konstrukci, která se umísťuje před deklarace proměnných, tříd, typů, atp. Jejich potenciál se jazyk od jazyku liší; souhrnně se ale dá říci, že programátorům umožňují některé z těchto možností:
@@ -230,18 +230,18 @@ Pro tento koncept mívají jazyky, které ho zavádějí, různé pojmenování.
 
 Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Syntaxi dekorátorů převezme z D/Javy (\inlineCode{@identifier}, případně \inlineCode{@identifier(args)}, které se umísťují před dekorovanou deklaraci/příkaz/konstrukci). Pro koherenci jazyka budou dekorátory využity na všechny dostupné direktivy a modifikátory pro kompilátor; například jazyky Java a~D~používají pro některé direktivy dekorátory (například \inlineCode{@Override}) a pro jiné klíčová slova (například \inlineCppCode{public}).
 
-Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v Beastu \beastRef{Decorators}.
+Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v jazyce Beast \beastRef{Decorators}.
 
 \subsection{Vykonávání fukncí za doby kompilace}
-Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci Konceptu líhnutí kódu (viz kapitola \ref{ctime}).
+Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci Konceptu líhnutí kódu (viz \autoref{ctime}).
 
 \subsection{Metaprogramování} \label{metaprogramming}
 Metaprogramování je koncept, jehož realizace dává programátorovi možnost přistupovat ke kódu "jako k datům," tedy kód pomocí kódu samotného určitým způsobem číst (například získání seznamu proměnných ve třídě, zjištění návratového typu funkce, atp.) a~přidávat/upravovat (například vytvořit třídy pro binárního stromu nad zadaným typem nebo na základě seznamu proměnných ve třídě vygenerovat funkci, která zajistí korektní serializaci třídy). Do tohoto konceptu spadá například šablonování a reflexe.
 
-Současné kompilované jazyky realizují metaprogramování jen v omezené míře. Jazyk Beast zavádí tzv. Koncept líhnutí kódu (viz kapitola \ref{ctime}), který v tomto směru nabízí mnohem více možností.
+Současné kompilované jazyky realizují metaprogramování jen v omezené míře. Jazyk Beast zavádí tzv. Koncept líhnutí kódu (viz \autoref{ctime}), který v tomto směru nabízí mnohem více možností.
 
 \paragraph{Deklarace s \inlineDCode{if} v jazyce D}
-V rámci šablonování nabízí jazyk D velice praktickou konstrukci, kdy se mezi hlavičku a tělo deklarace (třídy, funkce, mixinu, ...) vloží \inlineDCode{if( expr )}, kde \inlineDCode{expr} je logický výraz, který se vyhodnocuje za doby kompilace. Tento výraz může mimo jiné obsahovat šablonové argumenty deklarace a pokud je vyhodnocen jako \inlineDCode{false}, daná deklarace je pro zadané šablonové argumenty považována za neplatnou a je kompilátorem ignorována.
+V rámci šablonování nabízí jazyk D velice praktickou konstrukci, kdy se mezi hlavičku a tělo deklarace (třídy, funkce, mixinu, ...) vloží \inlineDCode{if( expr )}, kde \inlineDCode{expr} je logický výraz, který se vyhodnocuje za doby kompilace. Tento výraz může mimo jiné obsahovat šablonové argumenty deklarace a pokud je vyhodnocen jako \inlineDCode{false}, daná deklarace je pro zadané šablonové argumenty považována za neplatnou a je kompilátorem ignorována\footnote{Bližší dokumentace o této konstrukci v jazyce D je na stránce \url{https://dlang.org/concepts.html}.}.
 
 Níže uvedená funkce v jazyce D
 \begin{dcode}
@@ -262,10 +262,10 @@ void writeToBuffer( Buffer &buf, const T& data ) {
 }
 \end{cppcode}
 
-Jazyk Beast tuto konstrukci přejímá beze změn. Bližší dokumentace o této konstrukci v jazyce D je na stránce \url{https://dlang.org/concepts.html}.
+Jazyk Beast tuto konstrukci přejímá beze změn.
 
 \subsection{Mixins}
-Dalším existujícím konceptem v programovacích jazycích jsou tzv. \textit{mixins}. V podstatě se jedná o prostředek ke "slepému" vkládání/kopírování kódu. Jako příklad poslouží několik kódu z jazyka D, který tento koncept implementuje.
+Dalším existujícím konceptem v programovacích jazycích jsou tzv. \textit{mixins}. V podstatě se jedná o prostředek ke "slepému" vkládání/kopírování kódu. Jako příklad poslouží několik kódu z jazyka D, který tento koncept implementuje\footnote{Bližší dokumentace \textit{mixins} v jazyce D je na stránkách \url{https://dlang.org/mixin.html} a \url{https://dlang.org/spec/template-mixin.html}.}.
 
 \begin{dcode}
 // D
@@ -328,12 +328,12 @@ void main() {
 
 Tato forma \textit{mixin}u společně s vykonáváním funkcí za doby kompilace (CTFE) značně zvyšuje možnosti metaprogramování. V praxi ale bývá kód, který \textit{mixins} využívá, nepřehledný.
 
-Ačkoli jazyk Beast podporuje vícenásobnou dědičnost, koncept \textit{mixins} nabízí rozšíření možností a proto jejich zavedení stojí za úvahu. Z časových důvodů je ale tento koncept prozatím vyloučen. Bližší dokumentace \textit{mixins} v jazyce D je na stránkách \url{https://dlang.org/mixin.html} a \url{https://dlang.org/spec/template-mixin.html}.
+Ačkoli jazyk Beast podporuje vícenásobnou dědičnost, koncept \textit{mixins} nabízí rozšíření možností a proto jejich zavedení stojí za úvahu. Z časových důvodů je ale tento koncept prozatím vyloučen.
 
 \subsection{Výjimky}
 Systém výjimek má napříč jazyky velice podobnou formu využívající konstrukce typu \inlineDCode{try ... catch ... finally} a příkazu typu \inlineDCode{throw}. Koncept je všeobecně známý, není tedy třeba ho tu rozepisovat.
 
-Přestože je systém výjimek takřka nezbytnou součástí moderních programovacích jazyků, tato práce se zaměřuje spíše na implementaci nového Konceptu líhnutí kódu (viz kapitola \ref{ctime}). Výjimky nejsou triviální na implementaci a jejich absence nenarušuje syntaktickou celistvost jazyka a pro demonstrační kompilátor nebude příliš velikým omezením funkčnosti.
+Přestože je systém výjimek takřka nezbytnou součástí moderních programovacích jazyků, tato práce se zaměřuje spíše na implementaci nového Konceptu líhnutí kódu (viz \autoref{ctime}). Výjimky nejsou triviální na implementaci a jejich absence nenarušuje syntaktickou celistvost jazyka a pro demonstrační kompilátor nebude příliš velikým omezením funkčnosti.
 
 \subsection{Lambda výrazy}
 Lambda výrazy, jindy nazývané jako anonymní funkce, jsou jazyková konstrukce umožňující definovat funkce, které nemají identifikátor. Aby tento koncept fungoval, funkce v daném jazyce musí být tzv. \textit{first-class citizens} -- musí s nimi být možné nakládat jako s hodnotami proměnných, tedy ukládat je do proměnných, předávat je jako argumenty nebo je navracet při volání funkcí.
@@ -426,7 +426,7 @@ void main() {
 }
 	\end{cppcode}
 
-	\item Jazyk D nabízí širší možnosti. \textit{Uniform Function Call Syntax} (dále UFCS), která pro statické funkce s alespoň jedním parametrem, které jsou standardně volány pomocí syntaxe \inlineDCode{foo( arg1, arg2, arg3 )}, připouští alternativní syntaxi volání \inlineDCode{arg1.foo( arg2, arg3 )} (funkce se pak jeví jako třídní), umožňuje využití konceptu \textit{traits} se syntaktickým zápisem, který je bližší standardnímu využití:
+	\item Jazyk D nabízí širší možnosti. \textit{Uniform Function Call Syntax}\cite{BrightUFCS} (dále UFCS), která pro statické funkce s alespoň jedním parametrem, které jsou standardně volány pomocí syntaxe \inlineDCode{foo( arg1, arg2, arg3 )}, připouští alternativní syntaxi volání \inlineDCode{arg1.foo( arg2, arg3 )} (funkce se pak jeví jako třídní), umožňuje využití konceptu \textit{traits} se syntaktickým zápisem, který je bližší standardnímu využití:
 	\begin{dcode}[Aplikace konceptu \textit{traits} v jazyce D]
 // area.d
 enum bool hasTrait_area( T ) = __traits( hasMember, T, "hasTrait_area" );
@@ -487,7 +487,7 @@ void main() {
 Jazyk Beast bude podporovat vícenásobnou dědičnost, která obsahuje funkčnost \textit{traits} v takové podobě, jak je zavádí jazyky Rust nebo Scala; \textit{traits} tedy nejsou potřeba.
 
 \subsection{Uniform function call syntax (UFCS)}
-Jak již bylo zmíněno v předchozím oddíle, \textit{uniform function call syntax} (dále UFCS) je přístup, kdy se volání funkcí ve formátech \inlineCode{arg1.foo( arg2, arg3 )} a \inlineCode{foo( arg1, arg2, arg3 )} považuje za ekvivalentní. Je zavedený například v jazycích D (kde platí pouze u~statických funkcí) nebo Rust.
+Jak již bylo zmíněno v předchozím oddíle, \textit{uniform function call syntax} (dále UFCS) je přístup, kdy se volání funkcí ve formátech \inlineCode{arg1.foo( arg2, arg3 )} a \inlineCode{foo( arg1, arg2, arg3 )} považuje za ekvivalentní. Je zavedený například v jazycích D\cite{BrightUFCS} nebo Rust.
 
 Výhoda zavedení UFCS spočívá v tom, že programátorovi je umožněno přidávat funkčnost typům i mimo jejich definice (uvnitř \inlineCode{class C \{ ... \}}):
 \begin{dcode}[UFCS v jazyce D]
@@ -524,7 +524,7 @@ Double area( auto? entity )
 	\item Funkce se používá pouze ve specifických případech; například se nám v některém z~modulů hodí funkce \inlineCode{Bool isDividableByTwo(Int x)}, zavádět ji ale všude by bylo nepraktické.
 \end{itemize}
 
-Výhody UFCS shrnuje pan Walter Bright v jednom ze svých článků \cite{Bright2002}. UFCS nicméně povoluje volání funkce dvěma způsoby, což narušuje jednotnost kódu. V úvahu tedy připadá zavést direktivu kompilátoru (formou dekorátoru, viz \ref{decorators}), která by říkala, že místo "klasické" syntaxe využívá funkce k volání syntaxi pro třídní metody. Pro každou funkci by vždy byla povolena jen jeden ze způsobů volání. Podobně fungují například \textit{extension methods} v C\#.
+UFCS nicméně povoluje volání funkce dvěma způsoby, což narušuje jednotnost kódu. V úvahu tedy připadá zavést direktivu kompilátoru (formou dekorátoru, viz \autoref{decorators}), která by říkala, že místo "klasické" syntaxe využívá funkce k volání syntaxi pro třídní metody. Pro každou funkci by vždy byla povolena jen jeden ze způsobů volání. Podobně fungují například \textit{extension methods} v C\#.
 
 Jazyk Object Pascal řeší tento problém pomocí tzv. \textit{helper objects}. Objekt, nad kterým funkce pracuje, pak není předáván jako první parametr, ale napodobuje se objektový přístup (\inlinePascalCode{self} a implicitní přístup do jmenného prostoru objektu).
 \begin{pascalcode}
@@ -561,7 +561,7 @@ Beast také zavádí několik prvků, které v programovacích jazycích nejsou 
 Výčty (\textit{enums}) jsou v programovaní běžně rozšířené a poměrně hojně používané. V jazyce C neměly výčty vlastní jmenný prostor, což vedlo ke kolizím jmen. To se řešilo například přidáním prefixu před identifikátory položek, čímž nabývaly na velikosti, znepřehledňovaly kód a zpomalovaly jeho psaní. Prefixy, které odpovídaly zkratkám názvů výčtů (například \inlineCppCode{enum Month} -> \inlineCode{mJanuary}), zase často kolidovaly s prefixy jiných výčtů (například \inlineCppCode{mJanuary} a \inlineCppCode{mRead} od \inlineCppCode{enum MemoryAccess}). C++ nabízí možnost vytvořit výčet s vlastním jmenným prostorem (\inlineCppCode{enum class X}), ale to je prakticky ekvivalentní s přidáním prefixu.
 
 Za příklad si vezměme C++ kód na zápis do souboru pomocí standardní knihovny:
-\begin{cppcode}[Příklad použití výčtů v jazyce C++, převzato z\url{http://www.cplusplus.com/reference/fstream/fstream/open/}, upraveno]
+\begin{cppcode}[Příklad použití výčtů v jazyce C++, převzato z~\url{http://www.cplusplus.com/reference/fstream/fstream/open/}, upraveno]
 // C++
 #include <fstream>
 int main () {
@@ -575,7 +575,7 @@ int main () {
 
 Zde na řádku \ref{colonIdent:1} musí programátor napsat prefix \inlineCppCode{std::fstream::} dokonce třikrát. Přitom funkce \inlineCppCode{std::fstream::open} přijímá právě jenom hodnoty z tohoto výčtu (sémanticky to zcela zřejmé není, protože C++ standardní chyba nenabízí typ, který by dokázal bezpečně pracovat s prvky výčtu jako s příznaky, jazyk Beast to však bude umožňovat).
 
-Jazyk Beast nabízí elegantní řešení tohoto problému. Zavádí konstrukci \inlineCode{:ident}, která vyhledává zadaný identifikátor ne v aktuálním jmenném prostoru, nýbrž ve jmenném prostoru typu, jehož hodnotu kompilátor očekává. Za předpokladu, že funkce \inlineCode{open} přijímá jako druhý parametr typ \inlineCode{Flags(OpenMode)}, kde \inlineCode{OpenMode} je výčet, a že prvky výčtu jsou z příznakového typu dostupné (toho je docíleno pomocí importu rámců, viz \ref{scopeImport}), může ekvivalentní kód v Beastu vypadat takto:
+Jazyk Beast nabízí elegantní řešení tohoto problému. Zavádí konstrukci \inlineCode{:ident}, která vyhledává zadaný identifikátor ne v aktuálním jmenném prostoru, nýbrž ve jmenném prostoru typu, jehož hodnotu kompilátor očekává. Za předpokladu, že funkce \inlineCode{open} přijímá jako druhý parametr typ \inlineCode{Flags(OpenMode)}, kde \inlineCode{OpenMode} je výčet, a že prvky výčtu jsou z příznakového typu dostupné (toho je docíleno pomocí importu rámců, viz \autoref{scopeImport}), může ekvivalentní kód v jazyce Beast vypadat takto:
 \begin{code}
 Void main() {
 	File( "test.txt", :write | :append ).write( " more lorem ipsum" );
@@ -668,6 +668,9 @@ Jako náhradu za \inlineCppCode{size_t} nabízí jazyk bezznaménkové typy \inl
 	\item \inlineCode{null} je implicitně přetypovatelné jak do typu \inlineCode{Index}, tak do \inlineCode{Size} a odpovídá hodnotě \inlineCode{\-1}.
 \end{itemize}
 
+%TODO while else
+%TODO break labels
+
 \chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{ctime}
 Toto je nový koncept navržený pro jazyk Beast. Zasahuje do několika již známých konceptů -- například šablonové metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace; všechny tyto koncepty spojuje do jednoho koherentního celku.
 
@@ -676,7 +679,7 @@ Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řad
 Vykonávání kódu tak probíhá ve dvou fázích -- hodnoty proměnných označených dekorátorem \ctime jsou odvozeny již za doby překladu, zbytek je vypočítáván za běhu samotného programu. \textbf{Toto se dá připodobnit k líhnutí vajec}, kdy se zárodek vyvíjí za skořápkou, ukryt před světem, a světlo světa spatří až jako vyvinutý jedinec.
 
 \section{Dedukce axiomů}
-Máme vyřčenou základní myšlenku -- hodnoty proměnných označených dekorátorem \ctime musíme být schopni odvodit již během kompilace; nyní tuto myšlenku budeme rozvádět. Začneme jednoduchým příkladem:
+Máme vyřčenou základní myšlenku -- hodnoty proměnných označených dekorátorem \ctime musíme být schopni odvodit již během kompilace; v následujícím textu tuto myšlenku budeme rozvádět. Začneme jednoduchým příkladem:
 \begin{code}
 @ctime Int x = 8;
 \end{code}
@@ -722,7 +725,9 @@ Tento příklad ukazuje, že to, zda funkci lze použít pro výpočet hodnot \c
 
 Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s~trochu jiným účelem.
 
-Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Hodnoty \nonctime proměnných mohou sice být odvoditelné bez nutnosti spuštění programu, ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat to pouze z~kódu, v praxi by toto však značně zpomalilo kompilaci. Předpokládejme tedy, že \textbf{hodnoty všech proměnných, které nejsou \ctime, se před spuštěním programu nedají odvodit.}
+Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Hodnoty \nonctime proměnných mohou sice být odvoditelné bez nutnosti spuštění programu, ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat jej pouze z~kódu, v~praxi by toto však značně zpomalilo kompilaci -- kompilátor by musel každou akci s proměnnou zkusit vykonat při kompilaci (jak je uvedeno výše, je to jediný možný způsob, jak ověřit, že proměnná může být považována za \ctime). Mnoho proměnných by se ukázalo být \nonctime, tím pádem by bylo časově nákladné ověřování zbytečné.
+
+Předpokládejme tedy, že \textbf{hodnoty všech proměnných, které nejsou \ctime, se před spuštěním programu nedají odvodit.}
 
 \subsection{Konstantnost}
 Nyní zauvažujme nad tím, co se stane, když budeme chtít měnit hodnoty \ctime proměnných:
@@ -906,7 +911,7 @@ Void main() {
 }
 \end{code}
 
-Zde jsme toto pravidlo neporušili, ale přesto se nám opět podařilo porušit axiom pro \ctime. Zavedeme tedy další pravidlo: \textbf{odkaz na \ctime data nelze uložit do \nonctime reference/ukazatele, pokud všechny třídní proměnné typu reference/ukazatel v odkazovaném typu nejsou konstantní}.
+Zde jsme toto pravidlo neporušili, ale přesto se nám opět podařilo porušit axiom pro \ctime. Zavedeme tedy další pravidlo: \textbf{odkaz na \ctime data nelze uložit do \nonctime reference/ukazatele, pokud všechny třídní proměnné typu reference/ukazatel v~odkazovaném typu nejsou konstantní}.
 
 Toto pravidlo se ale také dá obejít:
 \begin{code}
@@ -1065,7 +1070,7 @@ Void main() {
 }
 \end{code}
 
-Dokonce lze vytvořit i speciální dekorátor, v Beastu pojmenovaný \inlineCode{@autoCtime}, který argument bere jako \ctime, pokud to je možné:
+Dokonce lze vytvořit i speciální dekorátor, v našem jazce pojmenovaný \inlineCode{@autoCtime}, který argument bere jako \ctime, pokud to je možné:
 \begin{code}
 Index regexFind( String pattern, @autoCtime String regex ) {
 	// regex implementation
@@ -1331,4 +1336,12 @@ Tento přehled pravidel doplňuje ten uvedený v oddílu \ref{ctime:rules}.
 \chapter{Implementace kompilátoru}
 Tato kapitola se věnuje implementaci demonstračního kompilátoru jazyka.
 
+\subsubsection{Volba implementačního jazyka}
+S ohledem na autorovu znalost programovacích jazyků připadaly v úvahu dva kandidáti -- C++ a D. Zvítězil jazyk D, zejména kvůli obsáhlé a dobře zdokumentované standardní knihovně a kvůli odpadnutí nutnosti psát hlavičkové soubory. Nevýhodou je menší nabídka podporovaných vývojových prostředí, obzvláště pak s podporou ladění v OS Windows. Existuje však plugin pro Microsoft Visual Studio se jménem Visual D\footnote{\url{http://rainers.github.io/visuald/visuald/StartPage.html}}
+
 \section{Lexikální a syntaktická analýza}
+Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru. Existuje mnoho generátorů parserů, jejich průzkum a srovnávání by sám o sobě vydal na knihu; mezi ty nejznámější z nich patří například LALR parser generátor Bison\footnote{\url{https://www.gnu.org/software/bison/}}, a LL parser generátor ANTLR\footnote{\url{http://www.antlr.org/}}. Srovnání LL a LR parserů je mimo rámec této práce a~snadno dohledatelné na internetu v přehledné podobě (například \cite{LLLRComp}).
+
+ Bylo rozhodnuto, že demonstrační kompilátor bude založen na LL parseru, především kvůli větší intuitivnosti návrhu a lepších možností generování chybových zpráv. Dalším předmětem k úvaze bylo, zda opravdu použít generátor parseru, nebo ho napsat ručně. Napsání vlastního syntaktického a sémantického analyzátoru není obtížné a nejde o nic neobvyklého -- takto jsou řešeny například kompilátory Microsoft C\#\footnote{Dle \cite{JavaCompilerConstructionCampbell}, oddíl 8.5.2}, DMD\footnote{Kompilátor jazyka D; zřejmé z kódu parseru, viz \url{https://github.com/dlang/dmd/blob/master/src/parse.d}}, GCC\footnote{Uvedeno zde: \url{https://gcc.gnu.org/wiki/New_C_Parser}} nebo Clang\footnote{Uvedeno zde: \url{http://clang.llvm.org/features.html}, první odstavec předposledního oddílu}. Autor tohoto projektu zvolil variantu napsání vlastního parseru a lexeru metodou rekurzivního sestupu (modifikovanou tak, aby si poradila i s částmi gramatiky, které nejsou LL(1)) ve víře, že časová náročnost bude srovnatelná s osvojením si a aplikací nové technologie s~tím, že takto napsaný parser bude lépe modifikovatelný a všeobecně více "pod kontrolou".
+
+% TODO ref viz - viz kapitola/oddíl/xxx

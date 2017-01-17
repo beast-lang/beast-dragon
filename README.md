@@ -4,14 +4,14 @@ Beast is a concept for a new programming language inspired by C++ and D.
 This repository contains (everything is WIP):
 * Sample transcompiler to C++
 * Language reference
-* Bachelor thesis text (thich language is a bachelor thesis) - written in Czech
+* Bachelor thesis text - written in Czech
 
 ## Progress
 * C++ transcompiler: 0% (no working prototype)
 * Std library: 0%
 * Language reference: 30%
 
-## Basic language features
+## Notable language features
 * Importable modules (no header files like in C++)
 * C++ style multiple inheritance class system
 * Powerful compile-time engine
@@ -43,6 +43,6 @@ Void main() {
   c.x = 5;
   
   console.write( c + x ); // Writes 8
-  console.write( c.#operator.#parameters[1].#type.#identifier ); // Language reflection; writes "Int"
+  console.write( c.#operator.#parameters[1].type.#identifier ); // Language reflection; writes "Int"
 }
 ```
