@@ -1,6 +1,7 @@
 % !TeX root = projekt.tex
 
 \usepackage{scalefnt}
+\usepackage{needspace}
 
 % References
 \newcommand{\eqlabel}[1][]{
@@ -35,7 +36,7 @@
 	framesep=2mm,
 	xleftmargin=8mm,
 	literate={-}{{-}}{1},
-	showstringspaces=false
+	showstringspaces=false,
 }
 
 \lstdefinelanguage{beast}
@@ -64,7 +65,7 @@
 
 \lstdefinelanguage{d}
 {
-	morekeywords={catch, const, immutable, struct, class, alias, for, foreach, static, if, debug, release, template, mixin, module, import, while, is, in, scope, switch, this, throw, try, with, else, do, finally, function, delegate, asm, int, uint, short, ushort, long, ulong, byte, ubyte, string},
+	morekeywords={catch, const, immutable, struct, class, alias, for, foreach, static, if, debug, release, template, mixin, module, import, while, is, in, scope, switch, this, throw, try, with, else, do, finally, function, delegate, asm, int, uint, short, ushort, long, ulong, byte, ubyte, string, interface, public, private, override, void, new, delete, cast},
 	sensitive=true,
 	morecomment=[l]{//},
 	morecomment=[s]{/*}{*/},
@@ -124,7 +125,7 @@
 \lstnewenvironment{scalacode}[1][]{
 	\hspace{0mm}
 	\lstset{language=scala}
-}{%
+}{
 	\putrefCentered[#1]
 	\vspace{3mm}
 } 
