@@ -715,7 +715,22 @@ Jako náhradu za \inlineCppCode{size_t} nabízí jazyk bezznaménkové typy \inl
 	\item \inlineCode{null} je implicitně přetypovatelné jak do typu \inlineCode{Index}, tak do \inlineCode{Size} a odpovídá hodnotě \inlineCode{\-1}.
 \end{itemize}
 
-%TODO while else
+\subsection{Konstrukce \inlineCode{while-else}}
+Tuto konstrukci přejímá Beast z Pythonu\footnote{\url{https://docs.python.org/3/reference/compound_stmts.html\#the-while-statement}}. Konstrukce umožňuje za příkaz cyklu (\inlineCode{while}, \inlineCode{for}, ...) přidat větev \inlineCode{else}, která se vykoná, pokud cyklus není přerušen příkazem \inlineCode{break} (případně výjimkou, návratem z fuknce, atp.). Toto je užitečné například pokud cyklus implementuje vyhledávání -- v případě nálezu se použije příkaz \inlineCode{break}, který cyklus přeruší (prvek byl nalezen, další vyhledávání není potřeba) a větev \inlineCode{else} se nevykoná. Pokud cyklus prvek nenalezl, větev \inlineCode{else} poskytuje alternativní chování. Bez existence této konstrukce by se po cyklu musela použít podmínka, což je výpočetně dražší -- s konstrukcí \inlineCode{else} je to zadarmo, pouze se upraví adresy skoků.
+
+\begin{code}
+Void main() {
+	String[] list = [ "the", "quick", "brown", "fox", "jumped" ];
+	foreach( String item; list ) {
+		if( item == "quick" )	{
+			console.write( "Found!" );
+			break;
+		}
+	} else
+		console.write( "Not found!" );
+}
+\end{code}
+%TODO scope guards
 %TODO break labels
 
 \chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{ctime}

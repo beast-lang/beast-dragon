@@ -12,3 +12,4 @@ include/boost/
 *.bbl
 *.blg
 *.exe
+.dub/
