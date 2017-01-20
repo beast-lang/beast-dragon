@@ -19,13 +19,13 @@ public:
 		string targetFilename;
 
 		/// Array of source file paths
-		string[] sourcePaths;
+		string[ ] sourcePaths;
 	}
 
 public:
 	/// Loads configuration from specified project file
 	void loadFromFile( string filename ) {
-		const auto fileCtx = ErrorContext( "configFile", filename.absolutePath );
+		const auto fileCtx = ErrorContext( [ "configFile" : filename.absolutePath ] );
 
 		try {
 			loadFromJSON( filename.readText.parseJSON );
@@ -48,7 +48,7 @@ public:
 			const string key = rootItem.key;
 			const JSONValue val = rootItem.value;
 
-			const auto itemCtx = ErrorContext( "configFileKey", key );
+			const auto itemCtx = ErrorContext( [ "configFileKey": key ] );
 
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
 				static if ( hasUDA!( __traits( getMember, ProjectConfiguration, memberName ), configurable ) ) {
@@ -71,10 +71,17 @@ private:
 
 		__traits( getMember, this, memberName ) = val.str;
 	}
-	void processItem( T : string[], string memberName )( JSONValue val ) {
+
+	void processItem( T : bool, string memberName )( JSONValue val ) {
+		benforce( val.type == JSON_TYPE.TRUE || val.type == JSON_TYPE.FALSE, "expected boolean value" );
+
+		__traits( getMember, this, memberName ) = ( val.type == JSON_TYPE.TRUE );
+	}
+
+	void processItem( T : string[ ], string memberName )( JSONValue val ) {
 		benforce( val.type == JSON_TYPE.ARRAY, "expected array" );
 
-		foreach( i, item; val.array ) {
+		foreach ( i, item; val.array ) {
 			benforce( item.type == JSON_TYPE.STRING, "expected string item (index %s)", i );
 			__traits( getMember, this, memberName ) ~= item.str;
 		}

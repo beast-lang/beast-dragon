@@ -3,8 +3,7 @@ module beast.main;
 import std.stdio;
 import std.getopt;
 
-import beast.error;
-import beast.project.project;
+import beast.toolkit;
 
 void mainImpl( string[ ] args ) {
 	string projectFile = "beast.json";
@@ -29,7 +28,7 @@ void mainImpl( string[ ] args ) {
 			writef( "  %s\n    %s\n\n", opt.optShort ~ ( opt.optShort && opt.optLong ? " | " : "" ) ~ opt.optLong, opt.help );
 	}
 
-	project.configuration.loadFromFile( projectFile );
+	context.project.configuration.loadFromFile( projectFile );
 }
 
 int main( string[ ] args ) {

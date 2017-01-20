@@ -4,7 +4,7 @@ module beast.project.sourcefile;
 final class SourceFile {
 
 public:
-	string content;
-	string absoluteFilePath;
+	const string content;
+	const string absoluteFilePath;
 
 }

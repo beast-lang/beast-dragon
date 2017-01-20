@@ -2,26 +2,26 @@ module beast.error;
 
 import std.exception;
 import std.format;
+import std.algorithm;
 
-ErrorContext*[] errorContextStack;
+ErrorContext*[ ] errorContextStack;
 
-/// This struct
+/// Exceptions/warnings occured during this struct existence show this struct key-value pair in their error messages
 struct ErrorContext {
 
 public:
-	string key;
-	string delegate() value;
+	string[ string ]delegate( ) data;
 
 public:
-	@disable this();
-	this( string key, lazy string value ) {
-		this.key = key;
-		this.value = { return value; };
-
+	@disable this( );
+	this( lazy string[ string ] data ) {
+		this.data = { return data; };
 		errorContextStack ~= &this;
 	}
-	~this() {
-		errorContextStack.length --;
+
+	~this( ) {
+		assert( errorContextStack[ $ - 1 ] is &this );
+		errorContextStack.length--;
 	}
 
 }
@@ -31,10 +31,10 @@ final class BeastError : Exception {
 
 public:
 	this( string message, string file = __FILE__, size_t line = __LINE__ ) {
-		foreach( ctx; errorContextStack )
-			message ~= "\n  " ~ ctx.key ~ ": " ~ ctx.value();
+		foreach ( ctx; errorContextStack.map!( x => x.data().byKeyValue ).joiner )
+			message ~= "\n  " ~ ctx.key ~ ": " ~ ctx.value;
 
-			super( message, file, line );
+		super( message, file, line );
 	}
 
 }
