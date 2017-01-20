@@ -1,6 +1,7 @@
 module beast.lex.identifier;
 
 import std.algorithm;
+import beast.toolkit;
 import beast.lex.keyword;
 
 final class Identifier {
@@ -45,11 +46,11 @@ private:
 
 private:
 	static __gshared Identifier[ string ] map;
-	shared static this() {
+	enum _init = HookAppInit.hook!( {
 			foreach ( mem; __traits( derivedMembers, Keyword ) ) {
 				string kwd = mem.endsWith( "_" ) ? mem[ 0 .. $ - 1 ] : mem;
 				map[ kwd ] = new Identifier( kwd, __traits( getMember, Keyword, mem ) );
 			}
-	}
+		} );
 
 }

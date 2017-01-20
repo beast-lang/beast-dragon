@@ -6,4 +6,11 @@ public {
 	import beast.error;
 	import beast.context;
 	import beast.project.project;
+	import beast.work.guard;
 }
+
+import beast.utility.hooks;
+
+alias HookAppStart = Hook!"appStart";
+alias HookAppInit = Hook!"appInit";
+alias HookAppUninit = Hook!"appUninit";

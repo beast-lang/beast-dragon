@@ -50,6 +50,8 @@ public:
 				TaskGuard* guard = ctx.blockingTaskGuard_;
 
 				while ( guard ) {
+					// The context is not set atomically, so we have to check for that
+					while( !( guard.data_ & Flags.contextSet ) ) {}
 					ctx = guard.context_;
 
 					if ( ctx is thisContext )
@@ -110,7 +112,8 @@ private:
 		done = 1 << 0,
 		workInProgress = 1 << 1,
 		dependentTasksWaiting = 1 << 2,
-		contextSet = 1 << 3
+		contextSet = 1 << 3,
+		error = 1 << 4
 	}
 
 private:
@@ -137,7 +140,7 @@ private {
 	/// Map of contexts that are waiting for a given task guard
 	static __gshared TaskContext[ ][ TaskGuard*  ] dependents;
 
-	shared static this( ) {
+	enum _init = HookAppInit.hook!({
 		dependentsMutex = new Mutex;
-	}
+	});
 }

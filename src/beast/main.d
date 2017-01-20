@@ -2,10 +2,14 @@ module beast.main;
 
 import std.stdio;
 import std.getopt;
+import std.concurrency;
 
 import beast.toolkit;
 
 void mainImpl( string[ ] args ) {
+	HookAppInit.call( );
+	HookAppStart.call( );
+
 	string projectFile = "beast.json";
 	GetoptResult getoptResult;
 
@@ -29,6 +33,9 @@ void mainImpl( string[ ] args ) {
 	}
 
 	context.project.configuration.loadFromFile( projectFile );
+
+	context.workManager.waitForEverythingDone();
+	HookAppUninit.call( );
 }
 
 int main( string[ ] args ) {

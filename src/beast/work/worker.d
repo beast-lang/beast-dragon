@@ -1,6 +1,7 @@
 module beast.work.worker;
 
 import core.thread;
+import std.stdio;
 import beast.context;
 import beast.work.manager;
 import beast.work.context;
@@ -13,19 +14,30 @@ package:
 		thread_.start( );
 	}
 
+package:
+	void waitForEnd() {
+		thread_.join();
+	}
+
 private:
 	Thread thread_;
 
 private:
 	void run( ) {
-		while ( true ) {
-			TaskContext task = context.workManager.askForAJob( );
+		try {
+			while ( true ) {
+				TaskContext task = context.workManager.askForAJob( );
 
-			if ( !task )
-				return;
+				if ( !task ) {
+					return;
+				}
 
-			// Execute the job
-			task.execute( );
+				// Execute the job
+				task.execute( );
+			}
+		}
+		catch( Throwable t ) {
+			writeln( stderr, "Uncaught exception on worker thread: ", t.msg );
 		}
 	}
 }

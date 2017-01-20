@@ -1,6 +1,7 @@
 module beast.work.context;
 
 import core.thread;
+import std.stdio;
 import beast.context;
 import beast.work.guard;
 
@@ -68,7 +69,7 @@ package:
 
 package:
 	/// Task guard this context is waiting for, manipulated from TaskGuard with its mutex
-	TaskGuard *blockingTaskGuard_;
+	TaskGuard* blockingTaskGuard_;
 
 private:
 	/// Action that should be executed from the calling context
@@ -83,14 +84,19 @@ private:
 
 private:
 	void run( ) {
-		assert( job_ );
+		try {
+			assert( job_ );
 
-		context = contextData_;
+			context = contextData_;
 
-		job_( );
+			job_( );
 
-		job_ = null;
-		contextData_ = ContextData.init;
+			job_ = null;
+			contextData_ = ContextData.init;
+		}
+		catch ( Throwable t ) {
+			writeln( stderr, "Uncaught exception on worker thread: ", t.msg );
+		}
 	}
 
 }

@@ -1,5 +1,6 @@
 module beast.context;
 
+import beast.toolkit;
 import beast.lex.lexer;
 import beast.project.project;
 import beast.work.context;
@@ -19,11 +20,16 @@ public:
 
 	TaskContext taskContext;
 
-public:
-	shared static this( ) {
+private:
+	enum _init = HookAppStart.hook!({
 		project = new Project;
 		workManager = new WorkManager;
-	}
+
+		workManager.spawnWorkers();
+	});
+	enum _uninit = HookAppUninit.hook!({
+		workManager.quitWorkers();
+	});
 
 }
 
