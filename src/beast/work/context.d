@@ -3,6 +3,7 @@ module beast.work.context;
 import core.thread;
 import std.stdio;
 import beast.context;
+import beast.error;
 import beast.work.guard;
 
 final class TaskContextQuittingException : Exception {
@@ -31,7 +32,11 @@ package:
 		assert( fiber_.state == Fiber.State.TERM );
 	}
 
-package:
+public:
+	/// Context this context is waiting for to do something (for circular reference checking)
+	TaskContext blockingContext_;
+
+public:
 	void setJob( Job job ) {
 		assert( !job_ && fiber_.state == Fiber.State.TERM );
 
@@ -67,10 +72,6 @@ package:
 			context.workManager.reportIdleContext( this );
 	}
 
-package:
-	/// Task guard this context is waiting for, manipulated from TaskGuard with its mutex
-	TaskGuard* blockingTaskGuard_;
-
 private:
 	/// Action that should be executed from the calling context
 	void delegate( ) actionAfterYield_;
@@ -89,7 +90,15 @@ private:
 
 			context = contextData_;
 
-			job_( );
+			try {
+				job_( );
+			}
+			catch( BeastError exc ) {
+				writeln( stderr, "Error: ", exc.msg ); // TODO: better
+			}
+			catch( ErrorPoisoningException exc ) {
+				// Do nothing
+			}
 
 			job_ = null;
 			contextData_ = ContextData.init;

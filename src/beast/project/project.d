@@ -9,28 +9,23 @@ import beast.utility.identifiable;
 final class Project : Identifiable {
 
 public:
-	this( ) {
-		sourceFileListGuard_ = TaskGuard( "sourceFileList", this );
-	}
-
-public:
 	ProjectConfiguration configuration;
 
 public:
-	@property SourceFile[ ] sourceFileList( ) {
-		if ( sourceFileListGuard_.startWorkingOrReturnTrue( ) )
-			return sourceFileList_;
-
-		sourceFileListGuard_.finish( );
-		return sourceFileList_;
-	}
-
-	override @property string identificationString() {
+	override @property string identificationString( ) {
 		return "<project>";
 	}
 
+public:
+	mixin TaskGuard!( "sourceFileList", SourceFile[ ] );
+	mixin TaskGuard!( "text", string );
+
 private:
-	SourceFile[ ] sourceFileList_;
-	TaskGuard sourceFileListGuard_;
+	SourceFile[ ] obtain_sourceFileList( ) {
+		return null;
+	}
+	string obtain_text() {
+		return "asd";
+	}
 
 }
