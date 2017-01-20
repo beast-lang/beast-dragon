@@ -1,10 +1,10 @@
-module beast.work.worker;
+module beast.task.worker;
 
 import core.thread;
 import std.stdio;
 import beast.context;
-import beast.work.manager;
-import beast.work.context;
+import beast.task.manager;
+import beast.task.context;
 
 final class Worker {
 
@@ -26,7 +26,7 @@ private:
 	void run( ) {
 		try {
 			while ( true ) {
-				TaskContext task = context.workManager.askForAJob( );
+				TaskContext task = context.taskManager.askForAJob( );
 
 				if ( !task ) {
 					return;

@@ -22,6 +22,7 @@ public:
 
 private:
 	SourceFile[ ] obtain_sourceFileList( ) {
+		SourceFile[] x = sourceFileList;
 		return null;
 	}
 	string obtain_text() {

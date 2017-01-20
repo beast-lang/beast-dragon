@@ -1,10 +1,10 @@
-module beast.work.context;
+module beast.task.context;
 
 import core.thread;
 import std.stdio;
 import beast.context;
 import beast.error;
-import beast.work.guard;
+import beast.task.guard;
 
 final class TaskContextQuittingException : Exception {
 	public this( ) {
@@ -69,7 +69,7 @@ public:
 			throw new TaskContextQuittingException;
 
 		if ( fiber_.state == Fiber.State.TERM )
-			context.workManager.reportIdleContext( this );
+			context.taskManager.reportIdleContext( this );
 	}
 
 private:

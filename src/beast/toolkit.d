@@ -6,7 +6,7 @@ public {
 	import beast.error;
 	import beast.context;
 	import beast.project.project;
-	import beast.work.guard;
+	import beast.task.guard;
 }
 
 import beast.utility.hooks;

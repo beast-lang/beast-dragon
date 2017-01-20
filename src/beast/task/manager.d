@@ -1,13 +1,13 @@
-module beast.work.manager;
+module beast.task.manager;
 
 import core.sync.condition;
 import core.sync.mutex;
 import std.range;
 import std.algorithm;
-import beast.work.worker;
-import beast.work.context;
+import beast.task.worker;
+import beast.task.context;
 
-final class WorkManager {
+final class TaskManager {
 
 public:
 	enum workerCount = 32;

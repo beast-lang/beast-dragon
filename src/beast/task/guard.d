@@ -1,9 +1,9 @@
-module beast.work.guard;
+module beast.task.guard;
 
 import core.sync.mutex;
 import beast.toolkit;
 import beast.utility.identifiable;
-import beast.work.context;
+import beast.task.context;
 
 // TODO: Documentation
 alias TaskGuardId = shared ubyte*;
@@ -12,8 +12,8 @@ mixin template TaskGuard( string identifier, Type ) {
 	static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface" );
 	static assert( __traits( hasMember, typeof( this ), _taskGuard_obtainFunctionName ), "You must implement '" ~ Type.stringof ~ " " ~ typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "()'." );
 
-	import beast.work.context : TaskContext;
-	import beast.work.guard : TaskGuardId;
+	import beast.task.context : TaskContext;
+	import beast.task.guard : TaskGuardId;
 
 private:
 	Type _taskGuard_data;
@@ -25,9 +25,10 @@ private:
 	enum _taskGuard_obtainFunctionName = "obtain_" ~ identifier;
 
 public:
+	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
 	Type _taskGuard_func( ) {
 		import beast.utility.atomic : atomicFetchThenOr, atomicStore;
-		import beast.work.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, ErrorPoisoningException;
+		import beast.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, ErrorPoisoningException;
 
 		const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
 
@@ -60,7 +61,7 @@ public:
 				return _taskGuard_data;
 			}
 
-			// Check for circular depedencies
+			// Check for circular dependencies
 			{
 				TaskContext ctx = _taskGuard_context;
 				const TaskContext thisContext = context.taskContext;
@@ -75,9 +76,10 @@ public:
 			}
 
 			// Mark current context to be woken when the task is finished
-			TaskContext[ ]* lstPtr = _taskGuard_id in taskGuardDependentsList;
-			if ( lstPtr )
-				*lstPtr ~= context.taskContext;
+			assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
+
+			if ( wipFlags & Flags.dependentTasksWaiting )
+				taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
 			else
 				taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
 
@@ -125,6 +127,7 @@ public:
 		return _taskGuard_data;
 	}
 
+	// Give the taskGuard function an useful name
 	mixin( "alias " ~ identifier ~ " = _taskGuard_func;" );
 
 private:
@@ -132,15 +135,16 @@ private:
 		return &_taskGuard_flags;
 	}
 
+	/// Issue tasks that were waiting for this task to finish
 	void __taskGuard_issueWaitingTasks( ) {
 		import beast.utility.atomic : atomicFetchThenOr;
-		import beast.work.guard : taskGuardDependentsList, taskGuardResolvingMutex;
+		import beast.task.guard : taskGuardDependentsList, taskGuardResolvingMutex;
 
 		synchronized ( taskGuardResolvingMutex ) {
 			assert( _taskGuard_id in taskGuardDependentsList );
 
 			foreach ( task; taskGuardDependentsList[ _taskGuard_id ] )
-				context.workManager.issueTask( task );
+				context.taskManager.issueTask( task );
 
 			taskGuardDependentsList.remove( _taskGuard_id );
 		}

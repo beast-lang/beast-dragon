@@ -3,8 +3,8 @@ module beast.context;
 import beast.toolkit;
 import beast.lex.lexer;
 import beast.project.project;
-import beast.work.context;
-import beast.work.manager;
+import beast.task.context;
+import beast.task.manager;
 
 struct ContextData {
 
@@ -13,7 +13,7 @@ public:
 	static __gshared Project project;
 
 	/// Work manager is also a global instance
-	static __gshared WorkManager workManager;
+	static __gshared TaskManager taskManager;
 
 	/// Currently working lexer
 	Lexer lexer;
@@ -23,12 +23,12 @@ public:
 private:
 	enum _init = HookAppStart.hook!({
 		project = new Project;
-		workManager = new WorkManager;
+		taskManager = new TaskManager;
 
-		workManager.spawnWorkers();
+		taskManager.spawnWorkers();
 	});
 	enum _uninit = HookAppUninit.hook!({
-		workManager.quitWorkers();
+		taskManager.quitWorkers();
 	});
 
 }
