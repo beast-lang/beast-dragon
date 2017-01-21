@@ -48,7 +48,7 @@ public:
 			const string key = rootItem.key;
 			const JSONValue val = rootItem.value;
 
-			const auto itemCtx = ErrorContext( [ "configFileKey": key ] );
+			const auto itemCtx = ErrorContext( [ "configFileKey" : key ] );
 
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
 				static if ( hasUDA!( __traits( getMember, ProjectConfiguration, memberName ), configurable ) ) {
