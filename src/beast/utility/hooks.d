@@ -6,7 +6,7 @@ public:
 	alias Function = void function( Args );
 
 	template hook( Function func ) {
-		shared static this() {
+		shared static this( ) {
 			functionList ~= func;
 		}
 
@@ -14,11 +14,11 @@ public:
 	}
 
 	void call( Args args ) {
-		foreach( func; functionList )
+		foreach ( func; functionList )
 			func( args );
 	}
 
 private:
-	__gshared Function[] functionList;
+	__gshared Function[ ] functionList;
 
 }
