@@ -27,7 +27,7 @@ private:
 public:
 	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
 	Type _taskGuard_func( ) {
-		import beast.utility.atomic : atomicFetchThenOr, atomicStore;
+		import beast.utility.atomic : atomicFetchThenOr, atomicStore, atomicOp;
 		import beast.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, ErrorPoisoningException;
 
 		const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
@@ -41,7 +41,7 @@ public:
 
 		// If not, we have to check if it is work in progress
 		if ( initialFlags & Flags.workInProgress ) {
-			// Wait for the worker context to mark itself to this guard
+			// Wait for the worker context to mark itself to this guard (this is not done atomically)
 			while ( !( _taskGuard_flags & Flags.contextSet ) ) {
 			}
 
@@ -101,16 +101,19 @@ public:
 			return _taskGuard_data;
 		}
 
+		_taskGuard_context = context.taskContext;
+		atomicOp!( "|=" )( _taskGuard_flags, Flags.contextSet );
+
 		try {
 			_taskGuard_data = __traits( getMember, this, _taskGuard_obtainFunctionName )( );
 		}
-		catch ( Throwable exc ) {
+		catch ( BeastError exc ) {
 			// Mark this task as erroreous
 			const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
 
 			// If there were tasks waiting for this guard, issue them (they should be poisoned)
 			if ( data & Flags.dependentTasksWaiting )
-				__taskGuard_issueWaitingTasks( );
+				_taskGuard_issueWaitingTasks( );
 
 			throw exc;
 		}
@@ -122,7 +125,7 @@ public:
 
 		// If there were tasks waiting for this guard, issue them
 		if ( endData & Flags.dependentTasksWaiting )
-			__taskGuard_issueWaitingTasks( );
+			_taskGuard_issueWaitingTasks( );
 
 		return _taskGuard_data;
 	}
@@ -136,7 +139,7 @@ private:
 	}
 
 	/// Issue tasks that were waiting for this task to finish
-	void __taskGuard_issueWaitingTasks( ) {
+	void _taskGuard_issueWaitingTasks( ) {
 		import beast.utility.atomic : atomicFetchThenOr;
 		import beast.task.guard : taskGuardDependentsList, taskGuardResolvingMutex;
 
