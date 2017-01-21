@@ -34,7 +34,7 @@ void mainImpl( string[ ] args ) {
 
 	context.project.configuration.loadFromFile( projectFile );
 
-	context.taskManager.waitForEverythingDone();
+	context.taskManager.waitForEverythingDone( );
 	HookAppUninit.call( );
 }
 
