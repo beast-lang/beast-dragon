@@ -85,12 +85,13 @@ package:
 					TaskContext ctx = obtainContext( );
 					ctx.setJob( job );
 					return ctx;
-
 				}
-				else if ( idleWorkerCount_ == workerCount )
-					everythingDoneCondition_.notifyAll( );
 
 				idleWorkerCount_++;
+
+				if ( idleWorkerCount_ == workerCount )
+					everythingDoneCondition_.notifyAll( );
+
 				idleWorkersCondition_.wait( );
 				idleWorkerCount_--;
 			}

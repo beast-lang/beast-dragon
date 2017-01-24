@@ -1,4 +1,6 @@
-# Beast programming language
+![#Beast programming language](./doc/logo_256w.png)
+# Beast Programming Language
+
 Beast is a concept for a new programming language inspired by C++ and D.
 
 This repository contains (everything is WIP):
