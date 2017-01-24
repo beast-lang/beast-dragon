@@ -13,3 +13,6 @@ include/boost/
 *.blg
 *.exe
 .dub/
+.vscode
+.vs
+.vs/*
