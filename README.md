@@ -1,4 +1,6 @@
-![#Beast programming language](./doc/logo_256w.png)
+<p align="center">
+	<img src="./doc/logo_256w.png">
+</p>
 # Beast Programming Language
 
 Beast is a concept for a new programming language inspired by C++ and D.
