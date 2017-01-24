@@ -18,8 +18,8 @@ public:
 		/// File name of target application/library
 		string targetFilename;
 
-		/// Array of source file paths
-		string[ ] sourcePaths;
+		/// Array of source file root directories
+		string[ ] sourceDirectories;
 	}
 
 public:

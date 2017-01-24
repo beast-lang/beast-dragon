@@ -1,6 +1,0 @@
-{
-	"type": "mago-mi",
-	"request": "launch",
-	"target": "Path to executable determined from dub",
-	"cwd": "Current working directory from dub.json or project directory if not set"
-}

@@ -245,14 +245,14 @@ void main() {
 	\grDef{VarDeclExpr} \gr{UnaryExpr} \\
 		\grAltLn \gr{UnaryExpr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
 		\grAltLn \kwd{new} \gr{UnaryExpr} [ \gr{ParentCommaExpr} ] \\
-	
+
 	\grDef{UnaryExpr} \gr{P1Expr} \\
 		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
 		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} ) \\
 		\grAltLn \gr{P1Expr} \{ \kwd{?} | \kwd{!} \}+ \\
 		\grAltLn \gr{InlineVarDecl} \\
 		\grAltLn \kwd{\$} \\
-	
+		
 	\grDef{P1Expr} \gr{AtomExpr} \\
 		\grAltLn \gr{AtomExpr} \{ \gr{P1Op} \} \\
 	
@@ -298,7 +298,7 @@ void main() {
 	\hline
 	
 	3
-		& \inlineCode{x id( args )} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
+		& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
 		& \inlineCode{new x( args )} & \inlineCode{new_} & Dynamic construction & \\
 	\hline
 	
@@ -796,14 +796,14 @@ This operator is almost equivalent to \inlineCode{Association( x.#type, y.#type 
 \subsection{The 'x, y' (comma) operator}
 Operands separated by the comma are evaluated from left to right. Value of the rightmost operand is returned.
 
-\section{Variable declarations}
+\pagebreak\section{Variable declarations}
 \begin{grammar}
 	\grDef{VarDeclCmd} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
 		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
 	\\
 	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{UnaryExpr} | \gr{AutoType} ) \\
 	\grDef{AutoType} \kwd{auto} [ \kwd{?} ] [ \kwd{!} ] \\
-	\grDef{VarDeclCtor} \gr{ParentCommaExpr} | ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
+	\grDef{VarDeclCtor} ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
 \end{grammar}
 
 Declaring a variable is a thing well known from other programming languages. Declaring a variable consists of two tasks:
@@ -815,8 +815,8 @@ Declaring a variable is a thing well known from other programming languages. Dec
 There are three syntactical alternatives of how to declare a variable:
 \begin{compactitem}
 	\item \inlineCode{Type var;} results in calling the implicit constructor \inlineCode{var.#ctor();} if presents, yield an error otherwise.
-	\item \inlineCode{Type var( arg1, arg2 );} obviously calls \inlineCode{var.#ctor( arg1, arg2 );}
 	\item \inlineCode{Type var = val;} calls \inlineCode{var.#ctor( val );}
+	\item \inlineCode{Type var = Type( arg1, arg2 );}  calls \inlineCode{var.#ctor( arg1, arg2 );}. This is a special case of the previous rule and is checked during semantic analysis (the right expression must evaluate to \inlineCode{Type} constructor call).
 	\item \inlineCode{Type var := val;} calls \inlineCode{var.#ctor( Operator.refAssign, val );} %TODO change first argument to something more reasonable (singleton?)
 \end{compactitem}
 

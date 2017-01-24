@@ -28,10 +28,19 @@ class C {
   Int! x; // Int! == mutable Int
   
 @public:
-  Int #operator( Operator.binaryPlus, Int other ) { // Operator overloading
+  Int #operator( Operator.binaryPlus, Int other ) { // Operator overloading, constant-value parameters
     return x + other;
   }
   
+}
+
+enum Enum {
+  a, b, c
+}
+
+String foo( Enum e, @ctime Type T ) { // T is a 'template' parameter
+  // 'template' and normal parameters are in the same parenthesis
+  return e.to( String ) + T.#identifier; 
 }
 
 Void main() {
@@ -41,8 +50,11 @@ Void main() {
   T = C;
   T!? c := new C; // C!? - reference to a mutable object, := reference assignment operator
   c.x = 5;
+
+  @ctime String s = foo( :a, Int ); // Compile-time function execution, :XXX accessor that looks in parameter type
+  stdout.writeln( s );
   
-  console.write( c + x ); // Writes 8
-  console.write( c.#operator.#parameters[1].type.#identifier ); // Language reflection; writes "Int"
+  stdout.writeln( c + x ); // Writes 8
+  stdout.writeln( c.#operator.#parameters[1].type.#identifier ); // Compile-time language reflection
 }
 ```

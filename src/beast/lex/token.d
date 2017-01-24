@@ -13,6 +13,7 @@ public:
 		keyword,
 		special
 	}
+
 	enum Special {
 		eof,
 		lBracket,
@@ -22,6 +23,7 @@ public:
 		lParent,
 		rParent
 	}
+
 public:
 	this( Special special ) {
 		this( );
@@ -46,15 +48,17 @@ public:
 	const Type type;
 
 public:
-	@property Identifier identifier() {
+	@property Identifier identifier( ) {
 		assert( type == Type.identifier );
 		return data.identifier;
 	}
-	@property Keyword keyword() {
+
+	@property Keyword keyword( ) {
 		assert( type == Type.keyword );
 		return data.keyword;
 	}
-	@property Special special() {
+
+	@property Special special( ) {
 		assert( type == Type.special );
 		return data.special;
 	}
@@ -65,10 +69,9 @@ private:
 
 		codeLocation.sourceFile = lexer.sourceFile;
 		codeLocation.startPos = lexer.tokenStartPos;
-		// HERE BUG - write lexer. -- does not trigger intellisense
+		codeLocation.length = lexer.sourceFilePos - lexer.tokenStartPos;
 		
-		//codeLocation. = lexer.tokenStartPos;
-		//length = lexer.sourceFilePos;
+
 		type = Type._noToken;
 	}
 
@@ -78,6 +81,7 @@ private:
 		Keyword keyword;
 		Special special;
 	}
+
 	Data data;
 
 }

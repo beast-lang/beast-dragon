@@ -10,6 +10,7 @@ import beast.lex.token;
 import beast.lex.lexer;
 
 pragma( inline ) @property {
+	/// Context-local lexer instance
 	Lexer lexer( ) {
 		return context.lexer;
 	}

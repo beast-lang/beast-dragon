@@ -13,15 +13,17 @@ public:
 	size_t length;
 
 public:
-	@property size_t line() {
+	@property size_t line( ) {
 		// TODO:
-		assert(0);
+		assert( 0 );
 	}
-	@property size_t lineOffset() {
+
+	@property size_t lineOffset( ) {
 		// TODO:
-		assert(0);
+		assert( 0 );
 	}
-	@property string sourceFilePath() {
+
+	@property string sourceFilePath( ) {
 		return sourceFile.absoluteFilePath;
 	}
 

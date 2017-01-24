@@ -27,6 +27,8 @@ Fantasy:
 
 Special:
 	Bestiary
+	
+- nedávat inexpression variable declarations?
 
 
 Testování (cache error codes, stdouts, ...):

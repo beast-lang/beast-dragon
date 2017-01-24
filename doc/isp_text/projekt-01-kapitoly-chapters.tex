@@ -1227,7 +1227,7 @@ Int pow( Int x, 3 ) {
 }
 \end{code}
 
-Po spuštění druhého stupně interpretace (které by předcházela generace bajtkódu) by funkce už navrátila hodnotu 125, která by se uložila do proměnné \inlineCode{powed}. V tomto konkrétním případě je vhodnější celou funkci vykonat pomocí pomalejšího \ctime interpretu (protože generování bajtkódu a jeho následné vykonání je ve výsledku pomalejší), nicméně v~případech, kdy by se funkce \inlineCode{pow} se stejnou hodnotou druhého parametru (který je \ctime) volala vícekrát, je výhodnější použít dvoustupňovou interpretaci.
+Po spuštění druhého stupně interpretace (které by předcházela generace bajtkódu) by funkce už navrátila hodnotu 125, která by se uložila do proměnné \inlineCode{powed}. V tomto konkrétním případě by mohlo být vhodnější celou funkci vykonat pomocí pomalejšího \ctime interpretu (protože generování bajtkódu a jeho následné vykonání může být ve výsledku pomalejší), nicméně v~případech, kdy by se funkce \inlineCode{pow} se stejnou hodnotou druhého parametru (který je \ctime) volala vícekrát, je výhodnější použít dvoustupňovou interpretaci.
 
 Bližší studium této problematiky je mimo rámec této práce. V demonstračním kompilátoru je z časových důvodů implementován pouze interpret prvního stupně. I přes faktickou existenci pouze jednoho interpretu zaveďme termíny "interpretace prvního stupně," kterým je myšleno zpracování \ctime kódu, a "interpretace druhého stupně," který referuje na vykonávání standardních funkcí za doby kompilace.
 
