@@ -11,6 +11,4 @@ public {
 
 import beast.utility.hooks;
 
-alias HookAppStart = Hook!"appStart";
 alias HookAppInit = Hook!"appInit";
-alias HookAppUninit = Hook!"appUninit";

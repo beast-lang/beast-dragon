@@ -221,7 +221,7 @@ void main() {
 
 Zde se sémantická analýza výrazu \inlineDCode{x => x + 3} musí provést pro každé přetížení funkce \inlineDCode{foo} zvlášť. V případě funkce na řádku \ref{typeInfer:1} sémantická analýza selže, protože výraz \inlineDCode{x + 3}, kde \inlineDCode{x} je typu \inlineDCode{int}, je také typu \inlineDCode{int}, který není implicitně konvertibilní na typ \inlineDCode{string}.
 
-Typové odvozování se používá i v dalších případech, například u literálů polí, \inlineDCode{auto} deklaracích, apod. Jazyk Beast cílí podporovat všechny tyto případy, v rámci této práce však z časových důvodů nemusí být do demonstračního kompilátoru zavedeny.
+Typové odvozování se používá i v dalších případech, například u literálů polí, \inlineDCode{auto} deklaracích apod. Jazyk Beast cílí podporovat všechny tyto případy, v rámci této práce však z časových důvodů nemusí být do demonstračního kompilátoru zavedeny.
 
 V souvislosti s odvozováním typů zavádí jazyk Beast novou konstrukci \inlineCode{:identifier}, viz \autoref{colonIdent}.
 

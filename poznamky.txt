@@ -27,3 +27,18 @@ Fantasy:
 
 Special:
 	Bestiary
+
+
+Testování (cache error codes, stdouts, ...):
+
+//# trackStdout
+//# stdout: "json-style-string-literal"
+//# resultCode: 255
+Void main() { //! error: unexpectedToken, position: 10, expected: Keyword.if; hint: blabla
+	writeln( x ); //! error: variableUndefined
+}
+
+//# file: test.d
+Int foo() {
+	writeln( "5" ); //! warning: somethingSomething
+}

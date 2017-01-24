@@ -5,10 +5,10 @@ import std.getopt;
 import std.concurrency;
 
 import beast.toolkit;
+import beast.task.manager;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
-	HookAppStart.call( );
 
 	string projectFile = "beast.json";
 	GetoptResult getoptResult;
@@ -32,10 +32,14 @@ void mainImpl( string[ ] args ) {
 			writef( "  %s\n    %s\n\n", opt.optShort ~ ( opt.optShort && opt.optLong ? " | " : "" ) ~ opt.optLong, opt.help );
 	}
 
+	context.taskManager = new TaskManager;
+	context.taskManager.spawnWorkers();
+	context.project = new Project;
+
 	context.project.configuration.loadFromFile( projectFile );
 
 	context.taskManager.waitForEverythingDone( );
-	HookAppUninit.call( );
+	context.taskManager.quitWorkers();
 }
 
 int main( string[ ] args ) {

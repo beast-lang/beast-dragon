@@ -2,6 +2,7 @@ module beast.lex.token;
 
 import beast.lex.toolkit;
 import beast.project.sourcefile;
+import beast.project.codelocation;
 
 final class Token {
 
@@ -41,8 +42,7 @@ public:
 	}
 
 public:
-	SourceFile sourceFile;
-	const size_t sourceFileOffset, length;
+	CodeLocation codeLocation;
 	const Type type;
 
 public:
@@ -63,8 +63,12 @@ private:
 	this( ) {
 		assert( lexer );
 
-		sourceFileOffset = lexer.tokenStartPos;
-		length = lexer.sourceFilePos;
+		codeLocation.sourceFile = lexer.sourceFile;
+		codeLocation.startPos = lexer.tokenStartPos;
+		// HERE BUG - write lexer. -- does not trigger intellisense
+		
+		//codeLocation. = lexer.tokenStartPos;
+		//length = lexer.sourceFilePos;
 		type = Type._noToken;
 	}
 

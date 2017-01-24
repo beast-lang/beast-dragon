@@ -20,17 +20,6 @@ public:
 
 	TaskContext taskContext;
 
-private:
-	enum _init = HookAppStart.hook!({
-		project = new Project;
-		taskManager = new TaskManager;
-
-		taskManager.spawnWorkers();
-	});
-	enum _uninit = HookAppUninit.hook!({
-		taskManager.quitWorkers();
-	});
-
 }
 
 /// Context-local (fiber-local) pointer to working context

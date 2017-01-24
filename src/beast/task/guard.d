@@ -5,12 +5,22 @@ import beast.toolkit;
 import beast.utility.identifiable;
 import beast.task.context;
 
-// TODO: Documentation
 alias TaskGuardId = shared ubyte*;
 
+/**
+	USAGE:
+	- mixin this (Type is result type of the task)
+	- write alias <<identifier>> = _<<identifier>>; -- this is done so you can comment the properties. _(identifier) is a function that returns the task result (either by returning already computed result, computing it itself or waiting for another thread to compute it)
+	- implement <<Type>> obtain_<<identifier>>() which does the task and returns its result
+
+	TaskGuard is a core element for Beast's multithread compiler design, which is based on data-processing tasks.
+	Getting some information/parsing something/etc is designed to be a single-fire task (which can be dependent on another tasks) which can be run parallely with different tasks.
+	This mixin ensures that each task is done exactly once, handles synchronization between threads and loop dependency.
+*/
 mixin template TaskGuard( string identifier, Type ) {
 	static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface" );
 	static assert( __traits( hasMember, typeof( this ), _taskGuard_obtainFunctionName ), "You must implement '" ~ Type.stringof ~ " " ~ typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "()'." );
+	//static assert( __traits( isFinalFunction, __traits( getMember, typeof( this ), _taskGuard_obtainFunctionName ) ), typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "() has to be final." );
 
 	import beast.task.context : TaskContext;
 	import beast.task.guard : TaskGuardId;
@@ -41,10 +51,6 @@ public:
 
 		// If not, we have to check if it is work in progress
 		if ( initialFlags & Flags.workInProgress ) {
-			// Wait for the worker context to mark itself to this guard (this is not done atomically)
-			while ( !( _taskGuard_flags & Flags.contextSet ) ) {
-			}
-
 			taskGuardResolvingMutex.lock( );
 
 			// Mark that there are tasks waiting for it
@@ -63,6 +69,11 @@ public:
 
 			// Check for circular dependencies
 			{
+				// Wait for the worker context to mark itself to this guard (this is not done atomically)
+				while ( !( _taskGuard_flags & Flags.contextSet ) ) {
+					// TODO: Benchmark this
+				}
+
 				TaskContext ctx = _taskGuard_context;
 				const TaskContext thisContext = context.taskContext;
 				while ( ctx ) {
@@ -131,7 +142,7 @@ public:
 	}
 
 	// Give the taskGuard function an useful name
-	mixin( "alias " ~ identifier ~ " = _taskGuard_func;" );
+	mixin( "alias _" ~ identifier ~ " = _taskGuard_func;" );
 
 private:
 	pragma( inline ) @property TaskGuardId _taskGuard_id( ) {

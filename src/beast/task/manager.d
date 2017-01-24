@@ -4,6 +4,7 @@ import core.sync.condition;
 import core.sync.mutex;
 import std.range;
 import std.algorithm;
+import beast.toolkit;
 import beast.task.worker;
 import beast.task.context;
 
@@ -32,7 +33,9 @@ public:
 	void quitWorkers( ) {
 		isQuitting_ = true;
 
-		idleWorkersCondition_.notifyAll( );
+		synchronized ( idleContextsMutex_ )
+			idleWorkersCondition_.notifyAll( );
+
 		foreach ( worker; workers_ )
 			worker.waitForEnd( );
 	}
@@ -64,20 +67,15 @@ public:
 package:
 	/// A function called by Worker, returns task context to be executes or waits or a condition or returns null (signals quitting)
 	TaskContext askForAJob( ) {
+		// Wait for a job
 		synchronized ( workerSyncMutex_ ) {
-			idleWorkerCount_++;
-
-			// Wait for a job
 			while ( true ) {
-				if ( isQuitting_ ) {
-					idleWorkerCount_--;
+				if ( isQuitting_ )
 					return null;
-				}
 
 				if ( plannedTasks_.length ) {
 					TaskContext task = plannedTasks_.front( );
 					plannedTasks_.popFront( );
-					idleWorkerCount_--;
 					return task;
 				}
 				else if ( plannedJobs_.length ) {
@@ -92,7 +90,9 @@ package:
 				else if ( idleWorkerCount_ == workerCount )
 					everythingDoneCondition_.notifyAll( );
 
+				idleWorkerCount_++;
 				idleWorkersCondition_.wait( );
+				idleWorkerCount_--;
 			}
 		}
 	}
