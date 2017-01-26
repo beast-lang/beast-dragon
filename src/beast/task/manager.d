@@ -23,11 +23,13 @@ public:
 
 public:
 	void spawnWorkers( ) {
-		assert( !workers_.length );
+		synchronized ( workerSyncMutex_ ) {
+			assert( !workers_.length );
 
-		// Spawn workers
-		foreach ( i; 0 .. workerCount )
-			workers_ ~= new Worker( );
+			// Spawn workers
+			foreach ( i; 0 .. workerCount )
+				workers_ ~= new Worker( );
+		}
 	}
 
 	void quitWorkers( ) {
@@ -44,7 +46,7 @@ public:
 	void waitForEverythingDone( ) {
 		synchronized ( workerSyncMutex_ ) {
 			while ( true ) {
-				if ( !plannedTasks_.length && !plannedJobs_.length && idleWorkerCount_ == workerCount )
+				if ( !plannedTasks_.length && !plannedJobs_.length && idleWorkerCount_ == workers_.length )
 					return;
 
 				everythingDoneCondition_.wait( );
@@ -89,7 +91,7 @@ package:
 
 				idleWorkerCount_++;
 
-				if ( idleWorkerCount_ == workerCount )
+				if ( idleWorkerCount_ == workers_.length )
 					everythingDoneCondition_.notifyAll( );
 
 				idleWorkersCondition_.wait( );

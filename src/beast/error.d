@@ -1,51 +1,118 @@
 module beast.error;
 
-import std.exception;
-import std.format;
+public import std.format : format;
+
+import beast.toolkit;
+import beast.project.codelocation;
+import beast.project.configuration;
+import beast.utility.enumassoc;
+import core.sync.mutex;
 import std.algorithm;
+import std.exception;
+import std.stdio;
+import std.json;
 
-ErrorContext*[ ] errorContextStack;
+static __gshared Mutex stderrMutex;
 
-/// Exceptions/warnings occured during this struct existence show this struct key-value pair in their error messages
-struct ErrorContext {
+enum BError {
+	/// Invalid options passed to the application
+	invalidOpts,
 
-public:
-	string[ string ]delegate( ) data;
+	/// File opening/reading error
+	fileError,
 
-public:
-	@disable this( );
-	this( lazy string[ string ] data ) {
-		this.data = { return data; };
-		errorContextStack ~= &this;
+	/// Error when parsing project file
+	invalidProjectFile,
+
+	/// Lexer error
+	unexpectedCharacter
+}
+
+enum BErrorSeverity {
+	error,
+	error_nothrow,
+	warning,
+	hint
+}
+
+enum string[ BErrorSeverity ] BErrorSeverityStrings = [ BErrorSeverity.error : "error", BErrorSeverity.error_nothrow : "error", BErrorSeverity.warning : "warning", BErrorSeverity.hint : "hint" ];
+
+/// If the condition is not true, calls berror
+pragma( inline ) void benforce( BErrorSeverity severity = BErrorSeverity.error, string file = __FILE__, size_t line = __LINE__ )( bool condition, lazy const CodeLocation codeLocation, BError error, lazy string message ) {
+	if ( !condition )
+		breport!( severity, file, line )( codeLocation, error, message );
+}
+
+/// Generates error/warning/hint, eventually throwing an exception
+pragma( inline ) void breport( BErrorSeverity severity, string file = __FILE__, size_t line = __LINE__ )( const CodeLocation codeLocation, BError error, string message ) {
+	string formattedMessage;
+
+	final switch ( context.project.configuration.messageFormat ) {
+
+	case ProjectConfiguration.MessageFormat.standard: {
+			if ( codeLocation.source ) {
+				formattedMessage ~= codeLocation.file ~ ":";
+
+				if ( codeLocation.startLine ) {
+					formattedMessage ~= codeLocation.startLine.to!string ~ "." ~ codeLocation.startColumn.to!string;
+					if ( codeLocation.endLine != codeLocation.startLine )
+						formattedMessage ~= "-" ~ codeLocation.endLine.to!string ~ "." ~ codeLocation.endColumn.to!string;
+					else
+						formattedMessage ~= "-" ~ codeLocation.endColumn.to!string;
+						
+					formattedMessage ~= ":";
+				}
+
+			}
+			else
+				formattedMessage = "#UNKNOWN#:0:";
+
+			formattedMessage ~= " " ~ BErrorSeverityStrings[ severity ] ~ " " ~ enumAssocInvert!( BError )[ error ] ~ " | " ~ message;
+		}
+		break;
+
+	case ProjectConfiguration.MessageFormat.json: {
+			JSONValue[ string ] result;
+			result[ "type" ] = BErrorSeverityStrings[ severity ];
+			result[ "error" ] = enumAssocInvert!( BError )[ error ];
+			result[ "message" ] = message;
+
+			if ( codeLocation.source ) {
+				result[ "file" ] = codeLocation.source.absoluteFilePath;
+				if ( codeLocation.startPos ) {
+					// TODO: Add more data (endLine, ...)
+					result[ "startLine" ] = codeLocation.startLine;
+				}
+			}
+
+			formattedMessage = JSONValue( result ).toString;
+		}
+		break;
+
 	}
 
-	~this( ) {
-		assert( errorContextStack[ $ - 1 ] is &this );
-		errorContextStack.length--;
-	}
+	synchronized ( stderrMutex )
+		stderr.writeln( formattedMessage );
 
+	if ( severity == BErrorSeverity.error )
+		throw new BeastErrorException( message, file, line );
+}
+
+/// Generates error/warning/hint, eventually throwing an exception
+pragma( inline ) void berror( string file = __FILE__, size_t line = __LINE__ )( const CodeLocation codeLocation, BError error, string message ) {
+	breport!( BErrorSeverity.error, file, line )( codeLocation, error, message );
 }
 
 /// Base error class for all compiler generated exceptions (that are expected)
-final class BeastError : Exception {
+final class BeastErrorException : Exception {
 
 public:
 	this( string message, string file = __FILE__, size_t line = __LINE__ ) {
-		foreach ( ctx; errorContextStack.map!( x => x.data().byKeyValue ).joiner )
-			message ~= "\n  " ~ ctx.key ~ ": " ~ ctx.value;
-
 		super( message, file, line );
 	}
 
 }
 
-/// Enforce that generates BeastError exception, allows fancy formatting (using std.format)
-pragma( inline ) void benforce( string file = __FILE__, size_t line = __LINE__, Args... )( bool condition, lazy string message, lazy Args args ) {
-	if ( !condition )
-		berror!( file, line )( message, args );
-}
-
-/// Generates BeastError exception, allows fancy formatting (using std.format)
-pragma( inline ) void berror( string file = __FILE__, size_t line = __LINE__, Args... )( string message, Args args ) {
-	throw new BeastError( message.format( args ), file, line );
+shared static this( ) {
+	stderrMutex = new Mutex;
 }

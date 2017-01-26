@@ -55,7 +55,8 @@ Void main() {
   T!? c := new C; // C!? - reference to a mutable object, := reference assignment operator
   c.x = 5;
 
-  @ctime String s = foo( :a, Int ); // Compile-time function execution, :XXX accessor that looks in parameter type
+  // Compile-time function execution, :XXX accessor that looks in parameter type
+  @ctime String s = foo( :a, Int );
   stdout.writeln( s );
   
   stdout.writeln( c + x ); // Writes 8

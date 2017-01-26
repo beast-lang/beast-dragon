@@ -1,17 +1,26 @@
 module beast.project.configuration;
 
-import std.array;
-import std.json;
-import std.file;
-import std.stdio;
-import std.path;
-import std.traits;
-
+import beast.project.codesource;
 import beast.toolkit;
 import beast.utility.decorator;
+import beast.utility.enumassoc;
+import std.array;
+import std.file;
+import std.json;
+import std.conv;
+import std.path;
+import std.algorithm;
+import std.stdio;
+import std.traits;
 
 /// Project configuration storage class
 struct ProjectConfiguration {
+
+public:
+	enum MessageFormat {
+		standard,
+		json
+	}
 
 public:
 	@configurable {
@@ -20,27 +29,30 @@ public:
 
 		/// Array of source file root directories
 		string[ ] sourceDirectories;
+
+		/// Output message format
+		MessageFormat messageFormat;
 	}
 
 public:
 	/// Loads configuration from specified project file
 	void loadFromFile( string filename ) {
-		const auto fileCtx = ErrorContext( [ "configFile" : filename.absolutePath ] );
+		CodeSource source = new CodeSource( filename );
 
+		JSONValue json;
 		try {
-			loadFromJSON( filename.readText.parseJSON );
+			json = source.content.parseJSON;
 		}
 		catch ( JSONException exc ) {
-			berror( "json parsing error: %s", exc.msg );
+			berror( CodeLocation( source ), BError.invalidProjectFile, "Project file JSON parsing error: " ~ exc.msg );
 		}
-		catch ( FileException exc ) {
-			berror( "file error: %s", exc.msg );
-		}
+
+		loadFromJSON( json, source );
 	}
 
 	/// Loads cofnguration from specified JSON data
-	void loadFromJSON( in JSONValue data ) {
-		benforce( data.type == JSON_TYPE.OBJECT, "root is not an object" );
+	void loadFromJSON( JSONValue data, CodeSource source ) {
+		benforce( data.type == JSON_TYPE.OBJECT, CodeLocation( source ), BError.invalidProjectFile, "Project configuration: file root is not an object" );
 
 		auto root = data.object;
 
@@ -48,43 +60,50 @@ public:
 			const string key = rootItem.key;
 			const JSONValue val = rootItem.value;
 
-			const auto itemCtx = ErrorContext( [ "configFileKey" : key ] );
-
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
 				static if ( hasUDA!( __traits( getMember, ProjectConfiguration, memberName ), configurable ) ) {
 					if ( key != memberName )
 						continue;
 
-					processItem!( typeof( __traits( getMember, ProjectConfiguration, memberName ) ), memberName )( val );
+					processItem!( typeof( __traits( getMember, ProjectConfiguration, memberName ) ), memberName )( key, val, source );
 
 					continue itemIteration;
 				}
 			}
 
-			berror( "unknown key" );
+			berror( CodeLocation( source ), BError.invalidProjectFile, "Unknown key '" ~ key ~ "'" );
 		}
 	}
 
 private:
-	void processItem( T : string, string memberName )( JSONValue val ) {
-		benforce( val.type == JSON_TYPE.STRING, "expected string value" );
+	void processItem( T : string, string memberName )( string key, JSONValue val, CodeSource source ) {
+		benforce( val.type == JSON_TYPE.STRING, CodeLocation( source ), BError.invalidProjectFile, "Project configuration: expected string for key '" ~ key ~ "'" );
 
 		__traits( getMember, this, memberName ) = val.str;
 	}
 
-	void processItem( T : bool, string memberName )( JSONValue val ) {
-		benforce( val.type == JSON_TYPE.TRUE || val.type == JSON_TYPE.FALSE, "expected boolean value" );
+	void processItem( T : bool, string memberName )( string key, JSONValue val ) {
+		benforce( val.type in [ JSON_TYPE.TRUE, JSON_TYPE.FALSE ], CodeLocation( source ), BError.invalidProjectFile, "Project configuration: expected boolean for key '" ~ key ~ "'" );
 
 		__traits( getMember, this, memberName ) = ( val.type == JSON_TYPE.TRUE );
 	}
 
-	void processItem( T : string[ ], string memberName )( JSONValue val ) {
-		benforce( val.type == JSON_TYPE.ARRAY, "expected array" );
+	void processItem( T : string[ ], string memberName )( string key, JSONValue val, CodeSource source ) {
+		benforce( val.type == JSON_TYPE.ARRAY, CodeLocation( source ), BError.invalidProjectFile, "Project configuration: expected array for key '" ~ key ~ "'" );
 
 		foreach ( i, item; val.array ) {
-			benforce( item.type == JSON_TYPE.STRING, "expected string item (index %s)", i );
+			benforce( item.type == JSON_TYPE.STRING, CodeLocation( source ), BError.invalidProjectFile, "Project configuration: expected string for key '%s[%s]'".format( key, i ) );
 			__traits( getMember, this, memberName ) ~= item.str;
 		}
+	}
+
+	void processItem( T, string memberName )( string key, JSONValue val, CodeSource source ) if ( is( T == enum ) ) {
+		alias assoc = enumAssoc!T;
+
+		benforce( val.type == JSON_TYPE.STRING, CodeLocation( source ), BError.invalidProjectFile, "Project configuration: expected string for key '" ~ key ~ "'" );
+		benforce( ( val.str in assoc ) !is null, CodeLocation( source ), BError.invalidProjectFile, "Project configuration: key '" ~ key ~ "' can only contain values: " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
+
+		__traits( getMember, this, memberName ) = assoc[ val.str ];
 	}
 
 private:

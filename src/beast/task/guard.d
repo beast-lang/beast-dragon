@@ -106,7 +106,7 @@ public:
 			assert( _taskGuard_flags & Flags.done );
 
 			if ( _taskGuard_flags & Flags.error )
-				throw new ErrorPoisoningException( );
+				throw new BeastErrorException( "#posion" );
 
 			// After this context is resumed, the task should be done
 			return _taskGuard_data;
@@ -118,7 +118,7 @@ public:
 		try {
 			_taskGuard_data = __traits( getMember, this, _taskGuard_obtainFunctionName )( );
 		}
-		catch ( BeastError exc ) {
+		catch ( BeastErrorException exc ) {
 			// Mark this task as erroreous
 			const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
 
@@ -126,6 +126,7 @@ public:
 			if ( data & Flags.dependentTasksWaiting )
 				_taskGuard_issueWaitingTasks( );
 
+			// Rethrow the exception
 			throw exc;
 		}
 
@@ -182,12 +183,3 @@ static __gshared TaskContext[ ][ TaskGuardId ] taskGuardDependentsList;
 enum _init = HookAppInit.hook!( { //
 		taskGuardResolvingMutex = new Mutex; //
 	} );
-
-final class ErrorPoisoningException : Exception {
-
-public:
-	this( ) {
-		super( "Error poisoning" );
-	}
-
-}

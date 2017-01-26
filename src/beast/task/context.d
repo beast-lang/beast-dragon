@@ -93,11 +93,8 @@ private:
 			try {
 				job_( );
 			}
-			catch( BeastError exc ) {
-				writeln( stderr, "Error: ", exc.msg ); // TODO: better
-			}
-			catch( ErrorPoisoningException exc ) {
-				// Do nothing
+			catch( BeastErrorException exc ) {
+				/// Do nothing, handled elsewhere
 			}
 
 			job_ = null;

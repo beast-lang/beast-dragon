@@ -3,9 +3,11 @@ module beast.toolkit;
 public {
 	import std.conv: to;
 
-	import beast.error;
 	import beast.context;
-	import beast.project.project;
+	import beast.error;
+	import beast.lex.identifier;
+	import beast.lex.token;
+	import beast.project.codelocation;
 	import beast.task.guard;
 }
 

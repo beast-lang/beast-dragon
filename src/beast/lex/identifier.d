@@ -2,7 +2,6 @@ module beast.lex.identifier;
 
 import std.algorithm;
 import beast.toolkit;
-import beast.lex.keyword;
 
 final class Identifier {
 
@@ -20,7 +19,7 @@ public:
 public:
 	const string str;
 	const size_t hash;
-	const Keyword keyword;
+	const Token.Keyword keyword;
 
 public:
 	override size_t toHash( ) const {
@@ -33,7 +32,7 @@ public:
 	}
 
 private:
-	this( string str, Keyword keyword = Keyword._noKeyword ) {
+	this( string str, Token.Keyword keyword = Token.Keyword._noKeyword ) {
 		this.str = str;
 		this.keyword = keyword;
 
@@ -47,9 +46,9 @@ private:
 private:
 	static __gshared Identifier[ string ] map;
 	enum _init = HookAppInit.hook!( {
-			foreach ( mem; __traits( derivedMembers, Keyword ) ) {
+			foreach ( mem; __traits( derivedMembers, Token.Keyword ) ) {
 				string kwd = mem.endsWith( "_" ) ? mem[ 0 .. $ - 1 ] : mem;
-				map[ kwd ] = new Identifier( kwd, __traits( getMember, Keyword, mem ) );
+				map[ kwd ] = new Identifier( kwd, __traits( getMember, Token.Keyword, mem ) );
 			}
 		} );
 

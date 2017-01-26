@@ -30,6 +30,18 @@ Special:
 	
 - nedávat inexpression variable declarations?
 
+-- Co s 
+Void foo( Int!? a, @ctime Int!? b ) {
+	a++;
+	b++;
+}
+
+Void main() {
+	@ctime Int! x;
+
+	foo( x, x );
+}
+
 
 Testování (cache error codes, stdouts, ...):
 
@@ -44,3 +56,6 @@ Void main() { //! error: unexpectedToken, position: 10, expected: Keyword.if; hi
 Int foo() {
 	writeln( "5" ); //! warning: somethingSomething
 }
+
+Na prezentaci:
+	Číslovat slajdy (x/celkem)

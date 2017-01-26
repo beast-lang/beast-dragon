@@ -1,7 +1,7 @@
 module beast.lex.token;
 
 import beast.lex.toolkit;
-import beast.project.sourcefile;
+import beast.project.codesource;
 import beast.project.codelocation;
 
 final class Token {
@@ -12,6 +12,21 @@ public:
 		identifier,
 		keyword,
 		special
+	}
+
+	enum Keyword {
+		_noKeyword,
+		class_,
+		if_,
+		else_
+	}
+
+	enum Operator {
+		plus,
+		minus,
+		asterisk,
+		slash,
+		dollar
 	}
 
 	enum Special {
@@ -67,10 +82,9 @@ private:
 	this( ) {
 		assert( lexer );
 
-		codeLocation.sourceFile = lexer.sourceFile;
+		codeLocation.source = lexer.source;
 		codeLocation.startPos = lexer.tokenStartPos;
-		codeLocation.length = lexer.sourceFilePos - lexer.tokenStartPos;
-		
+		codeLocation.length = lexer.pos - lexer.tokenStartPos;
 
 		type = Type._noToken;
 	}

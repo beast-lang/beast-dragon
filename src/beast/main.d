@@ -6,6 +6,7 @@ import std.concurrency;
 
 import beast.toolkit;
 import beast.task.manager;
+import beast.project.project;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
@@ -20,7 +21,7 @@ void mainImpl( string[ ] args ) {
 				 );
 	}
 	catch ( GetOptException exc ) {
-		berror( exc.msg );
+		berror( CodeLocation.none, BError.invalidOpts, exc.msg );
 	}
 
 	if ( getoptResult.helpWanted ) {
@@ -33,13 +34,13 @@ void mainImpl( string[ ] args ) {
 	}
 
 	context.taskManager = new TaskManager;
-	context.taskManager.spawnWorkers();
+	scope ( exit ) {
+		context.taskManager.waitForEverythingDone( );
+		context.taskManager.quitWorkers( );
+	}
 	context.project = new Project;
 
 	context.project.configuration.loadFromFile( projectFile );
-
-	context.taskManager.waitForEverythingDone( );
-	context.taskManager.quitWorkers();
 }
 
 int main( string[ ] args ) {
@@ -47,8 +48,8 @@ int main( string[ ] args ) {
 		mainImpl( args );
 		return 0;
 	}
-	catch ( BeastError err ) {
-		stderr.writeln( "ERROR: " ~ err.msg );
+	catch ( BeastErrorException err ) {
+		// TODO: Format errors
 		return -1;
 	}
 }
