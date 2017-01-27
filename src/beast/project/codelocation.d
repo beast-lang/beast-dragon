@@ -27,28 +27,30 @@ public:
 	size_t length;
 
 public:
-	@property size_t startLine( ) const {
-		// TODO:
-		return 0;
-	}
+	pragma( inline ) @property const {
+		size_t endPos( ) {
+			return startPos + length;
+		}
 
-	@property size_t startColumn( ) const {
-		// TODO:
-		return 0;
-	}
+		size_t startLine( ) {
+			return source && startPos ? source.lineNumberAt( startPos ) : 0;
+		}
 
-	@property size_t endLine( ) const {
-		// TODO:
-		return 0;
-	}
+		size_t startColumn( ) {
+			return source && startPos ? startPos - source.lineNumberStart( startLine ) : 0;
+		}
 
-	@property size_t endColumn( ) const {
-		// TODO:
-		return 0;
-	}
+		size_t endLine( ) {
+			return source && startPos ? source.lineNumberAt( startPos + length ) : 0;
+		}
 
-	@property string file( ) const {
-		return source.absoluteFilePath;
+		size_t endColumn( ) {
+			return source && startPos ? endPos - source.lineNumberStart( endLine ) : 0;
+		}
+
+		string file( ) {
+			return source.absoluteFilePath;
+		}
 	}
 
 }

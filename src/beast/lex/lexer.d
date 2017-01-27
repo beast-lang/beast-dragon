@@ -115,7 +115,7 @@ package:
 
 private:
 	void error_unexpectedCharacter( string file = __FILE__, size_t line = __LINE__ ) {
-		berror( CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ), BError.unexpectedCharacter, "Unexpected character: '%s' (%s)".format( currentChar_, currentChar_ ) );
+		berror( CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ), BError.unexpectedCharacter, "Unexpected character: '%s'".format( currentChar_, currentChar_ ) );
 	}
 
 private:

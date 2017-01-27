@@ -49,7 +49,7 @@ pragma( inline ) void breport( BErrorSeverity severity, string file = __FILE__, 
 
 	final switch ( context.project.configuration.messageFormat ) {
 
-	case ProjectConfiguration.MessageFormat.standard: {
+	case ProjectConfiguration.MessageFormat.gnu: {
 			if ( codeLocation.source ) {
 				formattedMessage ~= codeLocation.file ~ ":";
 
@@ -59,15 +59,15 @@ pragma( inline ) void breport( BErrorSeverity severity, string file = __FILE__, 
 						formattedMessage ~= "-" ~ codeLocation.endLine.to!string ~ "." ~ codeLocation.endColumn.to!string;
 					else
 						formattedMessage ~= "-" ~ codeLocation.endColumn.to!string;
-						
+
 					formattedMessage ~= ":";
 				}
 
 			}
 			else
-				formattedMessage = "#UNKNOWN#:0:";
+				formattedMessage = "beast:";
 
-			formattedMessage ~= " " ~ BErrorSeverityStrings[ severity ] ~ " " ~ enumAssocInvert!( BError )[ error ] ~ " | " ~ message;
+			formattedMessage ~= " " ~ /* BErrorSeverityStrings[ severity ] ~ " " ~ enumAssocInvert!( BError )[ error ] ~ " | " ~ */ message;
 		}
 		break;
 
@@ -81,6 +81,7 @@ pragma( inline ) void breport( BErrorSeverity severity, string file = __FILE__, 
 				result[ "file" ] = codeLocation.source.absoluteFilePath;
 				if ( codeLocation.startPos ) {
 					// TODO: Add more data (endLine, ...)
+					formattedMessage = "compiler:";
 					result[ "startLine" ] = codeLocation.startLine;
 				}
 			}
