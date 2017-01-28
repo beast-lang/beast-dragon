@@ -28,6 +28,8 @@ Fantasy:
 Special:
 	Bestiary
 
+-- Reflection of comments + documentation generation
+
 -- What to do with
 Void foo( Int!? a, @ctime Int!? b ) {
 	a++;

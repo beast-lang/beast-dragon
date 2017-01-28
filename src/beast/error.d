@@ -21,11 +21,14 @@ enum BError {
 	/// File opening/reading error
 	fileError,
 
-	/// Error when parsing project file
-	invalidProjectFile,
+	/// Error when parsing project file or invalid configuration combination
+	invalidProjectConfiguration,
 
 	/// Lexer error
-	unexpectedCharacter
+	unexpectedCharacter,
+
+	/// Feature not yet implemented
+	unimplemented,
 }
 
 enum BErrorSeverity {
@@ -47,6 +50,7 @@ pragma( inline ) void benforce( BErrorSeverity severity = BErrorSeverity.error, 
 pragma( inline ) void breport( BErrorSeverity severity, string file = __FILE__, size_t line = __LINE__ )( const CodeLocation codeLocation, BError error, string message ) {
 	string formattedMessage;
 
+	// Format the message
 	final switch ( context.project.configuration.messageFormat ) {
 
 	case ProjectConfiguration.MessageFormat.gnu: {
@@ -67,7 +71,7 @@ pragma( inline ) void breport( BErrorSeverity severity, string file = __FILE__, 
 			else
 				formattedMessage = "beast:";
 
-			formattedMessage ~= " " ~ /* BErrorSeverityStrings[ severity ] ~ " " ~ enumAssocInvert!( BError )[ error ] ~ " | " ~ */ message;
+			formattedMessage ~= " " ~ BErrorSeverityStrings[ severity ] ~ ": " ~ /* enumAssocInvert!( BError )[ error ] ~ " | " ~ */ message;
 		}
 		break;
 

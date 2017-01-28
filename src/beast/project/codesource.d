@@ -5,11 +5,16 @@ import std.file;
 import beast.toolkit;
 import beast.utility.identifiable;
 
-final class CodeSource {
+/// Abstraction of any code source (for matching line numbers, lexing, etc.)
+class CodeSource {
 
 public:
-	this( string fileName ) {
-		absoluteFilePath = fileName.absolutePath( context.project.basePath );
+	struct CTOR_FromFile {
+	}
+
+public:
+	this( CTOR_FromFile _, string filename ) {
+		absoluteFilePath = filename.absolutePath( context.project.basePath );
 
 		try {
 			content = readText( absoluteFilePath );
@@ -37,7 +42,7 @@ public:
 
 public:
 	/// Returns line number (counting from 1) of nth char of the content (counting from 0)
-	size_t lineNumberAt( size_t offset ) const {
+	final size_t lineNumberAt( size_t offset ) const {
 		// Binary search
 		size_t low = 0, high = content.length;
 
@@ -56,7 +61,7 @@ public:
 	}
 
 	/// Returns position of the '\n' of the specified line (counting from 1)
-	size_t lineNumberStart( size_t lineNumber ) const {
+	final size_t lineNumberStart( size_t lineNumber ) const {
 		assert( lineNumber > 0 && lineNumber <= newlinePositions_.length );
 		return newlinePositions_[ lineNumber - 1 ];
 	}

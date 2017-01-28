@@ -3,6 +3,9 @@ module beast.lex.identifier;
 import std.algorithm;
 import beast.toolkit;
 
+/// Sequence of identifiers, abstractly in format "id1"."id2"
+alias ExtendedIdentifier = Identifier;
+
 final class Identifier {
 
 public:

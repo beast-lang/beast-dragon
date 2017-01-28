@@ -21,16 +21,8 @@ void mainImpl( string[ ] args ) {
 	}
 	context.project = new Project;
 
-	enum ProjectMode {
-		implicit,
-		projectFile,
-		fastBuild
-	}
+	string projectFile;
 
-	ProjectMode projectMode;
-	string projectFile = "beast.json";
-
-	JSONValue[ string ] optExplicitConfiguration;
 	string[ string ] optConfigs;
 
 	GetoptResult getoptResult;
@@ -39,17 +31,24 @@ void mainImpl( string[ ] args ) {
 		getoptResult = getopt( args, //
 				std.getopt.config.bundling, //
 				"project-file|p", "Location of project configuration file.", ( string opt, string val ) { //
-					benforce( projectMode == ProjectMode.implicit, CodeLocation.none, BError.invalidOpts, "Project mode already set" );
+					benforce( !projectFile, CodeLocation.none, BError.invalidOpts, "Cannot set multiple project files" );
 					context.project.basePath = opt.dirName.absolutePath;
-					projectMode = ProjectMode.projectFile;
-					projectFile = opt;
+					projectFile = val;
+				}, //
+				"origin|o", "Location of the origin source file (sets project mode to fast).", ( string opt, string val ) { //
+					optConfigs[ "projectMode" ] = "\"fast\"";
+					optConfigs[ "originSourceFile" ] = '"' ~ val ~ '"';
+					context.project.basePath = opt.dirName.absolutePath;
+				}, //
+				"run|r", "Run the target application after a successfull build.", { //
+					optConfigs[ "runAfterBuild" ] = "true";
 				}, //
 
 				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<jsonValue>, for example --config messageFormat=\"json\"", &optConfigs, //
 
 				"json-messages", "Print messages in JSON format.", { //
 					context.project.configuration.messageFormat = ProjectConfiguration.MessageFormat.json;
-					optExplicitConfiguration[ "messageFormat" ] = "json";
+					optConfigs[ "messageFormat" ] = "\"json\"";
 				}, //
 
 				"help-config", "Shows documentation of project configuration.", { //
@@ -70,16 +69,18 @@ void mainImpl( string[ ] args ) {
 			writef( "  %s\n    %s\n\n", opt.optShort ~ ( opt.optShort && opt.optLong ? " | " : "" ) ~ opt.optLong, opt.help.replace( "\n", "\n    " ) );
 	}
 
-	if ( projectMode == ProjectMode.implicit ) {
-		projectMode = projectMode.projectFile;
-	}
+	// If no project is set (and the mode is not fast), load implicit configuration file
+	if ( "originSourceFile" !in optConfigs && !projectFile )
+		projectFile = "beast.json";
 
 	// Build project configuration
 	{
 		ProjectConfigurationBuilder configBuilder = new ProjectConfigurationBuilder;
 
-		if ( projectMode == ProjectMode.projectFile )
+		if ( projectFile )
 			configBuilder.applyFile( projectFile );
+
+		JSONValue[ string ] userConfig;
 
 		foreach ( key, value; optConfigs ) {
 			JSONValue val;
@@ -90,12 +91,14 @@ void mainImpl( string[ ] args ) {
 				berror( CodeLocation.none, BError.invalidOpts, value ~ " Config opt '" ~ key ~ "' value parsing failed: " ~ exc.msg );
 			}
 
-			optExplicitConfiguration[ key ] = val;
+			userConfig[ key ] = val;
 		}
 
-		configBuilder.applyJSON( JSONValue( optExplicitConfiguration ) );
+		configBuilder.applyJSON( JSONValue( userConfig ) );
 		context.project.configuration.load( configBuilder.build( ) );
 	}
+
+	context.project.finishConfiguration( );
 }
 
 int main( string[ ] args ) {
