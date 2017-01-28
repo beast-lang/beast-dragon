@@ -24,6 +24,7 @@ mixin template TaskGuard( string identifier, Type ) {
 
 	import beast.task.context : TaskContext;
 	import beast.task.guard : TaskGuardId;
+	import beast.utility.identifiable;
 
 private:
 	Type _taskGuard_data;
@@ -38,12 +39,12 @@ public:
 	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
 	Type _taskGuard_func( ) {
 		import beast.utility.atomic : atomicFetchThenOr, atomicStore, atomicOp;
-		import beast.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, ErrorPoisoningException;
+		import beast.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, BeastErrorException;
 
 		const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
 
 		if ( initialFlags & Flags.error )
-			throw new ErrorPoisoningException( );
+			throw new BeastErrorException( "#poison" );
 
 		// Task is already done, no problem
 		if ( initialFlags & Flags.done )
@@ -59,7 +60,7 @@ public:
 			// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
 			if ( wipFlags & Flags.error ) {
 				taskGuardResolvingMutex.unlock( );
-				throw new ErrorPoisoningException( );
+				throw new BeastErrorException( "#poison" );
 			}
 
 			if ( wipFlags & Flags.done ) {
@@ -79,7 +80,7 @@ public:
 				while ( ctx ) {
 					if ( ctx is thisContext ) {
 						taskGuardResolvingMutex.unlock( );
-						berror( "Circular dependency loop" ); // TODO: Better error message
+						berror( CodeLocation.none, BError.dependencyLoop, "Circular dependency loop" ); // TODO: Better error message
 					}
 
 					ctx = ctx.blockingContext_;

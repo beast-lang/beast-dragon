@@ -6,6 +6,7 @@ import beast.utility.identifiable;
 import beast.project.modulemgr.modulemgr;
 import beast.project.modulemgr.standard;
 import std.file;
+import std.path;
 
 /// Project wrapping class
 final class Project : Identifiable {
@@ -47,19 +48,21 @@ public:
 		}
 
 		// Construct module manager
-		switch ( configuration.projectMode ) {
+		{
+			if ( configuration.projectMode == ProjectConfiguration.ProjectMode.standard )
+				moduleManager = new StandardModuleManager;
+			else if ( configuration.projectMode == ProjectConfiguration.ProjectMode.fast )
+				berror( CodeLocation.none, BError.unimplemented, "Fast project mode not yet implemented" );
 
-		case ProjectConfiguration.ProjectMode.standard:
-			moduleManager = new StandardModuleManager;
-			break;
+			moduleManager.initialize( );
+		}
 
-		case ProjectConfiguration.ProjectMode.fast:
-			berror( CodeLocation.none, BError.unimplemented, "Fast project mode not yet implemented" );
-			break;
+		// Translate paths
+		{
+			configuration.originSourceFile = configuration.originSourceFile.absolutePath( basePath );
 
-		default:
-			assert( 0 );
-
+			foreach ( ref string path; configuration.sourceDirectories )
+				path = path.absolutePath( basePath );
 		}
 	}
 

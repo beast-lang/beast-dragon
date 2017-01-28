@@ -7,8 +7,13 @@ import beast.project.codesource;
 final class Module : CodeSource {
 
 public:
-	this( CTOR_FromFile _, string filename ) {
+	this( CTOR_FromFile _, string filename, ExtendedIdentifier identifier ) {
+		this.identifier = identifier;
+		
 		super( _, filename );
 	}
+
+public:
+	const ExtendedIdentifier identifier;
 
 }

@@ -47,11 +47,11 @@ public:
 		@help( "File name of the target application/library" )
 		string targetFilename;
 
-		/// Array of source file root directories in standard project mode
+		/// Array of source file root directories in standard project mode; in project.finishConfiguration, they're translated to absolute paths
 		@help( "Root source file directories in standard project mode" )
 		string[ ] sourceDirectories;
 
-		/// Origin source file in fast project mode
+		/// Origin source file in fast project mode; in project.finishConfiguration, it is translated to absolute path
 		@help( "Origin source file in fast project mode" )
 		string originSourceFile;
 

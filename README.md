@@ -1,6 +1,7 @@
 <p align="center">
 	<img src="./doc/logo_256w.png">
 </p>
+
 # Beast Programming Language
 
 Beast is a new programming language mostly inspired by C++ and D.
@@ -9,6 +10,8 @@ This repository contains (everything is WIP):
 * Sample transcompiler to C++
 * Language reference
 * Bachelor thesis text (Czech language)
+
+Source file extension: .be
 
 ## Progress
 * Compiler: 0% (transcompiles to C++, no working prototype)

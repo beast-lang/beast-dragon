@@ -1,10 +1,9 @@
 module beast.lex.identifier;
 
 import std.algorithm;
+import std.string;
+import std.array;
 import beast.toolkit;
-
-/// Sequence of identifiers, abstractly in format "id1"."id2"
-alias ExtendedIdentifier = Identifier;
 
 final class Identifier {
 
@@ -54,5 +53,19 @@ private:
 				map[ kwd ] = new Identifier( kwd, __traits( getMember, Token.Keyword, mem ) );
 			}
 		} );
+
+}
+
+/// Sequence of identifiers, abstractly in format "id1"."id2"
+struct ExtendedIdentifier {
+
+public:
+	Identifier[ ] data;
+	alias data this;
+
+public:
+	@property string str( ) {
+		return data.map!( x => cast( string ) x.str ).joiner( "." ).to!string;
+	}
 
 }

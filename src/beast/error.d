@@ -29,6 +29,12 @@ enum BError {
 
 	/// Feature not yet implemented
 	unimplemented,
+
+	/// Task guard circular dependency
+	dependencyLoop,
+
+	/// Module import failed
+	moduleImportFail,
 }
 
 enum BErrorSeverity {
