@@ -1,5 +1,5 @@
 
-Jména:
+Names:
 	Lion
 	Boar
 	Bear
@@ -27,10 +27,8 @@ Fantasy:
 
 Special:
 	Bestiary
-	
-- nedávat inexpression variable declarations?
 
--- Co s 
+-- What to do with
 Void foo( Int!? a, @ctime Int!? b ) {
 	a++;
 	b++;
@@ -42,9 +40,26 @@ Void main() {
 	foo( x, x );
 }
 
+-- What to do with
+class C( Int!? x ) {
+	Void test() {
+		x++; // Obviously x data must be constantiatized -- this is handled by rule "changing ctime value from rtime scope"
+		stdout.write( x );
+	}
+}
 
-Testování (cache error codes, stdouts, ...):
+Void main() {
+	@ctime Int! a = 0;
+	C( a ) c;
 
+	c.test();
+	a++;
+
+	c.test(); // What now? This is kinda screwed... a should be constantiatized or sumthing
+}
+
+
+Tests (cache error codes, stdouts, ...):
 //# trackStdout
 //# stdout: "json-style-string-literal"
 //# resultCode: 255

@@ -12,25 +12,35 @@ import std.path;
 import std.algorithm;
 import std.stdio;
 import std.traits;
+import std.meta;
 
 /// Project configuration storage class
 struct ProjectConfiguration {
 
 public:
+	alias help = Decorator!( "ProjectConfiguration.help", string );
+
 	enum MessageFormat {
+		// Can't put UDAs on enum members, sucks ( https://github.com/dlang/dmd/pull/6161 )
+		// @help( "Standard GNU error messages" )
 		gnu,
+
+		// @help( "Wrapped in JSON object, contain more data" )
 		json
 	}
 
 public:
 	@configurable {
 		/// File name of target application/library
+		@help( "File name of the target application/library" )
 		string targetFilename;
 
 		/// Array of source file root directories
+		@help( "Root source file directories" )
 		string[ ] sourceDirectories;
 
 		/// Output message format
+		@help( "Format of compiler messages" )
 		MessageFormat messageFormat;
 	}
 
@@ -42,11 +52,13 @@ public:
 			const JSONValue val = item.value;
 
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
-				static if ( hasUDA!( __traits( getMember, ProjectConfiguration, memberName ), configurable ) ) {
+				alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
+
+				static if ( hasUDA!( member, configurable ) ) {
 					if ( key != memberName )
 						continue;
 
-					loadItem!( typeof( __traits( getMember, ProjectConfiguration, memberName ) ), memberName )( key, val );
+					loadItem!( typeof( member ), memberName )( key, val );
 
 					continue itemIteration;
 				}
@@ -54,6 +66,31 @@ public:
 
 			/// Unknown keys should be handled by the builder
 			assert( 0 );
+		}
+	}
+
+	/// Prints help to stdout
+	void printHelp( ) {
+		writeln( "Configuration options:" );
+
+		foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
+			alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
+
+			static if ( hasUDA!( member, configurable ) ) {
+				alias Member = typeof( member );
+
+				writef( "  %s = %s\n    %s\n\n", memberName, help_possibleValues!( Member ), getUDAs!( member, help )[ 0 ].data[ 0 ] );
+
+				// TODO: uncomment after UDAs on enum members are allowed
+				/*static if ( is( Member == enum ) ) {
+					foreach ( i, valueName; __traits( derivedMembers, Member ) ) {
+						alias value = Alias!( __traits( getMember, Member, valueName ) );
+
+						writef( "    %s: %s\n", valueName, getUDAs!( value, help )[ 0 ].data[ 0 ] );
+					}
+					writeln;
+				}*/
+			}
 		}
 	}
 
@@ -89,10 +126,28 @@ private:
 	}
 
 private:
+	string help_possibleValues( T : string )( ) {
+		return "string";
+	}
+
+	string help_possibleValues( T : bool )( ) {
+		return "true/false";
+	}
+
+	string help_possibleValues( T : string[ ] )( ) {
+		return "array of strings";
+	}
+
+	string help_possibleValues( T )( ) if ( is( T == enum ) ) {
+		return enumAssoc!T.byKey.map!( x => '"' ~ x ~ '"' ).joiner( ", " ).array.to!string;
+	}
+
+private:
 	alias configurable = Decorator!"ProjectConfiguration.configurable";
 
 }
 
+/// ProjectConfigurationBuilder is used for building project configuration from parts, handles overriding config values, project configurations & merging JSON arrays and objects
 final class ProjectConfigurationBuilder {
 
 public:
@@ -134,7 +189,7 @@ public:
 
 public:
 	JSONValue[ string ] build( ) {
-		// TODO: array merging
+		// TODO: array and object merging
 		return data_;
 	}
 

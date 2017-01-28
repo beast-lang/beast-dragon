@@ -1388,6 +1388,42 @@ Ačkoli zde funkce \inlineCode{calc} při volání na řádcích \ref{ctime:impl
 \subsection{Typové proměnné}
 Typové proměnné lze z formálního hlediska považovat za typické \ctime proměnné. Jediným případem, kdy se typová proměnná liší od ostatních \ctime proměnných, je konstrukt pro deklaraci proměnné.
 
+\subsection{Možné konflikty referencí, \ctime a CTFE}
+Uvažme následující kód:
+\begin{code}
+Void foo( Int!? x, @ctime Int!? y ) {
+	@ctime while( y < 2 ) {
+		while( x < 10000 ) $\label{ctime:ctfeConflict:2}$
+			x++;
+		y++;
+	}
+}
+
+Void main() {
+	@ctime Int! a = 0;
+	foo( a, a ); $\label{ctime:ctfeConflict:1}$
+}
+\end{code}
+
+Funkce \inlineCode{foo} je zde na řádku \ref{ctime:ctfeConflict:1} volána za doby kompilace (protože se jí předává \ctime proměnná přes nekonstantní referenci). Uvážíme-li, že se funkce může vykonávat ve dvou stupních (v tomto případě to má smysl, protože řádek \ref{ctime:ctfeConflict:2} představuje relativně velký cyklus a interpret druhého stupně je rychlejší), vyvstává tu problém: kód po interpretaci prvního stupně bude vypadat takto:
+\begin{code}
+Void foo( Int!? x ) {
+	@ctime while( y < 4 ) {
+		while( x < 10000 )
+			x++;
+		// y = 1
+		
+		while( x < 10000 )
+			x++;
+		// y = 2
+		
+		while( x < 10000 )
+			x++;
+		// y = 3
+	}
+\end{code}
+
+Chování funkce neodpovídá tomu, jak by se chovala při jednostupňové interpretaci. Jelikož v demonstračním kompilátoru dvoustupňová interpretace nebude, není třeba tento problém bezprostředně řešit. Řešení problému by ale mohlo vést k zavedení dalších limitujících pravidel, tedy k regresi.
 
 \section{Přehled doplňujících pravidel} \label{ctime:moreRules}
 Tento přehled pravidel doplňuje ten uvedený v podkapitole \ref{ctime:rules}.
