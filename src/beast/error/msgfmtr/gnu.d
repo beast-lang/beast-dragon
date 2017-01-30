@@ -11,8 +11,8 @@ public:
 	override string formatErrorMessage( ErrorMessage msg ) {
 		string result;
 
-		if ( msg.codeLocation && msg.codeLocation.source ) {
-			auto cl = msg.codeLocation;
+		auto cl = msg.codeLocation;
+		if ( cl.source ) {
 			result ~= cl.file ~ ":";
 
 			if ( cl.startLine ) {

@@ -161,7 +161,7 @@ final class ProjectConfigurationBuilder {
 public:
 	void applyFile( string filename ) {
 		CodeSource source = new CodeSource( CodeSource.CTOR_FromFile( ), filename );
-		const auto _gd = ErrorGuard( new CodeLocation( source ) );
+		const auto _gd = ErrorGuard( CodeLocation( source ) );
 
 		JSONValue json;
 		try {

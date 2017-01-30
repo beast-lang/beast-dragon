@@ -1,7 +1,7 @@
 module beast.context;
 
 import beast.toolkit;
-import beast.lex.lexer;
+import beast.code.lex.lexer;
 import beast.project.project;
 import beast.task.context;
 import beast.task.manager;

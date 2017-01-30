@@ -5,8 +5,8 @@ public {
 
 	import beast.context;
 	import beast.error;
-	import beast.lex.identifier;
-	import beast.lex.token;
+	import beast.code.lex.identifier;
+	import beast.code.lex.token;
 	import beast.project.codelocation;
 	import beast.task.guard;
 	import beast.utility.identifiable;

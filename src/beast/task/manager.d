@@ -11,7 +11,7 @@ import beast.task.context;
 final class TaskManager {
 
 public:
-	enum workerCount = 32;
+	enum workerCount = 4;
 
 public:
 	this( ) {

@@ -37,7 +37,7 @@ public:
 
 public:
 	void setJob( Job job ) {
-		assert( !job_ && fiber_.state == Fiber.State.TERM );
+		assert( !job_ );
 
 		fiber_.reset( );
 		job_ = job;
@@ -100,7 +100,7 @@ private:
 			contextData_ = ContextData.init;
 		}
 		catch ( Throwable t ) {
-			writeln( stderr, "Uncaught exception on worker thread: ", t.msg );
+			writeln( stderr, "UNCAUGHT EXCEPTION: ", t.toString );
 		}
 	}
 

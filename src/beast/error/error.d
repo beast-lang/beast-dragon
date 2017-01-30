@@ -32,10 +32,14 @@ enum E {
 	// LEXER:
 	unexpectedCharacter, /// Lexer error
 
+	// PARSER:
+	unexpectedToken, /// Unexpected token
+
 	// MODULES:
 	moduleImportFail, /// Module import failed
 	invalidModuleIdentifier, /// Invalid module identifier - contains unsupported characters
 	moduleNameConflict, /// Two modules with same name
+	moduleNameMismatch, /// Expected module name does not match with the actual one (in module statement in the beginning of the file)
 }
 
 enum ErrorSeverity {
@@ -109,6 +113,6 @@ public:
 
 }
 
-shared static this( ) {
-	stderrMutex = new Mutex;
-}
+private enum _init = HookAppInit.hook!(  {
+	stderrMutex = new Mutex; //
+} );

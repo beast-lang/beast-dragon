@@ -1,7 +1,7 @@
 module beast.project.modulemgr;
 
 import beast.toolkit;
-import beast.project.bmodule;
+import beast.code.module_;
 import std.file;
 import std.path;
 import std.algorithm;
@@ -55,7 +55,10 @@ protected:
 				foreach ( id; extId )
 					benforce( id.str.isValidModuleOrPackageIdentifier, E.invalidModuleIdentifier, "Identifier '" ~ id.str ~ "' of module '" ~ extId.str ~ "' (" ~ file.absolutePath( sourceDir ) ~ ") is not a valid module identifier." );
 
-				result ~= new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
+				Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
+				result ~= m;
+
+				context.taskManager.issueJob( { m.ast; } );
 			}
 		}
 

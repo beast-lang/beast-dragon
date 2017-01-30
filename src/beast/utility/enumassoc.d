@@ -1,31 +1,38 @@
 module beast.utility.enumassoc;
 
 import std.traits;
+import beast.utility.decorator;
 
 /// Returns associative array identifier => enum
 template enumAssoc( Enum ) if ( is( Enum == enum ) ) {
-	enum Enum[ string ] R = {
+	static immutable Enum[ string ] enumAssoc;
+
+	shared static this( ) {
 		Enum[ string ] result;
 
 		foreach ( key; __traits( derivedMembers, Enum ) )
 			result[ key ] = __traits( getMember, Enum, key );
 
-		return result;
-	}( );
-
-	alias enumAssoc = R;
+		enumAssoc = cast( immutable ) result;
+	}
 }
 
 /// Returns associative array enum => identifier
-template enumAssocInvert( Enum ) if ( is( Enum == enum ) ) {
-	enum string[ Enum ] R = {
+template enumAssocInvert( Enum, string[ Enum ] customVals = null ) if ( is( Enum == enum ) ) {
+	static immutable string[ Enum ] enumAssocInvert;
+
+	shared static this( ) {
 		string[ Enum ] result;
 
-		foreach ( key; __traits( derivedMembers, Enum ) )
-			result[ __traits( getMember, Enum, key ) ] = key;
+		foreach ( memberName; __traits( derivedMembers, Enum ) ) {
+			enum member = __traits( getMember, Enum, memberName );
 
-		return result;
-	}( );
+			if ( member in customVals )
+				result[ member ] = customVals[ member ];
+			else
+				result[ member ] = memberName;
+		}
 
-	alias enumAssocInvert = R;
+		enumAssocInvert = cast( immutable ) result;
+	}
 }

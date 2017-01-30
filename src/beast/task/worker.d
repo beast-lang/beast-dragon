@@ -2,7 +2,7 @@ module beast.task.worker;
 
 import core.thread;
 import std.stdio;
-import beast.context;
+import beast.toolkit;
 import beast.task.manager;
 import beast.task.context;
 
@@ -37,7 +37,7 @@ private:
 			}
 		}
 		catch( Throwable t ) {
-			writeln( stderr, "Uncaught exception on worker thread: ", t.msg );
+			writeln( stderr, "UNCAUGHT EXCEPTION: " ~ t.toString );
 		}
 	}
 }

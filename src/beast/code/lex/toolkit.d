@@ -1,13 +1,13 @@
-module beast.lex.toolkit;
+module beast.code.lex.toolkit;
 
 public {
 	import beast.toolkit;
-	import beast.lex.identifier;
-	import beast.lex.token;
+	import beast.code.lex.identifier;
+	import beast.code.lex.token;
 }
 
-import beast.lex.token;
-import beast.lex.lexer;
+import beast.code.lex.token;
+import beast.code.lex.lexer;
 
 pragma( inline ) @property {
 	/// Context-local lexer instance

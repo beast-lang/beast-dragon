@@ -1,10 +1,10 @@
-module beast.lex.lexer;
+module beast.code.lex.lexer;
 
 import std.conv;
-import beast.lex.token;
+import beast.code.lex.token;
 import beast.toolkit;
 import beast.project.codesource;
-import beast.lex.identifier;
+import beast.code.lex.identifier;
 
 /// Thread-local instance
 Lexer lexer;
@@ -34,17 +34,20 @@ public:
 
 	/// Parses next token from the source file
 	Token getNextToken( ) {
+		Token result = _getNextToken( );
+		currentToken_ = result;
+		return result;
+	}
+
+	private Token _getNextToken( ) {
 		assert( context.lexer is this );
 
-		const auto _gd = ErrorGuard( new CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ) );
-
-		if ( pos_ >= source.content.length )
-			return new Token( Token.Special.eof );
+		const auto _gd = ErrorGuard( CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ) );
 
 		State state = State.init;
 
 		while ( true ) {
-			currentChar_ = source_.content[ pos_ ];
+			currentChar_ = pos_ < source_.content.length ? source_.content[ pos_ ] : 0;
 
 			if ( currentChar_ == '\n' )
 				line_++;
@@ -69,6 +72,20 @@ public:
 							pos_++;
 						}
 						break;
+
+					case '.': {
+							pos_++;
+							return new Token( Token.Special.dot );
+						}
+
+					case ';': {
+							pos_++;
+							return new Token( Token.Special.semicolon );
+						}
+
+					case 0: {
+							return new Token( Token.Special.eof );
+						}
 
 					default:
 						error_unexpectedCharacter( );

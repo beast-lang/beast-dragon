@@ -20,7 +20,7 @@ public:
 			content = readText( absoluteFilePath );
 		}
 		catch ( FileException exc ) {
-			berror( E.fileError, "File error: " ~ exc.msg, ( ErrorMessage err ) { err.codeLocation = new CodeLocation( this ); } );
+			berror( E.fileError, "File error: " ~ exc.msg, ( ErrorMessage err ) { err.codeLocation = CodeLocation( this ); } );
 		}
 
 		// Calculate newlines
@@ -44,20 +44,20 @@ public:
 	/// Returns line number (counting from 1) of nth char of the content (counting from 0)
 	final size_t lineNumberAt( size_t offset ) const {
 		// Binary search
-		size_t low = 0, high = content.length;
+		size_t low = 0, high = newlinePositions_.length - 1;
 
 		while ( low <= high ) {
 			const size_t mid = ( high + low ) / 2;
 
 			if ( offset > newlinePositions_[ mid ] )
-				low = mid;
-			else if ( offset < newlinePositions_[ mid ] )
+				low = mid + 1;
+			else if ( offset <= newlinePositions_[ mid ] )
 				high = mid - 1;
 			else
 				return mid + 1;
 		}
 
-		return low + 1;
+		return low;
 	}
 
 	/// Returns position of the '\n' of the specified line (counting from 1)

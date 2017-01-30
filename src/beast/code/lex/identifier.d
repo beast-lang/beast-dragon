@@ -1,8 +1,9 @@
-module beast.lex.identifier;
+module beast.code.lex.identifier;
 
 import std.algorithm;
 import std.string;
 import std.array;
+import beast.code.ast.toolkit;
 import beast.toolkit;
 
 final class Identifier {
@@ -48,10 +49,8 @@ private:
 private:
 	static __gshared Identifier[ string ] map;
 	enum _init = HookAppInit.hook!( {
-			foreach ( mem; __traits( derivedMembers, Token.Keyword ) ) {
-				string kwd = mem.endsWith( "_" ) ? mem[ 0 .. $ - 1 ] : mem;
-				map[ kwd ] = new Identifier( kwd, __traits( getMember, Token.Keyword, mem ) );
-			}
+			foreach ( i, str; Token.keywordStr[ 1 .. $ ] )
+				map[ str ] = new Identifier( str, cast( Token.Keyword )( i + 1 ) );
 		} );
 
 }
@@ -60,11 +59,29 @@ private:
 struct ExtendedIdentifier {
 
 public:
+	static bool canParse( ) {
+		return currentToken == Token.Type.identifier;
+	}
+
+	static ExtendedIdentifier parse( ) {
+		currentToken.expect( Token.Type.identifier );
+		ExtendedIdentifier result;
+		result ~= currentToken.identifier;
+
+		while ( getNextToken() == Token.Type.identifier ) {
+			getNextToken().expect( Token.Type.identifier );
+			result ~= currentToken.identifier;
+		}
+		
+		return result;
+	}
+
+public:
 	Identifier[ ] data;
 	alias data this;
 
 public:
-	@property string str( ) {
+	@property string str( ) const {
 		return data.map!( x => cast( string ) x.str ).joiner( "." ).to!string;
 	}
 

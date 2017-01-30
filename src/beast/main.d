@@ -99,6 +99,7 @@ void mainImpl( string[ ] args ) {
 	}
 
 	context.project.finishConfiguration( );
+	context.taskManager.spawnWorkers( );
 }
 
 int main( string[ ] args ) {
