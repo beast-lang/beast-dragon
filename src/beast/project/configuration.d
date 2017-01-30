@@ -18,27 +18,11 @@ import std.meta;
 struct ProjectConfiguration {
 
 public:
-	alias help = Decorator!( "ProjectConfiguration.help", string );
-
 	// Can't put UDAs on enum members, sucks ( https://github.com/dlang/dmd/pull/6161 )
 	// TODO: Put help UDAs when they finally add them
 	enum MessageFormat {
-		/// Standard GNU error messages
-		gnu,
-
-		// Wrapped in JSON object, contain more data
-		json
-	}
-
-	enum ProjectMode {
-		/// Decides based of whether sourceDirectories or originSourceFile is set
-		implicit, 
-
-		/// Standard project mode, where you have source direcotires etc
-		standard,
-
-		/// Beginning with single file, auto importing others (based of project root)
-		fast
+		gnu, /// Standard GNU error messages
+		json // Wrapped in JSON object, contain more data
 	}
 
 public:
@@ -47,23 +31,23 @@ public:
 		@help( "File name of the target application/library" )
 		string targetFilename;
 
-		/// Array of source file root directories in standard project mode; in project.finishConfiguration, they're translated to absolute paths
-		@help( "Root source file directories in standard project mode" )
+		/// Array of source file root directories; in project.finishConfiguration, they're translated to absolute paths.
+		@help( "Root source file directories" )
 		string[ ] sourceDirectories;
 
-		/// Origin source file in fast project mode; in project.finishConfiguration, it is translated to absolute path
-		@help( "Origin source file in fast project mode" )
-		string originSourceFile;
+		/// Root include directories; modules in include directories are not included in the project unless they're explicitly imported; in project.finishConfiguration, they're translated to absolute paths.
+		@help( "Root include directories; modules in include directories are not included in the project unless they're explicitly imported" )
+		string[ ] includeDirectories;
+
+		/// Source files included in the project
+		@help( "Source files included in the project" )
+		string[ ] sourceFiles;
 
 		/// Output message format
 		@help( "Format of compiler messages" )
 		MessageFormat messageFormat = MessageFormat.gnu;
 
-		/// Alters what modules are included in the project and how
-		@help( "Project mode\nfast: Beginning with single file, auto including others from project root" )
-		ProjectMode projectMode = ProjectMode.implicit;
-
-		@help( "If set to true, target application will be run after succesful build." )
+		@help( "If set to true, target application will be run after succesful build" )
 		bool runAfterBuild;
 	}
 
@@ -119,22 +103,22 @@ public:
 
 private:
 	void loadItem( T : string, string memberName )( string key, JSONValue val ) {
-		benforce( val.type == JSON_TYPE.STRING, CodeLocation.none, BError.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
+		benforce( val.type == JSON_TYPE.STRING, E.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
 
 		__traits( getMember, this, memberName ) = val.str;
 	}
 
 	void loadItem( T : bool, string memberName )( string key, JSONValue val ) {
-		benforce( val.type == JSON_TYPE.TRUE || val.type == JSON_TYPE.FALSE, CodeLocation.none, BError.invalidProjectConfiguration, "Project configuration: expected boolean for key '" ~ key ~ "'" );
+		benforce( val.type == JSON_TYPE.TRUE || val.type == JSON_TYPE.FALSE, E.invalidProjectConfiguration, "Project configuration: expected boolean for key '" ~ key ~ "'" );
 
 		__traits( getMember, this, memberName ) = ( val.type == JSON_TYPE.TRUE );
 	}
 
 	void loadItem( T : string[ ], string memberName )( string key, JSONValue val ) {
-		benforce( val.type == JSON_TYPE.ARRAY, CodeLocation.none, BError.invalidProjectConfiguration, "Project configuration: expected array for key '" ~ key ~ "'" );
+		benforce( val.type == JSON_TYPE.ARRAY, E.invalidProjectConfiguration, "Project configuration: expected array for key '" ~ key ~ "'" );
 
 		foreach ( i, item; val.array ) {
-			benforce( item.type == JSON_TYPE.STRING, CodeLocation.none, BError.invalidProjectConfiguration, "Project configuration: expected string for key '%s[%s]'".format( key, i ) );
+			benforce( item.type == JSON_TYPE.STRING, E.invalidProjectConfiguration, "Project configuration: expected string for key '%s[%s]'".format( key, i ) );
 			__traits( getMember, this, memberName ) ~= item.str;
 		}
 	}
@@ -142,8 +126,8 @@ private:
 	void loadItem( T, string memberName )( string key, JSONValue val ) if ( is( T == enum ) ) {
 		alias assoc = enumAssoc!T;
 
-		benforce( val.type == JSON_TYPE.STRING, CodeLocation.none, BError.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
-		benforce( ( val.str in assoc ) !is null, CodeLocation.none, BError.invalidProjectConfiguration, "Project configuration: key '" ~ key ~ "' can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
+		benforce( val.type == JSON_TYPE.STRING, E.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
+		benforce( ( val.str in assoc ) !is null, E.invalidProjectConfiguration, "Project configuration: key '" ~ key ~ "' can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
 
 		__traits( getMember, this, memberName ) = assoc[ val.str ];
 	}
@@ -166,6 +150,7 @@ private:
 	}
 
 private:
+	alias help = Decorator!( "ProjectConfiguration.help", string );
 	alias configurable = Decorator!"ProjectConfiguration.configurable";
 
 }
@@ -176,6 +161,7 @@ final class ProjectConfigurationBuilder {
 public:
 	void applyFile( string filename ) {
 		CodeSource source = new CodeSource( CodeSource.CTOR_FromFile( ), filename );
+		const auto _gd = ErrorGuard( new CodeLocation( source ) );
 
 		JSONValue json;
 		try {
@@ -183,14 +169,14 @@ public:
 		}
 		catch ( JSONException exc ) {
 			// TODO: parse line and column from this
-			berror( CodeLocation( source ), BError.invalidProjectConfiguration, "Project file JSON parsing error: " ~ exc.msg );
+			berror( E.invalidProjectConfiguration, "Project file JSON parsing error: " ~ exc.msg );
 		}
 
-		applyJSON( json, CodeLocation( source ) );
+		applyJSON( json );
 	}
 
-	void applyJSON( JSONValue json, const CodeLocation codeLocation = CodeLocation.none ) {
-		benforce( json.type == JSON_TYPE.OBJECT, codeLocation, BError.invalidProjectConfiguration, "Project configuration: json root is not an object" );
+	void applyJSON( JSONValue json ) {
+		benforce( json.type == JSON_TYPE.OBJECT, E.invalidProjectConfiguration, "Project configuration: json root is not an object" );
 
 		itemIteration: foreach ( item; json.object.byKeyValue ) {
 			const string key = item.key;
@@ -206,7 +192,7 @@ public:
 				}
 			}
 
-			berror( codeLocation, BError.invalidProjectConfiguration, "Project configuration: unknown key '" ~ key ~ "'" );
+			berror( E.invalidProjectConfiguration, "Project configuration: unknown key '" ~ key ~ "'" );
 		}
 	}
 

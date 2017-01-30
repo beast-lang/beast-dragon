@@ -18,7 +18,7 @@ public:
 	}
 
 public:
-	@property CodeSource source() {
+	@property CodeSource source( ) {
 		return source_;
 	}
 
@@ -33,11 +33,11 @@ public:
 	}
 
 	/// Parses next token from the source file
-	Token getNextToken( )
-	in {
+	Token getNextToken( ) {
 		assert( context.lexer is this );
-	}
-	body {
+
+		const auto _gd = ErrorGuard( new CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ) );
+
 		if ( pos_ >= source.content.length )
 			return new Token( Token.Special.eof );
 
@@ -71,7 +71,7 @@ public:
 						break;
 
 					default:
-						error_unexpectedCharacter();
+						error_unexpectedCharacter( );
 
 					}
 				}
@@ -115,7 +115,7 @@ package:
 
 private:
 	void error_unexpectedCharacter( string file = __FILE__, size_t line = __LINE__ ) {
-		berror( CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ), BError.unexpectedCharacter, "Unexpected character: '%s'".format( currentChar_, currentChar_ ) );
+		berror( E.unexpectedCharacter, "Unexpected character: '%s'".format( currentChar_, currentChar_ ) );
 	}
 
 private:

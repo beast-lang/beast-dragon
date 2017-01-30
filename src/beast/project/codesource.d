@@ -20,7 +20,7 @@ public:
 			content = readText( absoluteFilePath );
 		}
 		catch ( FileException exc ) {
-			berror( CodeLocation( this ), BError.fileError, "File error: " ~ exc.msg );
+			berror( E.fileError, "File error: " ~ exc.msg, ( ErrorMessage err ) { err.codeLocation = new CodeLocation( this ); } );
 		}
 
 		// Calculate newlines

@@ -80,7 +80,7 @@ public:
 				while ( ctx ) {
 					if ( ctx is thisContext ) {
 						taskGuardResolvingMutex.unlock( );
-						berror( CodeLocation.none, BError.dependencyLoop, "Circular dependency loop" ); // TODO: Better error message
+						berror( E.dependencyLoop, "Circular dependency loop" ); // TODO: Better error message
 					}
 
 					ctx = ctx.blockingContext_;

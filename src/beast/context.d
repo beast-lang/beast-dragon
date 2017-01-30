@@ -19,6 +19,7 @@ public:
 	Lexer lexer;
 
 	TaskContext taskContext;
+	ErrorGuardData errorGuardData;
 
 }
 

@@ -2,8 +2,7 @@ module beast.task.context;
 
 import core.thread;
 import std.stdio;
-import beast.context;
-import beast.error;
+import beast.toolkit;
 import beast.task.guard;
 
 final class TaskContextQuittingException : Exception {

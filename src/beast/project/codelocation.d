@@ -2,11 +2,8 @@ module beast.project.codelocation;
 
 import beast.project.codesource;
 
-/// Structure storing information of where a code segment is located in the source code files
-struct CodeLocation {
-
-public:
-	static immutable CodeLocation none = CodeLocation( null, 0, 0 );
+/// Class storing information of where a code segment is located in the source code files
+final class CodeLocation {
 
 public:
 	this( CodeSource source, size_t startPos, size_t length ) {

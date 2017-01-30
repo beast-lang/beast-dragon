@@ -31,7 +31,7 @@ void mainImpl( string[ ] args ) {
 		getoptResult = getopt( args, //
 				std.getopt.config.bundling, //
 				"project-file|p", "Location of project configuration file.", ( string opt, string val ) { //
-					benforce( !projectFile, CodeLocation.none, BError.invalidOpts, "Cannot set multiple project files" );
+					benforce( !projectFile, E.invalidOpts, "Cannot set multiple project files" );
 					context.project.basePath = opt.dirName.absolutePath;
 					projectFile = val;
 				}, //
@@ -57,7 +57,7 @@ void mainImpl( string[ ] args ) {
 				 );
 	}
 	catch ( GetOptException exc ) {
-		berror( CodeLocation.none, BError.invalidOpts, exc.msg );
+		berror( E.invalidOpts, exc.msg );
 	}
 
 	if ( getoptResult.helpWanted ) {
@@ -88,7 +88,7 @@ void mainImpl( string[ ] args ) {
 				val = value.parseJSON;
 			}
 			catch ( JSONException exc ) {
-				berror( CodeLocation.none, BError.invalidOpts, value ~ " Config opt '" ~ key ~ "' value parsing failed: " ~ exc.msg );
+				berror( E.invalidOpts, value ~ " Config opt '" ~ key ~ "' value parsing failed: " ~ exc.msg );
 			}
 
 			userConfig[ key ] = val;
@@ -107,7 +107,6 @@ int main( string[ ] args ) {
 		return 0;
 	}
 	catch ( BeastErrorException err ) {
-		// TODO: Format errors
 		return -1;
 	}
 }
