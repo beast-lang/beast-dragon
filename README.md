@@ -14,9 +14,9 @@ This repository contains (everything is WIP):
 Source file extension: .be
 
 ## Progress
-* Compiler: 0% (transcompiles to C++, no working prototype)
-* Std library: 0%
-* Language reference: 30%
+* Compiler: No working prototype yet (transcompiles to C++, no working prototype)
+* Std library: Nothing at all
+* Language reference: Nothing much
 
 ## Notable language features
 * Importable modules (no header files like in C++)
