@@ -1,6 +1,6 @@
-module beast.error.msgfmtr.msgfmtr;
+module beast.core.error.msgfmtr.msgfmtr;
 
-import beast.error.errormsg;
+import beast.core.error.errormsg;
 
 abstract class MessageFormatter {
 	

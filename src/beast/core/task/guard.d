@@ -1,9 +1,9 @@
-module beast.task.guard;
+module beast.core.task.guard;
 
 import core.sync.mutex;
 import beast.toolkit;
 import beast.utility.identifiable;
-import beast.task.context;
+import beast.core.task.context;
 
 alias TaskGuardId = shared ubyte*;
 
@@ -22,8 +22,8 @@ mixin template TaskGuard( string identifier, Type ) {
 	static assert( __traits( hasMember, typeof( this ), _taskGuard_obtainFunctionName ), "You must implement '" ~ Type.stringof ~ " " ~ typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "()'." );
 	//static assert( __traits( isFinalFunction, __traits( getMember, typeof( this ), _taskGuard_obtainFunctionName ) ), typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "() has to be final." );
 
-	import beast.task.context : TaskContext;
-	import beast.task.guard : TaskGuardId;
+	import beast.core.task.context : TaskContext;
+	import beast.core.task.guard : TaskGuardId;
 	import beast.utility.identifiable;
 
 private:
@@ -39,7 +39,7 @@ public:
 	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
 	Type _taskGuard_func( ) {
 		import beast.utility.atomic : atomicFetchThenOr, atomicStore, atomicOp;
-		import beast.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, BeastErrorException;
+		import beast.core.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, BeastErrorException;
 
 		const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
 
@@ -154,7 +154,7 @@ private:
 	/// Issue tasks that were waiting for this task to finish
 	void _taskGuard_issueWaitingTasks( ) {
 		import beast.utility.atomic : atomicFetchThenOr;
-		import beast.task.guard : taskGuardDependentsList, taskGuardResolvingMutex;
+		import beast.core.task.guard : taskGuardDependentsList, taskGuardResolvingMutex;
 
 		synchronized ( taskGuardResolvingMutex ) {
 			assert( _taskGuard_id in taskGuardDependentsList );

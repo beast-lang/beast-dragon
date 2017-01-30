@@ -1,6 +1,6 @@
-module beast.project.configuration;
+module beast.core.project.configuration;
 
-import beast.project.codesource;
+import beast.core.project.codesource;
 import beast.toolkit;
 import beast.utility.decorator;
 import beast.utility.enumassoc;

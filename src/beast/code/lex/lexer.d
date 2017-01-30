@@ -3,7 +3,7 @@ module beast.code.lex.lexer;
 import std.conv;
 import beast.code.lex.token;
 import beast.toolkit;
-import beast.project.codesource;
+import beast.core.project.codesource;
 import beast.code.lex.identifier;
 
 /// Thread-local instance

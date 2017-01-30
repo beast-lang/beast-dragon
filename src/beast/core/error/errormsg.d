@@ -1,4 +1,4 @@
-module beast.error.errormsg;
+module beast.core.error.errormsg;
 
 import beast.toolkit;
 

@@ -1,12 +1,12 @@
-module beast.error.error;
+module beast.core.error.error;
 
 public import std.format : format;
 
 import beast.toolkit;
-import beast.project.codelocation;
-import beast.project.configuration;
+import beast.core.project.codelocation;
+import beast.core.project.configuration;
 import beast.utility.enumassoc;
-import beast.error;
+import beast.core.error;
 import core.sync.mutex;
 import std.algorithm;
 import std.exception;

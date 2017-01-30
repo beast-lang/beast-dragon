@@ -1,4 +1,4 @@
-module beast.project.modulemgr;
+module beast.core.project.modulemgr;
 
 import beast.toolkit;
 import beast.code.module_;

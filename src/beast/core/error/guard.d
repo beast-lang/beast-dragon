@@ -1,4 +1,4 @@
-module beast.error.guard;
+module beast.core.error.guard;
 
 import beast.toolkit;
 

@@ -1,6 +1,6 @@
-module beast.project.codelocation;
+module beast.core.project.codelocation;
 
-import beast.project.codesource;
+import beast.core.project.codesource;
 import beast.context;
 
 /// Structure storing information of where a code segment is located in the source code files

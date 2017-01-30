@@ -1,7 +1,7 @@
-module beast.error.msgfmtr.json;
+module beast.core.error.msgfmtr.json;
 
-import beast.error.errormsg;
-import beast.error.msgfmtr.msgfmtr;
+import beast.core.error.errormsg;
+import beast.core.error.msgfmtr.msgfmtr;
 
 final class MessageFormatter_JSON : MessageFormatter {
 	

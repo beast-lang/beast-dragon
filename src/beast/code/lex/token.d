@@ -1,8 +1,8 @@
 module beast.code.lex.token;
 
 import beast.code.lex.toolkit;
-import beast.project.codesource;
-import beast.project.codelocation;
+import beast.core.project.codesource;
+import beast.core.project.codelocation;
 import beast.utility.enumassoc;
 import std.algorithm;
 import std.meta;

@@ -1,9 +1,9 @@
-module beast.task.context;
+module beast.core.task.context;
 
 import core.thread;
 import std.stdio;
 import beast.toolkit;
-import beast.task.guard;
+import beast.core.task.guard;
 
 final class TaskContextQuittingException : Exception {
 	public this( ) {

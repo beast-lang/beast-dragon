@@ -4,11 +4,11 @@ public {
 	import std.conv : to;
 
 	import beast.context;
-	import beast.error;
+	import beast.core.error;
 	import beast.code.lex.identifier;
 	import beast.code.lex.token;
-	import beast.project.codelocation;
-	import beast.task.guard;
+	import beast.core.project.codelocation;
+	import beast.core.task.guard;
 	import beast.utility.identifiable;
 }
 

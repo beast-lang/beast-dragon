@@ -1,4 +1,4 @@
-module beast.project.codesource;
+module beast.core.project.codesource;
 
 import std.path;
 import std.file;

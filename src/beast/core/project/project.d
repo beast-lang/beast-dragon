@@ -1,10 +1,10 @@
-module beast.project.project;
+module beast.core.project.project;
 
-import beast.project.configuration;
+import beast.core.project.configuration;
 import beast.toolkit;
 import beast.utility.identifiable;
-import beast.project.modulemgr;
-import beast.error.msgfmtr;
+import beast.core.project.modulemgr;
+import beast.core.error.msgfmtr;
 import std.file;
 import std.path;
 

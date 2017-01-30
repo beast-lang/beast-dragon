@@ -1,8 +1,8 @@
 module beast.main;
 
-import beast.project.configuration;
-import beast.project.project;
-import beast.task.manager;
+import beast.core.project.configuration;
+import beast.core.project.project;
+import beast.core.task.manager;
 import beast.toolkit;
 import std.concurrency;
 import std.getopt;

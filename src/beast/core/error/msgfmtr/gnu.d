@@ -1,7 +1,7 @@
-module beast.error.msgfmtr.gnu;
+module beast.core.error.msgfmtr.gnu;
 
-import beast.error.errormsg;
-import beast.error.msgfmtr.msgfmtr;
+import beast.core.error.errormsg;
+import beast.core.error.msgfmtr.msgfmtr;
 import beast.toolkit;
 import std.conv;
 

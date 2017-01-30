@@ -1,7 +1,7 @@
 module beast.code.module_;
 
 import beast.toolkit;
-import beast.project.codesource;
+import beast.core.project.codesource;
 import beast.code.ast.module_;
 import beast.code.lex.lexer;
 import std.regex;

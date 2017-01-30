@@ -1,10 +1,10 @@
-module beast.task.worker;
+module beast.core.task.worker;
 
 import core.thread;
 import std.stdio;
 import beast.toolkit;
-import beast.task.manager;
-import beast.task.context;
+import beast.core.task.manager;
+import beast.core.task.context;
 
 final class Worker {
 
