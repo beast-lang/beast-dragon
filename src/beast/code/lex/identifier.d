@@ -68,7 +68,7 @@ public:
 		ExtendedIdentifier result;
 		result ~= currentToken.identifier;
 
-		while ( getNextToken() == Token.Type.identifier ) {
+		while ( getNextToken() == Token.Special.dot ) {
 			getNextToken().expect( Token.Type.identifier );
 			result ~= currentToken.identifier;
 		}

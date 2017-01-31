@@ -1,6 +1,7 @@
 module beast.code.ast.module_;
 
 import beast.code.ast.toolkit;
+import beast.code.ast.declarationscope;
 
 final class AST_Module : ASTNode {
 
@@ -19,11 +20,21 @@ public:
 			currentToken.expect( Token.Special.semicolon );
 		}
 
+		result.declarationScope = AST_DeclarationScope.parse( );
+
+		currentToken.expect( Token.Special.eof, "declaration or EOF" );
+
 		result.codeLocation = clg.get( );
 		return result;
 	}
 
 public:
 	ExtendedIdentifier identifier;
+	AST_DeclarationScope declarationScope;
+
+public:
+	override ASTNode[ ] subnodes( ) {
+		return [ declarationScope ];
+	}
 
 }

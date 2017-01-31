@@ -83,6 +83,11 @@ public:
 							return new Token( Token.Special.semicolon );
 						}
 
+					case '@': {
+							pos_++;
+							return new Token( Token.Special.at );
+						}
+
 					case 0: {
 							return new Token( Token.Special.eof );
 						}

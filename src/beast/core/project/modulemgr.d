@@ -58,7 +58,10 @@ protected:
 				Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
 				result ~= m;
 
-				context.taskManager.issueJob( { m.ast; } );
+				context.taskManager.issueJob( {
+					// Force taskGuard to obtain symbol for the module
+					m.symbol;
+				} );
 			}
 		}
 

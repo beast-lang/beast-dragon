@@ -51,9 +51,9 @@ public:
 		_noOperator,
 		plus,
 		minus,
-		asterisk,
-		slash,
-		dollar
+		asterisk, /// '*'
+		slash, /// '/'
+		dollar /// '$'
 	}
 
 	static immutable string[ ] operatorStr = [ null, "+", "-", "*", "/", "$" ];
@@ -61,17 +61,22 @@ public:
 	enum Special {
 		_noSpecial,
 		eof,
+
 		dot,
-		semicolon,
-		lBracket,
-		rBracket,
-		lBrace,
-		rBrace,
-		lParent,
-		rParent
+		semicolon, /// ';'
+		colon, /// ':'
+
+		at, /// '@'
+
+		lBracket, /// '['
+		rBracket, /// ']'
+		lBrace, /// '{'
+		rBrace, /// '}'
+		lParent, /// '('
+		rParent /// ')'
 	}
 
-	static immutable SpecialStr = [ "", "EOF", "dot '.'", "semicolon ';'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
+	static immutable SpecialStr = [ "", "EOF", "dot '.'", "semicolon ';'", "':'", "'@'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
 
 public:
 	this( Special special ) {
@@ -127,30 +132,33 @@ public:
 
 public:
 	pragma( inline ) {
-		void expect( Type type ) {
-			expect( type, typeDefaultData[ type ] );
+		void expect( Type type, lazy string whatExpected = null ) {
+			expect( type, typeDefaultData[ type ], whatExpected );
 		}
 
-		void expect( Keyword kwd ) {
+		void expect( Keyword kwd, lazy string whatExpected = null ) {
 			Data data = {keyword:
 			kwd};
-			expect( Type.keyword, data );
+			expect( Type.keyword, data, whatExpected );
 		}
 
-		void expect( Operator op ) {
+		void expect( Operator op, lazy string whatExpected = null ) {
 			Data data = {operator:
 			op};
-			expect( Type.operator, data );
+			expect( Type.operator, data, whatExpected );
 		}
 
-		void expect( Special sp ) {
+		void expect( Special sp, lazy string whatExpected = null ) {
 			Data data = {special:
 			sp};
-			expect( Type.special, data );
+			expect( Type.special, data, whatExpected );
 		}
 
-		void expect( Type type, const Data data ) {
-			benforce( this.type == type, E.unexpectedToken, "Expected " ~ descStr( type, data ) ~ " but got " ~this.descStr, ( err ) { err.codeLocation = codeLocation; } );
+		void expect( Type type, const Data data, lazy string whatExpected = null ) {
+			if ( this.type != type ) {
+				string we = whatExpected;
+				berror( E.unexpectedToken, "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~this.descStr, codeLocation.errGuardFunction );
+			}
 
 			bool result;
 
@@ -174,7 +182,10 @@ public:
 
 			}
 
-			benforce( result, E.unexpectedToken, "Expected " ~ descStr( type, data ) ~ " but got " ~this.descStr, ( err ) { err.codeLocation = codeLocation; } );
+			if ( !result ) {
+				string we = whatExpected;
+				berror( E.unexpectedToken, "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~this.descStr, codeLocation.errGuardFunction );
+			}
 		}
 	}
 

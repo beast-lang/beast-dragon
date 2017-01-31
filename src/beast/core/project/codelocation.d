@@ -1,24 +1,27 @@
 module beast.core.project.codelocation;
 
 import beast.core.project.codesource;
-import beast.context;
+import beast.core.context;
+import std.typecons;
+import beast.core.error.errormsg;
+import beast.core.error.guard;
 
 /// Structure storing information of where a code segment is located in the source code files
 struct CodeLocation {
 
 public:
-	this( CodeSource source, size_t startPos, size_t length ) {
+	this( const CodeSource source, size_t startPos, size_t length ) {
 		this.source = source;
 		this.startPos = startPos;
 		this.length = length;
 	}
 
-	this( CodeSource source ) {
+	this( const CodeSource source ) {
 		this.source = source;
 	}
 
 public:
-	CodeSource source;
+	Rebindable!( const CodeSource ) source;
 	/// Offset from the start of the sourceFile (the code begins there)
 	size_t startPos = -1;
 	/// Length of the code segment
@@ -51,6 +54,12 @@ public:
 		}
 	}
 
+public:
+	/// Convenient error guard function
+	@property ErrorGuardFunction errGuardFunction( ) {
+		return ( msg ) { msg.codeLocation = this; };
+	}
+
 }
 
 /// Struct for watching code location, marks start with construction (call function codeLocationGuard), end with get
@@ -79,7 +88,5 @@ private:
 }
 
 pragma( inline ) CodeLocationGuard codeLocationGuard( ) {
-	auto lx = context.lexer;
-	auto tk = lx.currentToken;
 	return CodeLocationGuard( context.lexer.currentToken.codeLocation );
 }

@@ -2,13 +2,14 @@ module beast.code.module_;
 
 import beast.toolkit;
 import beast.core.project.codesource;
-import beast.code.ast.module_;
 import beast.code.lex.lexer;
 import std.regex;
+import beast.code.symbol.module_;
+import beast.code.ast.module_;
 
-/// Abstraction of module in Beast
+/// Abstraction of module in Beast (from project point of view)
 final class Module : CodeSource, Identifiable {
-	mixin TaskGuard!( "ast", AST_Module );
+	mixin TaskGuard!( "symbol", Symbol_Module );
 
 public:
 	this( CTOR_FromFile _, string filename, ExtendedIdentifier identifier ) {
@@ -19,7 +20,7 @@ public:
 
 public:
 	const ExtendedIdentifier identifier;
-	alias ast = _ast;
+	alias symbol = _symbol;
 
 public:
 	override @property string identificationString( ) const {
@@ -27,17 +28,18 @@ public:
 	}
 
 private:
-	AST_Module obtain_ast( ) {
+	Symbol_Module obtain_symbol( ) {
 		assert( !context.lexer );
-		context.lexer = new Lexer( this );
-		context.lexer.getNextToken();
 
-		auto result = AST_Module.parse( );
+		context.lexer = new Lexer( this );
+		context.lexer.getNextToken( );
+
+		auto ast = AST_Module.parse( );
 
 		context.lexer = null;
-		benforce( result.identifier == this.identifier, E.moduleNameMismatch, "Module '" ~ result.identifier.str ~ "' should be named '" ~ this.identifier.str ~ "' (because of directory tree)" );
+		benforce( ast.identifier == this.identifier, E.moduleNameMismatch, "Module '" ~ ast.identifier.str ~ "' should be named '" ~this.identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
 
-		return result;
+		return new Symbol_Module( this, ast );
 	}
 
 }

@@ -2,8 +2,9 @@ module beast.toolkit;
 
 public {
 	import std.conv : to;
+	import std.typecons : Rebindable;
 
-	import beast.context;
+	import beast.core.context;
 	import beast.core.error;
 	import beast.code.lex.identifier;
 	import beast.code.lex.token;

@@ -18,7 +18,7 @@ alias TaskGuardId = shared ubyte*;
 	This mixin ensures that each task is done exactly once, handles synchronization between threads and loop dependency.
 */
 mixin template TaskGuard( string identifier, Type ) {
-	static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface" );
+	//static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface" );
 	static assert( __traits( hasMember, typeof( this ), _taskGuard_obtainFunctionName ), "You must implement '" ~ Type.stringof ~ " " ~ typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "()'." );
 	//static assert( __traits( isFinalFunction, __traits( getMember, typeof( this ), _taskGuard_obtainFunctionName ) ), typeof( this ).stringof ~ "." ~ _taskGuard_obtainFunctionName ~ "() has to be final." );
 
