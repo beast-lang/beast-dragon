@@ -39,6 +39,9 @@ public:
 
 public:
 	void _run( ) {
+		log = File( "../test/log/" ~ identifier ~ ".txt", "w" );
+		log.writeln( "Test '", identifier, "' log\n" );
+
 		string[ ] sourceFiles;
 		/// List of files the test suite will be scanning for directives
 		string[ ] scanFiles;
@@ -100,38 +103,34 @@ public:
 				args ~= [ "--project", projectFile ];
 		}
 
+		log.writeln( "Test command: \n", args.joiner( " " ), "\n" );
+
 		// Run process
 		ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
 		const int exitCode = process.pid.wait( );
-
-		import std.stdio;
-
-		writeln( "args: ", args.joiner( " " ).array );
-		writeln( "exit code: ", exitCode );
 
 		// Process results
 		enforce( process.stdout.byLine.empty, "Stdout not empty (stdout directives not yet implemented)" );
 
 		// Test if errors were expected
+		log.writeln( "-- BEGIN OF STDERR" );
 		foreach ( errorStr; process.stderr.byLine ) {
-			import std.stdio;
+			log.writeln( errorStr );
 
-			writeln( "stderr: ", errorStr );
 			try {
 				JSONValue[ string ] val = errorStr.parseJSON.object;
 
 				bool errorIsHandled = false;
-				foreach ( d; directives ) {
-					if ( d.onCompilationError( val ) )
-						errorIsHandled = true;
-				}
+				foreach ( d; directives )
+					errorIsHandled |= d.onCompilationError( val );
 
-				enforce( errorIsHandled, "Unexpected compiler error: " ~ val[ "gnuFormat" ].str );
+				enforce( errorIsHandled, "Unexpected compiler error: \n  " ~ val[ "gnuFormat" ].str );
 			}
 			catch ( JSONException exc ) {
 				fail( "Stderr JSON parsing error: " ~ exc.msg );
 			}
 		}
+		log.writeln( "-- END OF STDERR\n" );
 
 		foreach ( d; directives )
 			d.onBeforeTestEnd( );
@@ -142,6 +141,7 @@ public:
 	const string location;
 	/// Identifier of the test
 	const string identifier;
+	File log;
 
 private:
 	void enforce( bool condition, lazy string message ) {

@@ -9,7 +9,14 @@ import beast.code.ast.module_;
 
 /// Abstraction of module in Beast (from project point of view)
 final class Module : CodeSource, Identifiable {
-	mixin TaskGuard!( "symbol", Symbol_Module );
+	mixin TaskGuard!( "parsingData", ParsingData );
+
+public:
+	struct ParsingData {
+		AST_Module ast;
+		Symbol_Module symbol;
+		Token[ ] tokenList;
+	}
 
 public:
 	this( CTOR_FromFile _, string filename, ExtendedIdentifier identifier ) {
@@ -20,7 +27,19 @@ public:
 
 public:
 	const ExtendedIdentifier identifier;
-	alias symbol = _symbol;
+
+	alias parsingData = _parsingData;
+	@property AST_Module ast( ) {
+		return parsingData.ast;
+	}
+
+	@property Symbol_Module symbol( ) {
+		return parsingData.symbol;
+	}
+
+	@property Token[ ] tokenList( ) {
+		return parsingData.tokenList;
+	}
 
 public:
 	override @property string identificationString( ) const {
@@ -28,10 +47,11 @@ public:
 	}
 
 private:
-	Symbol_Module obtain_symbol( ) {
+	ParsingData obtain_parsingData( ) {
 		assert( !context.lexer );
 
-		context.lexer = new Lexer( this );
+		Lexer lexer = new Lexer( this );
+		context.lexer = lexer;
 		context.lexer.getNextToken( );
 
 		auto ast = AST_Module.parse( );
@@ -39,7 +59,7 @@ private:
 		context.lexer = null;
 		benforce( ast.identifier == this.identifier, E.moduleNameMismatch, "Module '" ~ ast.identifier.str ~ "' should be named '" ~this.identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
 
-		return new Symbol_Module( this, ast );
+		return ParsingData( ast, new Symbol_Module( this, ast ), lexer.generatedTokens );
 	}
 
 }

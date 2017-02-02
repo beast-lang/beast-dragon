@@ -45,6 +45,7 @@ protected:
 	Module[ ] getInitialModuleList( ) {
 		Module[ ] result;
 
+		// Scan source directories
 		foreach ( string sourceDir; context.project.configuration.sourceDirectories ) {
 			foreach ( string file; sourceDir.dirEntries( "*.be", SpanMode.depth ) ) {
 				// For each .be file in source directories, create a module
@@ -58,11 +59,22 @@ protected:
 				Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
 				result ~= m;
 
-				context.taskManager.issueJob( {
-					// Force taskGuard to obtain symbol for the module
-					m.symbol;
-				} );
+				// Force taskGuard to obtain symbol for the module
+				context.taskManager.issueJob( { m.symbol; } );
 			}
+		}
+
+		foreach ( string file; context.project.configuration.sourceFiles ) {
+			ExtendedIdentifier extId = ExtendedIdentifier( [ Identifier.obtain( file.baseName.stripExtension ) ] );
+
+			// Test if the identifier is valid
+			benforce( extId[ 0 ].str.isValidModuleOrPackageIdentifier, E.invalidModuleIdentifier, "Identifier '" ~ extId.str ~ "' of module '" ~ extId.str ~ "' (" ~ file ~ ") is not a valid module identifier." );
+
+			Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath, extId );
+			result ~= m;
+
+			// Force taskGuard to obtain symbol for the module
+			context.taskManager.issueJob( { m.symbol; } );
 		}
 
 		return result;

@@ -100,7 +100,7 @@ private:
 			contextData_ = ContextData.init;
 		}
 		catch ( Throwable t ) {
-			writeln( stderr, "UNCAUGHT EXCEPTION: ", t.toString );
+			stderr.writeln( "UNCAUGHT EXCEPTION: ", t.toString );
 		}
 	}
 

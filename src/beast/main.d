@@ -56,12 +56,12 @@ void mainImpl( string[ ] args ) {
 				}, //
 
 				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<jsonValue>, for example --config messageFormat=\"json\"", ( string opt, string val ) { //
+					// TODO: Smart config vals
 					const auto data = val.findSplit( "=" );
 					const string key = data[ 0 ].strip;
 					const string value = data[ 2 ].strip;
 
 					try {
-
 						optConfigs[ key ] = value.parseJSON;
 					}
 					catch ( JSONException exc ) {
@@ -70,7 +70,6 @@ void mainImpl( string[ ] args ) {
 				}, //
 
 				"json-messages", "Print messages in JSON format.", { //
-					context.project.configuration.messageFormat = ProjectConfiguration.MessageFormat.json;
 					optConfigs[ "messageFormat" ] = "json";
 				}, //
 

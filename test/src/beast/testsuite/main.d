@@ -9,16 +9,23 @@ import std.string;
 import std.stdio;
 
 void main( string[ ] args ) {
-	Test[ ] tests;
+	Test[ ] tests, failedTests;
 
 	immutable string testsDir = "../test/tests".absolutePath;
 	foreach ( location; testsDir.dirEntries( "test_?*", SpanMode.depth ) )
 		tests ~= new Test( location.asNormalizedPath.to!string, location.asRelativePath( testsDir ).to!string.stripExtension.replace( "/", "." ).replace( "\\", "." ).chomp( "." ) );
 
 	foreach ( test; tests ) {
-		writeln( "Running test '" ~ test.identifier ~ "'" );
-		const bool result = test.run( );
-		writeln( "Test result: " ~ result.to!string );
-		writeln;
+		if ( test.run( ) ) {
+			writeln( "[   ] ", test.identifier, ": PASSED" );
+		}
+		else {
+			writeln( "[ # ] ", test.identifier, ": FAILED" );
+			failedTests ~= test;
+		}
 	}
+
+	writeln;
+	writeln( "[   ] PASSED: ", tests.length - failedTests.length );
+	writeln( "[ ", failedTests.length ? "#" : "", "  ] FAILED: ", failedTests.length );
 }

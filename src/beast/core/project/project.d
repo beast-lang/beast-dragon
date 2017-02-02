@@ -35,7 +35,7 @@ public:
 public:
 	/// Finishes the configuration, initializing the project with it. After calling this function, the configuration MUST NOT BE CHANGED
 	void finishConfiguration( ) {
-		
+		messageFormatter = messageFormatterFactory[ configuration.messageFormat ]( );
 
 		// Translate paths
 		{

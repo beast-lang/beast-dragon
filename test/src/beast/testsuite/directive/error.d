@@ -8,22 +8,19 @@ public:
 	this( TestDirectiveArguments args ) {
 		errorType = args.mainValue;
 
-		if ( "line" in args )
-			line = args.opts[ "line" ].to!size_t;
-
 		watchFile = "nofile" !in args;
 		watchLine = watchFile && "noline" !in args;
 	}
 
 public:
 	override bool onCompilationError( JSONValue[ string ] errorData ) {
-		if ( watchFile && errorData[ "file" ].str != file )
+		if ( watchFile && ( "file" !in errorData || errorData[ "file" ].str != declSourceFile ) )
 			return false;
 
-		if ( watchLine && errorData[ "line" ].integer != line )
+		if ( watchLine && ( "line" !in errorData || errorData[ "line" ].integer != declLine ) )
 			return false;
 
-		if ( errorType && errorData[ "type" ].str != errorType )
+		if ( errorType && ( "error" !in errorData || errorData[ "error" ].str != errorType ) )
 			return false;
 
 		satisfied = true;
@@ -35,8 +32,6 @@ public:
 	}
 
 public:
-	string file;
-	size_t line;
 	string errorType;
 	bool watchLine;
 	bool watchFile;
