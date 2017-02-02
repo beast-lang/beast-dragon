@@ -72,7 +72,7 @@ public:
 			}
 
 			/// Unknown keys should be handled by the builder
-			assert( 0 );
+			assert( 0, "Unknown key " ~ key );
 		}
 	}
 
@@ -127,7 +127,7 @@ private:
 		alias assoc = enumAssoc!T;
 
 		benforce( val.type == JSON_TYPE.STRING, E.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
-		benforce( ( val.str in assoc ) !is null, E.invalidProjectConfiguration, "Project configuration: key '" ~ key ~ "' can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
+		benforce( ( val.str in assoc ) !is null, E.invalidProjectConfiguration, "Project configuration: key '" ~ key ~ "' (='" ~ val.str ~ "') can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
 
 		__traits( getMember, this, memberName ) = assoc[ val.str ];
 	}
@@ -237,7 +237,7 @@ public:
 			berror( E.invalidProjectConfiguration, "Cannot merge key '%s' into configuration, unsupported value type combination: %s and %s".format( fullKey, existingRecord.type.to!string, value.type.to!string ) );
 		}
 
-		return data_;
+		return result;
 	}
 
 private:

@@ -101,7 +101,7 @@ pragma( inline ) void breport( bool throwIfError = true, string file = __FILE__,
 
 /// Generates error/warning/hint, eventually throwing an exception
 pragma( inline ) void berror( string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {
-	breport!( ErrorSeverity.error, file, line )( error, message, errGdFunc );
+	breport!( true, file, line )( error, message, errGdFunc );
 }
 
 /// Base error class for all compiler generated exceptions (that are expected)
@@ -114,6 +114,6 @@ public:
 
 }
 
-private enum _init = HookAppInit.hook!(  {
-	stderrMutex = new Mutex; //
-} );
+private enum _init = HookAppInit.hook!( {
+		stderrMutex = new Mutex; //
+	} );

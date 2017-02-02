@@ -37,7 +37,7 @@ public:
 			}
 		}
 
-		JSONValue _result = JSONValue( result );
+		const JSONValue _result = JSONValue( result );
 		return _result.toJSON;
 	}
 

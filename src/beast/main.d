@@ -31,7 +31,7 @@ void mainImpl( string[ ] args ) {
 	/// Number of source files added to the project using --source
 	size_t sourceFileCount;
 	/// Project configuration options set by arguments
-	string[ string ] optConfigs;
+	JSONValue[ string ] optConfigs;
 	/// Project file content, if set by stdin
 	string stdinProjectData;
 
@@ -48,18 +48,30 @@ void mainImpl( string[ ] args ) {
 				}, //
 				"source|s", "Adds specified source file to the project.", ( string opt, string val ) { //
 					sourceFileCount++;
-					optConfigs[ "sourceFiles@opt-origin" ~ sourceFileCount.to!string ] = "[ \"" ~ val.absolutePath ~ "\" ]";
+					optConfigs[ "sourceFiles@opt-origin" ~ sourceFileCount.to!string ] = [ val.absolutePath.to!string ];
 				}, //
 				"root", "Root directory of the project.", &root, //
 				"run|r", "Run the target application after a successfull build.", { //
-					optConfigs[ "runAfterBuild" ] = "true";
+					optConfigs[ "runAfterBuild" ] = true;
 				}, //
 
-				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<jsonValue>, for example --config messageFormat=\"json\"", &optConfigs, //
+				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<jsonValue>, for example --config messageFormat=\"json\"", ( string opt, string val ) { //
+					const auto data = val.findSplit( "=" );
+					const string key = data[ 0 ].strip;
+					const string value = data[ 2 ].strip;
+
+					try {
+
+						optConfigs[ key ] = value.parseJSON;
+					}
+					catch ( JSONException exc ) {
+						berror( E.invalidOpts, "Config opt '" ~ key ~ "' value '" ~ value ~ "' parsing failed: " ~ exc.msg );
+					}
+				}, //
 
 				"json-messages", "Print messages in JSON format.", { //
 					context.project.configuration.messageFormat = ProjectConfiguration.MessageFormat.json;
-					optConfigs[ "messageFormat" ] = "\"json\"";
+					optConfigs[ "messageFormat" ] = "json";
 				}, //
 
 				"help-config", "Shows documentation of project configuration.", { //
@@ -106,21 +118,7 @@ void mainImpl( string[ ] args ) {
 			}
 		}
 
-		JSONValue[ string ] userConfig;
-
-		foreach ( key, value; optConfigs ) {
-			JSONValue val;
-			try {
-				val = value.parseJSON;
-			}
-			catch ( JSONException exc ) {
-				berror( E.invalidOpts, "Config opt '" ~ key ~ "' value parsing failed: " ~ exc.msg );
-			}
-
-			userConfig[ key ] = val;
-		}
-
-		configBuilder.applyJSON( JSONValue( userConfig ) );
+		configBuilder.applyJSON( JSONValue( optConfigs ) );
 		context.project.configuration.load( configBuilder.build( ) );
 	}
 

@@ -1,0 +1,20 @@
+{
+	"name": "beast",
+	"description": "Beast language compiler test suite",
+	"authors": [
+		"Daniel 'Danol' Čejchan"
+	],
+	"license": "GPL-3.0",
+	"targetName": "beast_testsuite",
+	"targetPath": "../bin",
+	"targetType": "executable",
+	"workingDirectory": "../bin",
+	"sourcePaths": [
+		"src"
+	],
+	"configurations": [
+		{
+			"name": "application"
+		}
+	]
+}
