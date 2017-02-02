@@ -31,7 +31,7 @@ public:
 					currentToken.expect( Token.Special.rBrace, "declaration or '}'" );
 					getNextToken( );
 				}
-				xx
+				// TODO: continue
 
 				continue;
 			}

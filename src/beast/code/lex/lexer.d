@@ -47,7 +47,7 @@ public:
 		State state = State.init;
 
 		while ( true ) {
-			currentChar_ = pos_ < source_.content.length ? source_.content[ pos_ ] : 0;
+			currentChar_ = pos_ < source_.content.length ? source_.content[ pos_ ] : EOF;
 
 			if ( currentChar_ == '\n' )
 				line_++;
@@ -73,6 +73,12 @@ public:
 						}
 						break;
 
+					case '/': { // Slash '/' operator or comment
+							state = State.slashOpOrCommentStart;
+							pos_++;
+						}
+						break;
+
 					case '.': {
 							pos_++;
 							return new Token( Token.Special.dot );
@@ -88,7 +94,7 @@ public:
 							return new Token( Token.Special.at );
 						}
 
-					case 0: {
+					case EOF: {
 							return new Token( Token.Special.eof );
 						}
 
@@ -124,6 +130,80 @@ public:
 				}
 				break;
 
+			case State.slashOpOrCommentStart: {
+					switch ( currentChar_ ) {
+
+					case '/': {
+							state = State.singleLineComment;
+							pos_++;
+						}
+						break;
+
+					case '*': {
+							assert( multiLineCommentNestingLevel_ == 0 );
+							state = State.multiLineComment;
+							multiLineCommentNestingLevel_ = 1;
+							pos_++;
+						}
+						break;
+
+					default:
+						return new Token( Token.Operator.slash );
+
+					}
+				}
+				break;
+
+			case State.singleLineComment: {
+					if ( currentChar_ == '\n' )
+						state = State.init;
+					pos_++;
+				}
+				break;
+
+			case State.multiLineComment: {
+					switch ( currentChar_ ) {
+
+					case '*': {
+							state = State.multiLineComment_possibleBegin;
+							pos_++;
+						}
+						break;
+
+					case '/': {
+							state = State.multiLineComment_possibleEnd;
+							pos_++;
+						}
+						break;
+
+					case EOF: {
+							berror( E.unclosedComment, "Unclosed /* comment (found EOF when scanning for */), nesting level: %s. Please note that Beast block comments support nesting.".format( multiLineCommentNestingLevel_ ) );
+						}
+						break;
+
+					default: {
+							pos_++;
+						}
+						break;
+
+					}
+				}
+				break;
+
+			case State.multiLineComment_possibleBegin: {
+					if ( currentChar_ == '*' )
+						multiLineCommentNestingLevel_++;
+					pos_++;
+					state = State.multiLineComment;
+				}
+				break;
+
+			case State.multiLineComment_possibleEnd: {
+					if ( currentChar_ == '/' && --multiLineCommentNestingLevel_ == 0 )
+						state = State.init;
+					pos_++;
+				}
+
 			}
 		}
 
@@ -147,14 +227,22 @@ private:
 	Token currentToken_;
 	char currentChar_;
 	CodeSource source_;
+	/// Beast supports multiline comment nesting
+	size_t multiLineCommentNestingLevel_;
 
 private:
 	string stringAccumulator;
 
 private:
+	enum char EOF = 0;
 	enum State {
 		init,
-		identifierOrKeyword
+		identifierOrKeyword,
+		slashOpOrCommentStart,
+		singleLineComment,
+		multiLineComment,
+		multiLineComment_possibleEnd, /// When there's * in the multiline comment (beginning of */)
+		multiLineComment_possibleBegin, /// WHen there's / in the multiline comment (beginning of /*)
 	}
 
 }

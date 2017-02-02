@@ -30,7 +30,8 @@ enum E {
 	dependencyLoop, /// Task guard circular dependency
 
 	// LEXER:
-	unexpectedCharacter, /// Lexer error
+	unexpectedCharacter, /// Unexpected character when lexing
+	unclosedComment, /// Found EOF when scanning for end of comment block
 
 	// PARSER:
 	unexpectedToken, /// Unexpected token

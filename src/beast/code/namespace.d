@@ -10,11 +10,11 @@ abstract class Namespace : Identifiable {
 public:
 	struct SymbolData {
 		Symbol[ ] list;
-		Overloadset[ const( Identifier ) ] overloads;
+		Overloadset[ const( Identifier ) ] overloadsets;
 	}
 
 public:
-	/// Symbol this namespace belongs to
+	/// Symbol this namespace belongs to (for in-function control stmts, it is the function the stmt is in)
 	abstract @property Symbol relatedSymbol( );
 
 	/// Parent namespace in the hiearchy -- one symbol can contain multiple namespaces
@@ -24,8 +24,16 @@ public:
 
 	/// List of all symbols in the namespace
 	final @property Symbol[ ] members( ) {
-		return _symbolData.list;
+		return symbolData.list;
 	}
+
+	/// All symbols in the namespace grouped into overloads by identifier
+	final @property Overloadset[ const( Identifier ) ] overloadsets( ) {
+		return symbolData.overloadsets;
+	}
+
+	/// Grouped symbol data
+	alias symbolData = _symbolData;
 
 protected:
 	/// This function should return all symbols in the namespace (by parsing AST and creating proper symbols)
@@ -40,11 +48,11 @@ private:
 		foreach ( sym; data.list ) {
 			assert( sym.identifier );
 
-			auto ptr = sym.identifier in data.overloads;
+			auto ptr = sym.identifier in data.overloadsets;
 			if ( ptr )
 				*ptr ~= sym;
 			else
-				data.overloads[ sym.identifier ] = [ sym ];
+				data.overloadsets[ sym.identifier ] = [ sym ];
 		}
 
 		return data;
