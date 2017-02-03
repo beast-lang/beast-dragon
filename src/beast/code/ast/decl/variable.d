@@ -10,6 +10,7 @@ public:
 		assert( 0 );
 	}
 
+	/// Continues parsing after "@deco Type name" part ( "= value;", ":= value;" or ";" can follow )
 	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_TypeOrAutoExpression type, AST_Identifier identifier ) {
 		AST_VariableDeclaration result = new AST_VariableDeclaration;
 		result.decorationList = decorationList;
@@ -20,8 +21,13 @@ public:
 			getNextToken( );
 			result.value = AST_Expression.parse( );
 		}
+		else if ( currentToken == Token.Operator.colonAssign ) {
+			getNextToken( );
+			result.valueColonAssign = true;
+			result.value = AST_Expression.parse( );
+		}
 		else
-			currentToken.expect( Token.Special.semicolon, "variable value or semicolon" );
+			currentToken.expect( Token.Special.semicolon, "default value or ';'" );
 
 		result.codeLocation = _gd.get( );
 		return result;
@@ -32,6 +38,8 @@ public:
 	AST_TypeOrAutoExpression type;
 	AST_Identifier identifier;
 	AST_Expression value;
+	/// True if variable was declarated using "@deco Type name := value"
+	bool valueColonAssign;
 
 protected:
 	override InputRange!ASTNode _subnodes( ) {

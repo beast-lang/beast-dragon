@@ -83,8 +83,14 @@ public:
 						}
 						break;
 
-					case '/': { // Slash '/' operator or comment
-							state = State.slashOpOrCommentStart;
+					case '/': {
+							state = State.slashPrefix;
+							pos_++;
+						}
+						break;
+
+					case ':': {
+							state = State.colonPrefix;
 							pos_++;
 						}
 						break;
@@ -145,29 +151,30 @@ public:
 				}
 				break;
 
-			case State.slashOpOrCommentStart: {
-					switch ( currentChar_ ) {
-
-					case '/': {
-							state = State.singleLineComment;
-							pos_++;
-						}
-						break;
-
-					case '*': {
-							assert( multiLineCommentNestingLevel_ == 0 );
-							state = State.multiLineComment;
-							multiLineCommentNestingLevel_ = 1;
-							pos_++;
-						}
-						break;
-
-					default:
-						return new Token( Token.Operator.slash );
-
+			case State.slashPrefix: {
+					if ( currentChar_ == '/' ) {
+						state = State.singleLineComment;
+						pos_++;
 					}
+					else if ( currentChar_ == '*' ) {
+						assert( multiLineCommentNestingLevel_ == 0 );
+						state = State.multiLineComment;
+						multiLineCommentNestingLevel_ = 1;
+						pos_++;
+					}
+					else
+						return new Token( Token.Operator.slash );
 				}
 				break;
+
+			case State.colonPrefix: {
+					if ( currentChar_ == '=' ) {
+						pos_++;
+						return new Token( Token.Operator.colonAssign );
+					}
+					else
+						return new Token( Token.Operator.assign );
+				}
 
 			case State.singleLineComment: {
 					if ( currentChar_ == '\n' || currentChar_ == EOF )
@@ -254,11 +261,12 @@ private:
 	enum State {
 		init,
 		identifierOrKeyword,
-		slashOpOrCommentStart,
+		slashPrefix, /// Token that begins with "/": can be "/", "/* comment */" or "// comment \n"
+		colonPrefix, /// Token that begins with ":": can be ":" or ":="
 		singleLineComment,
 		multiLineComment,
 		multiLineComment_possibleEnd, /// When there's * in the multiline comment (beginning of */)
-		multiLineComment_possibleBegin, /// WHen there's / in the multiline comment (beginning of /*)
+		multiLineComment_possibleBegin, /// When there's / in the multiline comment (beginning of /*)
 	}
 
 }

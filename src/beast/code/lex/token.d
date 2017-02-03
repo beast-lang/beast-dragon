@@ -58,11 +58,12 @@ public:
 		slash, /// '/'
 
 		assign, /// '='
+		colonAssign, /// ':='
 
 		dollar, /// '$'
 	}
 
-	static immutable string[ ] operatorStr = [ null, "+", "-", "*", "/", "$" ];
+	static immutable string[ ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "$" ];
 
 	enum Special {
 		_noSpecial,
