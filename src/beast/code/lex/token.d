@@ -34,8 +34,11 @@ public:
 
 		module_,
 		class_,
+
 		if_,
-		else_
+		else_,
+
+		auto_
 	}
 
 	static immutable string[ ] keywordStr = {
@@ -49,11 +52,14 @@ public:
 
 	enum Operator {
 		_noOperator,
-		plus,
-		minus,
+		plus, /// '+'
+		minus, /// '-'
 		asterisk, /// '*'
 		slash, /// '/'
-		dollar /// '$'
+
+		assign, /// '='
+
+		dollar, /// '$'
 	}
 
 	static immutable string[ ] operatorStr = [ null, "+", "-", "*", "/", "$" ];
@@ -73,7 +79,7 @@ public:
 		lBrace, /// '{'
 		rBrace, /// '}'
 		lParent, /// '('
-		rParent /// ')'
+		rParent, /// ')'
 	}
 
 	static immutable SpecialStr = [ "", "EOF", "dot '.'", "semicolon ';'", "':'", "'@'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
@@ -156,7 +162,7 @@ public:
 	void expect( Type type, const Data data, lazy string whatExpected = null ) {
 		if ( this.type != type ) {
 			string we = whatExpected;
-			berror( E.unexpectedToken, "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~this.descStr, codeLocation.errGuardFunction );
+			reportUnexpectedToken( "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~ descStr );
 		}
 
 		bool result;

@@ -4,17 +4,14 @@ import beast.core.project.codesource;
 import beast.toolkit;
 import beast.utility.decorator;
 import beast.utility.enumassoc;
-import std.array;
 import std.file;
 import std.json;
 import std.conv;
 import std.path;
-import std.algorithm;
 import std.stdio;
 import std.traits;
 import std.meta;
 import std.uni;
-import std.string;
 
 /// Project configuration storage class
 struct ProjectConfiguration {

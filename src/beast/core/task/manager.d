@@ -2,8 +2,6 @@ module beast.core.task.manager;
 
 import core.sync.condition;
 import core.sync.mutex;
-import std.range;
-import std.algorithm;
 import beast.toolkit;
 import beast.core.task.worker;
 import beast.core.task.context;

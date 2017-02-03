@@ -1,12 +1,12 @@
 module beast.code.module_;
 
-import beast.toolkit;
-import beast.core.project.codesource;
+import beast.code.ast.decl.module_;
 import beast.code.lex.lexer;
-import std.regex;
-import beast.code.symbol.module_;
-import beast.code.ast.module_;
+import beast.code.symbol.module_.usermodule;
+import beast.core.project.codesource;
 import beast.core.project.configuration;
+import beast.toolkit;
+import std.regex;
 
 /// Abstraction of module in Beast (from project point of view)
 final class Module : CodeSource, Identifiable {
@@ -15,7 +15,7 @@ final class Module : CodeSource, Identifiable {
 public:
 	struct ParsingData {
 		AST_Module ast;
-		Symbol_Module symbol;
+		Symbol_UserModule symbol;
 		Token[ ] tokenList;
 	}
 
@@ -34,7 +34,7 @@ public:
 		return parsingData.ast;
 	}
 
-	@property Symbol_Module symbol( ) {
+	@property Symbol_UserModule symbol( ) {
 		return parsingData.symbol;
 	}
 
@@ -73,7 +73,7 @@ private:
 		if ( context.project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
 			return ParsingData( ast, null, lexer.generatedTokens );
 
-		return ParsingData( ast, new Symbol_Module( this, ast ), lexer.generatedTokens );
+		return ParsingData( ast, new Symbol_UserModule( this, ast ), lexer.generatedTokens );
 	}
 
 }

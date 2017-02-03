@@ -5,14 +5,11 @@ import beast.core.project.project;
 import beast.core.task.manager;
 import beast.toolkit;
 import std.concurrency;
-import std.algorithm;
 import std.getopt;
 import std.json;
 import std.path;
 import std.stdio;
-import std.string;
 import std.file;
-import std.array;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );

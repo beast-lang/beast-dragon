@@ -15,7 +15,7 @@ public:
 
 		currentToken.expect( Token.Special.at );
 
-		getNextToken();
+		getNextToken( ).expect( Token.Type.identifier, "decorator identifier" );
 		result.identifier = AST_Identifier.parse( );
 
 		return result;
@@ -24,9 +24,9 @@ public:
 public:
 	AST_Identifier identifier;
 
-public:
-	override ASTNode[ ] subnodes( ) {
-		return [ identifier ];
+protected:
+	override InputRange!ASTNode _subnodes( ) {
+		return nodeRange( identifier );
 	}
 
 }

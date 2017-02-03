@@ -55,6 +55,12 @@ public:
 	}
 
 public:
+	/// Returns if this code location if subset of other code location
+	bool isInside( const ref CodeLocation other ) const {
+		return source is other.source && startPos >= other.startPos && endPos <= other.endPos;
+	}
+
+public:
 	/// Convenient error guard function
 	@property ErrorGuardFunction errGuardFunction( ) {
 		// We must copy the struct data, because the struct might not exists when the guard function is called (because of stack)

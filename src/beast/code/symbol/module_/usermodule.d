@@ -1,27 +1,31 @@
-module beast.code.symbol.module_;
+module beast.code.symbol.module_.usermodule;
 
 import beast.code.symbol.toolkit;
 import beast.code.module_;
-import beast.code.ast.module_;
+import beast.code.ast.decl.module_;
+import beast.code.symbol.module_.module_;
 
-/// Module as a symbol
-final class Symbol_Module : Symbol {
+/// User (programmer) defined module
+final class Symbol_UserModule : Symbol_Module {
 
 public:
 	this( Module module_, AST_Module ast ) {
 		this.module_ = module_;
-		this.ast = ast;
+		ast_ = ast;
 
-		namespace = new Namespace_Module( this );
+		namespace_ = new Namespace_Module( this );
+		ast.relateWithSymbol( this );
 	}
 
 public:
 	/// Corresponing module instance
 	Module module_;
-	AST_Module ast;
-	Namespace_Module namespace;
 
 public:
+	override @property Namespace namespace( ) {
+		return namespace_;
+	}
+
 	override @property CodeLocation codeLocation( ) const {
 		return CodeLocation( module_ );
 	}
@@ -33,6 +37,10 @@ public:
 	override @property string identificationString( ) const {
 		return module_.identifier.str;
 	}
+
+private:
+	Namespace_Module namespace_;
+	AST_Module ast_;
 
 }
 
@@ -61,7 +69,7 @@ public:
 
 protected:
 	override Symbol[ ] obtain_members( ) {
-		Symbol[] result;
+		Symbol[ ] result;
 
 		// TODO: THIS
 

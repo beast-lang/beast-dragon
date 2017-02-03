@@ -27,9 +27,9 @@ public:
 	/// Decoration lists are in a linked list for easier parsing
 	AST_DecorationList parentDecorationList;
 
-public:
-	override ASTNode[ ] subnodes( ) {
-		return cast( ASTNode[ ] ) list;
+protected:
+	override InputRange!ASTNode _subnodes( ) {
+		return nodeRange( list );
 	}
 
 }

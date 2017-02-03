@@ -89,6 +89,11 @@ public:
 						}
 						break;
 
+					case '=': {
+							pos_++;
+							return new Token( Token.Operator.assign );
+						}
+
 					case '.': {
 							pos_++;
 							return new Token( Token.Special.dot );

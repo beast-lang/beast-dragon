@@ -1,8 +1,5 @@
 module beast.code.lex.identifier;
 
-import std.algorithm;
-import std.string;
-import std.array;
 import beast.code.ast.toolkit;
 import beast.toolkit;
 

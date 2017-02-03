@@ -1,9 +1,10 @@
 module beast.code.ast.identifier;
 
 import beast.code.ast.toolkit;
+import beast.code.ast.expr.expression;
 
 /// Identifier wrapped in the AST node because of codeLocation and relatedSymbol
-final class AST_Identifier : ASTNode {
+final class AST_Identifier : AST_Expression {
 
 public:
 	static bool canParse( ) {
@@ -17,7 +18,7 @@ public:
 		result.identifier = currentToken.identifier;
 		result.codeLocation = currentToken.codeLocation;
 
-		getNextToken();
+		getNextToken( );
 
 		return result;
 	}
@@ -25,10 +26,5 @@ public:
 public:
 	Identifier identifier;
 	alias identifier this;
-
-public:
-	override ASTNode[ ] subnodes( ) {
-		return null;
-	}
 
 }

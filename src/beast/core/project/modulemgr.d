@@ -4,8 +4,6 @@ import beast.toolkit;
 import beast.code.module_;
 import std.file;
 import std.path;
-import std.algorithm;
-import std.array;
 
 /// Class that handles mapping modules on files in the filesystem (eventually stdin or whatever)
 final class ModuleManager {

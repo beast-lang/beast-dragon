@@ -2,8 +2,6 @@ module beast.core.project.codesource;
 
 import std.path;
 import std.file;
-import std.string;
-import std.algorithm;
 import beast.toolkit;
 import beast.utility.identifiable;
 

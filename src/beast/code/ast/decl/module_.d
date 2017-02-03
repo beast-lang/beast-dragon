@@ -1,7 +1,7 @@
-module beast.code.ast.module_;
+module beast.code.ast.decl.module_;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.declarationscope;
+import beast.code.ast.decl.declarationscope;
 
 final class AST_Module : ASTNode {
 
@@ -33,9 +33,9 @@ public:
 	ExtendedIdentifier identifier;
 	AST_DeclarationScope declarationScope;
 
-public:
-	override ASTNode[ ] subnodes( ) {
-		return [ declarationScope ];
+protected:
+	override InputRange!ASTNode _subnodes( ) {
+		return nodeRange( declarationScope );
 	}
 
 }

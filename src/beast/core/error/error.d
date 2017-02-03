@@ -8,7 +8,6 @@ import beast.core.project.configuration;
 import beast.utility.enumassoc;
 import beast.core.error;
 import core.sync.mutex;
-import std.algorithm;
 import std.exception;
 import std.stdio;
 import std.json;
