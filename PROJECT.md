@@ -1,17 +1,6 @@
 # Project configuration documentation
 
-Project configuration in Beast is based on a JSON format.
-
-## Configuration options
-
-| Key | Type | Description |
-|-----|:------:|-------------|
-| targetFileName | STRING | File name of target application/library |
-| sourceDirectories | ARRAY OF STRING | Root source file directories; all modules in these directories are included in the project |
-| includeDirectories | ARRAY OF STRING | Root include directories; modules in include directories are not included in the project unless they're explicitly imported |
-| sourceFiles | ARRAY OF STRING | Explicit source files included in the project |
-| messageFormat | 'gnu' \| 'json'| Format of compiler messages |
-| runAfterBuild | BOOLEAN | If set to true, target application will be run after succesful build |
+Project configuration in Beast is based on a JSON format. For configuration options, execute `beast --help-config`.
 
 ## Configuring the project
 

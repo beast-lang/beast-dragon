@@ -28,38 +28,38 @@ public:
 	}
 	/// Compiler can be configured to stop at certaing compilation phase
 	enum StopOnPhase {
-		doEverything,
 		lexing, /// Do only lexical analysis
-		parsing /// Do lexical and syntax analysis
+		parsing, /// Do lexical and syntax analysis
+		doEverything,
 	}
 
 public:
 	@configurable {
 		/// File name of target application/library
-		@help( "File name of the target application/library" )
+		@help( "File name of the target application/library." )
 		string targetFilename;
 
 		/// Array of source file root directories; in project.finishConfiguration, they're translated to absolute paths.
-		@help( "Root source file directories; all modules in these directories are included in the project" )
+		@help( "Root source file directories\nAll modules in these directories are included in the project." )
 		string[ ] sourceDirectories;
 
 		/// Root include directories; modules in include directories are not included in the project unless they're explicitly imported; in project.finishConfiguration, they're translated to absolute paths.
-		@help( "Root include directories; modules in these directories are not included in the project unless they're explicitly imported" )
+		@help( "Root include directories\nModules in these directories are not included in the project unless they're explicitly imported." )
 		string[ ] includeDirectories;
 
 		/// Source files included in the project
-		@help( "Explicit source files included in the project" )
+		@help( "Explicit source files included in the project." )
 		string[ ] sourceFiles;
 
 		/// Output message format
 		@help( "Format of compiler messages" )
 		MessageFormat messageFormat = MessageFormat.gnu;
 
-		@help( "If set to true, target application will be run after succesful build" )
+		@help( "If set to true, target application will be run after succesful build." )
 		bool runAfterBuild;
 
 		/// Compiler can be configured to stop at certaing compilation phase
-		@help( "The compiler can be configured to stop at certain compilation phase" )
+		@help( "The compiler can be configured to stop at certain compilation phase." )
 		StopOnPhase stopOnPhase = StopOnPhase.doEverything;
 	}
 
@@ -98,7 +98,7 @@ public:
 			static if ( hasUDA!( member, configurable ) ) {
 				alias Member = typeof( member );
 
-				writef( "  %s = %s\n    %s\n\n", memberName, help_possibleValues!( Member ), getUDAs!( member, help )[ 0 ].data[ 0 ] );
+				writef( "  %s = %s\n    %s\n\n", memberName, help_possibleValues!( Member ), getUDAs!( member, help )[ 0 ].data[ 0 ].replace( "\n", "\n    " ) );
 
 				// TODO: uncomment after UDAs on enum members are allowed
 				/*static if ( is( Member == enum ) ) {
@@ -201,7 +201,7 @@ private:
 	}
 
 	string help_possibleValues( T : bool )( ) {
-		return "true/false";
+		return "true, false";
 	}
 
 	string help_possibleValues( T : string[ ] )( ) {
@@ -209,7 +209,7 @@ private:
 	}
 
 	string help_possibleValues( T )( ) if ( is( T == enum ) ) {
-		return enumAssoc!T.byKey.map!( x => '"' ~ x ~ '"' ).joiner( ", " ).array.to!string;
+		return [ __traits( derivedMembers, T ) ].map!( x => '"' ~ x ~ '"' ).joiner( ", " ).array.to!string;
 	}
 
 private:

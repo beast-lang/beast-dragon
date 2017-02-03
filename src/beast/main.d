@@ -34,6 +34,7 @@ void mainImpl( string[ ] args ) {
 	JSONValue[ string ] optConfigs;
 	/// Project file content, if set by stdin
 	string stdinProjectData;
+	bool doProject = true;
 
 	GetoptResult getoptResult;
 	try {
@@ -70,6 +71,7 @@ void mainImpl( string[ ] args ) {
 
 				"help-config", "Shows documentation of project configuration.", { //
 					context.project.configuration.printHelp( );
+					doProject = false;
 				} //
 				 );
 	}
@@ -84,7 +86,12 @@ void mainImpl( string[ ] args ) {
 		writeln( "Options:" );
 		foreach ( opt; getoptResult.options )
 			writef( "  %s\n    %s\n\n", opt.optShort ~ ( opt.optShort && opt.optLong ? " | " : "" ) ~ opt.optLong, opt.help.replace( "\n", "\n    " ) );
+
+		doProject = false;
 	}
+
+	if ( !doProject )
+		return;
 
 	// Find out project root
 	if ( root )
