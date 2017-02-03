@@ -57,20 +57,20 @@ private:
 			context.lexer = null;
 
 		// If we are instructed to do only lexing phase, do it
-		if ( context.project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.lexing ) {
+		if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.lexing ) {
 			while ( lexer.getNextToken != Token.Special.eof ) {
 			}
 			return ParsingData( null, null, lexer.generatedTokens );
 		}
 
 		// Read first token
-		context.lexer.getNextToken( );
+		lexer.getNextToken( );
 
 		auto ast = AST_Module.parse( );
 
 		benforce( ast.identifier == this.identifier, E.moduleNameMismatch, "Module '" ~ ast.identifier.str ~ "' should be named '" ~this.identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
 
-		if ( context.project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
+		if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
 			return ParsingData( ast, null, lexer.generatedTokens );
 
 		return ParsingData( ast, new Symbol_UserModule( this, ast ), lexer.generatedTokens );

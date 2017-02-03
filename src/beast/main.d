@@ -14,12 +14,12 @@ import std.file;
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
 
-	context.taskManager = new TaskManager;
+	taskManager = new TaskManager;
 	scope ( exit ) {
-		context.taskManager.waitForEverythingDone( );
-		context.taskManager.quitWorkers( );
+		taskManager.waitForEverythingDone( );
+		taskManager.quitWorkers( );
 	}
-	context.project = new Project;
+	project = new Project;
 
 	/// Absolute file path of project file
 	string projectFile;
@@ -67,7 +67,7 @@ void mainImpl( string[ ] args ) {
 				}, //
 
 				"help-config", "Shows documentation of project configuration.", { //
-					context.project.configuration.printHelp( );
+					project.configuration.printHelp( );
 					doProject = false;
 				} //
 				 );
@@ -92,12 +92,12 @@ void mainImpl( string[ ] args ) {
 
 	// Find out project root
 	if ( root )
-		context.project.basePath = root;
+		project.basePath = root;
 	else if ( projectFile )
-		context.project.basePath = projectFile.dirName;
+		project.basePath = projectFile.dirName;
 
 	// If no project is set (and the mode is not fast), load implicit configuration file (if it exists)
-	if ( "originSourceFile" !in optConfigs && !projectFile && absolutePath( "beast.json", context.project.basePath ).exists )
+	if ( "originSourceFile" !in optConfigs && !projectFile && absolutePath( "beast.json", project.basePath ).exists )
 		projectFile = "beast.json";
 
 	// Build project configuration
@@ -117,11 +117,11 @@ void mainImpl( string[ ] args ) {
 		}
 
 		configBuilder.applyJSON( JSONValue( optConfigs ) );
-		context.project.configuration.load( configBuilder.build( ) );
+		project.configuration.load( configBuilder.build( ) );
 	}
 
-	context.project.finishConfiguration( );
-	context.taskManager.spawnWorkers( );
+	project.finishConfiguration( );
+	taskManager.spawnWorkers( );
 }
 
 int main( string[ ] args ) {

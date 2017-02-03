@@ -26,7 +26,7 @@ private:
 	void run( ) {
 		try {
 			while ( true ) {
-				TaskContext task = context.taskManager.askForAJob( );
+				TaskContext task = taskManager.askForAJob( );
 
 				if ( !task ) {
 					return;

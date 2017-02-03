@@ -5,6 +5,7 @@ import beast.core.context;
 import std.typecons;
 import beast.core.error.errormsg;
 import beast.core.error.guard;
+import beast.code.lex.toolkit;
 
 /// Structure storing information of where a code segment is located in the source code files
 struct CodeLocation {
@@ -79,7 +80,7 @@ public:
 
 public:
 	CodeLocation get( ) {
-		CodeLocation endLocation = context.lexer.currentToken.codeLocation;
+		CodeLocation endLocation = lexer.currentToken.codeLocation;
 		assert( startLocation.source is endLocation.source );
 		assert( startLocation.startPos <= endLocation.endPos );
 
@@ -97,5 +98,5 @@ private:
 }
 
 pragma( inline ) CodeLocationGuard codeLocationGuard( ) {
-	return CodeLocationGuard( context.lexer.currentToken.codeLocation );
+	return CodeLocationGuard( lexer.currentToken.codeLocation );
 }

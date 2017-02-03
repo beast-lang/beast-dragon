@@ -71,7 +71,7 @@ pragma( inline ) void breport( ErrorSeverity severity = ErrorSeverity.error, str
 	if ( errGdFunc )
 		errGdFunc( msg );
 
-	const string formattedMessage = context.project.messageFormatter.formatErrorMessage( msg );
+	const string formattedMessage = project.messageFormatter.formatErrorMessage( msg );
 
 	synchronized ( stderrMutex )
 		stderr.writeln( formattedMessage );

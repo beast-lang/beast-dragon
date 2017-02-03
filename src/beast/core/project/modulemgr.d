@@ -47,7 +47,7 @@ protected:
 		Module[ ] result;
 
 		// Scan source directories
-		foreach ( string sourceDir; context.project.configuration.sourceDirectories ) {
+		foreach ( string sourceDir; project.configuration.sourceDirectories ) {
 			auto fileList = sourceDir.dirEntries( "*.be", SpanMode.depth );
 			benforce!( ErrorSeverity.warning )( !fileList.empty, E.noModulesInSourceDirectory, "There are no modules in source directory '" ~ sourceDir ~ "'" );
 
@@ -64,11 +64,11 @@ protected:
 				result ~= m;
 
 				// Force taskGuard to obtain data for the module
-				context.taskManager.issueJob( { m.parsingData; } );
+				taskManager.issueJob( { m.parsingData; } );
 			}
 		}
 
-		foreach ( string file; context.project.configuration.sourceFiles ) {
+		foreach ( string file; project.configuration.sourceFiles ) {
 			ExtendedIdentifier extId = ExtendedIdentifier( [ Identifier.obtain( file.baseName.stripExtension ) ] );
 
 			// Test if the identifier is valid
@@ -78,7 +78,7 @@ protected:
 			result ~= m;
 
 			// Force taskGuard to obtain symbol for the module
-			context.taskManager.issueJob( { m.symbol; } );
+			taskManager.issueJob( { m.symbol; } );
 		}
 
 		return result;

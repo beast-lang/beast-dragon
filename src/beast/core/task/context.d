@@ -68,7 +68,7 @@ public:
 			throw new TaskContextQuittingException;
 
 		if ( fiber_.state == Fiber.State.TERM )
-			context.taskManager.reportIdleContext( this );
+			taskManager.reportIdleContext( this );
 	}
 
 private:

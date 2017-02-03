@@ -160,7 +160,7 @@ private:
 			assert( _taskGuard_id in taskGuardDependentsList );
 
 			foreach ( task; taskGuardDependentsList[ _taskGuard_id ] )
-				context.taskManager.issueTask( task );
+				taskManager.issueTask( task );
 
 			taskGuardDependentsList.remove( _taskGuard_id );
 		}

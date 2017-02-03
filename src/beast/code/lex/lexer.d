@@ -2,13 +2,8 @@ module beast.code.lex.lexer;
 
 import std.conv;
 import std.ascii;
-import beast.code.lex.token;
-import beast.toolkit;
+import beast.code.lex.toolkit;
 import beast.core.project.codesource;
-import beast.code.lex.identifier;
-
-/// Thread-local instance
-Lexer lexer;
 
 final class Lexer {
 
@@ -47,7 +42,7 @@ public:
 	}
 
 	private Token _getNextToken( ) {
-		assert( context.lexer is this );
+		assert( lexer is this );
 
 		const auto _gd = ErrorGuard( CodeLocation( source_, tokenStartPos_, pos_ - tokenStartPos_ ) );
 

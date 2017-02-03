@@ -14,7 +14,7 @@ public:
 
 public:
 	this( CTOR_FromFile _, string filename ) {
-		absoluteFilePath = filename.absolutePath( context.project.basePath );
+		absoluteFilePath = filename.absolutePath( project.basePath );
 
 		try {
 			// TODO: better line endings conversion
