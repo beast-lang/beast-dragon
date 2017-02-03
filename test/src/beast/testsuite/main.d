@@ -8,9 +8,15 @@ import std.conv;
 import std.string;
 import std.stdio;
 import std.algorithm;
+import std.parallelism;
+import core.sync.mutex;
+
+__gshared Mutex testsMutex;
+__gshared string testsDir, testRootDir;
 
 int main( string[ ] args ) {
-	immutable string testsDir = "../test/tests".absolutePath;
+	testsMutex = new Mutex;
+	testsDir = "../test/tests".absolutePath;
 
 	Test[ ] tests, activeTests, failedTests;
 
@@ -19,13 +25,17 @@ int main( string[ ] args ) {
 
 	activeTests = tests;
 
-	foreach ( test; tests ) {
-		if ( test.run( ) ) {
-			writeln( "[   ] ", test.identifier, ": PASSED" );
-		}
-		else {
-			writeln( "[ # ] ", test.identifier, ": FAILED" );
-			failedTests ~= test;
+	foreach ( test; tests.parallel ) {
+		const bool result = test.run( );
+
+		synchronized ( testsMutex ) {
+			if ( result ) {
+				writeln( "[   ] ", test.identifier, ": PASSED" );
+			}
+			else {
+				writeln( "[ # ] ", test.identifier, ": FAILED" );
+				failedTests ~= test;
+			}
 		}
 	}
 

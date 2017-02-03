@@ -1,6 +1,7 @@
 module beast.testsuite.directive.directive;
 
 import beast.testsuite.test;
+import beast.testsuite.main;
 import std.algorithm;
 import std.string;
 import std.array;
@@ -49,7 +50,9 @@ protected:
 	}
 
 	void fail( string message ) {
-		stderr.writefln( "\n      %s:%s:%s: %s\n", test.identifier, declSourceFile, declLine, message.replace( "\n", "\n        " ) );
+		synchronized ( testsMutex )
+			stderr.writefln( "\n      %s:%s:%s: %s\n", test.identifier, declSourceFile, declLine, message.replace( "\n", "\n        " ) );
+			
 		throw new TestFailException;
 	}
 
@@ -86,7 +89,7 @@ public:
 
 		switch ( name ) {
 
-		case "error":
+		case "error", "warning", "hint":
 			return new TestDirective_Error( this );
 
 		case "onlyLexing":

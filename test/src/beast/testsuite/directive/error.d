@@ -2,10 +2,12 @@ module beast.testsuite.directive.error;
 
 import beast.testsuite.directive.directive;
 
+/// Expects certain error or warning or somethin
 final class TestDirective_Error : TestDirective {
 
 public:
 	this( TestDirectiveArguments args ) {
+		severity = args.name;
 		errorType = args.mainValue;
 
 		watchFile = "noFile" !in args;
@@ -14,7 +16,7 @@ public:
 
 public:
 	override bool onCompilationError( JSONValue[ string ] errorData ) {
-		if ( "severity" !in errorData || errorData[ "severity" ].str != "error" )
+		if ( "severity" !in errorData || errorData[ "severity" ].str != severity )
 			return false;
 
 		if ( watchFile == ( "file" !in errorData ) || ( watchFile && errorData[ "file" ].str != declSourceFile ) )
@@ -35,7 +37,7 @@ public:
 	}
 
 public:
-	string errorType;
+	string errorType, severity;
 	bool watchLine;
 	bool watchFile;
 	bool satisfied;

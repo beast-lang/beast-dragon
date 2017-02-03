@@ -1,6 +1,7 @@
 module beast.testsuite.test;
 
 import beast.testsuite.directive.directive;
+import beast.testsuite.main;
 import std.algorithm;
 import std.conv;
 import std.exception;
@@ -10,6 +11,7 @@ import std.path;
 import std.process;
 import std.regex;
 import std.stdio;
+import std.string;
 
 final class TestFailException : Exception {
 
@@ -78,11 +80,10 @@ public:
 		foreach ( fileName; scanFiles ) {
 			// Scan the file by lines
 			size_t line = 1;
-			foreach ( lineStr; fileName.File( "r" ).byLine ) {
-				// Find "//! xxxx \n" on each line
-				foreach ( comment; lineStr.matchAll( ctRegex!"//!(.*?)$" ) ) {
+			foreach ( lineStr; fileName.readText.splitLines ) {
+				// Try finding "//! xxxx \n" on each line
+				foreach ( comment; lineStr.matchAll( ctRegex!"//!(.*?)$" ) )
 					directives ~= TestDirectiveArguments.parseAndCreateDirectives( fileName, line, this, comment[ 1 ].idup );
-				}
 
 				line++;
 			}
@@ -109,11 +110,16 @@ public:
 		log.writeln( "Test command: \n", args.joiner( " " ), "\n" );
 		log.flush( );
 
+		string[ ] stderrContent;
+		string stdoutContent;
 		// Run process
-		ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
-		const int exitCode = process.pid.wait( );
+		{
+			ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
+			const int exitCode = process.pid.wait( );
 
-		string[ ] stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
+			stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
+			stdoutContent = process.stdout.byLine.joiner( "\n" ).to!string;
+		}
 		// Log STDERR
 		{
 			log.writeln( "-- BEGIN OF STDERR" );
@@ -125,7 +131,7 @@ public:
 		}
 
 		// Process results
-		enforce( process.stdout.byLine.empty, "Stdout not empty (stdout directives not yet implemented)" );
+		enforce( !stdoutContent.length, "Stdout not empty (stdout directives not yet implemented): " ~ stdoutContent );
 
 		// Test if errors were expected
 		{
@@ -166,7 +172,9 @@ private:
 	}
 
 	void fail( string message ) {
-		stderr.writefln( "\n      %s: %s\n", identifier, message.replace( "\n", "\n        " ) );
+		synchronized ( testsMutex )
+			stderr.writefln( "\n      %s: %s\n", identifier, message.replace( "\n", "\n        " ) );
+
 		throw new TestFailException;
 	}
 
