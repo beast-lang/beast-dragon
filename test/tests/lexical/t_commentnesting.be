@@ -1,0 +1,11 @@
+//! onlyLexing
+/*
+	/*
+
+	*/
+§
+
+*/
+x
+
+§ //! error: unexpectedCharacter

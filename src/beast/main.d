@@ -55,18 +55,13 @@ void mainImpl( string[ ] args ) {
 					optConfigs[ "runAfterBuild" ] = true;
 				}, //
 
-				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<jsonValue>, for example --config messageFormat=\"json\"", ( string opt, string val ) { //
+				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<value>, for example --config messageFormat=json (arrays are separated with comma)", ( string opt, string val ) { //
 					// TODO: Smart config vals
 					const auto data = val.findSplit( "=" );
 					const string key = data[ 0 ].strip;
 					const string value = data[ 2 ].strip;
 
-					try {
-						optConfigs[ key ] = value.parseJSON;
-					}
-					catch ( JSONException exc ) {
-						berror( E.invalidOpts, "Config opt '" ~ key ~ "' value '" ~ value ~ "' parsing failed: " ~ exc.msg );
-					}
+					optConfigs[ key ] = ProjectConfiguration.processSmartOpt( key, value );
 				}, //
 
 				"json-messages", "Print messages in JSON format.", { //

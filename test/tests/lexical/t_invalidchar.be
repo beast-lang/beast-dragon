@@ -1,0 +1,2 @@
+//! onlyLexing
+§//! error: unexpectedCharacter

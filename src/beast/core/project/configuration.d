@@ -13,6 +13,8 @@ import std.algorithm;
 import std.stdio;
 import std.traits;
 import std.meta;
+import std.uni;
+import std.string;
 
 /// Project configuration storage class
 struct ProjectConfiguration {
@@ -23,6 +25,12 @@ public:
 	enum MessageFormat {
 		gnu, /// Standard GNU error messages
 		json // Wrapped in JSON object, contain more data
+	}
+	/// Compiler can be configured to stop at certaing compilation phase
+	enum StopOnPhase {
+		doEverything,
+		lexing, /// Do only lexical analysis
+		parsing /// Do lexical and syntax analysis
 	}
 
 public:
@@ -49,6 +57,10 @@ public:
 
 		@help( "If set to true, target application will be run after succesful build" )
 		bool runAfterBuild;
+
+		/// Compiler can be configured to stop at certaing compilation phase
+		@help( "The compiler can be configured to stop at certain compilation phase" )
+		StopOnPhase stopOnPhase = StopOnPhase.doEverything;
 	}
 
 public:
@@ -99,6 +111,57 @@ public:
 				}*/
 			}
 		}
+	}
+
+public:
+	/// Processes smart opt (used in --config key=value for comiler opts)
+	static JSONValue processSmartOpt( string key, string value ) {
+		foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
+			alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
+
+			static if ( hasUDA!( member, configurable ) ) {
+				if ( key != memberName )
+					continue;
+
+				return smartOpt!( typeof( member ) )( key, value );
+			}
+		}
+
+		berror( E.invalidOpts, "Opt key '" ~ key ~ "' is invalid." );
+		assert( 0 );
+	}
+
+private:
+	static JSONValue smartOpt( T : string )( string key, string value ) {
+		return value.JSONValue;
+	}
+
+	static JSONValue smartOpt( T : bool )( string key, string value ) {
+		switch ( value.toLower ) {
+
+		case "true", "1", "yes", "on", "":
+			return true.JSONValue;
+
+		case "false", "0", "no", "off":
+			return false.JSONValue;
+
+		default:
+			berror( E.invalidOpts, "Invalid value '" ~ value ~ "' for key '" ~ key ~ "' of type BOOLEAN" );
+			assert( 0 );
+
+		}
+	}
+
+	static JSONValue smartOpt( T : string[ ] )( string key, string value ) {
+		// Array is splitted by ","
+		return value.splitter( "," ).map!( x => x.strip.JSONValue ).array.JSONValue;
+	}
+
+	static JSONValue smartOpt( T )( string key, string value ) if ( is( T == enum ) ) {
+		alias assoc = enumAssoc!T;
+		benforce( ( value in assoc ) !is null, E.invalidOpts, "Key '" ~ key ~ "' (='" ~ value ~ "') can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
+
+		return value.JSONValue;
 	}
 
 private:

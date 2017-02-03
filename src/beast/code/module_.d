@@ -6,6 +6,7 @@ import beast.code.lex.lexer;
 import std.regex;
 import beast.code.symbol.module_;
 import beast.code.ast.module_;
+import beast.core.project.configuration;
 
 /// Abstraction of module in Beast (from project point of view)
 final class Module : CodeSource, Identifiable {
@@ -52,12 +53,25 @@ private:
 
 		Lexer lexer = new Lexer( this );
 		context.lexer = lexer;
+		scope ( exit )
+			context.lexer = null;
+
+		// If we are instructed to do only lexing phase, do it
+		if ( context.project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.lexing ) {
+			while ( lexer.getNextToken != Token.Special.eof ) {
+			}
+			return ParsingData( null, null, lexer.generatedTokens );
+		}
+
+		// Read first token
 		context.lexer.getNextToken( );
 
 		auto ast = AST_Module.parse( );
 
-		context.lexer = null;
 		benforce( ast.identifier == this.identifier, E.moduleNameMismatch, "Module '" ~ ast.identifier.str ~ "' should be named '" ~this.identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
+
+		if ( context.project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
+			return ParsingData( ast, null, lexer.generatedTokens );
 
 		return ParsingData( ast, new Symbol_Module( this, ast ), lexer.generatedTokens );
 	}

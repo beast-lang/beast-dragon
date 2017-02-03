@@ -32,6 +32,11 @@ public:
 		return false;
 	}
 
+	/// This is called right before the test starts, useful for adding args
+	void onBeforeTestStart( ) {
+
+	}
+
 	/// This is called right before test end, so the directive can do more checks
 	void onBeforeTestEnd( ) {
 
@@ -44,7 +49,7 @@ protected:
 	}
 
 	void fail( string message ) {
-		stderr.writefln( "%s:%s:%s: %s", test.identifier, declSourceFile, declLine, message );
+		stderr.writefln( "\n      %s:%s:%s: %s\n", test.identifier, declSourceFile, declLine, message.replace( "\n", "\n        " ) );
 		throw new TestFailException;
 	}
 
@@ -76,12 +81,16 @@ public:
 	}
 
 	private TestDirective _createDirective( string file, size_t line, Test test ) {
+		import beast.testsuite.directive.error : TestDirective_Error;
+		import beast.testsuite.directive.onlylexing : TestDirective_OnlyLexing;
+
 		switch ( name ) {
 
 		case "error":
-			import beast.testsuite.directive.error : TestDirective_Error;
-
 			return new TestDirective_Error( this );
+
+		case "onlyLexing":
+			return new TestDirective_OnlyLexing( this );
 
 		default:
 			assert( 0, "%s:%s:%s: Unknown directive '%s'".format( test.identifier, file, line, name ) );

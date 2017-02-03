@@ -2,6 +2,8 @@ module beast.core.project.codesource;
 
 import std.path;
 import std.file;
+import std.string;
+import std.algorithm;
 import beast.toolkit;
 import beast.utility.identifiable;
 
@@ -17,7 +19,8 @@ public:
 		absoluteFilePath = filename.absolutePath( context.project.basePath );
 
 		try {
-			content = readText( absoluteFilePath );
+			// TODO: better line endings conversion
+			content = absoluteFilePath.readText.splitLines.joiner( "\n" ).to!string;
 		}
 		catch ( FileException exc ) {
 			berror( E.fileError, "File error: " ~ exc.msg, ( ErrorMessage err ) { err.codeLocation = CodeLocation( this ); } );
@@ -26,10 +29,11 @@ public:
 		// Calculate newlines
 		{
 			size_t[ ] newlinePositions = [ 0 ];
-			foreach ( int i, dchar ch; content ) {
+			foreach ( int i, char ch; content ) {
 				if ( ch == '\n' )
 					newlinePositions ~= i;
 			}
+			newlinePositions ~= content.length + 1;
 			newlinePositions_ = newlinePositions;
 		}
 	}
@@ -42,22 +46,31 @@ public:
 
 public:
 	/// Returns line number (counting from 1) of nth char of the content (counting from 0)
-	final size_t lineNumberAt( size_t offset ) const {
+	final size_t lineNumberAt( size_t offset ) const
+	out ( result ) {
+		assert( offset >= newlinePositions_[ result - 1 ] && offset < newlinePositions_[ result ], "%s %s %s".format( newlinePositions_[ result - 1 ], offset, newlinePositions_[ result ] ) );
+	}
+	body {
 		// Binary search
 		size_t low = 0, high = newlinePositions_.length - 1;
 
-		while ( high > low + 1 ) {
+		while ( true ) {
 			const size_t mid = ( high + low ) / 2;
 
-			if ( offset > newlinePositions_[ mid ] )
-				low = mid;
-			else if ( offset < newlinePositions_[ mid ] )
+			if ( offset < newlinePositions_[ mid ] )
 				high = mid - 1;
-			else
+
+			else if ( offset >= newlinePositions_[ mid + 1 ] )
+				low = mid + 1;
+
+			else if ( offset >= newlinePositions_[ mid ] && offset < newlinePositions_[ mid + 1 ] )
 				return mid + 1;
+
+			else
+				assert( 0 );
 		}
 
-		return low + 1;
+		assert( 0 );
 	}
 
 	/// Returns position of the '\n' of the specified line (counting from 1)

@@ -131,81 +131,79 @@ public:
 	}
 
 public:
-	pragma( inline ) {
-		void expect( Type type, lazy string whatExpected = null ) {
-			expect( type, typeDefaultData[ type ], whatExpected );
+	void expect( Type type, lazy string whatExpected = null ) {
+		expect( type, typeDefaultData[ type ], whatExpected );
+	}
+
+	void expect( Keyword kwd, lazy string whatExpected = null ) {
+		Data data = {keyword:
+		kwd};
+		expect( Type.keyword, data, whatExpected );
+	}
+
+	void expect( Operator op, lazy string whatExpected = null ) {
+		Data data = {operator:
+		op};
+		expect( Type.operator, data, whatExpected );
+	}
+
+	void expect( Special sp, lazy string whatExpected = null ) {
+		Data data = {special:
+		sp};
+		expect( Type.special, data, whatExpected );
+	}
+
+	void expect( Type type, const Data data, lazy string whatExpected = null ) {
+		if ( this.type != type ) {
+			string we = whatExpected;
+			berror( E.unexpectedToken, "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~this.descStr, codeLocation.errGuardFunction );
 		}
 
-		void expect( Keyword kwd, lazy string whatExpected = null ) {
-			Data data = {keyword:
-			kwd};
-			expect( Type.keyword, data, whatExpected );
+		bool result;
+
+		switch ( type ) {
+
+		case Type.keyword:
+			result = data.keyword == Keyword._noKeyword || this.data.keyword == data.keyword;
+			break;
+
+		case Type.operator:
+			result = data.operator == Operator._noOperator || this.data.operator == data.operator;
+			break;
+
+		case Type.special:
+			result = data.special == Special._noSpecial || this.data.special == data.special;
+			break;
+
+		default:
+			result = true;
+			break;
+
 		}
 
-		void expect( Operator op, lazy string whatExpected = null ) {
-			Data data = {operator:
-			op};
-			expect( Type.operator, data, whatExpected );
-		}
+		if ( !result )
+			reportUnexpectedToken( "Expected " ~ ( whatExpected ? whatExpected : descStr( type, data ) ) ~ " but got " ~ descStr );
+	}
 
-		void expect( Special sp, lazy string whatExpected = null ) {
-			Data data = {special:
-			sp};
-			expect( Type.special, data, whatExpected );
-		}
-
-		void expect( Type type, const Data data, lazy string whatExpected = null ) {
-			if ( this.type != type ) {
-				string we = whatExpected;
-				berror( E.unexpectedToken, "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~this.descStr, codeLocation.errGuardFunction );
-			}
-
-			bool result;
-
-			switch ( type ) {
-
-			case Type.keyword:
-				result = data.keyword == Keyword._noKeyword || this.data.keyword == data.keyword;
-				break;
-
-			case Type.operator:
-				result = data.operator == Operator._noOperator || this.data.operator == data.operator;
-				break;
-
-			case Type.special:
-				result = data.special == Special._noSpecial || this.data.special == data.special;
-				break;
-
-			default:
-				result = true;
-				break;
-
-			}
-
-			if ( !result ) {
-				string we = whatExpected;
-				berror( E.unexpectedToken, "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~this.descStr, codeLocation.errGuardFunction );
-			}
-		}
+	void reportUnexpectedToken( string message ) {
+		berror( E.unexpectedToken, message, codeLocation.errGuardFunction );
 	}
 
 public:
-	pragma( inline ) {
-		bool opEquals( Type t ) const {
-			return type == t;
-		}
+	bool opEquals( Type t ) const {
+		return type == t;
+	}
 
-		bool opEquals( Keyword kwd ) const {
-			return type == Type.keyword && data.keyword == kwd;
-		}
+	bool opEquals( Keyword kwd ) const {
+		return type == Type.keyword && data.keyword == kwd;
+	}
 
-		bool opEquals( Operator op ) const {
-			return type == Type.operator && data.operator == op;
-		}
+	bool opEquals( Operator op ) const {
+		return type == Type.operator && data.operator == op;
+	}
 
-		bool opEquals( Special spec ) const {
-			return type == Type.special && data.special == spec;
-		}
+	bool opEquals( Special spec ) const {
+		return type == Type.special && data.special == spec;
 	}
 
 private:

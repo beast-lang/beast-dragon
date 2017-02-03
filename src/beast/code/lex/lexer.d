@@ -1,6 +1,7 @@
 module beast.code.lex.lexer;
 
 import std.conv;
+import std.ascii;
 import beast.code.lex.token;
 import beast.toolkit;
 import beast.core.project.codesource;
@@ -54,6 +55,9 @@ public:
 
 		while ( true ) {
 			currentChar_ = pos_ < source_.content.length ? source_.content[ pos_ ] : EOF;
+
+			/*import std.stdio;
+			writeln( "char ", currentChar_, " state ", state );*/
 
 			if ( currentChar_ == '\n' )
 				line_++;
@@ -170,13 +174,13 @@ public:
 			case State.multiLineComment: {
 					switch ( currentChar_ ) {
 
-					case '*': {
+					case '/': {
 							state = State.multiLineComment_possibleBegin;
 							pos_++;
 						}
 						break;
 
-					case '/': {
+					case '*': {
 							state = State.multiLineComment_possibleEnd;
 							pos_++;
 						}
@@ -223,7 +227,7 @@ package:
 
 private:
 	void error_unexpectedCharacter( string file = __FILE__, size_t line = __LINE__ ) {
-		berror( E.unexpectedCharacter, "Unexpected character: '%s'".format( ( cast( int ) currentChar_ ).to!string ) );
+		berror( E.unexpectedCharacter, "Unexpected character: '%s' (%s)".format( currentChar_.isPrintable ? [ currentChar_ ] : null, ( cast( int ) currentChar_ ).to!string ) );
 	}
 
 private:

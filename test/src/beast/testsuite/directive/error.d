@@ -8,19 +8,22 @@ public:
 	this( TestDirectiveArguments args ) {
 		errorType = args.mainValue;
 
-		watchFile = "nofile" !in args;
-		watchLine = watchFile && "noline" !in args;
+		watchFile = "noFile" !in args;
+		watchLine = watchFile && "noLine" !in args;
 	}
 
 public:
 	override bool onCompilationError( JSONValue[ string ] errorData ) {
-		if ( watchFile && ( "file" !in errorData || errorData[ "file" ].str != declSourceFile ) )
+		if ( "severity" !in errorData || errorData[ "severity" ].str != "error" )
 			return false;
 
-		if ( watchLine && ( "line" !in errorData || errorData[ "line" ].integer != declLine ) )
+		if ( watchFile == ( "file" !in errorData ) || ( watchFile && errorData[ "file" ].str != declSourceFile ) )
 			return false;
 
-		if ( errorType && ( "error" !in errorData || errorData[ "error" ].str != errorType ) )
+		if ( watchLine == ( "line" !in errorData ) || ( watchLine && errorData[ "line" ].integer != declLine ) )
+			return false;
+
+		if ( "error" !in errorData || errorData[ "error" ].str != errorType )
 			return false;
 
 		satisfied = true;

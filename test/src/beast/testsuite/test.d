@@ -86,8 +86,6 @@ public:
 			}
 		}
 
-		string[ ] args;
-
 		// Prepare arguments
 		{
 			args = [ "beast", // Compiler name
@@ -103,6 +101,9 @@ public:
 				args ~= [ "--project", projectFile ];
 		}
 
+		foreach ( d; directives )
+			d.onBeforeTestStart( );
+
 		log.writeln( "Test command: \n", args.joiner( " " ), "\n" );
 
 		// Run process
@@ -113,24 +114,35 @@ public:
 		enforce( process.stdout.byLine.empty, "Stdout not empty (stdout directives not yet implemented)" );
 
 		// Test if errors were expected
-		log.writeln( "-- BEGIN OF STDERR" );
-		foreach ( errorStr; process.stderr.byLine ) {
-			log.writeln( errorStr );
+		{
+			log.writeln( "-- BEGIN OF STDERR" );
+			scope ( exit )
+				log.writeln( "-- END OF STDERR\n" );
 
-			try {
-				JSONValue[ string ] val = errorStr.parseJSON.object;
+			foreach ( errorStr; process.stderr.byLine ) {
+				log.write( errorStr );
 
-				bool errorIsHandled = false;
-				foreach ( d; directives )
-					errorIsHandled |= d.onCompilationError( val );
+				scope ( failure ) {
+					// On error, finish writing the stderr
+					foreach ( str; process.stderr.byLine )
+						log.write( str );
+				}
 
-				enforce( errorIsHandled, "Unexpected compiler error: \n  " ~ val[ "gnuFormat" ].str );
+				try {
+					JSONValue[ string ] val = errorStr.parseJSON.object;
+
+					bool errorIsHandled = false;
+					foreach ( d; directives )
+						errorIsHandled |= d.onCompilationError( val );
+
+					enforce( errorIsHandled, "Unexpected compiler error: \n" ~ val[ "gnuFormat" ].str );
+				}
+				catch ( JSONException exc ) {
+					fail( "Stderr JSON parsing error: " ~ exc.msg );
+				}
 			}
-			catch ( JSONException exc ) {
-				fail( "Stderr JSON parsing error: " ~ exc.msg );
-			}
+
 		}
-		log.writeln( "-- END OF STDERR\n" );
 
 		foreach ( d; directives )
 			d.onBeforeTestEnd( );
@@ -142,6 +154,8 @@ public:
 	/// Identifier of the test
 	const string identifier;
 	File log;
+	/// Args to run the compiler with
+	string[ ] args;
 
 private:
 	void enforce( bool condition, lazy string message ) {
@@ -150,7 +164,7 @@ private:
 	}
 
 	void fail( string message ) {
-		stderr.writefln( "%s: %s", identifier, message );
+		stderr.writefln( "\n      %s: %s\n", identifier, message.replace( "\n", "\n        " ) );
 		throw new TestFailException;
 	}
 
