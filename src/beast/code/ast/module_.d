@@ -18,6 +18,7 @@ public:
 			result.identifier = ExtendedIdentifier.parse( );
 
 			currentToken.expect( Token.Special.semicolon );
+			getNextToken( );
 		}
 
 		result.declarationScope = AST_DeclarationScope.parse( );

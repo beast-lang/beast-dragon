@@ -14,8 +14,11 @@ public:
 	/// Initializes the manager for usage (prepares initial module list)
 	void initialize( ) {
 		initialModuleList_ = getInitialModuleList( );
-		foreach ( Module m; initialModuleList_ )
+		
+		foreach ( Module m; initialModuleList_ ) {
+			benforce( m.identifier !in moduleList_, E.moduleNameConflict, "Modules '" ~ m.absoluteFilePath ~ "' and '" ~ moduleList_[ m.identifier ].absoluteFilePath ~ "' have both same identifier '" ~ m.identifier.str ~ "'" );
 			moduleList_[ m.identifier ] = m;
+		}
 	}
 
 public:
@@ -47,7 +50,10 @@ protected:
 
 		// Scan source directories
 		foreach ( string sourceDir; context.project.configuration.sourceDirectories ) {
-			foreach ( string file; sourceDir.dirEntries( "*.be", SpanMode.depth ) ) {
+			auto fileList = sourceDir.dirEntries( "*.be", SpanMode.depth );
+			benforce!( ErrorSeverity.warning )( !fileList.empty, E.noModulesInSourceDirectory, "There are no modules in source directory '" ~ sourceDir ~ "'" );
+
+			foreach ( string file; fileList ) {
 				// For each .be file in source directories, create a module
 				// Identifier of the module should correspon to the path from source directory
 				ExtendedIdentifier extId = ExtendedIdentifier( file.asRelativePath( sourceDir ).array.stripExtension.pathSplitter.map!( x => Identifier.obtain( cast( string ) x ) ).array );
@@ -59,8 +65,8 @@ protected:
 				Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
 				result ~= m;
 
-				// Force taskGuard to obtain symbol for the module
-				context.taskManager.issueJob( { m.symbol; } );
+				// Force taskGuard to obtain data for the module
+				context.taskManager.issueJob( { m.parsingData; } );
 			}
 		}
 

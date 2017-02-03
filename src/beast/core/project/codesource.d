@@ -33,7 +33,7 @@ public:
 				if ( ch == '\n' )
 					newlinePositions ~= i;
 			}
-			newlinePositions ~= content.length + 1;
+			newlinePositions ~= content.length;
 			newlinePositions_ = newlinePositions;
 		}
 	}
@@ -48,9 +48,12 @@ public:
 	/// Returns line number (counting from 1) of nth char of the content (counting from 0)
 	final size_t lineNumberAt( size_t offset ) const
 	out ( result ) {
-		assert( offset >= newlinePositions_[ result - 1 ] && offset < newlinePositions_[ result ], "%s %s %s".format( newlinePositions_[ result - 1 ], offset, newlinePositions_[ result ] ) );
+		assert( offset >= content.length || ( offset >= newlinePositions_[ result - 1 ] && offset < newlinePositions_[ result ] ) );
 	}
 	body {
+		if ( offset >= content.length )
+			return newlinePositions_.length;
+
 		// Binary search
 		size_t low = 0, high = newlinePositions_.length - 1;
 

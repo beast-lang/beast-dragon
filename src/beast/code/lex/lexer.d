@@ -165,7 +165,7 @@ public:
 				break;
 
 			case State.singleLineComment: {
-					if ( currentChar_ == '\n' )
+					if ( currentChar_ == '\n' || currentChar_ == EOF )
 						state = State.init;
 					pos_++;
 				}

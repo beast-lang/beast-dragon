@@ -1,13 +1,15 @@
 module beast.testsuite.test;
 
 import beast.testsuite.directive.directive;
+import std.algorithm;
+import std.conv;
 import std.exception;
-import std.stdio;
-import std.path;
 import std.file;
-import std.regex;
-import std.process;
 import std.json;
+import std.path;
+import std.process;
+import std.regex;
+import std.stdio;
 
 final class TestFailException : Exception {
 
@@ -62,12 +64,12 @@ public:
 			projectFile = "beast.json".absolutePath( location );
 			projectRoot = location;
 			// However we need to scan for them for test directives
-			scanFiles = location.dirEntries( ".be", SpanMode.depth ).map!( x => x.name.asNormalizedPath.to!string ).array;
+			scanFiles = location.dirEntries( "*.be", SpanMode.depth ).map!( x => x.name.asNormalizedPath.to!string ).array;
 		}
 		// If there is not project configuration, just add all the .be files from the directory
 		else {
 			projectRoot = location;
-			sourceFiles = location.dirEntries( ".be", SpanMode.depth ).map!( x => x.name.asNormalizedPath.to!string ).array;
+			sourceFiles = location.dirEntries( "*.be", SpanMode.depth ).map!( x => x.name.asNormalizedPath.to!string ).array;
 			scanFiles = sourceFiles;
 		}
 
@@ -105,29 +107,29 @@ public:
 			d.onBeforeTestStart( );
 
 		log.writeln( "Test command: \n", args.joiner( " " ), "\n" );
+		log.flush( );
 
 		// Run process
 		ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
 		const int exitCode = process.pid.wait( );
+
+		string[ ] stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
+		// Log STDERR
+		{
+			log.writeln( "-- BEGIN OF STDERR" );
+
+			foreach ( str; stderrContent )
+				log.write( str );
+
+			log.writeln( "-- END OF STDERR\n" );
+		}
 
 		// Process results
 		enforce( process.stdout.byLine.empty, "Stdout not empty (stdout directives not yet implemented)" );
 
 		// Test if errors were expected
 		{
-			log.writeln( "-- BEGIN OF STDERR" );
-			scope ( exit )
-				log.writeln( "-- END OF STDERR\n" );
-
-			foreach ( errorStr; process.stderr.byLine ) {
-				log.write( errorStr );
-
-				scope ( failure ) {
-					// On error, finish writing the stderr
-					foreach ( str; process.stderr.byLine )
-						log.write( str );
-				}
-
+			foreach ( errorStr; stderrContent ) {
 				try {
 					JSONValue[ string ] val = errorStr.parseJSON.object;
 

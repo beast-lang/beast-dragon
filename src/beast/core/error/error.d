@@ -41,6 +41,7 @@ enum E {
 	invalidModuleIdentifier, /// Invalid module identifier - contains unsupported characters
 	moduleNameConflict, /// Two modules with same name
 	moduleNameMismatch, /// Expected module name does not match with the actual one (in module statement in the beginning of the file)
+	noModulesInSourceDirectory, /// This is a warning, occurs when there's a source directory with no modules in it
 }
 
 enum ErrorSeverity {
@@ -50,39 +51,20 @@ enum ErrorSeverity {
 	hint
 }
 
-enum ErrorSeverity[ E ] ErrorSeverityAssoc = { //
-	ErrorSeverity[ E ] result;
-
-	foreach ( memberName; __traits( derivedMembers, E ) ) {
-		alias member = Alias!( __traits( getMember, E, memberName ) );
-
-		ErrorSeverity severity = ErrorSeverity.error;
-
-		static if ( hasUDA!( member, warning ) )
-			severity = ErrorSeverity.warning;
-		else static if ( hasUDA!( member, hint ) )
-			severity = ErrorSeverity.hint;
-
-		result[ member ] = severity;
-	}
-
-	return result;
-}( );
-
 enum string[ ErrorSeverity ] ErrorSeverityStrings = [ ErrorSeverity.error : "error", ErrorSeverity.error_nothrow : "error", ErrorSeverity.warning : "warning", ErrorSeverity.hint : "hint" ];
 
 /// If the condition is not true, calls berror
-pragma( inline ) void benforce( bool throwIfError = true, string file = __FILE__, size_t line = __LINE__ )( bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null ) {
+pragma( inline ) void benforce( ErrorSeverity severity = ErrorSeverity.error, string file = __FILE__, size_t line = __LINE__ )( bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null ) {
 	if ( !condition )
-		breport!( throwIfError, file, line )( error, message, errGdFunc );
+		breport!( severity, file, line )( error, message, errGdFunc );
 }
 
 /// Generates error/warning/hint, eventually throwing an exception
-pragma( inline ) void breport( bool throwIfError = true, string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {
+pragma( inline ) void breport( ErrorSeverity severity = ErrorSeverity.error, string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {
 	ErrorMessage msg = new ErrorMessage;
 	msg.message = message;
 	msg.error = error;
-	msg.severity = ErrorSeverityAssoc[ error ];
+	msg.severity = severity;
 
 	foreach ( func; context.errorGuardData.stack )
 		func( msg );
@@ -95,13 +77,13 @@ pragma( inline ) void breport( bool throwIfError = true, string file = __FILE__,
 	synchronized ( stderrMutex )
 		stderr.writeln( formattedMessage );
 
-	if ( msg.severity == ErrorSeverity.error && throwIfError )
+	if ( msg.severity == ErrorSeverity.error )
 		throw new BeastErrorException( message, file, line );
 }
 
 /// Generates error/warning/hint, eventually throwing an exception
 pragma( inline ) void berror( string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {
-	breport!( true, file, line )( error, message, errGdFunc );
+	breport!( ErrorSeverity.error, file, line )( error, message, errGdFunc );
 }
 
 /// Base error class for all compiler generated exceptions (that are expected)

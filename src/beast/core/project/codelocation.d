@@ -57,7 +57,10 @@ public:
 public:
 	/// Convenient error guard function
 	@property ErrorGuardFunction errGuardFunction( ) {
-		return ( msg ) { msg.codeLocation = this; };
+		// We must copy the struct data, because the struct might not exists when the guard function is called (because of stack)
+		// So this copy actually makes sense!
+		CodeLocation data = this;
+		return ( msg ) { msg.codeLocation = data; };
 	}
 
 }
@@ -72,7 +75,7 @@ public:
 	CodeLocation get( ) {
 		CodeLocation endLocation = context.lexer.currentToken.codeLocation;
 		assert( startLocation.source is endLocation.source );
-		assert( startLocation.startPos < endLocation.endPos );
+		assert( startLocation.startPos <= endLocation.endPos );
 
 		return CodeLocation( startLocation.source, startLocation.startPos, endLocation.endPos - startLocation.startPos );
 	}

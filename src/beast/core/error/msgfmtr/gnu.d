@@ -18,7 +18,7 @@ public:
 			if ( cl.startLine ) {
 				result ~= cl.startLine.to!string ~ "." ~ cl.startColumn.to!string;
 				if ( cl.endLine != cl.startLine )
-					result ~= "-" ~ cl.endLine.to!string ~ "." ~ cl.endColumn.to!string;
+					result ~= "-%s.%s".format( cl.endLine.to!string, cl.endColumn.to!string );
 				else
 					result ~= "-" ~ cl.endColumn.to!string;
 
@@ -29,7 +29,7 @@ public:
 		else
 			result = "beast:";
 
-		result ~= " " ~ ErrorSeverityStrings[ msg.severity ] ~ ": " ~ /* enumAssocInvert!( E )[ error ] ~ " | " ~ */ msg.message;
+		result ~= " %s %s: %s".format( ErrorSeverityStrings[ msg.severity ], msg.error.to!string, msg.message );
 
 		return result;
 	}

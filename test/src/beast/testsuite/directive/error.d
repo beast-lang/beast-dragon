@@ -9,7 +9,7 @@ public:
 		errorType = args.mainValue;
 
 		watchFile = "noFile" !in args;
-		watchLine = watchFile && "noLine" !in args;
+		watchLine = watchFile && ( "noLine" !in args );
 	}
 
 public:

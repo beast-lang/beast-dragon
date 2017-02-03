@@ -1,0 +1,1 @@
+module x; //! error: moduleNameConflict, noFile
