@@ -12,7 +12,7 @@ public:
 	/// Initializes the manager for usage (prepares initial module list)
 	void initialize( ) {
 		initialModuleList_ = getInitialModuleList( );
-		
+
 		foreach ( Module m; initialModuleList_ ) {
 			benforce( m.identifier !in moduleList_, E.moduleNameConflict, "Modules '" ~ m.absoluteFilePath ~ "' and '" ~ moduleList_[ m.identifier ].absoluteFilePath ~ "' have both same identifier '" ~ m.identifier.str ~ "'" );
 			moduleList_[ m.identifier ] = m;

@@ -3,6 +3,7 @@
 </p>
 
 # Beast Programming Language
+[![Build Status](https://travis-ci.org/beast-lang/compiler.svg?branch=master)](https://travis-ci.org/beast-lang/compiler)
 
 Beast is a new programming language mostly inspired by C++ and D.
 
@@ -14,7 +15,7 @@ This repository contains (everything is WIP):
 Source file extension: .be
 
 ## Progress
-* Compiler: No working prototype yet (transcompiles to C++, no working prototype)
+* Compiler: No working prototype yet
 * Std library: Nothing at all
 * Language reference: Nothing much
 

@@ -29,6 +29,7 @@ Special:
 	Bestiary
 
 -- Reflection of comments + documentation generation
+-- Ability to pass ctime string using a command line in beast
 
 -- What to do with
 Void foo( Int!? a, @ctime Int!? b ) {
@@ -60,19 +61,5 @@ Void main() {
 	c.test(); // What now? This is kinda screwed... a should be constantiatized or sumthing
 }
 
-
-Tests (cache error codes, stdouts, ...):
-//# trackStdout
-//# stdout: "json-style-string-literal"
-//# resultCode: 255
-Void main() { //! error: unexpectedToken, position: 10, expected: Keyword.if; hint: blabla
-	writeln( x ); //! error: variableUndefined
-}
-
-//# file: test.d
-Int foo() {
-	writeln( "5" ); //! warning: somethingSomething
-}
-
-Na prezentaci:
-	Číslovat slajdy (x/celkem)
+For presentation:
+	Number slides (x/total)

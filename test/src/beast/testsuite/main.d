@@ -17,6 +17,7 @@ __gshared string testsDir, testRootDir;
 int main( string[ ] args ) {
 	testsMutex = new Mutex;
 	testsDir = "../test/tests".absolutePath;
+	"../test/log/".mkdirRecurse();
 
 	Test[ ] tests, activeTests, failedTests;
 

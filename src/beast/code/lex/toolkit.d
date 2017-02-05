@@ -15,10 +15,12 @@ pragma( inline ) @property {
 		return context.lexer;
 	}
 
+	/// Current token of the current context lexer
 	Token currentToken( ) {
 		return lexer.currentToken;
 	}
 
+	/// Commands current context lexer to scan for next token and returns it
 	Token getNextToken( ) {
 		return lexer.getNextToken;
 	}

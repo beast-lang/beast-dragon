@@ -36,7 +36,7 @@ public:
 		// ";" || "=" => variable
 		if ( currentToken == Token.Special.semicolon || currentToken == Token.Operator.assign )
 			return AST_VariableDeclaration.parse( _gd, decorationList, type, identifier );
-
+			
 		assert( 0 );
 	}
 

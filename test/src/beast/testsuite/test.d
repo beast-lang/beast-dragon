@@ -91,7 +91,7 @@ public:
 
 		// Prepare arguments
 		{
-			args = [ "beast", // Compiler name
+			args = [ "beast".absolutePath( getcwd ), // Compiler name
 				"--json-messages", // Compiler messages in JSON format
 				"--root", projectRoot, //
 				 ];
@@ -146,7 +146,7 @@ public:
 					enforce( errorIsHandled, "Unexpected compiler error: \n" ~ val[ "gnuFormat" ].str );
 				}
 				catch ( JSONException exc ) {
-					fail( "Stderr JSON parsing error: " ~ exc.msg );
+					fail( "Stderr JSON parsing error: " ~ exc.msg ~ "\nLine content: " ~ errorStr ~ "\nEntire stderr:\n" ~ stderrContent.map!( x => "  " ~ x ).joiner( "\n" ).to!string );
 				}
 			}
 

@@ -39,14 +39,20 @@ public:
 
 		// Translate paths
 		{
-			foreach ( ref string path; configuration.sourceDirectories )
+			foreach ( ref string path; configuration.sourceDirectories ) {
 				path = path.absolutePath( basePath );
+				benforce( path.isDir, E.fileError, "Source directory '" ~ path ~ "' does not exist" );
+			}
 
-			foreach ( ref string path; configuration.includeDirectories )
+			foreach ( ref string path; configuration.includeDirectories ) {
 				path = path.absolutePath( basePath );
+				benforce( path.isDir, E.fileError, "Include directory '" ~ path ~ "' does not exist" );
+			}
 
-			foreach ( ref string file; configuration.sourceFiles )
+			foreach ( ref string file; configuration.sourceFiles ) {
 				file = file.absolutePath( basePath );
+				benforce( file.isFile, E.fileError, "Source file '" ~ file ~ "' does not exist" );
+			}
 		}
 
 		moduleManager.initialize( );
