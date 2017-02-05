@@ -18,4 +18,8 @@ notifications:
   on_failure: always
 
  irc:
-  - irc.freenode.net#beast-lang
+  channels:
+   - irc.freenode.net#beast-lang
+	template:
+	 - "COMMIT: %{commit_subject} (%{commit})"
+	 - "RESULT: %{result}"

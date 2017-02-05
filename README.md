@@ -12,12 +12,7 @@ This repository contains (everything is WIP):
 * Language reference
 * Bachelor thesis text (Czech language)
 
-Source file extension: .be
-
-## Progress
-* Compiler: No working prototype yet
-* Std library: Nothing at all
-* Language reference: Nothing much
+Source file extension: `.be`
 
 ## Notable language features
 * Importable modules (no header files like in C++)
@@ -26,6 +21,18 @@ Source file extension: .be
 * Compiled to binary (to C++ so far)
 * Const-by-default
 * Compile-time language reflection
+
+## Progress
+* Compiler: No working prototype yet
+* Std library: Nothing at all
+* Language reference: Nothing much
+
+## Contact
+**Author**: | Daniel 'Danol' Čejchan
+-|-
+**Email**: | czdanol@gmail.com
+**IRC**: | irc.freenode.net#beast-lang
+**Discord**: | [Invitation](https://discord.gg/FMCQQdT)
 
 ## Sample code
 Please note that this code describes what the language should be able to do when done, not what it can do now.
