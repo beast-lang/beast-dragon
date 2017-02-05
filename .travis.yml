@@ -1,25 +1,25 @@
 language: d
 
 d:
- - dmd
+  - dmd
 
 os:
- - linux
+  - linux
 
 # Test step
 script:
- - dub build --compiler=${DC}
- - dub build --root=test
- - cd bin && ./beast_testsuite
+  - dub build --compiler=${DC}
+  - dub build --root=test
+  - cd bin && ./beast_testsuite
 
 notifications:
- email:
-  on_success: never
-  on_failure: always
+  email:
+    on_success: never
+    on_failure: always
 
- irc:
-  channels:
-   - irc.freenode.net#beast-lang
-	template:
-	 - "COMMIT: %{commit_subject} (%{commit})"
-	 - "RESULT: %{result}"
+  irc:
+    channels:
+      - irc.freenode.net#beast-lang
+    template:
+      - "COMMIT: %{commit_subject} (%{commit})"
+      - "RESULT: %{result}"
