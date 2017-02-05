@@ -29,9 +29,9 @@ Source file extension: `.be`
 
 ## Contact
 | **Author**: | Daniel 'Danol' Čejchan |
-|-|-|
+| --- | --- |
 | **Email**: | czdanol@gmail.com |
-|**IRC**: | irc.freenode.net#beast-lang |
+| **IRC**: | irc.freenode.net#beast-lang |
 | **Discord**: | [Invitation](https://discord.gg/FMCQQdT) |
 
 ## Sample code
