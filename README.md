@@ -28,11 +28,11 @@ Source file extension: `.be`
 * Language reference: Nothing much
 
 ## Contact
-**Author**: | Daniel 'Danol' Čejchan
--|-
-**Email**: | czdanol@gmail.com
-**IRC**: | irc.freenode.net#beast-lang
-**Discord**: | [Invitation](https://discord.gg/FMCQQdT)
+| **Author**: | Daniel 'Danol' Čejchan |
+|-|-|
+| **Email**: | czdanol@gmail.com |
+|**IRC**: | irc.freenode.net#beast-lang |
+| **Discord**: | [Invitation](https://discord.gg/FMCQQdT) |
 
 ## Sample code
 Please note that this code describes what the language should be able to do when done, not what it can do now.
