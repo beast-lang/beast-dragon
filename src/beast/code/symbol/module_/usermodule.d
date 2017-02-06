@@ -13,7 +13,7 @@ public:
 		this.module_ = module_;
 		ast_ = ast;
 
-		namespace_ = new Namespace_UserModule( this );
+		namespace_ = new UserNamespace( this, &obtain_members );
 		ast_.relateWithSymbol( this );
 	}
 
@@ -22,8 +22,8 @@ public:
 	Module module_;
 
 public:
-	override @property CodeLocation codeLocation( ) {
-		return CodeLocation( module_ );
+	override @property AST_Node ast( ) {
+		return ast_;
 	}
 
 	override @property Identifier identifier( ) {
@@ -35,33 +35,16 @@ public:
 	}
 
 private:
-	Namespace_UserModule namespace_;
-	AST_Module ast_;
+	Symbol[] obtain_members() {
+		Symbol[] result;
 
-}
-
-final class Namespace_UserModule : Namespace {
-
-public:
-	this( Symbol_Module module_ ) {
-		this.module_ = module_;
-	}
-
-public:
-	Symbol_Module module_;
-
-public:
-	override @property Symbol relatedSymbol( ) {
-		return module_;
-	}
-
-protected:
-	override Symbol[ ] obtain_members( ) {
-		Symbol[ ] result;
-
-		// TODO: THIS
+		// TODO: implement
 
 		return result;
 	}
+
+private:
+	UserNamespace namespace_;
+	AST_Module ast_;
 
 }

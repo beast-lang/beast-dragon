@@ -24,9 +24,8 @@ public:
 	final Module getModule( ExtendedIdentifier id, CodeLocation codeLocation ) {
 		synchronized ( this ) {
 			// If the module is already in the project, return it
-			auto _in = id in moduleList_;
-			if ( _in )
-				return *_in;
+			if ( auto result = id in moduleList_ )
+				return *result;
 
 			// TODO: std library injection
 
@@ -64,7 +63,7 @@ protected:
 				result ~= m;
 
 				// Force taskGuard to obtain data for the module
-				taskManager.issueJob( { m.enforce_parsedData(); } );
+				taskManager.issueJob( { m.enforce_parsedData( ); } );
 			}
 		}
 

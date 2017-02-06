@@ -1,17 +1,25 @@
-module beast.code.namespace;
+module beast.code.usernamespace;
 
 import beast.code.toolkit;
 
 /// Class wrapping functionality of a namespace
-abstract class Namespace : Identifiable {
+final class UserNamespace : Identifiable {
 	mixin TaskGuard!( "symbolData" );
 
 public:
+	this( Symbol symbol, Symbol[ ]delegate( ) obtainFunction ) {
+		symbol_ = symbol;
+		obtainFunction_ = obtainFunction;
+	}
+
+public:
 	/// Symbol this namespace belongs to (for in-function control stmts, it is the function the stmt is in)
-	abstract @property Symbol relatedSymbol( );
+	@property Symbol symbol( ) {
+		return symbol_;
+	}
 
 	@property string identificationString( ) {
-		return relatedSymbol.identificationString;
+		return symbol.identificationString;
 	}
 
 	/// List of all symbols in the namespace
@@ -26,20 +34,15 @@ public:
 		return memberOverloadsets_;
 	}
 
-protected:
-	/// This function should return all symbols in the namespace (by parsing AST and creating proper symbols)
-	abstract Symbol[ ] obtain_members( );
-
 private:
 	final void obtain_symbolData( ) {
-		members_ = obtain_members( );
+		members_ = obtainFunction_( );
 
 		// Construct overloadset
 		foreach ( sym; members_ ) {
 			assert( sym.identifier );
 
-			auto ptr = sym.identifier in memberOverloadsets_;
-			if ( ptr )
+			if ( auto ptr = sym.identifier in memberOverloadsets_ )
 				*ptr ~= sym;
 			else
 				memberOverloadsets_[ sym.identifier ] = [ sym ];
@@ -47,7 +50,9 @@ private:
 	}
 
 private:
+	Symbol symbol_;
 	Symbol[ ] members_;
 	Overloadset[ Identifier ] memberOverloadsets_;
+	Symbol[ ]delegate( ) obtainFunction_;
 
 }

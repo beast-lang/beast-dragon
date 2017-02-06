@@ -28,9 +28,8 @@ private:
 			while ( true ) {
 				TaskContext task = taskManager.askForAJob( );
 
-				if ( !task ) {
+				if ( !task )
 					return;
-				}
 
 				// Execute the job
 				task.execute( );

@@ -1,7 +1,6 @@
 module beast.code.symbol.module_;
 
-import beast.code.namespace;
-import beast.code.symbol;
+import beast.code.symbol.toolkit;
 
 /// Module as a symbol
 /// See also Module from beast.core.project.module_ with module as project file

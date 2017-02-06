@@ -7,13 +7,12 @@ final class Identifier {
 
 public:
 	static synchronized Identifier obtain( string str ) {
-		Identifier id = map.get( str, null );
-		if ( id )
-			return id;
+		if ( Identifier result = map.get( str, null ) )
+			return result;
 
-		id = new Identifier( str );
-		map[ str ] = id;
-		return id;
+		Identifier result = new Identifier( str );
+		map[ str ] = result;
+		return result;
 	}
 
 public:

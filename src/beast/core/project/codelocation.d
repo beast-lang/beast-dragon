@@ -70,6 +70,11 @@ public:
 		return ( msg ) { msg.codeLocation = data; };
 	}
 
+public:
+	bool opCast( T : bool )( ) const {
+		return source !is null;
+	}
+
 }
 
 /// Struct for watching code location, marks start with construction (call function codeLocationGuard), end with get

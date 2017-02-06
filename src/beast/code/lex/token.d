@@ -239,14 +239,13 @@ public:
 			break;
 
 		case Type.keyword: {
-				if ( data.keyword != Keyword._noKeyword )
-					result ~= " '" ~ keywordStr[ cast( size_t ) data.keyword ] ~ "'";
+				if ( string str = keywordStr[ cast( size_t ) data.keyword ] )
+					result ~= " '" ~ str ~ "'";
 			}
 			break;
 
 		case Type.operator: {
-				string str = operatorStr[ cast( int ) data.operator ];
-				if ( str )
+				if ( string str = operatorStr[ cast( int ) data.operator ] )
 					result ~= " '" ~ str ~ "'";
 			}
 			break;

@@ -27,8 +27,8 @@ template enumAssocInvert( Enum, string[ Enum ] customVals = null ) if ( is( Enum
 		foreach ( memberName; __traits( derivedMembers, Enum ) ) {
 			enum member = __traits( getMember, Enum, memberName );
 
-			if ( member in customVals )
-				result[ member ] = customVals[ member ];
+			if ( auto mem = member in customVals )
+				result[ member ] = mem;
 			else
 				result[ member ] = memberName;
 		}

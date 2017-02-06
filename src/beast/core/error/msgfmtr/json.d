@@ -21,8 +21,7 @@ public:
 		result[ "error" ] = msg.error.to!string;
 		result[ "severity" ] = msg.severity.to!string;
 
-		auto cl = msg.codeLocation;
-		if ( cl.source ) {
+		if ( auto cl = msg.codeLocation ) {
 			result[ "file" ] = cl.file;
 
 			if ( cl.startLine ) {

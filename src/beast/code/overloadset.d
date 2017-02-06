@@ -15,6 +15,11 @@ public:
 	}
 
 public:
+	@property bool isEmpty( ) {
+		return data.length == 0;
+	}
+
+public:
 	Symbol[ ] data;
 	alias data this;
 

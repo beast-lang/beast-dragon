@@ -44,7 +44,7 @@ public:
 	void waitForEverythingDone( ) {
 		synchronized ( workerSyncMutex_ ) {
 			while ( true ) {
-				if( workers_.length == 0 )
+				if ( workers_.length == 0 )
 					return;
 
 				if ( !plannedTasks_.length && !plannedJobs_.length && idleWorkerCount_ == workers_.length )
