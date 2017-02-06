@@ -24,6 +24,7 @@ Fantasy:
 	Siren
 	Vampire
 	Werewolf
+	Minotaur
 
 Special:
 	Bestiary

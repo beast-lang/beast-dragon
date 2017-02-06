@@ -1,7 +1,7 @@
 module beast.main;
 
 import beast.core.project.configuration;
-import beast.core.project.project;
+import beast.core.project;
 import beast.core.task.manager;
 import beast.toolkit;
 import std.concurrency;
@@ -77,8 +77,10 @@ void mainImpl( string[ ] args ) {
 	}
 
 	if ( getoptResult.helpWanted ) {
-		writeln( "Beast language compiler" );
-
+		writeln( "Dragon - Beast language compiler" );
+		writeln;
+		writeln( "Authors: " );
+		writeln( "  Daniel 'Danol' Cejchan | czdanol@gmail.com" );
 		writeln;
 		writeln( "Options:" );
 		foreach ( opt; getoptResult.options )

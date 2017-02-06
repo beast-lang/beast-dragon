@@ -1,4 +1,4 @@
-module beast.core.project.project;
+module beast.core.project;
 
 import beast.core.project.configuration;
 import beast.toolkit;

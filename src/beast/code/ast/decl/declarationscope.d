@@ -3,7 +3,7 @@ module beast.code.ast.decl.declarationscope;
 import beast.code.ast.toolkit;
 
 /// Module or class level declaration scope
-final class AST_DeclarationScope : ASTNode {
+final class AST_DeclarationScope : AST_Node {
 
 public:
 	static AST_DeclarationScope parse( AST_DecorationList rootDecorationList = null ) {
@@ -81,7 +81,7 @@ public:
 	}
 
 protected:
-	override InputRange!ASTNode _subnodes( ) {
+	override InputRange!AST_Node _subnodes( ) {
 		return nodeRange( directDeclarations_, commonDecorationLists_, subScopes_ );
 	}
 

@@ -4,7 +4,7 @@ import beast.code.ast.toolkit;
 import beast.code.ast.decl.variable;
 import beast.code.ast.expr.typeorauto;
 
-abstract class AST_Declaration : ASTNode {
+abstract class AST_Declaration : AST_Node {
 
 public:
 	static bool canParse( ) {
@@ -12,7 +12,7 @@ public:
 	}
 
 	static AST_Declaration parse( AST_DecorationList parentDecorationList ) {
-		const auto _gd = codeLocationGuard( );
+		auto _gd = codeLocationGuard( );
 		AST_DecorationList decorationList = parentDecorationList;
 
 		// Decoration list

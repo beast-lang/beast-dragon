@@ -1,4 +1,4 @@
-module beast.code.module_;
+module beast.core.project.module_;
 
 import beast.code.ast.decl.module_;
 import beast.code.lex.lexer;
@@ -8,16 +8,10 @@ import beast.core.project.configuration;
 import beast.toolkit;
 import std.regex;
 
-/// Abstraction of module in Beast (from project point of view)
+/// Abstraction of module in Beast (as a project file)
+/// See also Symbol_Module and Symbol_UserModule in beast.code.symbol.module_.XX
 final class Module : CodeSource, Identifiable {
-	mixin TaskGuard!( "parsingData", ParsingData );
-
-public:
-	struct ParsingData {
-		AST_Module ast;
-		Symbol_UserModule symbol;
-		Token[ ] tokenList;
-	}
+	mixin TaskGuard!( "parsedData" );
 
 public:
 	this( CTOR_FromFile _, string filename, ExtendedIdentifier identifier ) {
@@ -27,28 +21,32 @@ public:
 	}
 
 public:
-	const ExtendedIdentifier identifier;
+	ExtendedIdentifier identifier;
 
-	alias parsingData = _parsingData;
 	@property AST_Module ast( ) {
-		return parsingData.ast;
+		enforce_parsedData( );
+		return ast_;
 	}
 
+	/// Symbol of the module
 	@property Symbol_UserModule symbol( ) {
-		return parsingData.symbol;
+		enforce_parsedData( );
+		return symbol_;
 	}
 
 	@property Token[ ] tokenList( ) {
-		return parsingData.tokenList;
+		// TODO: Don't always keep tokenlist
+		enforce_parsedData( );
+		return tokenList_;
 	}
 
 public:
-	override @property string identificationString( ) const {
+	override @property string identificationString( ) {
 		return identifier.str;
 	}
 
 private:
-	ParsingData obtain_parsingData( ) {
+	void obtain_parsedData( ) {
 		assert( !context.lexer );
 
 		Lexer lexer = new Lexer( this );
@@ -60,21 +58,29 @@ private:
 		if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.lexing ) {
 			while ( lexer.getNextToken != Token.Special.eof ) {
 			}
-			return ParsingData( null, null, lexer.generatedTokens );
+
+			tokenList_ = lexer.generatedTokens;
+			return;
 		}
 
 		// Read first token
 		lexer.getNextToken( );
 
-		auto ast = AST_Module.parse( );
+		ast_ = AST_Module.parse( );
+		benforce( ast_.identifier == identifier, E.moduleNameMismatch, "Module '" ~ ast_.identifier.str ~ "' should be named '" ~ identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
 
-		benforce( ast.identifier == this.identifier, E.moduleNameMismatch, "Module '" ~ ast.identifier.str ~ "' should be named '" ~this.identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
+		tokenList_ = lexer.generatedTokens;
 
 		if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
-			return ParsingData( ast, null, lexer.generatedTokens );
+			return;
 
-		return ParsingData( ast, new Symbol_UserModule( this, ast ), lexer.generatedTokens );
+		symbol_ = new Symbol_UserModule( this, ast_ );
 	}
+
+private:
+	AST_Module ast_;
+	Symbol_UserModule symbol_;
+	Token[ ] tokenList_;
 
 }
 

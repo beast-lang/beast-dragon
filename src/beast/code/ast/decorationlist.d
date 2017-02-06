@@ -4,7 +4,7 @@ import beast.code.ast.toolkit;
 import beast.code.ast.decoration;
 
 /// Set of AST_Decoration
-final class AST_DecorationList : ASTNode {
+final class AST_DecorationList : AST_Node {
 
 public:
 	static bool canParse( ) {
@@ -28,7 +28,7 @@ public:
 	AST_DecorationList parentDecorationList;
 
 protected:
-	override InputRange!ASTNode _subnodes( ) {
+	override InputRange!AST_Node _subnodes( ) {
 		return nodeRange( list );
 	}
 

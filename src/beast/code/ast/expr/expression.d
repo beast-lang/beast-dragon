@@ -2,7 +2,7 @@ module beast.code.ast.expr.expression;
 
 import beast.code.ast.toolkit;
 
-abstract class AST_Expression : ASTNode {
+abstract class AST_Expression : AST_Node {
 
 public:
 	static bool canParse( ) {

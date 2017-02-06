@@ -3,7 +3,7 @@ module beast.code.ast.decl.module_;
 import beast.code.ast.toolkit;
 import beast.code.ast.decl.declarationscope;
 
-final class AST_Module : ASTNode {
+final class AST_Module : AST_Node {
 
 public:
 	static AST_Module parse( ) {
@@ -34,7 +34,7 @@ public:
 	AST_DeclarationScope declarationScope;
 
 protected:
-	override InputRange!ASTNode _subnodes( ) {
+	override InputRange!AST_Node _subnodes( ) {
 		return nodeRange( declarationScope );
 	}
 

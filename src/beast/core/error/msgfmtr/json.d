@@ -1,8 +1,7 @@
 module beast.core.error.msgfmtr.json;
 
 import beast.core.error.errormsg;
-import beast.core.error.msgfmtr.msgfmtr;
-import beast.core.error.msgfmtr.gnu;
+import beast.core.error.msgfmtr;
 import beast.toolkit;
 import std.json;
 
@@ -22,7 +21,7 @@ public:
 		result[ "error" ] = msg.error.to!string;
 		result[ "severity" ] = msg.severity.to!string;
 
-		const auto cl = msg.codeLocation;
+		auto cl = msg.codeLocation;
 		if ( cl.source ) {
 			result[ "file" ] = cl.file;
 

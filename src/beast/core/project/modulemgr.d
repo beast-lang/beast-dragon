@@ -1,7 +1,7 @@
 module beast.core.project.modulemgr;
 
 import beast.toolkit;
-import beast.code.module_;
+import beast.core.project.module_;
 import std.file;
 import std.path;
 
@@ -64,7 +64,7 @@ protected:
 				result ~= m;
 
 				// Force taskGuard to obtain data for the module
-				taskManager.issueJob( { m.parsingData; } );
+				taskManager.issueJob( { m.enforce_parsedData(); } );
 			}
 		}
 
@@ -85,7 +85,7 @@ protected:
 	}
 
 private:
-	Module[ const ExtendedIdentifier ] moduleList_;
+	Module[ ExtendedIdentifier ] moduleList_;
 	Module[ ] initialModuleList_;
 
 }

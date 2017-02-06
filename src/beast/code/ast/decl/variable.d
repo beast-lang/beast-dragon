@@ -42,7 +42,7 @@ public:
 	bool valueColonAssign;
 
 protected:
-	override InputRange!ASTNode _subnodes( ) {
+	override InputRange!AST_Node _subnodes( ) {
 		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
 		return nodeRange( type, identifier, value, ( decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null ) );
 	}

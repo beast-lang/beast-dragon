@@ -3,7 +3,7 @@ module beast.code.ast.decoration;
 import beast.code.ast.toolkit;
 
 /// '@' identifier [ ParentCommaExpr ]
-final class AST_Decoration : ASTNode {
+final class AST_Decoration : AST_Node {
 
 public:
 	static bool canParse( ) {
@@ -25,7 +25,7 @@ public:
 	AST_Identifier identifier;
 
 protected:
-	override InputRange!ASTNode _subnodes( ) {
+	override InputRange!AST_Node _subnodes( ) {
 		return nodeRange( identifier );
 	}
 

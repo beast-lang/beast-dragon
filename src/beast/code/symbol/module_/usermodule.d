@@ -1,9 +1,9 @@
 module beast.code.symbol.module_.usermodule;
 
 import beast.code.symbol.toolkit;
-import beast.code.module_;
+import beast.core.project.module_;
 import beast.code.ast.decl.module_;
-import beast.code.symbol.module_.module_;
+import beast.code.symbol.module_;
 
 /// User (programmer) defined module
 final class Symbol_UserModule : Symbol_Module {
@@ -13,8 +13,8 @@ public:
 		this.module_ = module_;
 		ast_ = ast;
 
-		namespace_ = new Namespace_Module( this );
-		ast.relateWithSymbol( this );
+		namespace_ = new Namespace_UserModule( this );
+		ast_.relateWithSymbol( this );
 	}
 
 public:
@@ -22,49 +22,37 @@ public:
 	Module module_;
 
 public:
-	override @property Namespace namespace( ) {
-		return namespace_;
-	}
-
-	override @property CodeLocation codeLocation( ) const {
+	override @property CodeLocation codeLocation( ) {
 		return CodeLocation( module_ );
 	}
 
-	override @property const( Identifier ) identifier( ) const {
+	override @property Identifier identifier( ) {
 		return module_.identifier[ $ - 1 ];
 	}
 
-	override @property string identificationString( ) const {
+	override @property string identificationString( ) {
 		return module_.identifier.str;
 	}
 
 private:
-	Namespace_Module namespace_;
+	Namespace_UserModule namespace_;
 	AST_Module ast_;
 
 }
 
-final class Namespace_Module : Namespace {
+final class Namespace_UserModule : Namespace {
 
 public:
-	this( Symbol_Module moduleSymbol ) {
-		this.moduleSymbol = moduleSymbol;
+	this( Symbol_Module module_ ) {
+		this.module_ = module_;
 	}
 
 public:
-	Symbol_Module moduleSymbol;
+	Symbol_Module module_;
 
 public:
-	override @property Namespace parentNamespace( ) {
-		return null;
-	}
-
 	override @property Symbol relatedSymbol( ) {
-		return moduleSymbol;
-	}
-
-	@property string identificationString( ) const {
-		return moduleSymbol.identificationString;
+		return module_;
 	}
 
 protected:

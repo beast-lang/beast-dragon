@@ -3,7 +3,7 @@ module beast.code.ast.expr.typeorauto;
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.identifierbase;
 
-final class AST_TypeOrAutoExpression : ASTNode {
+final class AST_TypeOrAutoExpression : AST_Node {
 
 public:
 	static bool canParse( ) {
@@ -36,7 +36,7 @@ public:
 	bool isAutoRefMut;
 
 protected:
-	override InputRange!ASTNode _subnodes( ) {
+	override InputRange!AST_Node _subnodes( ) {
 		return nodeRange( expr );
 	}
 

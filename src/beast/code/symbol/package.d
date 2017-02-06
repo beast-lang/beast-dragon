@@ -1,4 +1,4 @@
-module beast.code.symbol.symbol;
+module beast.code.symbol;
 
 import beast.code.symbol.toolkit;
 
@@ -11,20 +11,20 @@ public:
 
 public:
 	/// Location of where in the code the symbol was declared (or code that +- matches it)
-	@property CodeLocation codeLocation( ) const;
+	@property CodeLocation codeLocation( );
 
 	/// Identifier of the symbol, may be null (for template instances, anonymous functions etc.)
-	@property const( Identifier ) identifier( ) const {
+	@property Identifier identifier( ) {
 		return null;
 	}
 
 	/// For template instances, the base name is the template identifier; otherwise it is equal to identifier
-	@property const( Identifier ) baseName( ) const {
+	@property Identifier baseName( ) {
 		return identifier;
 	}
 
 public:
-	override @property string identificationString( ) const {
+	override @property string identificationString( ) {
 		return parentNamespace ? parentNamespace.identificationString ~ "." ~ baseName.str : baseName.str;
 	}
 
