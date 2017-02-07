@@ -67,6 +67,7 @@ protected:
 			}
 		}
 
+		// Add explicit source files
 		foreach ( string file; project.configuration.sourceFiles ) {
 			ExtendedIdentifier extId = ExtendedIdentifier( [ Identifier.obtain( file.baseName.stripExtension ) ] );
 

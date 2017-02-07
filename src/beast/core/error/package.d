@@ -45,6 +45,10 @@ enum E {
 	moduleNameConflict, /// Two modules with same name
 	moduleNameMismatch, /// Expected module name does not match with the actual one (in module statement in the beginning of the file)
 	noModulesInSourceDirectory, /// This is a warning, occurs when there's a source directory with no modules in it
+
+	// DECORATORS:
+	decoratorConflict, /// Two decorators are incompatible with each other
+	duplicitModification, /// For example when using @static twice or when using @static where static is implicit; this is a hint
 }
 
 enum ErrorSeverity {
@@ -61,6 +65,9 @@ pragma( inline ) void benforce( ErrorSeverity severity = ErrorSeverity.error, st
 	if ( !condition )
 		breport!( severity, file, line )( error, message, errGdFunc );
 }
+
+/// If the confition is not true, reports a hint
+alias benforceHint( string file = __FILE__, size_t line = __LINE__ ) = benforce!( ErrorSeverity.hint, file, line );
 
 /// Generates error/warning/hint, eventually throwing an exception
 pragma( inline ) void breport( ErrorSeverity severity = ErrorSeverity.error, string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {

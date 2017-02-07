@@ -22,10 +22,6 @@ public:
 	Module module_;
 
 public:
-	override @property AST_Node ast( ) {
-		return ast_;
-	}
-
 	override @property Identifier identifier( ) {
 		return module_.identifier[ $ - 1 ];
 	}
@@ -34,9 +30,25 @@ public:
 		return module_.identifier.str;
 	}
 
+public:
+	override @property AST_Node ast( ) {
+		return ast_;
+	}
+
+public:
+	override Overloadset resolveIdentifier( Identifier id ) {
+		if ( auto result = super.resolveIdentifier( id ) )
+			return result;
+
+		if ( auto result = namespace_.resolveIdentifier( id ) )
+			return result;
+
+		return Overloadset( );
+	}
+
 private:
-	Symbol[] obtain_members() {
-		Symbol[] result;
+	Symbol[ ] obtain_members( ) {
+		Symbol[ ] result;
 
 		// TODO: implement
 

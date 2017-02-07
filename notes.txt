@@ -29,6 +29,10 @@ Fantasy:
 Special:
 	Bestiary
 
+For presentation:
+	Number slides (x/total)
+
+
 -- Reflection of comments + documentation generation
 -- Ability to pass ctime string using a command line in beast
 
@@ -62,5 +66,22 @@ Void main() {
 	c.test(); // What now? This is kinda screwed... a should be constantiatized or sumthing
 }
 
-For presentation:
-	Number slides (x/total)
+---
+class C {
+ 
+public:
+    @wipOrConst Int! x;
+ 
+}
+ 
+C! getC() {
+    @wip C! result = new @wip C();
+    result.x = 5;
+    return result;
+}
+ 
+void main() {
+    C! c = getC();
+ 
+    c.x = 5; // Error
+}

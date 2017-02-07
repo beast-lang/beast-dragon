@@ -26,7 +26,7 @@ public:
 
 public:
 	/// AST node related to the symbol (declaration)
-	abstract @property AST_Node ast( ) {
+	@property AST_Node ast( ) {
 		return null;
 	}
 

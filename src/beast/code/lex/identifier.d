@@ -15,6 +15,15 @@ public:
 		return result;
 	}
 
+	/// Returns an identifier for a given string that is automatically obtained on application start
+	template preobtained( string str ) {
+		shared static this( ) {
+			preobtained = Identifier.obtain( str );
+		}
+
+		static __gshared Identifier preobtained;
+	}
+
 public:
 	const string str;
 	const size_t hash;
@@ -44,10 +53,11 @@ private:
 
 private:
 	static __gshared Identifier[ string ] map;
-	enum _init = HookAppInit.hook!( {
-			foreach ( i, str; Token.keywordStr[ 1 .. $ ] )
-				map[ str ] = new Identifier( str, cast( Token.Keyword )( i + 1 ) );
-		} );
+	shared static this( ) {
+		// Pregenerate identifiers for keywords
+		foreach ( i, str; Token.keywordStr[ 1 .. $ ] )
+			map[ str ] = new Identifier( str, cast( Token.Keyword )( i + 1 ) );
+	}
 
 }
 
@@ -55,20 +65,29 @@ private:
 struct ExtendedIdentifier {
 
 public:
+	template preobtained( string str ) {
+		static __gshared ExtendedIdentifier preobtained;
+		shared static this( ) {
+			preobtained = str.splitter( "." ).map!( x => Identifier.obtain( x ) ).array.ExtendedIdentifier;
+		}
+	}
+
+public:
 	static bool canParse( ) {
 		return currentToken == Token.Type.identifier;
 	}
 
+	/// Returns an extendedIdentifier for a given string (split by '.') that is automatically obtained on application start
 	static ExtendedIdentifier parse( ) {
 		currentToken.expect( Token.Type.identifier );
 		ExtendedIdentifier result;
 		result ~= currentToken.identifier;
 
-		while ( getNextToken() == Token.Special.dot ) {
-			getNextToken().expect( Token.Type.identifier );
+		while ( getNextToken( ) == Token.Special.dot ) {
+			getNextToken( ).expect( Token.Type.identifier );
 			result ~= currentToken.identifier;
 		}
-		
+
 		return result;
 	}
 
