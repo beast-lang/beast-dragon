@@ -1,4 +1,4 @@
-module beast.core.task.manager;
+module beast.core.task.mgr;
 
 import core.sync.condition;
 import core.sync.mutex;

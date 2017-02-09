@@ -7,6 +7,8 @@ import beast.core.task.context;
 
 alias TaskGuardId = shared ubyte*;
 
+// TODO: Check for unfinished task guards
+
 /**
 	USAGE:
 	- mixin this

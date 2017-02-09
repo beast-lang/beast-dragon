@@ -122,17 +122,15 @@ void mainImpl( string[ ] args ) {
 	}
 
 	// Construct base classes
-	{
-		taskManager = new TaskManager;
-		scope ( exit ) {
-			taskManager.waitForEverythingDone( );
-			taskManager.quitWorkers( );
-		}
-	
-		hardwareEnvironment = new HardwareEnvironment_Native;
-		memoryManager = new MemoryManager;
+	taskManager = new TaskManager;
+	scope ( exit ) {
+		taskManager.waitForEverythingDone( );
+		taskManager.quitWorkers( );
 	}
 
+	hardwareEnvironment = new HardwareEnvironment_Native;
+	memoryManager = new MemoryManager;
+	
 	/*
 		Core library must be constructed before finishing configuration of the project,
 		because finishConfiguration initializes module list
