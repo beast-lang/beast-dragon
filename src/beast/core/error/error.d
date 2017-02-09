@@ -1,4 +1,4 @@
-module beast.core.error;
+module beast.core.error.error;
 
 public {
 	import beast.core.error.errormsg;
@@ -6,12 +6,12 @@ public {
 	import std.format : format;
 }
 
-import beast.core.error;
+import beast.core.error.error;
 import beast.core.project.codelocation;
 import beast.core.project.configuration;
 import beast.toolkit;
-import beast.utility.decorator;
-import beast.utility.enumassoc;
+import beast.util.decorator;
+import beast.util.enumassoc;
 import core.sync.mutex;
 import std.exception;
 import std.json;

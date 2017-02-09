@@ -1,4 +1,4 @@
-module beast.utility.atomic;
+module beast.util.atomic;
 
 public import core.atomic;
 

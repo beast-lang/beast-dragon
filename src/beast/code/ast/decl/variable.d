@@ -1,7 +1,7 @@
 module beast.code.ast.decl.variable;
 
-import beast.code.ast.toolkit;
-import beast.code.ast.expr.typeorauto;
+import beast.code.ast.decl.toolkit;
+import beast.code.sym.var.user;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -34,6 +34,11 @@ public:
 	}
 
 public:
+	override void executeDeclarations( void delegate( Symbol ) sink ) {
+		sink( new Symbol_UserVariable( this ) );
+	}
+
+public:
 	AST_DecorationList decorationList;
 	AST_TypeOrAutoExpression type;
 	AST_Identifier identifier;
@@ -44,7 +49,7 @@ public:
 protected:
 	override InputRange!AST_Node _subnodes( ) {
 		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
-		return nodeRange( type, identifier, value, ( decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null ) );
+		return nodeRange( type, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
 	}
 
 }

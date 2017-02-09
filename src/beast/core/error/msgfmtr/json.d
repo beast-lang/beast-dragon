@@ -1,7 +1,7 @@
 module beast.core.error.msgfmtr.json;
 
 import beast.core.error.errormsg;
-import beast.core.error.msgfmtr;
+import beast.core.error.msgfmtr.msgfmtr;
 import beast.toolkit;
 import std.json;
 

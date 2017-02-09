@@ -1,7 +1,7 @@
 module beast.main;
 
 import beast.core.project.configuration;
-import beast.core.project;
+import beast.core.project.project;
 import beast.core.task.manager;
 import beast.toolkit;
 import std.concurrency;
@@ -10,7 +10,7 @@ import std.json;
 import std.path;
 import std.stdio;
 import std.file;
-import beast.corelib;
+import beast.corelib.corelib;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
@@ -124,20 +124,16 @@ void mainImpl( string[ ] args ) {
 	}
 
 	/*
-		Core libraries must be constructed before finishing configuration of the project,
+		Core library must be constructed before finishing configuration of the project,
 		because finishConfiguration initializes module list
 		*/
-	constructCoreLibraries( );
+	constructCoreLibrary( );
 
 	project.finishConfiguration( );
 	taskManager.spawnWorkers( );
 }
 
 int main( string[ ] args ) {
-	int a = 3;
-	args.map!( x => x ~ ( a++ ).to!string ).each!( x => x.writeln );
-	a.writeln;
-
 	try {
 		mainImpl( args );
 		return 0;

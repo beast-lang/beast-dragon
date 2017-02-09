@@ -2,8 +2,8 @@ module beast.core.project.configuration;
 
 import beast.core.project.codesource;
 import beast.toolkit;
-import beast.utility.decorator;
-import beast.utility.enumassoc;
+import beast.util.decorator;
+import beast.util.enumassoc;
 import std.file;
 import std.json;
 import std.conv;
@@ -63,10 +63,7 @@ public:
 public:
 	/// Loads cofnguration from specified configuration builder
 	void load( JSONValue[ string ] data ) {
-		itemIteration: foreach ( item; data.byKeyValue ) {
-			const string key = item.key;
-			const JSONValue val = item.value;
-
+		itemIteration: foreach ( key, val; data ) {
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
 				alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
 
@@ -238,10 +235,7 @@ public:
 	void applyJSON( JSONValue json ) {
 		benforce( json.type == JSON_TYPE.OBJECT, E.invalidProjectConfiguration, "Project configuration: json root is not an object" );
 
-		itemIteration: foreach ( item; json.object.byKeyValue ) {
-			const string fullKey = item.key;
-			const JSONValue val = item.value;
-
+		itemIteration: foreach ( fullKey, val; json.object ) {
 			// Split the key by first '@'; the left part is the key itself and the right part is the key group
 			const string keyBase = fullKey.findSplit( "@" )[ 0 ];
 
@@ -263,10 +257,7 @@ public:
 	JSONValue[ string ] build( ) {
 		JSONValue[ string ] result;
 
-		foreach ( it; data_.byKeyValue ) {
-			const string fullKey = it.key;
-			JSONValue value = it.value;
-
+		foreach ( fullKey, value; data_ ) {
 			// Split the key by first '@'; the left part is the key itself and the right part is the key group
 			const auto keyBase = fullKey.findSplit( "@" )[ 0 ];
 
@@ -281,8 +272,8 @@ public:
 				JSONValue[ string ] obj = existingRecord.object;
 
 				// Merge objects
-				foreach ( it2; value.object.byKeyValue )
-					obj[ it2.key ] = it2.value;
+				foreach ( key, value; value.object )
+					obj[ key ] = value;
 
 				*existingRecord = obj;
 				continue;

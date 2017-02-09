@@ -1,6 +1,7 @@
 module beast.code.ast.decoration;
 
 import beast.code.ast.toolkit;
+import beast.code.util;
 
 /// '@' identifier [ ParentCommaExpr ]
 final class AST_Decoration : AST_Node {
@@ -17,12 +18,15 @@ public:
 
 		getNextToken( ).expect( Token.Type.identifier, "decorator identifier" );
 		result.identifier = AST_Identifier.parse( );
+		result.decoratorIdentifier = result.identifier.decorationIdentifierToDecoratorIdentifier;
 
 		return result;
 	}
 
 public:
 	AST_Identifier identifier;
+	/// Decoration identifier translated to decorator identifier (see decorationIdentifierToDecoratorIdentifier)
+	Identifier decoratorIdentifier;
 
 protected:
 	override InputRange!AST_Node _subnodes( ) {

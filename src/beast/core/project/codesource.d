@@ -3,7 +3,7 @@ module beast.core.project.codesource;
 import std.path;
 import std.file;
 import beast.toolkit;
-import beast.utility.identifiable;
+import beast.util.identifiable;
 
 /// Abstraction of any code source (for matching line numbers, lexing, etc.)
 class CodeSource {

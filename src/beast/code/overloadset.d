@@ -20,6 +20,12 @@ public:
 	}
 
 public:
+	/// Filters all decorators from the overloadset and returns them
+	Symbol_Decorator[ ] filterDecorators( ) {
+		return data.filter!( x => x.baseType == Symbol.BaseType.decorator ).map!( x => cast( Symbol_Decorator ) x ).array;
+	}
+
+public:
 	Symbol[ ] data;
 	alias data this;
 

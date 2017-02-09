@@ -1,4 +1,4 @@
-module beast.utility.identifiable;
+module beast.util.identifiable;
 
 interface Identifiable {
 

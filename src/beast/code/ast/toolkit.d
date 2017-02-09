@@ -8,5 +8,6 @@ public {
 	import beast.code.ast.identifier;
 	import beast.code.ast.node;
 	import beast.code.lex.toolkit;
+	import beast.code.sym.symbol;
 	import beast.toolkit;
 }

@@ -63,7 +63,7 @@ protected:
 				result ~= m;
 
 				// Force taskGuard to obtain data for the module
-				taskManager.issueJob( { m.enforce_parsedData( ); } );
+				taskManager.issueJob( { m.enforceDone_parsing( ); } );
 			}
 		}
 

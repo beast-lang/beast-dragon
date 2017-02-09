@@ -1,6 +1,6 @@
 module beast.code.ast.decl.declarationscope;
 
-import beast.code.ast.toolkit;
+import beast.code.ast.decl.toolkit;
 
 /// Module or class level declaration scope
 final class AST_DeclarationScope : AST_Node {
@@ -77,6 +77,17 @@ public:
 		result.allDeclarations_ ~= result.directDeclarations_;
 
 		result.codeLocation = clg.get( );
+		return result;
+	}
+
+public:
+	/// Processes the declarations, resulting in a symbol
+	Symbol[ ] executeDeclarations( ) {
+		Symbol[ ] result;
+		
+		foreach ( decl; allDeclarations_ )
+			decl.executeDeclarations( ( s ) { result ~= s; } );
+
 		return result;
 	}
 

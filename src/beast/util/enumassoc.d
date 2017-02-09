@@ -1,7 +1,7 @@
-module beast.utility.enumassoc;
+module beast.util.enumassoc;
 
 import std.traits;
-import beast.utility.decorator;
+import beast.util.decorator;
 
 /// Returns associative array identifier => enum
 template enumAssoc( Enum ) if ( is( Enum == enum ) ) {

@@ -1,11 +1,11 @@
-module beast.code.namespace.usernamespace;
+module beast.code.namespace.user;
 
 import beast.code.toolkit;
-import beast.code.namespace;
+import beast.code.namespace.namespace;
 
 /// Namespace whose symbols are generated from user (programmer) code
 final class UserNamespace : Namespace {
-	mixin TaskGuard!( "symbolData" );
+	mixin TaskGuard!( "overloadsetConstruction" );
 
 public:
 	this( Symbol symbol, Symbol[ ]delegate( ) obtainFunction ) {
@@ -15,7 +15,7 @@ public:
 
 public:
 	override Overloadset resolveIdentifier( Identifier id ) {
-		enforce_symbolData();
+		enforceDone_overloadsetConstruction();
 		if ( auto result = id in memberOverloadsets_ )
 			return *result;
 
@@ -23,7 +23,7 @@ public:
 	}
 
 private:
-	final void obtain_symbolData( ) {
+	final void execute_overloadsetConstruction( ) {
 		members_ = obtainFunction_( );
 		memberOverloadsets_ = constructOverloadsets( members_ );
 

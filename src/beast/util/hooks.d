@@ -1,4 +1,4 @@
-module beast.utility.hooks;
+module beast.util.hooks;
 
 template Hook( string hookName, Args... ) {
 

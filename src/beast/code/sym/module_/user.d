@@ -1,9 +1,9 @@
-module beast.code.symbol.module_.usermodule;
+module beast.code.sym.module_.user;
 
-import beast.code.symbol.toolkit;
+import beast.code.sym.toolkit;
 import beast.core.project.module_;
 import beast.code.ast.decl.module_;
-import beast.code.symbol.module_;
+import beast.code.sym.module_.module_;
 
 /// User (programmer) defined module
 final class Symbol_UserModule : Symbol_Module {
@@ -48,11 +48,7 @@ public:
 
 private:
 	Symbol[ ] obtain_members( ) {
-		Symbol[ ] result;
-
-		// TODO: implement
-
-		return result;
+		return ast_.declarationScope.executeDeclarations();
 	}
 
 private:

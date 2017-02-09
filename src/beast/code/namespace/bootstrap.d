@@ -1,7 +1,7 @@
-module beast.code.namespace.bootstrapnamespace;
+module beast.code.namespace.bootstrap;
 
 import beast.code.toolkit;
-import beast.code.namespace;
+import beast.code.namespace.namespace;
 
 /// Namespace whose symbols are added manually in the compiler code
 final class BootstrapNamespace : Namespace {

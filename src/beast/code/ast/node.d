@@ -1,7 +1,7 @@
 module beast.code.ast.node;
 
 import beast.code.ast.toolkit;
-import beast.code.symbol;
+import beast.code.sym.symbol;
 
 /// Base class for arr abstract syntax tree nodes
 abstract class AST_Node {

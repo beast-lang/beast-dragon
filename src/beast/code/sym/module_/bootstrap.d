@@ -1,10 +1,10 @@
-module beast.code.symbol.module_.bootstrapmodule;
+module beast.code.sym.module_.bootstrap;
 
-import beast.code.symbol.toolkit;
+import beast.code.sym.toolkit;
 import beast.core.project.module_;
 import beast.code.ast.decl.module_;
-import beast.code.symbol.module_;
-import beast.code.namespace.bootstrapnamespace;
+import beast.code.sym.module_.module_;
+import beast.code.namespace.bootstrap;
 
 /// Module that is defined in this compiler code
 final class Symbol_BootstrapModule : Symbol_Module {

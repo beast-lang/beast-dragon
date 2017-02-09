@@ -1,14 +1,23 @@
-module beast.code.symbol;
+module beast.code.sym.symbol;
 
-import beast.code.symbol.toolkit;
+import beast.code.sym.toolkit;
 
 /// Base class for all symbols
 abstract class Symbol : Identifiable {
 
 public:
+	enum BaseType {
+		decorator,
+		variable,
+		module_
+	}
+
+public:
 	Symbol parent;
 
 public:
+  abstract @property BaseType baseType();
+
 	/// Identifier of the symbol, may be null (for template instances, anonymous functions etc.)
 	@property Identifier identifier( ) {
 		return null;

@@ -1,4 +1,4 @@
-module beast.code.namespace;
+module beast.code.namespace.namespace;
 
 import beast.code.toolkit;
 

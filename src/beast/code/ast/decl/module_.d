@@ -1,6 +1,6 @@
 module beast.code.ast.decl.module_;
 
-import beast.code.ast.toolkit;
+import beast.code.ast.decl.toolkit;
 import beast.code.ast.decl.declarationscope;
 
 final class AST_Module : AST_Node {

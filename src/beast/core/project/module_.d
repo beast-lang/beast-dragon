@@ -2,16 +2,16 @@ module beast.core.project.module_;
 
 import beast.code.ast.decl.module_;
 import beast.code.lex.lexer;
-import beast.code.symbol.module_.usermodule;
+import beast.code.sym.module_.user;
 import beast.core.project.codesource;
 import beast.core.project.configuration;
 import beast.toolkit;
 import std.regex;
 
 /// Abstraction of module in Beast (as a project file)
-/// See also Symbol_Module and Symbol_UserModule in beast.code.symbol.module_.XX
+/// See also Symbol_Module and Symbol_UserModule in beast.code.sym.module_.XX
 final class Module : CodeSource, Identifiable {
-	mixin TaskGuard!( "parsedData" );
+	mixin TaskGuard!( "parsing" );
 
 public:
 	this( CTOR_FromFile _, string filename, ExtendedIdentifier identifier ) {
@@ -24,19 +24,19 @@ public:
 	ExtendedIdentifier identifier;
 
 	@property AST_Module ast( ) {
-		enforce_parsedData( );
+		enforceDone_parsing( );
 		return ast_;
 	}
 
 	/// Symbol of the module
 	@property Symbol_UserModule symbol( ) {
-		enforce_parsedData( );
+		enforceDone_parsing( );
 		return symbol_;
 	}
 
 	@property Token[ ] tokenList( ) {
 		// TODO: Don't always keep tokenlist
-		enforce_parsedData( );
+		enforceDone_parsing( );
 		return tokenList_;
 	}
 
@@ -46,7 +46,7 @@ public:
 	}
 
 private:
-	void obtain_parsedData( ) {
+	void execute_parsing( ) {
 		assert( !context.lexer );
 
 		Lexer lexer = new Lexer( this );

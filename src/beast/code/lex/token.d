@@ -3,7 +3,7 @@ module beast.code.lex.token;
 import beast.code.lex.toolkit;
 import beast.core.project.codesource;
 import beast.core.project.codelocation;
-import beast.utility.enumassoc;
+import beast.util.enumassoc;
 import std.algorithm;
 import std.meta;
 

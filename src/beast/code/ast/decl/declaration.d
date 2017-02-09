@@ -1,8 +1,7 @@
 module beast.code.ast.decl.declaration;
 
-import beast.code.ast.toolkit;
+import beast.code.ast.decl.toolkit;
 import beast.code.ast.decl.variable;
-import beast.code.ast.expr.typeorauto;
 
 abstract class AST_Declaration : AST_Node {
 
@@ -36,9 +35,14 @@ public:
 		// ";" || "=" => variable
 		if ( currentToken == Token.Special.semicolon || currentToken == Token.Operator.assign )
 			return AST_VariableDeclaration.parse( _gd, decorationList, type, identifier );
-			
+
 		assert( 0 );
 	}
+
+public:
+	/// Processes the declaration, resulting in a symbol(s)
+	/// For each symbol created, calls the function sink
+	abstract void executeDeclarations( void delegate( Symbol ) sink );
 
 public:
 	AST_DecorationList decorationList;

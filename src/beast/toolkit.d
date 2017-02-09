@@ -4,10 +4,10 @@ public {
 	import beast.code.lex.identifier;
 	import beast.code.lex.token;
 	import beast.core.context;
-	import beast.core.error;
+	import beast.core.error.error;
 	import beast.core.project.codelocation;
 	import beast.core.task.guard;
-	import beast.utility.identifiable;
+	import beast.util.identifiable;
 	import std.algorithm;
 	import std.array;
 	import std.conv : to;
@@ -17,6 +17,6 @@ public {
 	import std.typecons : Rebindable;
 }
 
-import beast.utility.hooks;
+import beast.util.hooks;
 
 alias HookAppInit = Hook!"appInit";
