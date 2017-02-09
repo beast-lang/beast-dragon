@@ -4,7 +4,7 @@ import beast.toolkit;
 import beast.code.lex.lexer;
 import beast.core.project.project;
 import beast.core.task.context;
-import beast.core.task.manager;
+import beast.core.task.mgr;
 import beast.code.memory.mgr;
 import beast.code.hwenv.hwenv;
 

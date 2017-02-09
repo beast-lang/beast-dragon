@@ -5,7 +5,7 @@ import beast.code.hwenv.native;
 import beast.code.memory.mgr;
 import beast.core.project.configuration;
 import beast.core.project.project;
-import beast.core.task.manager;
+import beast.core.task.mgr;
 import beast.corelib.corelib;
 import beast.toolkit;
 import std.concurrency;
@@ -130,7 +130,7 @@ void mainImpl( string[ ] args ) {
 
 	hardwareEnvironment = new HardwareEnvironment_Native;
 	memoryManager = new MemoryManager;
-	
+
 	/*
 		Core library must be constructed before finishing configuration of the project,
 		because finishConfiguration initializes module list
