@@ -21,4 +21,8 @@ public:
 		return true;
 	}
 
+	override @property size_t instanceSize( ) {
+		return size_t.sizeof;
+	}
+
 }

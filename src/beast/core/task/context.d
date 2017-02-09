@@ -34,6 +34,8 @@ package:
 public:
 	/// Context this context is waiting for to do something (for circular reference checking)
 	TaskContext blockingContext_;
+	/// Identifiaction string of the task guard blocking this context (that is waiting for another task to finish)
+	string blockingTaskGuardIdentificationString_;
 
 public:
 	void setJob( Job job ) {
@@ -91,6 +93,8 @@ private:
 
 			try {
 				job_( );
+
+				assert( !context.session, "Unfinished session" );
 			}
 			catch( BeastErrorException exc ) {
 				/// Do nothing, handled elsewhere

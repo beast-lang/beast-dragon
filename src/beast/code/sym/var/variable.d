@@ -13,6 +13,9 @@ public:
 	/// Type of the variable
 	abstract @property Symbol_Type type( );
 
+	/// If the variable value is known at compile time
+	abstract @property bool isCtime( );
+
 	/// If the variable is static or requires context (instance of symbol parent)
 	abstract @property bool isStatic( );
 

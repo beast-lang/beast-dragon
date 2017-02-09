@@ -49,6 +49,11 @@ enum E {
 	// DECORATORS:
 	decoratorConflict, /// Two decorators are incompatible with each other
 	duplicitModification, /// For example when using @static twice or when using @static where static is implicit; this is a hint
+
+	// MEMORY (interpreter related, not the compiler memory):
+	outOfMemory, /// Interpreter has run out of memory (target machine pointer size can be smaller)
+	invalidMemoryOperation, /// Either free, read or write attempt on invalid memory
+	protectedMemory, /// Memory block was created in different session and is protected from modifications
 }
 
 enum ErrorSeverity {

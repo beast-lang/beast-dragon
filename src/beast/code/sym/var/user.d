@@ -19,13 +19,20 @@ public:
 		assert( 0 );
 	}
 
+	override @property bool isCtime( ) {
+		return isCtime_;
+	}
+
 	override @property bool isStatic( ) {
 		return isStatic_;
 	}
 
 public:
 	bool isStatic_;
+	bool isCtime_;
 	Symbol_Type type_;
+
+public:
 	DecorationList decorationList_;
 	AST_VariableDeclaration ast_;
 

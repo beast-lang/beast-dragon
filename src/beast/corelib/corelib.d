@@ -22,7 +22,8 @@ public:
 	CoreLibrary_Decorators decorators;
 
 public:
-	// Module where all core stuff is in
+	/// Module where all core stuff is in
+	/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.resolveIdentifierRecursively
 	Symbol_BootstrapModule module_;
 
 public:

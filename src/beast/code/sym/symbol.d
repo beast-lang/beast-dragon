@@ -52,14 +52,14 @@ public:
 
 	/// Recursively resolves identifier - if it doesn't found any overloads in the current symbol namespace, looks into parent symbol namespace, etc.
 	/// This function can be overloaded - this is used for making some symbols accessible only from "inside" of the scope
-	Overloadset recursivelyResolveIdentifier( Identifier id ) {
+	Overloadset resolveIdentifierRecursively( Identifier id ) {
 		// First try looking in the current scope
 		if ( Overloadset result = resolveIdentifier( id ) )
 			return result;
 
 		// If not found, recursively look in parent ones
 		if ( parent )
-			return parent.recursivelyResolveIdentifier( id );
+			return parent.resolveIdentifierRecursively( id );
 
 		return Overloadset( );
 	}

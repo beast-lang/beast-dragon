@@ -1,25 +1,23 @@
 module beast.main;
 
+import beast.code.hwenv.hwenv;
+import beast.code.hwenv.native;
+import beast.code.memory.mgr;
 import beast.core.project.configuration;
 import beast.core.project.project;
 import beast.core.task.manager;
+import beast.corelib.corelib;
 import beast.toolkit;
 import std.concurrency;
+import std.file;
 import std.getopt;
 import std.json;
 import std.path;
 import std.stdio;
-import std.file;
-import beast.corelib.corelib;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
 
-	taskManager = new TaskManager;
-	scope ( exit ) {
-		taskManager.waitForEverythingDone( );
-		taskManager.quitWorkers( );
-	}
 	project = new Project;
 
 	/// Absolute file path of project file
@@ -123,13 +121,29 @@ void mainImpl( string[ ] args ) {
 		project.configuration.load( configBuilder.build( ) );
 	}
 
+	// Construct base classes
+	{
+		taskManager = new TaskManager;
+		scope ( exit ) {
+			taskManager.waitForEverythingDone( );
+			taskManager.quitWorkers( );
+		}
+	
+		hardwareEnvironment = new HardwareEnvironment_Native;
+		memoryManager = new MemoryManager;
+	}
+
 	/*
 		Core library must be constructed before finishing configuration of the project,
 		because finishConfiguration initializes module list
 		*/
 	constructCoreLibrary( );
-
 	project.finishConfiguration( );
+
+	// Give the compiler a job
+	foreach ( m; project.moduleManager.initialModuleList )
+		taskManager.issueJob( { m.enforceDone_parsing( ); } );
+
 	taskManager.spawnWorkers( );
 }
 

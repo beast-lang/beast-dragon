@@ -61,9 +61,6 @@ protected:
 
 				Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
 				result ~= m;
-
-				// Force taskGuard to obtain data for the module
-				taskManager.issueJob( { m.enforceDone_parsing( ); } );
 			}
 		}
 

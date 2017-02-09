@@ -13,8 +13,8 @@ public:
 	}
 
 public:
-	override Overloadset recursivelyResolveIdentifier( Identifier id ) {
-		// We do not call super.recursivelyResolveIdentifier here - there should be no parent
+	override Overloadset resolveIdentifierRecursively( Identifier id ) {
+		// We do not call super.resolveIdentifierRecursively here - there should be no parent
 
 		if ( Overloadset result = resolveIdentifier( id ) )
 			return result;

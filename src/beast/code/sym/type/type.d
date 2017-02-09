@@ -3,11 +3,23 @@ module beast.code.sym.type.type;
 import beast.code.sym.toolkit;
 import beast.util.uidgen;
 
+__gshared UIDKeeper!Symbol_Type typeUIDKeeper;
+private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
+
 abstract class Symbol_Type : Symbol_Variable {
 
 public:
 	this( ) {
-		typeUID_ = typeUIDGenerator( );
+		typeUID_ = typeUIDKeeper( this );
+	}
+
+public:
+	override @property Symbol_Type type( ) {
+		return coreLibrary.Type;
+	}
+
+	final override @property bool isCtime( ) {
+		return true;
 	}
 
 public:
@@ -16,14 +28,10 @@ public:
 		return typeUID_;
 	}
 
-	override @property Symbol_Type type( ) {
-		return coreLibrary.Type;
-	}
+	/// Size of instance in bytes
+	abstract @property size_t instanceSize( );
 
 private:
 	size_t typeUID_;
-
-private:
-	static __gshared UIDGenerator typeUIDGenerator;
 
 }
