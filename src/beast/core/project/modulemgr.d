@@ -73,9 +73,6 @@ protected:
 
 			Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath, extId );
 			result ~= m;
-
-			// Force taskGuard to obtain symbol for the module
-			taskManager.issueJob( { m.symbol; } );
 		}
 
 		return result;

@@ -53,63 +53,60 @@ public:
 
 		// If not, we have to check if it is work in progress
 		if ( initialFlags & Flags.workInProgress ) {
-			taskGuardResolvingMutex.lock( );
+			synchronized ( taskGuardResolvingMutex ) {
 
-			// Mark that there are tasks waiting for it
-			const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
+				// Mark that there are tasks waiting for it
+				const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
 
-			// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
-			if ( wipFlags & Flags.error ) {
-				taskGuardResolvingMutex.unlock( );
-				throw new BeastErrorException( "#poison" );
-			}
+				// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
+				if ( wipFlags & Flags.error )
+					throw new BeastErrorException( "#poison" );
 
-			if ( wipFlags & Flags.done ) {
-				taskGuardResolvingMutex.unlock( );
-				return;
-			}
+				if ( wipFlags & Flags.done )
+					return;
 
-			// Check for circular dependencies
-			{
-				// Wait for the worker context to mark itself to this guard (this is not done atomically)
-				while ( !( _taskGuard_flags & Flags.contextSet ) ) {
-					// TODO: Benchmark this
-				}
-
-				TaskContext ctx = _taskGuard_context;
-				const TaskContext thisContext = context.taskContext;
-				while ( ctx ) {
-					if ( ctx is thisContext ) {
-						// Walk the dependencies again, this time record contexts we were walking
-						TaskContext ctx2 = _taskGuard_context;
-						string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_ ];
-						while ( ctx2 !is thisContext ) {
-							ctx2 = ctx2.blockingContext_;
-							loopList ~= ctx2.blockingTaskGuardIdentificationString_;
-						}
-
-						taskGuardResolvingMutex.unlock( );
-						berror( E.dependencyLoop, "Circular dependency loop: " ~ loopList.joiner( " - " ).to!string );
+				// Check for circular dependencies
+				{
+					// Wait for the worker context to mark itself to this guard (this is not done atomically)
+					while ( !( _taskGuard_flags & Flags.contextSet ) ) {
+						// TODO: Benchmark this
 					}
 
-					ctx = ctx.blockingContext_;
+					TaskContext ctx = _taskGuard_context;
+					const TaskContext thisContext = context.taskContext;
+					while ( ctx ) {
+						if ( ctx is thisContext ) {
+							// Walk the dependencies again, this time record contexts we were walking
+							TaskContext ctx2 = _taskGuard_context;
+							string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_ ];
+							while ( ctx2 !is thisContext ) {
+								ctx2 = ctx2.blockingContext_;
+								loopList ~= ctx2.blockingTaskGuardIdentificationString_;
+							}
+
+							berror( E.dependencyLoop, "Circular dependency loop: " ~ loopList.joiner( " - " ).to!string );
+						}
+
+						ctx = ctx.blockingContext_;
+					}
 				}
+
+				// Mark current context to be woken when the task is finished
+				assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
+
+				if ( wipFlags & Flags.dependentTasksWaiting )
+					taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
+				else
+					taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
+
+				// Mark current context as waiting on this task	(for circular dependency checks)
+				context.taskContext.blockingContext_ = _taskGuard_context;
+				context.taskContext.blockingTaskGuardIdentificationString_ = identificationString ~ "." ~ guardName;
+
 			}
-
-			// Mark current context to be woken when the task is finished
-			assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
-
-			if ( wipFlags & Flags.dependentTasksWaiting )
-				taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
-			else
-				taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
-
-			// Mark current context as waiting on this task	(for circular dependency checks)
-			context.taskContext.blockingContext_ = _taskGuard_context;
-			context.taskContext.blockingTaskGuardIdentificationString_ = identificationString ~ "." ~ guardName;
-
-			// Yield the current context (we have to unlock dependentsMutex after yielding, before could screw things up -- the context could be woken before yelding)
-			context.taskContext.yield( { taskGuardResolvingMutex.unlock( ); } );
+			
+			// Yield the current context
+			context.taskContext.yield( );
 
 			synchronized ( taskGuardResolvingMutex )
 				context.taskContext.blockingContext_ = null;
@@ -129,6 +126,7 @@ public:
 		try {
 			__traits( getMember, this, _taskGuard_executeFunctionName )( );
 		}
+
 		catch ( BeastErrorException exc ) {
 			// Mark this task as erroreous
 			const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
@@ -149,8 +147,6 @@ public:
 		// If there were tasks waiting for this guard, issue them
 		if ( endData & Flags.dependentTasksWaiting )
 			_taskGuard_issueWaitingTasks( );
-
-		return;
 	}
 
 	// Give the taskGuard function an useful name

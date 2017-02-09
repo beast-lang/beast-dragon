@@ -24,8 +24,10 @@ package:
 
 	~this( ) {
 		if ( fiber_.state == Fiber.State.HOLD ) {
-			isQuitting_ = true;
-			fiber_.call( );
+			synchronized ( this ) {
+				isQuitting_ = true;
+				fiber_.call( );
+			}
 		}
 
 		assert( fiber_.state == Fiber.State.TERM );
@@ -39,28 +41,28 @@ public:
 
 public:
 	void setJob( Job job ) {
-		assert( !job_ );
+		synchronized ( this ) {
+			assert( !job_ );
 
-		fiber_.reset( );
-		job_ = job;
+			fiber_.reset( );
+			job_ = job;
+		}
 	}
 	/// Starts executing a new job
 	void execute( ) {
-		assert( job_ );
+		synchronized ( this ) {
+			assert( job_ );
 
-		fiber_.call( );
-
-		if ( actionAfterYield_ )
-			actionAfterYield_( );
+			fiber_.call( );
+		}
 	}
 
 	/// Pauses execution of this context
-	void yield( void delegate( ) actionAfterYield = null ) {
+	void yield() {
 		assert( context.taskContext is this );
 
 		contextData_ = context;
 		context = ContextData.init;
-		actionAfterYield_ = actionAfterYield;
 
 		Fiber.yield( );
 
@@ -74,8 +76,6 @@ public:
 	}
 
 private:
-	/// Action that should be executed from the calling context
-	void delegate( ) actionAfterYield_;
 	/// Job the context is currently executing
 	Job job_;
 
@@ -96,7 +96,7 @@ private:
 
 				assert( !context.session, "Unfinished session" );
 			}
-			catch( BeastErrorException exc ) {
+			catch ( BeastErrorException exc ) {
 				/// Do nothing, handled elsewhere
 			}
 

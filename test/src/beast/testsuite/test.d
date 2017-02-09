@@ -91,7 +91,11 @@ public:
 
 		// Prepare arguments
 		{
-			args = [ "beast".absolutePath( getcwd ), // Compiler name
+			string beastApp = "beast".absolutePath( getcwd );
+			version ( Windows )
+				beastApp ~= ".exe";
+
+			args = [ beastApp, // Compiler name
 				"--json-messages", // Compiler messages in JSON format
 				"--root", projectRoot, //
 				 ];

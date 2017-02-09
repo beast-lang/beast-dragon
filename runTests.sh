@@ -4,6 +4,4 @@ cd test
 dub build
 
 cd ../bin
-.\beast_testsuite.exe
-
-pause
+./beast_testsuite
