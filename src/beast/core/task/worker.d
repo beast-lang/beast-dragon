@@ -5,6 +5,7 @@ import std.stdio;
 import beast.toolkit;
 import beast.core.task.mgr;
 import beast.core.task.context;
+import core.stdc.stdlib;
 
 final class Worker {
 
@@ -37,6 +38,8 @@ private:
 		}
 		catch( Throwable t ) {
 			stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
+			// Disgracefully shutdown the application
+			exit( 2 );
 		}
 	}
 }

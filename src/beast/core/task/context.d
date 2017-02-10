@@ -4,6 +4,7 @@ import core.thread;
 import std.stdio;
 import beast.toolkit;
 import beast.core.task.guard;
+import core.stdc.stdlib;
 
 final class TaskContextQuittingException : Exception {
 	public this( ) {
@@ -105,6 +106,8 @@ private:
 		}
 		catch ( Throwable t ) {
 			stderr.writeln( "UNCAUGHT EXCEPTION: ", t.toString );
+			// Disgracefully shutdown the application
+			exit( 2 );
 		}
 	}
 

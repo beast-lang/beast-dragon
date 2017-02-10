@@ -14,6 +14,7 @@ import std.getopt;
 import std.json;
 import std.path;
 import std.stdio;
+import core.stdc.stdlib;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
@@ -152,5 +153,11 @@ int main( string[ ] args ) {
 	}
 	catch ( BeastErrorException err ) {
 		return -1;
+	}
+	catch ( Throwable t ) {
+		stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
+		// Disgracefully shutdown the application
+		exit( -1 );
+		assert( 0 );
 	}
 }
