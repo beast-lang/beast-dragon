@@ -149,15 +149,15 @@ void mainImpl( string[ ] args ) {
 int main( string[ ] args ) {
 	try {
 		mainImpl( args );
-		return 0;
+		return EXIT_SUCCESS;
 	}
 	catch ( BeastErrorException err ) {
-		return -1;
+		return EXIT_FAILURE;
 	}
 	catch ( Throwable t ) {
 		stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
 		// Disgracefully shutdown the application
-		exit( -1 );
+		exit( EXIT_FAILURE );
 		assert( 0 );
 	}
 }

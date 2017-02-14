@@ -54,6 +54,12 @@ enum E {
 	outOfMemory, /// Interpreter has run out of memory (target machine pointer size can be smaller)
 	invalidMemoryOperation, /// Either free, read or write attempt on invalid memory
 	protectedMemory, /// Memory block was created in different session and is protected from modifications
+	invalidPointer, /// Memory with given address is not allocated
+	nullPointer, /// When trying to do something with null pointer
+	invalidData, /// Data is somehow invalid (for example invalid Type value)
+
+	// CTIME:
+	valueNotCtime, /// Value is not known at compile time
 }
 
 enum ErrorSeverity {

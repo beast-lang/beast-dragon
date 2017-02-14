@@ -11,25 +11,35 @@ public:
 
 public:
 	/// Type of the variable
-	abstract @property Symbol_Type type( );
+	abstract @property BeastType type( );
+
+	/// Whether the variable is static, stack-local or context-dependent
+	abstract @property SymbolEnvironmentType envType( );
 
 	/// If the variable value is known at compile time
-	abstract @property bool isCtime( );
+	@property bool isCtime( ) {
+		return false;
+	}
+
+	/// Pointer to ctime data, if the variable is ctime
+	/// Ctime have to be of type type
+	abstract MemoryPtr ctimeData( MemoryPtr contextPointer ) {
+		assert( 0 );
+	}
 
 	/// If the variable is static or requires context (instance of symbol parent)
-	abstract @property bool isStatic( );
+	final @property bool requiresContext( ) {
+		return envType == SymbolEnvironmentType.member;
+	}
 
 public:
 	override Overloadset resolveIdentifier( Identifier id ) {
 		if ( auto result = super.resolveIdentifier( id ) )
 			return result;
 
-		// Special case - core.Type; maybe there's more elegant way how to do this?
-		if ( type !is this ) {
-			// Look into namespace of type of this variable
-			if ( auto result = type.resolveIdentifier( id ) )
-				return result;
-		}
+		// Look into namespace of type of this variable
+		if ( auto result = type.resolveIdentifier( id, ctimeData( nullMemoryPtr ) ) )
+			return result;
 
 		return Overloadset( );
 	}

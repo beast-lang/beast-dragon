@@ -30,7 +30,14 @@ public:
 
 public:
 	override @property string identificationString( ) {
-		return parent ? parent.identificationString ~ "." ~ baseName.str : baseName.str;
+		string result;
+		if( parent )
+			result ~= parent.identificationString;
+
+		if( baseName )
+			result ~= ( result.length ? "." : null ) ~ baseName.str;
+
+		return result;
 	}
 
 public:

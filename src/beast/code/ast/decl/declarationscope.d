@@ -82,11 +82,11 @@ public:
 
 public:
 	/// Processes the declarations, resulting in a symbol
-	Symbol[ ] executeDeclarations( ) {
+	Symbol[ ] executeDeclarations( DeclarationEnvironment env ) {
 		Symbol[ ] result;
 		
 		foreach ( decl; allDeclarations_ )
-			decl.executeDeclarations( ( s ) { result ~= s; } );
+			decl.executeDeclarations( env, ( s ) { result ~= s; } );
 
 		return result;
 	}

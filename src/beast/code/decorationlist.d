@@ -4,6 +4,7 @@ import beast.code.toolkit;
 import beast.code.ast.decoration;
 import beast.code.ast.decorationlist;
 import beast.code.sym.var.user;
+import beast.code.ast.decl.variable;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
 final class DecorationList {
@@ -27,8 +28,8 @@ public:
 	}
 
 public:
-	/// Applies all possible decorations in the variableModifier context and removes them from the list
-	void apply_variableModifier( Symbol_UserVariable var ) {
+	/// Applies all possible decorations in the variableDeclarationModifier context and removes them from the list
+	void apply_variableDeclarationModifier( VariableDeclarationData var ) {
 		// Right decorators have higher priority
 		foreach_reverse ( ref Record rec; list_ ) {
 			// If the record has already resolved decorator, just try applying the decorator in the context
@@ -38,7 +39,7 @@ public:
 			}
 
 			// Otherwise try resolving the decorator
-			// The only variableModifier decorators are in core library (maybe will change in future?)
+			// The only variableDeclarationModifier decorators are in core library (maybe will change in future?)
 			foreach ( decorator; coreLibrary.module_.resolveIdentifier( rec.decoration.decoratorIdentifier ).filterDecorators ) {
 				if ( decorator.apply_variableDeclarationModifier( var ) ) {
 					rec.decorator = decorator;

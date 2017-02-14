@@ -42,7 +42,7 @@ public:
 public:
 	/// Processes the declaration, resulting in a symbol(s)
 	/// For each symbol created, calls the function sink
-	abstract void executeDeclarations( void delegate( Symbol ) sink );
+	abstract void executeDeclarations( DeclarationEnvironment env,void delegate( Symbol ) sink );
 
 public:
 	AST_DecorationList decorationList;

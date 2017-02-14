@@ -107,7 +107,7 @@ private:
 		catch ( Throwable t ) {
 			stderr.writeln( "UNCAUGHT EXCEPTION: ", t.toString );
 			// Disgracefully shutdown the application
-			exit( 2 );
+			exit( EXIT_FAILURE );
 		}
 	}
 

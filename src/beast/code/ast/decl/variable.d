@@ -1,7 +1,8 @@
 module beast.code.ast.decl.variable;
 
 import beast.code.ast.decl.toolkit;
-import beast.code.sym.var.user;
+import beast.code.decorationlist;
+import beast.code.sym.var.user.user;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -34,8 +35,14 @@ public:
 	}
 
 public:
-	override void executeDeclarations( void delegate( Symbol ) sink ) {
-		sink( new Symbol_UserVariable( this ) );
+	override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
+		VariableDeclarationData declData = new VariableDeclarationData( env );
+		DecorationList decorationList = new DecorationList( decorationList );
+
+		// Apply possible decorators in the variableDeclarationModifier context
+		decorationList.apply_variableDeclarationModifier( declData );
+
+		sink( new Symbol_UserVariable( this, decorationList, declData ) );
 	}
 
 public:
@@ -53,3 +60,18 @@ protected:
 	}
 
 }
+
+final class VariableDeclarationData {
+
+public:
+	this( DeclarationEnvironment e ) {
+		isCtime = e.isCtime;
+		envType = e.envType;
+	}
+
+public:
+	bool isCtime;
+	SymbolEnvironmentType envType;
+
+}
+

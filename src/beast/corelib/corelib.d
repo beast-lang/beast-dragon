@@ -2,7 +2,7 @@ module beast.corelib.corelib;
 
 import beast.corelib.toolkit;
 import beast.corelib.decorators.decorators;
-import beast.corelib.type;
+import beast.corelib.types.types;
 
 /// Constructs core libraries (if they already are not constructed)
 void constructCoreLibrary( ) {
@@ -15,8 +15,8 @@ void constructCoreLibrary( ) {
 class CoreLibrary {
 
 public:
-	/// Type 'Type' -- typeof all classes etc.
-	Symbol_Type_Type Type;
+	/// Core types (primitives, Type, ...)
+	CoreLibrary_Types types;
 
 	/// Core decorators
 	CoreLibrary_Decorators decorators;
@@ -31,7 +31,7 @@ public:
 		Symbol[ ] symbols;
 		void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-		sink( Type = new Symbol_Type_Type );
+		types.initialize( sink );
 		decorators.initialize( sink );
 
 		module_ = new Symbol_BootstrapModule( ExtendedIdentifier.preobtained!"core", symbols );

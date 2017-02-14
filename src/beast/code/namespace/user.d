@@ -16,6 +16,7 @@ public:
 public:
 	override Overloadset resolveIdentifier( Identifier id ) {
 		enforceDone_overloadsetConstruction();
+		
 		if ( auto result = id in memberOverloadsets_ )
 			return *result;
 

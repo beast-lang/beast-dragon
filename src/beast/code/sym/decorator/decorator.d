@@ -3,7 +3,7 @@ module beast.code.sym.decorator.decorator;
 import beast.code.sym.toolkit;
 
 public {
-	import beast.code.sym.var.user;
+	import beast.code.ast.decl.variable;
 }
 
 /// Base class for all decorator types
@@ -16,7 +16,7 @@ public:
 
 public:
 	/// Tries to apply in the variableDeclarationModifier context. Returns true if successful
-	bool apply_variableDeclarationModifier( Symbol_UserVariable variable ) {
+	bool apply_variableDeclarationModifier( VariableDeclarationData data ) {
 		return false;
 	}
 

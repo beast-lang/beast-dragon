@@ -4,6 +4,7 @@ import beast.code.sym.toolkit;
 import beast.core.project.module_;
 import beast.code.ast.decl.module_;
 import beast.code.sym.module_.module_;
+import beast.code.ast.decl.env;
 
 /// User (programmer) defined module
 final class Symbol_UserModule : Symbol_Module {
@@ -48,7 +49,7 @@ public:
 
 private:
 	Symbol[ ] obtain_members( ) {
-		return ast_.declarationScope.executeDeclarations();
+		return ast_.declarationScope.executeDeclarations( declarationEnvironment_module );
 	}
 
 private:
