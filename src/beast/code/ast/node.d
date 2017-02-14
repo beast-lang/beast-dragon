@@ -1,7 +1,6 @@
 module beast.code.ast.node;
 
 import beast.code.ast.toolkit;
-import beast.code.sym.symbol;
 
 /// Base class for arr abstract syntax tree nodes
 abstract class AST_Node {
@@ -24,10 +23,10 @@ public:
 	}
 
 public:
-	/// Marks a symbol as related to this AST node (used in intellisense)
-	final void relateWithSymbol( Symbol symbol ) {
+	/// Marks symbol as related to this AST node (used in intellisense)
+	final void relateWithSymbol( Symbol sym ) {
 		synchronized ( this )
-			relatedSymbols_ ~= symbol;
+			relatedSymbols_ ~= sym;
 	}
 
 protected:
@@ -70,7 +69,8 @@ protected:
 		}( ) );
 	}
 
-private: /// For semantic analysis, it is possible to link symbols to the AST nodes
+private:
+	/// For semantic analysis, it is possible to link symbols to the AST nodes
 	/// HOWEVER, this can be accessed after EVERYTHING IS DONE
 	Symbol[ ] relatedSymbols_;
 

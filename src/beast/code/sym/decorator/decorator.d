@@ -10,8 +10,23 @@ public {
 abstract class Symbol_Decorator : Symbol {
 
 public:
-	final override @property BaseType baseType( ) {
-		return BaseType.decorator;
+	this( Namespace parentNamespace ) {
+		parentNamespace_ = parentNamespace;
+	}
+
+public:
+	final override @property DeclType declarationType( ) {
+		return DeclType.decorator;
+	}
+
+	final override @property Namespace parentNamespace( ) {
+		return parentNamespace_;
+	}
+
+public:
+	final override DataEntity data( DataEntity instance ) {
+		assert( 0 );
+		// TODO:
 	}
 
 public:
@@ -19,6 +34,9 @@ public:
 	bool apply_variableDeclarationModifier( VariableDeclarationData data ) {
 		return false;
 	}
+
+private:
+	Namespace parentNamespace_;
 
 }
 

@@ -29,9 +29,9 @@ public:
 	}
 
 	/// Symbol of the module
-	@property Symbol_UserModule symbol( ) {
+	@property Symbol_UserModule declaration( ) {
 		enforceDone_parsing( );
-		return symbol_;
+		return declaration_;
 	}
 
 	@property Token[ ] tokenList( ) {
@@ -74,12 +74,12 @@ private:
 		if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
 			return;
 
-		symbol_ = new Symbol_UserModule( this, ast_ );
+		declaration_ = new Symbol_UserModule( this, ast_ );
 	}
 
 private:
 	AST_Module ast_;
-	Symbol_UserModule symbol_;
+	Symbol_UserModule declaration_;
 	Token[ ] tokenList_;
 
 }

@@ -5,8 +5,9 @@ import beast.backend.toolkit;
 final class CodeBuilder_Ctime : CodeBuilder {
 
 public:
-	override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
-		
+	override void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+		assert( condition.dataType is coreLibrary.types.Bool );
+
 	}
 
 }

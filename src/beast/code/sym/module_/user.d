@@ -31,20 +31,12 @@ public:
 		return module_.identifier.str;
 	}
 
-public:
-	override @property AST_Node ast( ) {
-		return ast_;
+	override @property Namespace namespace() {
+		return namespace_;
 	}
 
-public:
-	override Overloadset resolveIdentifier( Identifier id ) {
-		if ( auto result = super.resolveIdentifier( id ) )
-			return result;
-
-		if ( auto result = namespace_.resolveIdentifier( id ) )
-			return result;
-
-		return Overloadset( );
+	override @property AST_Node ast( ) {
+		return ast_;
 	}
 
 private:

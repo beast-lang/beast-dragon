@@ -1,9 +1,8 @@
-module beast.code.sym.toolkit;
+module beast.code.data.toolkit;
 
 public {
 	import beast.code.toolkit;
-	import beast.code.namespace.user;
-	import beast.code.sym.symbol;
 	import beast.code.data.entity;
+	import beast.code.data.scope_;
 	import beast.code.data.overloadset;
 }

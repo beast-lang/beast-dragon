@@ -8,15 +8,19 @@ import beast.code.ast.decl.env;
 final class Symbol_Decorator_Static : Symbol_Decorator {
 
 public:
+	this( Namespace parentNamespace ) {
+		super( parentNamespace );
+	}
+
+public:
 	override @property Identifier identifier( ) {
 		return Identifier.preobtained!"#decorator_static";
 	}
 
 public:
 	override bool apply_variableDeclarationModifier( VariableDeclarationData data ) {
-		benforceHint( data.envType != SymbolEnvironmentType.static_, E.duplicitModification, "@static is reduntant (staticity is either implicit or set by another decorator)" );
-		data.envType = SymbolEnvironmentType.static_;
-
+		benforceHint( !data.isStatic, E.duplicitModification, "@static is reduntant (staticity is either implicit or set by another decorator)" );
+		data.isStatic = true;
 		return true;
 	}
 

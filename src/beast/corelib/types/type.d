@@ -1,11 +1,12 @@
 module beast.corelib.types.type;
 
 import beast.code.sym.toolkit;
+import beast.code.sym.type.staticclass;
 
 /// Type 'Type' -- typeof all classes etc.
 /// The root of all good and evil in Beast.
 /// Here be dragons
-final class BeastType_Type : BeastType {
+final class Symbol_Type_Type : Symbol_StaticClassType {
 
 public:
 	override @property Identifier identifier( ) {
@@ -17,22 +18,19 @@ public:
 	}
 
 public:
-	override Overloadset resolveIdentifier( Identifier id, MemoryPtr variableValue ) {
-		// We're using resolveIdentifier_noCoreType to prevent recursion (as type of Type is Type again)
-		if ( auto result = super.resolveIdentifier_noCoreType( id, variableValue ) )
-			return result;
+	override Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
+		// Tweak so that Type T = C; T.cc evaluates to C.cc
+		if ( instance ) {
+			assert( instance.dataType is this );
+			MemoryPtr instVal = instance.value;
+			Symbol_Type type = typeUIDKeeper[ instVal.readPrimitive!size_t ];
 
-		/*
-			This is to make stuff like this work
-			@ctime Type T = C;
-			T.somethingThatIs C's member
-		*/
-		BeastType type = typeUIDKeeper[ variableValue.readPrimitive!size_t ];
-		benforce( type !is null, E.invalidData, "Invalid Type variable value" );
-		if ( type !is this ) { // Prevent "@ctime Type type = Type" recursion
-			if ( auto result = type.resolveIdentifier( id, nullMemoryPtr ) )
-				return result;
+			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( instance.identificationString ) );
+			return type.data( null ).resolveIdentifier( id );
 		}
+
+		if ( auto result = super.resolveIdentifier( id, instance ) )
+			return result;
 
 		return Overloadset( );
 	}

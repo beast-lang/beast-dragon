@@ -10,10 +10,13 @@ import beast.code.namespace.bootstrap;
 final class Symbol_BootstrapModule : Symbol_Module {
 
 public:
-	this( ExtendedIdentifier identifier, Symbol[ ] symbols ) {
+	this( ExtendedIdentifier identifier ) {
 		identifier_ = identifier;
+		namespace_ = new BootstrapNamespace( this );
+	}
 
-		namespace_ = new BootstrapNamespace( this, symbols );
+	void initialize( Symbol[ ] symbols ) {
+		namespace_.initialize( symbols );
 	}
 
 public:
@@ -25,15 +28,8 @@ public:
 		return identifier_.str;
 	}
 
-public:
-	override Overloadset resolveIdentifier( Identifier id ) {
-		if ( auto result = super.resolveIdentifier( id ) )
-			return result;
-
-		if ( auto result = namespace_.resolveIdentifier( id ) )
-			return result;
-
-		return Overloadset( );
+	override @property Namespace namespace() {
+		return namespace_;
 	}
 
 private:

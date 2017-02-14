@@ -3,7 +3,6 @@ module beast.code.decorationlist;
 import beast.code.toolkit;
 import beast.code.ast.decoration;
 import beast.code.ast.decorationlist;
-import beast.code.sym.var.user;
 import beast.code.ast.decl.variable;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
@@ -40,7 +39,7 @@ public:
 
 			// Otherwise try resolving the decorator
 			// The only variableDeclarationModifier decorators are in core library (maybe will change in future?)
-			foreach ( decorator; coreLibrary.module_.resolveIdentifier( rec.decoration.decoratorIdentifier ).filterDecorators ) {
+			foreach ( decorator; coreLibrary.module_.data( null ).resolveIdentifier( rec.decoration.decoratorIdentifier ).filterDecorators ) {
 				if ( decorator.apply_variableDeclarationModifier( var ) ) {
 					rec.decorator = decorator;
 					break;

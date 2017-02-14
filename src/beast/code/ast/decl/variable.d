@@ -1,8 +1,9 @@
 module beast.code.ast.decl.variable;
 
+import beast.code.ast.toolkit;
 import beast.code.ast.decl.toolkit;
 import beast.code.decorationlist;
-import beast.code.sym.var.user.user;
+import beast.code.sym.var.userstatic;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -42,7 +43,10 @@ public:
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_variableDeclarationModifier( declData );
 
-		sink( new Symbol_UserVariable( this, decorationList, declData ) );
+		if ( declData.isStatic && !declData.isCtime )
+			sink( new Symbol_UserStaticVariable( this, decorationList, env ) );
+		else
+			berror( E.unimplemented, "Not implemented" );
 	}
 
 public:
@@ -66,12 +70,11 @@ final class VariableDeclarationData {
 public:
 	this( DeclarationEnvironment e ) {
 		isCtime = e.isCtime;
-		envType = e.envType;
+		isStatic = e.isStatic;
 	}
 
 public:
 	bool isCtime;
-	SymbolEnvironmentType envType;
+	bool isStatic;
 
 }
-

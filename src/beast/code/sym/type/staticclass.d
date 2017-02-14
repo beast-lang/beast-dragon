@@ -1,23 +1,13 @@
-module beast.code.sym.var.static_;
+module beast.code.sym.type.staticclass;
 
 import beast.code.sym.toolkit;
-import beast.code.sym.var.variable;
+import beast.code.sym.type.class_;
 
-/// User (programmer) defined variable
-abstract class Symbol_StaticVariable : Symbol_Variable {
-
-public:
-	this( Namespace parentNamespace ) {
-		parentNamespace_ = parentNamespace;
-	}
+abstract class Symbol_StaticClassType : Symbol_ClassType {
 
 public:
-	final override @property DeclType declarationType( ) {
-		return DeclType.staticVariable;
-	}
-
-	final override @property Namespace parentNamespace( ) {
-		return parentNamespace_;
+	final override DeclType declarationType( ) {
+		return DeclType.staticClass;
 	}
 
 public:
@@ -32,11 +22,11 @@ public:
 
 		public:
 			override @property Symbol_Type dataType( ) {
-				return dataType;
+				return coreLibrary.types.Type;
 			}
 
 			override @property bool isCtime( ) {
-				return false;
+				return true;
 			}
 
 			override @property Identifier identifier( ) {
@@ -49,8 +39,5 @@ public:
 
 		};
 	}
-
-private:
-	Namespace parentNamespace_;
 
 }

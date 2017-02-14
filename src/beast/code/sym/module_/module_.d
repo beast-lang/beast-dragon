@@ -8,22 +8,20 @@ import beast.corelib.corelib;
 abstract class Symbol_Module : Symbol {
 
 public:
-	final override @property BaseType baseType( ) {
-		return BaseType.module_;
+	final override @property DeclType declarationType( ) {
+		return DeclType.module_;
+	}
+
+	abstract @property Namespace namespace();
+
+	final override @property Namespace parentNamespace( ) {
+		return null;
 	}
 
 public:
-	override Overloadset resolveIdentifierRecursively( Identifier id ) {
-		// We do not call super.resolveIdentifierRecursively here - there should be no parent
-
-		if ( Overloadset result = resolveIdentifier( id ) )
-			return result;
-
-		// Hardwired core library 'import'
-		if ( Overloadset result = coreLibrary.module_.resolveIdentifier( id ) )
-			return result;
-
-		return Overloadset( );
+	final override DataEntity data( DataEntity instance ) {
+		assert( 0 );
+		// TODO:
 	}
 
 }

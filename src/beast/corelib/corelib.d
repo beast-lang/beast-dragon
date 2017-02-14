@@ -28,13 +28,14 @@ public:
 
 public:
 	this( ) {
+		module_ = new Symbol_BootstrapModule( ExtendedIdentifier.preobtained!"core" );
 		Symbol[ ] symbols;
 		void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-		types.initialize( sink );
-		decorators.initialize( sink );
+		types.initialize( module_.namespace, sink );
+		decorators.initialize( module_.namespace, sink );
 
-		module_ = new Symbol_BootstrapModule( ExtendedIdentifier.preobtained!"core", symbols );
+		module_.initialize( symbols );
 	}
 
 }

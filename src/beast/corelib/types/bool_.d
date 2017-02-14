@@ -1,8 +1,9 @@
 module beast.corelib.types.bool_;
 
 import beast.code.sym.toolkit;
+import beast.code.sym.type.staticclass;
 
-final class BeastType_Bool : BeastType {
+final class Symbol_Type_Bool : Symbol_StaticClassType {
 
 public:
 	override @property Identifier identifier( ) {

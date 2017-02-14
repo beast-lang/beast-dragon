@@ -21,11 +21,11 @@ public:
 
 public:
 	/// If there are any symbols in this namespace with given identifier, returns them in an overloadset.
-	abstract Overloadset resolveIdentifier( Identifier id );
+	abstract Symbol[] resolveIdentifier( Identifier id );
 
 protected:
-	static Overloadset[ Identifier ] constructOverloadsets( Symbol[ ] symbolList ) {
-		Overloadset[ Identifier ] result;
+	static Symbol[][ Identifier ] groupMembers( Symbol[ ] symbolList ) {
+		Symbol[][ Identifier ] result;
 		// Construct overloadset
 		foreach ( sym; symbolList ) {
 			assert( sym.identifier );

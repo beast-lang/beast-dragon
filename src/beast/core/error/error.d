@@ -31,6 +31,7 @@ enum E {
 	invalidProjectConfiguration, /// Error when parsing project file or invalid configuration combination
 	unimplemented, /// Feature not yet implemented
 	dependencyLoop, /// Task guard circular dependency
+	other, /// Other errors
 
 	// LEXER:
 	unexpectedCharacter, /// Unexpected character when lexing

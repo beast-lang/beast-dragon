@@ -5,7 +5,7 @@ import beast.code.namespace.namespace;
 
 /// Namespace whose symbols are generated from user (programmer) code
 final class UserNamespace : Namespace {
-	mixin TaskGuard!( "overloadsetConstruction" );
+	mixin TaskGuard!( "membersObtaining" );
 
 public:
 	this( Symbol symbol, Symbol[ ]delegate( ) obtainFunction ) {
@@ -14,31 +14,25 @@ public:
 	}
 
 public:
-	override Overloadset resolveIdentifier( Identifier id ) {
-		enforceDone_overloadsetConstruction();
+	override Symbol[] resolveIdentifier( Identifier id ) {
+		enforceDone_membersObtaining();
 		
-		if ( auto result = id in memberOverloadsets_ )
+		if ( auto result = id in groupedMembers_ )
 			return *result;
 
-		return Overloadset( );
+		return null;
 	}
 
 private:
-	final void execute_overloadsetConstruction( ) {
+	final void execute_membersObtaining( ) {
 		members_ = obtainFunction_( );
-		memberOverloadsets_ = constructOverloadsets( members_ );
-
-		// Automatically set parent of member symbols
-		foreach ( mem; members_ ) {
-			assert( !mem.parent );
-			mem.parent = symbol;
-		}
+		groupedMembers_ = groupMembers( members_ );
 	}
 
 private:
 	Symbol symbol_;
 	Symbol[ ] members_;
-	Overloadset[ Identifier ] memberOverloadsets_;
+	Symbol[][ Identifier ] groupedMembers_;
 	Symbol[ ]delegate( ) obtainFunction_;
 
 }

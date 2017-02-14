@@ -1,74 +1,63 @@
 module beast.code.sym.symbol;
 
-import beast.code.sym.toolkit;
+import beast.code.toolkit;
 
-/// Base class for all symbols
+/// Declaration of something (not really explaining, I know)
 abstract class Symbol : Identifiable {
 
 public:
-	enum BaseType {
+	enum DeclType {
+		staticVariable,
+		memberVariable,
+		staticFunction,
+		memberFunction,
+		staticClass,
+		memberClass,
+		enum_, // enum is always static
 		decorator,
-		variable,
 		module_
 	}
 
 public:
-	Symbol parent;
+	/// Identifier of the declaration; can be null
+	abstract @property Identifier identifier( );
 
-public:
-  abstract @property BaseType baseType();
+	/// Type of the declaration
+	abstract @property DeclType declarationType( );
 
-	/// Identifier of the symbol, may be null (for template instances, anonymous functions etc.)
-	@property Identifier identifier( ) {
-		return null;
-	}
+	/// Namespace this declaration is related to (it doesn't have to belong there actually)
+	abstract @property Namespace parentNamespace( );
 
-	/// For template instances, the base name is the template identifier; otherwise it is equal to identifier
-	@property Identifier baseName( ) {
-		return identifier;
-	}
-
-public:
-	override @property string identificationString( ) {
-		string result;
-		if( parent )
-			result ~= parent.identificationString;
-
-		if( baseName )
-			result ~= ( result.length ? "." : null ) ~ baseName.str;
-
-		return result;
-	}
-
-public:
-	/// AST node related to the symbol (declaration)
+	/// AST node related to the declaration; can be null
 	@property AST_Node ast( ) {
 		return null;
 	}
 
 	/// Location of where in the code the symbol was declared (or code that +- matches it)
-	@property CodeLocation codeLocation( ) {
+	final @property CodeLocation codeLocation( ) {
 		return ast ? ast.codeLocation : cast( CodeLocation ) null;
 	}
 
 public:
-	/// Resolves identifier. This function only looks into current symbol namespace
-	Overloadset resolveIdentifier( Identifier id ) {
-		return Overloadset( );
-	}
+	/// Creates and returns a data entity representing access to this declaration via given instance
+	abstract DataEntity data( DataEntity parentInstance );
 
-	/// Recursively resolves identifier - if it doesn't found any overloads in the current symbol namespace, looks into parent symbol namespace, etc.
-	/// This function can be overloaded - this is used for making some symbols accessible only from "inside" of the scope
-	Overloadset resolveIdentifierRecursively( Identifier id ) {
-		// First try looking in the current scope
-		if ( Overloadset result = resolveIdentifier( id ) )
-			return result;
+public:
+	override string identificationString( ) {
+		string result;
 
-		// If not found, recursively look in parent ones
-		if ( parent )
-			return parent.resolveIdentifierRecursively( id );
+		if ( auto parent = parentNamespace )
+			result = parent.identificationString;
 
-		return Overloadset( );
+		if ( result )
+			result ~= ".";
+
+		if ( auto id = identifier )
+			result ~= id.str;
+		else
+			result ~= "(declaration)";
+
+		return result;
 	}
 
 }

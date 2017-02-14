@@ -7,28 +7,25 @@ import beast.code.namespace.namespace;
 final class BootstrapNamespace : Namespace {
 
 public:
-	this( Symbol symbol, Symbol[ ] members ) {
+	this( Symbol symbol ) {
 		super( symbol );
-		members_ = members;
-		memberOverloadsets_ = constructOverloadsets( members_ );
+	}
 
-		// Automatically set parent of member symbols
-		foreach ( mem; members_ ) {
-			assert( !mem.parent );
-			mem.parent = symbol;
-		}
+	void initialize( Symbol[ ] members ) {
+		members_ = members;
+		groupedMembers_ = groupMembers( members_ );
 	}
 
 public:
-	override Overloadset resolveIdentifier( Identifier id ) {
-		if ( auto result = id in memberOverloadsets_ )
+	override Symbol[ ] resolveIdentifier( Identifier id ) {
+		if ( auto result = id in groupedMembers_ )
 			return *result;
 
-		return Overloadset( );
+		return null;
 	}
 
 private:
 	Symbol[ ] members_;
-	Overloadset[ Identifier ] memberOverloadsets_;
+	Symbol[ ][ Identifier ] groupedMembers_;
 
 }
