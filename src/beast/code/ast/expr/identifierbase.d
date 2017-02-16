@@ -23,12 +23,19 @@ public:
 		currentToken.expect( Token.Type.identifier );
 		result.identifier = currentToken.identifier;
 
+		getNextToken();
+
 		result.codeLocation = clg.get( );
 		return result;
 	}
 
 public:
-/// If true, the identifier was 
+	override DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ ) {
+		return scope_.resolveIdentifierRecursively( identifier ).single_expectType( expectedType );
+	}
+
+public:
+	/// If true, the identifier was 
 	bool precedingColon;
 	Identifier identifier;
 

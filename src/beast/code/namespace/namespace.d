@@ -11,11 +11,11 @@ public:
 
 public:
 	/// Symbol this namespace belongs to (for in-function control stmts, it is the function the stmt is in)
-	final @property Symbol symbol( ) {
+	final Symbol symbol( ) {
 		return symbol_;
 	}
 
-	@property string identificationString( ) {
+	string identificationString( ) {
 		return symbol.identificationString;
 	}
 

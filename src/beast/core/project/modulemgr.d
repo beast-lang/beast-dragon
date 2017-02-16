@@ -37,7 +37,7 @@ public:
 		}
 	}
 
-	@property final Module[ ] initialModuleList( ) {
+	final Module[ ] initialModuleList( ) {
 		return initialModuleList_;
 	}
 

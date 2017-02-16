@@ -3,7 +3,7 @@ module beast.code.ast.expr.typeorauto;
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.identifierbase;
 
-final class AST_TypeOrAutoExpression : AST_Node {
+final class AST_TypeOrAutoExpression : AST_Expression {
 
 public:
 	static bool canParse( ) {
@@ -25,6 +25,12 @@ public:
 
 		result.codeLocation = _gd.get( );
 		return result;
+	}
+
+public:
+	override DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ ) {
+		assert( !isAuto );
+		return expr.build( cb, expectedType, scope_ );
 	}
 
 public:

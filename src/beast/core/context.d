@@ -25,6 +25,9 @@ public:
 	/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
 	size_t session;
 
+	/// Id of the current job (task)
+	size_t jobId;
+
 	/// Sessions can be nested (they're absolutely independent though); last session in the stack is saved in the session variable for speed up
 	size_t[ ] sessionStack;
 

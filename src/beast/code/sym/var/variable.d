@@ -6,6 +6,6 @@ abstract class Symbol_Variable : Symbol {
 
 public:
 	/// Variable data type
-	abstract @property Symbol_Type dataType( );
+	abstract Symbol_Type dataType( );
 
 }

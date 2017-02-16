@@ -27,15 +27,15 @@ public:
 		assert( result.val != 0, "Alloc should not return a null pointer" );
 	}
 	body {
-		MemoryPtr endPtr = MemoryPtr( bytes + 1 /* +1 to prevent allocating on a null pointer */  );
+		MemoryPtr endPtr = MemoryPtr( 1 /* +1 to prevent allocating on a null pointer */  );
 
 		synchronized ( mut.writer ) {
 			assert( context.session in activeSessions, "Invalid session" );
 
 			// First, we try inserting the new block between currently existing memory blocks
 			foreach ( i, block; mmap ) {
-				if ( endPtr <= block.startPtr ) {
-					MemoryBlock result = new MemoryBlock( endPtr - bytes, bytes );
+				if ( endPtr + bytes <= block.startPtr ) {
+					MemoryBlock result = new MemoryBlock( endPtr, bytes );
 					mmap.insertInPlace( i, result );
 					return result.startPtr;
 				}
@@ -46,7 +46,7 @@ public:
 			// If it fails, we add a new memory after all existing blocks
 			benforce( endPtr <= MemoryPtr( hardwareEnvironment.memorySize ), E.outOfMemory, "Failed to allocate %s bytes".format( bytes ) );
 
-			MemoryBlock result = new MemoryBlock( endPtr - bytes, bytes );
+			MemoryBlock result = new MemoryBlock( endPtr, bytes );
 			mmap ~= result;
 			return result.startPtr;
 		}
@@ -78,12 +78,13 @@ public:
 	void write( MemoryPtr ptr, void* data, size_t bytes ) {
 		MemoryBlock block = findMemoryBlock( ptr );
 
+		debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 		benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session" );
 		benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
 
 		assert( block.session in activeSessions );
 		assert( context.session == block.session );
-		assert( context.taskContext == activeSessions[ block.session ] );
+		assert( context.jobId == activeSessions[ block.session ] );
 
 		// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
 		memcpy( block.data + ( ptr - block.startPtr ).val, data, bytes );
@@ -95,7 +96,7 @@ public:
 
 		// Either the session the block was created in is no longer active (-> the block cannot be changed anymore), or the session belongs to the same task context as current session (meaning it is the same session or a derived one)
 		// Other cases should not happen
-		assert( block.session !in activeSessions || activeSessions[ block.session ] == context.taskContext );
+		assert( block.session !in activeSessions || activeSessions[ block.session ] == context.jobId );
 
 		benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
 		return block.data + ( ptr - block.startPtr ).val;
@@ -108,7 +109,7 @@ public:
 
 		synchronized ( mut.reader ) {
 			foreach ( block; mmap ) {
-				if ( block.startPtr >= ptr && block.endPtr < ptr )
+				if ( ptr >= block.startPtr && ptr < block.endPtr )
 					return block;
 			}
 		}
@@ -126,7 +127,7 @@ public:
 		context.session = session;
 
 		debug synchronized ( memoryManager ) {
-			activeSessions[ session ] = context.taskContext;
+			activeSessions[ session ] = context.jobId;
 		}
 	}
 
@@ -160,8 +161,8 @@ public:
 private:
 	/// Sorted array of memory blocks
 	MemoryBlock[ ] mmap; // TODO: Better implementation
-	/// Map of session id -> task context
-	debug static __gshared TaskContext[ size_t ] activeSessions;
+	/// Map of session id -> jobId
+	debug static __gshared size_t[ size_t ] activeSessions;
 	ReadWriteMutex mut;
 
 }

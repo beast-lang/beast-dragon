@@ -14,8 +14,8 @@ public:
 	}
 
 public:
-	/// Builds code for this expression using given codebuilder and returns symbol representing the result7
+	/// Builds code for this expression using given codebuilder and returns symbol representing the result.
 	/// expectedType is used for type inferration and can be null
-	//abstract DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ );
+	abstract DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ );
 
 }

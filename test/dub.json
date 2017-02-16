@@ -1,5 +1,5 @@
 {
-	"name": "beast",
+	"name": "beast_testsuite",
 	"description": "Beast language compiler test suite",
 	"authors": [
 		"Daniel 'Danol' Čejchan"

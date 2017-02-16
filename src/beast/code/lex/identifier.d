@@ -96,7 +96,7 @@ public:
 	alias data this;
 
 public:
-	@property string str( ) {
+	string str( ) {
 		return data.map!( x => cast( string ) x.str ).joiner( "." ).to!string;
 	}
 

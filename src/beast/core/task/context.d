@@ -5,6 +5,7 @@ import std.stdio;
 import beast.toolkit;
 import beast.core.task.guard;
 import core.stdc.stdlib;
+import beast.util.uidgen;
 
 final class TaskContextQuittingException : Exception {
 	public this( ) {
@@ -20,7 +21,6 @@ public:
 package:
 	this( ) {
 		fiber_ = new Fiber( &run );
-		contextData_.taskContext = this;
 	}
 
 	~this( ) {
@@ -47,9 +47,13 @@ public:
 
 			fiber_.reset( );
 			job_ = job;
+			contextData_ = ContextData( );
+			contextData_.jobId = jobIdGen( );
+			contextData_.taskContext = this;
 		}
 	}
-	/// Starts executing a new job
+
+	/// Starts/continues executing assigned job
 	void execute( ) {
 		synchronized ( this ) {
 			assert( job_ );
@@ -59,7 +63,7 @@ public:
 	}
 
 	/// Pauses execution of this context
-	void yield() {
+	void yield( ) {
 		assert( context.taskContext is this );
 
 		contextData_ = context;
@@ -110,5 +114,8 @@ private:
 			exit( EXIT_FAILURE );
 		}
 	}
+
+private:
+	static __gshared UIDGenerator jobIdGen;
 
 }

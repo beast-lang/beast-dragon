@@ -6,38 +6,58 @@ import beast.code.sym.type.class_;
 abstract class Symbol_StaticClassType : Symbol_ClassType {
 
 public:
+	this( Namespace parentNamespace ) {
+		parentNamespace_ = parentNamespace;
+		staticData_ = new StaticData;
+	}
+
+public:
 	final override DeclType declarationType( ) {
 		return DeclType.staticClass;
 	}
 
+	final override Namespace parentNamespace( ) {
+		return parentNamespace_;
+	}
+
 public:
-	final override @property DataEntity data( DataEntity parentInstance ) {
-		return new class DataEntity {
+	final override DataEntity data( DataEntity parentInstance = null ) {
+		return staticData_;
+	}
 
-		public:
-			this( ) {
-				// Static variables are in global scope
-				super( null );
-			}
+private:
+	Namespace parentNamespace_;
+	StaticData staticData_;
 
-		public:
-			override @property Symbol_Type dataType( ) {
-				return coreLibrary.types.Type;
-			}
+private:
+	final class StaticData : DataEntity {
 
-			override @property bool isCtime( ) {
-				return true;
-			}
+	public:
+		this( ) {
+			super( null );
+		}
 
-			override @property Identifier identifier( ) {
-				return this.outer.identifier;
-			}
+	public:
+		override Symbol_Type dataType( ) {
+			return coreLibrary.types.Type;
+		}
 
-			override @property string identificationString( ) {
-				return this.outer.identificationString;
-			}
+		override bool isCtime( ) {
+			return true;
+		}
 
-		};
+		override MemoryPtr ctValue( ) {
+			return ctimeValue_;
+		}
+
+		override Identifier identifier( ) {
+			return this.outer.identifier;
+		}
+
+		override string identificationString( ) {
+			return this.outer.identificationString;
+		}
+
 	}
 
 }

@@ -29,7 +29,7 @@ public:
 	size_t length;
 
 public:
-	pragma( inline ) @property const {
+	pragma( inline ) const {
 		size_t endPos( ) {
 			return startPos + length;
 		}
@@ -63,7 +63,7 @@ public:
 
 public:
 	/// Convenient error guard function
-	@property ErrorGuardFunction errGuardFunction( ) {
+	ErrorGuardFunction errGuardFunction( ) {
 		// We must copy the struct data, because the struct might not exists when the guard function is called (because of stack)
 		// So this copy actually makes sense!
 		CodeLocation data = this;
@@ -85,7 +85,7 @@ public:
 
 public:
 	CodeLocation get( ) {
-		CodeLocation endLocation = lexer.currentToken.codeLocation;
+		CodeLocation endLocation = ( lexer.currentToken.previousToken ? lexer.currentToken.previousToken : lexer.currentToken ).codeLocation;
 		assert( startLocation.source is endLocation.source );
 		assert( startLocation.startPos <= endLocation.endPos );
 

@@ -15,11 +15,11 @@ public:
 	}
 
 public:
-	final override @property DeclType declarationType( ) {
+	final override DeclType declarationType( ) {
 		return DeclType.decorator;
 	}
 
-	final override @property Namespace parentNamespace( ) {
+	final override Namespace parentNamespace( ) {
 		return parentNamespace_;
 	}
 

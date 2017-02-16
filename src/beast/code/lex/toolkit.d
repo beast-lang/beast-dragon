@@ -9,7 +9,7 @@ public {
 import beast.code.lex.token;
 import beast.code.lex.lexer;
 
-pragma( inline ) @property {
+pragma( inline ) {
 	/// Context-local lexer instance
 	Lexer lexer( ) {
 		return context.lexer;

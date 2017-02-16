@@ -4,7 +4,7 @@ import beast.code.ast.toolkit;
 import beast.code.ast.expr.expression;
 
 /// Identifier wrapped in the AST node because of codeLocation and relatedSymbol
-final class AST_Identifier : AST_Expression {
+final class AST_Identifier : AST_Node {
 
 public:
 	static bool canParse( ) {

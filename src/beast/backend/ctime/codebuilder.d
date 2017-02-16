@@ -11,3 +11,6 @@ public:
 	}
 
 }
+
+static __gshared CodeBuilder_Ctime ctimeCodeBuilder;
+private enum _init = HookAppInit.hook!( { ctimeCodeBuilder = new CodeBuilder_Ctime; } );

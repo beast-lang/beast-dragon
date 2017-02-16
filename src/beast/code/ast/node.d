@@ -11,14 +11,14 @@ public:
 
 public:
 	/// All nodes that are direct children of the current node
-	final @property AST_Node[ ] subnodes( ) {
+	final AST_Node[ ] subnodes( ) {
 		return _subnodes.filter!( x => x !is null ).array.sort!( ( a, b ) { //
 			assert( a.codeLocation.source is b.codeLocation.source );
 			return a.codeLocation.startPos < b.codeLocation.startPos;
 		} ).array;
 	}
 
-	@property AST_Node toNode( ) {
+	AST_Node toNode( ) {
 		return this;
 	}
 
@@ -31,7 +31,7 @@ public:
 
 protected:
 	/// This function should return all subnodes of given AST node. It can contain null elements.
-	@property InputRange!AST_Node _subnodes( ) {
+	InputRange!AST_Node _subnodes( ) {
 		return inputRangeObject( cast( AST_Node[ ] ) null );
 	}
 

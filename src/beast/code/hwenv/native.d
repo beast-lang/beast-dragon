@@ -6,11 +6,11 @@ import beast.code.hwenv.hwenv;
 final class HardwareEnvironment_Native : HardwareEnvironment {
 
 public:
-	override @property ubyte pointerSize( ) {
+	override ubyte pointerSize( ) {
 		return size_t.sizeof;
 	}
 
-	override @property size_t memorySize( ) {
+	override size_t memorySize( ) {
 		return size_t.max;
 	}
 

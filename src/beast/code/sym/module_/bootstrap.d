@@ -20,15 +20,15 @@ public:
 	}
 
 public:
-	override @property Identifier identifier( ) {
+	override Identifier identifier( ) {
 		return identifier_[ $ - 1 ];
 	}
 
-	override @property string identificationString( ) {
+	override string identificationString( ) {
 		return identifier_.str;
 	}
 
-	override @property Namespace namespace() {
+	override Namespace namespace() {
 		return namespace_;
 	}
 

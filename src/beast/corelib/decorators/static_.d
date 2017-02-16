@@ -13,7 +13,7 @@ public:
 	}
 
 public:
-	override @property Identifier identifier( ) {
+	override Identifier identifier( ) {
 		return Identifier.preobtained!"#decorator_static";
 	}
 

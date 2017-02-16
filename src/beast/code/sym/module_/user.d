@@ -14,7 +14,7 @@ public:
 		this.module_ = module_;
 		ast_ = ast;
 
-		namespace_ = new UserNamespace( this, &obtain_members );
+		namespace_ = new UserNamespace( this, &execute_membersObtaining );
 		ast_.relateWithSymbol( this );
 	}
 
@@ -23,25 +23,33 @@ public:
 	Module module_;
 
 public:
-	override @property Identifier identifier( ) {
+	override Identifier identifier( ) {
 		return module_.identifier[ $ - 1 ];
 	}
 
-	override @property string identificationString( ) {
+	override string identificationString( ) {
 		return module_.identifier.str;
 	}
 
-	override @property Namespace namespace() {
+	override Namespace namespace( ) {
 		return namespace_;
 	}
 
-	override @property AST_Node ast( ) {
+	override AST_Node ast( ) {
 		return ast_;
 	}
 
+public:
+	override string identification( ) {
+		return module_.identifier.str;
+	}
+
 private:
-	Symbol[ ] obtain_members( ) {
-		return ast_.declarationScope.executeDeclarations( declarationEnvironment_module );
+	Symbol[ ] execute_membersObtaining( ) {
+		DeclarationEnvironment env = DeclarationEnvironment.newModule;
+		env.parentNamespace = namespace_;
+
+		return ast_.declarationScope.executeDeclarations( env );
 	}
 
 private:

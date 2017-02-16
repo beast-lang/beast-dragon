@@ -8,9 +8,9 @@ abstract class HardwareEnvironment {
 
 public:
 	/// Target machine pointer size in bytes
-	abstract @property ubyte pointerSize( );
+	abstract ubyte pointerSize( );
 
 	/// Target machine max memory size
-	abstract @property size_t memorySize( );
+	abstract size_t memorySize( );
 
 }

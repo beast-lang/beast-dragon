@@ -28,7 +28,7 @@ public:
 	string basePath;
 
 public:
-	override final @property string identificationString( ) const {
+	override final string identificationString( ) const {
 		return "<project>";
 	}
 

@@ -61,6 +61,10 @@ enum E {
 
 	// CTIME:
 	valueNotCtime, /// Value is not known at compile time
+
+	// OVERLOADSETS:
+	noMatchingOverload, /// No overload matches given parameters
+	ambiguousResolution, /// Multiple overloads match given parameters
 }
 
 enum ErrorSeverity {

@@ -65,6 +65,10 @@ public:
 				if ( wipFlags & Flags.done )
 					return;
 
+				// Mark current context as waiting on this task	(for circular dependency checks)
+				context.taskContext.blockingContext_ = _taskGuard_context;
+				context.taskContext.blockingTaskGuardIdentificationString_ = "%s.(%s)".format( identificationString, guardName );
+
 				// Check for circular dependencies
 				{
 					// Wait for the worker context to mark itself to this guard (this is not done atomically)
@@ -80,31 +84,33 @@ public:
 							TaskContext ctx2 = _taskGuard_context;
 							string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_ ];
 							while ( ctx2 !is thisContext ) {
+								assert( ctx2.blockingTaskGuardIdentificationString_ );
 								ctx2 = ctx2.blockingContext_;
 								loopList ~= ctx2.blockingTaskGuardIdentificationString_;
 							}
 
-							berror( E.dependencyLoop, "Circular dependency loop: " ~ loopList.joiner( " - " ).to!string );
+							loopList ~= loopList[ 0 ];
+
+							// If the circular loop is this context to this context, 
+							if ( !( wipFlags & Flags.dependentTasksWaiting ) )
+								taskGuardDependentsList[ _taskGuard_id ] = [];
+
+							berror( E.dependencyLoop, "Circular dependency loop: %s".format( loopList.joiner( " - " ).to!string ) );
 						}
 
 						ctx = ctx.blockingContext_;
 					}
 				}
 
-				// Mark current context to be woken when the task is finished
+				// Mark current context to be woken when the task is finished, the _taskGuard_issueWaitingTasks is called anyway - we have to ensure it has a record to work with
 				assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
 
 				if ( wipFlags & Flags.dependentTasksWaiting )
 					taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
 				else
 					taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
-
-				// Mark current context as waiting on this task	(for circular dependency checks)
-				context.taskContext.blockingContext_ = _taskGuard_context;
-				context.taskContext.blockingTaskGuardIdentificationString_ = identificationString ~ "." ~ guardName;
-
 			}
-			
+
 			// Yield the current context
 			context.taskContext.yield( );
 
@@ -153,7 +159,7 @@ public:
 	mixin( "alias enforceDone_" ~ guardName ~ " = _taskGuard_func;" );
 
 private:
-	pragma( inline ) @property TaskGuardId _taskGuard_id( ) {
+	pragma( inline ) TaskGuardId _taskGuard_id( ) {
 		return &_taskGuard_flags;
 	}
 
@@ -165,8 +171,8 @@ private:
 		synchronized ( taskGuardResolvingMutex ) {
 			assert( _taskGuard_id in taskGuardDependentsList );
 
-			foreach ( task; taskGuardDependentsList[ _taskGuard_id ] )
-				taskManager.issueTask( task );
+			foreach ( ctx; taskGuardDependentsList[ _taskGuard_id ] )
+				taskManager.issueTask( ctx );
 
 			taskGuardDependentsList.remove( _taskGuard_id );
 		}

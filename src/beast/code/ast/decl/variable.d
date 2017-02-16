@@ -31,6 +31,9 @@ public:
 		else
 			currentToken.expect( Token.Special.semicolon, "default value or ';'" );
 
+		currentToken.expect( Token.Special.semicolon );
+		getNextToken( );
+
 		result.codeLocation = _gd.get( );
 		return result;
 	}

@@ -9,48 +9,53 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 public:
 	this( Namespace parentNamespace ) {
 		parentNamespace_ = parentNamespace;
+		staticData_ = new StaticData;
 	}
 
 public:
-	final override @property DeclType declarationType( ) {
+	final override DeclType declarationType( ) {
 		return DeclType.staticVariable;
 	}
 
-	final override @property Namespace parentNamespace( ) {
+	final override Namespace parentNamespace( ) {
 		return parentNamespace_;
 	}
 
 public:
-	final override @property DataEntity data( DataEntity parentInstance ) {
-		return new class DataEntity {
-
-		public:
-			this( ) {
-				// Static variables are in global scope
-				super( null );
-			}
-
-		public:
-			override @property Symbol_Type dataType( ) {
-				return dataType;
-			}
-
-			override @property bool isCtime( ) {
-				return false;
-			}
-
-			override @property Identifier identifier( ) {
-				return this.outer.identifier;
-			}
-
-			override @property string identificationString( ) {
-				return this.outer.identificationString;
-			}
-
-		};
+	final override DataEntity data( DataEntity parentInstance = null ) {
+		return staticData_;
 	}
 
 private:
 	Namespace parentNamespace_;
+	StaticData staticData_;
+
+private:
+	final class StaticData : DataEntity {
+
+	public:
+		this( ) {
+			// Static variables are in global scope
+			super( null );
+		}
+
+	public:
+		override Symbol_Type dataType( ) {
+			return this.outer.dataType;
+		}
+
+		override bool isCtime( ) {
+			return false;
+		}
+
+		override Identifier identifier( ) {
+			return this.outer.identifier;
+		}
+
+		override string identificationString( ) {
+			return this.outer.identificationString;
+		}
+
+	}
 
 }

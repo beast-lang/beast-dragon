@@ -1,10 +1,10 @@
-module beast.corelib.types.bool_;
+module beast.corelib.types.void_;
 
 import beast.code.sym.toolkit;
 import beast.code.sym.type.staticclass;
 import beast.code.namespace.bootstrap;
 
-final class Symbol_Type_Bool : Symbol_StaticClassType {
+final class Symbol_Type_Void : Symbol_StaticClassType {
 
 public:
 	this( Namespace parentNamespace ) {
@@ -16,11 +16,11 @@ public:
 
 public:
 	override Identifier identifier( ) {
-		return Identifier.preobtained!"Bool";
+		return Identifier.preobtained!"Void";
 	}
 
 	override size_t instanceSize( ) {
-		return 1;
+		return 0;
 	}
 
 	override Namespace namespace( ) {

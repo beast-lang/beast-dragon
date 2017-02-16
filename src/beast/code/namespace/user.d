@@ -11,12 +11,14 @@ public:
 	this( Symbol symbol, Symbol[ ]delegate( ) obtainFunction ) {
 		super( symbol );
 		obtainFunction_ = obtainFunction;
+
+		taskManager.issueJob( { enforceDone_membersObtaining( ); } );
 	}
 
 public:
-	override Symbol[] resolveIdentifier( Identifier id ) {
-		enforceDone_membersObtaining();
-		
+	override Symbol[ ] resolveIdentifier( Identifier id ) {
+		enforceDone_membersObtaining( );
+
 		if ( auto result = id in groupedMembers_ )
 			return *result;
 
@@ -32,7 +34,7 @@ private:
 private:
 	Symbol symbol_;
 	Symbol[ ] members_;
-	Symbol[][ Identifier ] groupedMembers_;
+	Symbol[ ][ Identifier ] groupedMembers_;
 	Symbol[ ]delegate( ) obtainFunction_;
 
 }

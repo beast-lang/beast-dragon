@@ -6,6 +6,10 @@ import beast.code.toolkit;
 final class DeclarationEnvironment {
 
 public:
+	static DeclarationEnvironment newModule() {
+		DeclarationEnvironment result = new DeclarationEnvironment;
+		return result;
+	}
 
 public:
 	bool isStatic = true;
@@ -16,9 +20,3 @@ public:
 	Symbol_Type parentType;
 
 }
-
-__gshared DeclarationEnvironment declarationEnvironment_module;
-
-private enum _init = HookAppInit.hook!( {
-		declarationEnvironment_module = new DeclarationEnvironment;
-	} );

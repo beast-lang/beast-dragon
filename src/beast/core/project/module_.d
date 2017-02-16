@@ -23,25 +23,25 @@ public:
 public:
 	ExtendedIdentifier identifier;
 
-	@property AST_Module ast( ) {
+	AST_Module ast( ) {
 		enforceDone_parsing( );
 		return ast_;
 	}
 
 	/// Symbol of the module
-	@property Symbol_UserModule declaration( ) {
+	Symbol_UserModule declaration( ) {
 		enforceDone_parsing( );
 		return declaration_;
 	}
 
-	@property Token[ ] tokenList( ) {
+	Token[ ] tokenList( ) {
 		// TODO: Don't always keep tokenlist
 		enforceDone_parsing( );
 		return tokenList_;
 	}
 
 public:
-	override @property string identificationString( ) {
+	override string identificationString( ) {
 		return identifier.str;
 	}
 

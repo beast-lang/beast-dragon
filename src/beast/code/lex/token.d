@@ -113,28 +113,27 @@ public:
 public:
 	CodeLocation codeLocation;
 	const Type type;
+	Token previousToken;
 
 public:
-	@property {
-		Identifier identifier( ) {
-			assert( type == Type.identifier );
-			return data.identifier;
-		}
+	Identifier identifier( ) {
+		assert( type == Type.identifier );
+		return data.identifier;
+	}
 
-		Keyword keyword( ) {
-			assert( type == Type.keyword );
-			return data.keyword;
-		}
+	Keyword keyword( ) {
+		assert( type == Type.keyword );
+		return data.keyword;
+	}
 
-		Operator operator( ) {
-			assert( type == Type.operator );
-			return data.operator;
-		}
+	Operator operator( ) {
+		assert( type == Type.operator );
+		return data.operator;
+	}
 
-		Special special( ) {
-			assert( type == Type.special );
-			return data.special;
-		}
+	Special special( ) {
+		assert( type == Type.special );
+		return data.special;
 	}
 
 public:
