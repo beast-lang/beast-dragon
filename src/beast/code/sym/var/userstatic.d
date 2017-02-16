@@ -30,7 +30,7 @@ public:
 		return type_;
 	}
 
-	override AST_Node ast() {
+	override AST_Node ast( ) {
 		return ast_;
 	}
 
@@ -45,17 +45,15 @@ private:
 
 		// TODO: if type auto
 		with ( memoryManager.session ) {
-			RootDataScope scope_ = new RootDataScope( parentNamespace.symbol.data, "(type)" );
+			RootDataScope scope_ = new RootDataScope( parentNamespace.symbol.data );
 			type_ = ast_.type.build( ctimeCodeBuilder, coreLibrary.types.Type, scope_ ).ctValue_Type;
 			scope_.buildCleanup( ctimeCodeBuilder );
-			scope_.finish();
+			scope_.finish( );
 
 			assert( type_ );
 		}
 
-		import std.stdio;
-
-		writefln( "%s TYPE: %s", identificationString, type_.identificationString );
+		benforce!( ErrorSeverity.warning )( type_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( type_.identificationString ) );
 	}
 
 }

@@ -85,7 +85,8 @@ public:
 
 public:
 	CodeLocation get( ) {
-		CodeLocation endLocation = ( lexer.currentToken.previousToken ? lexer.currentToken.previousToken : lexer.currentToken ).codeLocation;
+		CodeLocation startLocation = startToken.codeLocation;
+		CodeLocation endLocation = ( lexer.currentToken is startToken ? startToken : lexer.currentToken.previousToken ).codeLocation;
 		assert( startLocation.source is endLocation.source );
 		assert( startLocation.startPos <= endLocation.endPos );
 
@@ -93,15 +94,15 @@ public:
 	}
 
 private:
-	this( CodeLocation loc ) {
-		this.startLocation = loc;
+	this( Token startToken ) {
+		this.startToken = startToken;
 	}
 
 private:
-	CodeLocation startLocation;
+	Token startToken;
 
 }
 
 pragma( inline ) CodeLocationGuard codeLocationGuard( ) {
-	return CodeLocationGuard( lexer.currentToken.codeLocation );
+	return CodeLocationGuard( lexer.currentToken );
 }

@@ -6,15 +6,14 @@ import beast.code.data.toolkit;
 class RootDataScope : DataScope {
 
 public:
-	this( DataEntity parent, string identification ) {
+	this( DataEntity parent ) {
 		assert( parent );
 		parent_ = parent;
-		identification_ = identification;
 	}
 
 public:
 	final string identificationString( ) {
-		return parent_.identificationString ~ "." ~ identification_;
+		return parent_.identificationString;
 	}
 
 public:

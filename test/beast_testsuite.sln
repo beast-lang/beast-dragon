@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{7CA5C547-A910-4A38-A431-30A54793CC1C}") = "beast_testsuite", ".dub/beast_testsuite.visualdproj", "{A17C48E7-E251-49BE-84E8-15C6F81ECBB2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug|Win32 = debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A17C48E7-E251-49BE-84E8-15C6F81ECBB2}.debug|Win32.ActiveCfg = debug|Win32
+		{A17C48E7-E251-49BE-84E8-15C6F81ECBB2}.debug|Win32.Build.0 = debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

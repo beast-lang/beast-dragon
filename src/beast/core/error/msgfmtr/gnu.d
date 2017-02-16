@@ -23,8 +23,8 @@ public:
 
 				result ~= ":";
 
-				if ( cl.endPos - cl.startPos < 80 )
-					result ~= " '%s':".format( cl.source.content[ cl.startPos .. cl.endPos ].replace( "\n", "\\n" ) );
+				/*if ( cl.endPos - cl.startPos < 80 )
+					result ~= " '%s':".format( cl.source.content[ cl.startPos .. cl.endPos ].replace( "\n", "\\n" ) );*/
 			}
 
 		}

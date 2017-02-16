@@ -65,6 +65,11 @@ enum E {
 	// OVERLOADSETS:
 	noMatchingOverload, /// No overload matches given parameters
 	ambiguousResolution, /// Multiple overloads match given parameters
+	unknownIdentifier, /// Identifier was not found (either recursively or not)
+	cannotInfer, /// No expected type was given where it was needed (mostly inferations)
+
+	// VARIABLES:
+	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
 }
 
 enum ErrorSeverity {

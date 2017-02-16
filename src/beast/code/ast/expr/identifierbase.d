@@ -23,7 +23,7 @@ public:
 		currentToken.expect( Token.Type.identifier );
 		result.identifier = currentToken.identifier;
 
-		getNextToken();
+		getNextToken( );
 
 		result.codeLocation = clg.get( );
 		return result;
@@ -31,7 +31,18 @@ public:
 
 public:
 	override DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ ) {
-		return scope_.resolveIdentifierRecursively( identifier ).single_expectType( expectedType );
+		Overloadset result;
+
+		if ( precedingColon ) {
+			// :ident variant
+			benforce( expectedType !is null, E.cannotInfer, "Cannot infer scope for identifier '%s' lookup".format( identifier.str ) );
+			result = expectedType.data.resolveIdentifierRecursively( identifier );
+		}
+		else
+			result = scope_.resolveIdentifierRecursively( identifier );
+
+		benforce( cast( bool ) result, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? expectedType.data.identificationString : scope_.identificationString ) );
+		return result.single_expectType( expectedType );
 	}
 
 public:

@@ -16,8 +16,8 @@ code //! directive1Name: mainDirectiveValue, arg1: arg1Val, arg2 ; directive2Nam
 
 # Supported directives
 
-## error
-Expects error (severity error) on the file and line of the directive.
+## error, warning, hint
+Expects error/warning/hint on the file and line of the directive.
 
 **Arguments** \
 `noLine` - error is not related to the line (it does not have line attribute) \
