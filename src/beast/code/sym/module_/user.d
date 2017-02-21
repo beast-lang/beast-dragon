@@ -15,7 +15,6 @@ public:
 		ast_ = ast;
 
 		namespace_ = new UserNamespace( this, &execute_membersObtaining );
-		ast_.relateWithSymbol( this );
 	}
 
 public:

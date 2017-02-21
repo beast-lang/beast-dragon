@@ -22,12 +22,6 @@ public:
 	}
 
 public:
-	/// Deallocates scope ctime stack
-	final void finish( ) {
-
-	}
-
-public:
 	final override Overloadset resolveIdentifierRecursively( Identifier id ) {
 		if ( auto result = super.resolveIdentifierRecursively( id ) )
 			return result;

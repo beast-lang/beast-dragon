@@ -10,9 +10,10 @@ public {
 	import beast.code.hwenv.hwenv;
 	import beast.code.memory.mgr;
 	import beast.code.memory.ptr;
+	import beast.code.memory.block;
 	import beast.code.namespace.namespace;
 	import beast.corelib.corelib;
 	import beast.toolkit;
-	import beast.code.data.entity;
+	import beast.code.data.entity.entity;
 	import beast.code.sym.symbol;
 }

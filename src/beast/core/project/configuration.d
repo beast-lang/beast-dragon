@@ -59,6 +59,11 @@ public:
 		@help( "The compiler can be configured to stop at certain compilation phase." )
 		StopOnPhase stopOnPhase = StopOnPhase.doEverything;
 	}
+	debug @configurable {
+		/// Show stack trace on error report
+		@help( "Show stack trace on error report" )
+		bool showStackTrace;
+	}
 
 public:
 	/// Loads cofnguration from specified configuration builder

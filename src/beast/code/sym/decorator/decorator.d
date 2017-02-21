@@ -4,6 +4,7 @@ import beast.code.sym.toolkit;
 
 public {
 	import beast.code.ast.decl.variable;
+	import beast.code.ast.decl.function_;
 }
 
 /// Base class for all decorator types
@@ -32,6 +33,11 @@ public:
 public:
 	/// Tries to apply in the variableDeclarationModifier context. Returns true if successful
 	bool apply_variableDeclarationModifier( VariableDeclarationData data ) {
+		return false;
+	}
+
+	/// Tries to apply in the functionDeclarationModifier context. Returns true if successful
+	bool apply_functionDeclarationModifier( FunctionDeclarationData data ) {
 		return false;
 	}
 

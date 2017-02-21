@@ -67,7 +67,7 @@ public:
 
 				// Mark current context as waiting on this task	(for circular dependency checks)
 				context.taskContext.blockingContext_ = _taskGuard_context;
-				context.taskContext.blockingTaskGuardIdentificationString_ = "%s.(%s)".format( identificationString, guardName );
+				context.taskContext.blockingTaskGuardIdentificationString_ = { return "%s.(%s)".format( identificationString, guardName ); };
 
 				// Check for circular dependencies
 				{
@@ -82,14 +82,15 @@ public:
 						if ( ctx is thisContext ) {
 							// Walk the dependencies again, this time record contexts we were walking
 							TaskContext ctx2 = _taskGuard_context;
-							string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_ ];
+							string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_() ];
 							while ( ctx2 !is thisContext ) {
 								assert( ctx2.blockingTaskGuardIdentificationString_ );
 								ctx2 = ctx2.blockingContext_;
-								loopList ~= ctx2.blockingTaskGuardIdentificationString_;
+								loopList ~= ctx2.blockingTaskGuardIdentificationString_();
 							}
 
 							loopList ~= loopList[ 0 ];
+							// TODO: Better loop dependency message - gotta wake all looped contexts and get context guard data from them
 
 							// If the circular loop is this context to this context, 
 							if ( !( wipFlags & Flags.dependentTasksWaiting ) )

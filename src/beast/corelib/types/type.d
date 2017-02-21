@@ -31,10 +31,13 @@ public:
 	}
 
 public:
-	override Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
+	override Overloadset resolveIdentifier( Identifier id, DataEntity instance = null, DataScope scope_ = null ) {
 		// Tweak so that Type T = C; T.cc evaluates to C.cc
-		if ( instance )
-			return instance.ctValue_Type.resolveIdentifier( id );
+		// We want to return function now - this resolveIdentifier is called again with null instance from this call
+		if ( instance ) {
+			assert( instance.dataType is coreLibrary.types.Type );
+			return instance.ctExec( scope_ ).readType().resolveIdentifier( id );
+		}
 
 		if ( auto result = super.resolveIdentifier( id, instance ) )
 			return result;

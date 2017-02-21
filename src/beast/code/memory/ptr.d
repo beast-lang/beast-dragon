@@ -22,6 +22,14 @@ public:
 	}
 
 public:
+	/// Interprets the value as a Type variable
+	Symbol_Type readType() {
+		Symbol_Type type = typeUIDKeeper[ readPrimitive!size_t ];
+		benforce( type !is null, E.invalidPointer, "Variable does not point to a valid type" );
+		return type;
+	}
+
+public:
 	int opCmp( MemoryPtr other ) const {
 		if ( val > other.val )
 			return 1;
@@ -43,6 +51,10 @@ public:
 public:
 	string toString( ) const {
 		return "0x%x".format( val );
+	}
+
+	bool opCast( T : bool )( ) const {
+		return val != 0;
 	}
 
 }

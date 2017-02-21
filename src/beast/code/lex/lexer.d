@@ -111,6 +111,26 @@ public:
 							return new Token( Token.Special.at );
 						}
 
+					case '(': {
+							pos_++;
+							return new Token( Token.Special.lParent );
+						}
+
+					case ')': {
+							pos_++;
+							return new Token( Token.Special.rParent );
+						}
+
+					case '{': {
+							pos_++;
+							return new Token( Token.Special.lBrace );
+						}
+
+					case '}': {
+							pos_++;
+							return new Token( Token.Special.rBrace );
+						}
+
 					case EOF: {
 							return new Token( Token.Special.eof );
 						}

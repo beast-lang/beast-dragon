@@ -23,7 +23,7 @@ public:
 public:
 	/// Adds variable to the scope
 	final void addVariable( DataEntity_LocalVariable var ) {
-		assert( context.jobId == jobId_ );
+		debug assert( context.jobId == jobId_ );
 		allVariables_ ~= var;
 
 		// Add to the overloadset
@@ -38,13 +38,13 @@ public:
 public:
 	/// Builds a scope cleanup code (destruction of all variables in the scope)
 	final void buildCleanup( CodeBuilder cb ) {
-		assert( context.jobId == jobId_ );
+		debug assert( context.jobId == jobId_ );
 		// TODO:
 	}
 
 public:
 	Overloadset resolveIdentifier( Identifier id ) {
-		assert( context.jobId == jobId_ );
+		debug assert( context.jobId == jobId_ );
 
 		if ( auto result = id in groupedNamedVariables_ )
 			return *result;

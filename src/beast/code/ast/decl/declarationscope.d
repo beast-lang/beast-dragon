@@ -13,7 +13,6 @@ public:
 		/// Current main scope decorations ( @decorator: xxx )
 		AST_DecorationList scopeDecorationList = rootDecorationList;
 
-		// TODO: implementation
 		while ( true ) {
 
 			// @decor @decor (something)
@@ -70,8 +69,9 @@ public:
 				currentToken.expect( Token.Special.rBrace, "declaration or '}'" );
 				getNextToken( );
 			}
-
-			break;
+			
+			else
+				break;
 		}
 
 		result.allDeclarations_ ~= result.directDeclarations_;
@@ -84,7 +84,7 @@ public:
 	/// Processes the declarations, resulting in a symbol
 	Symbol[ ] executeDeclarations( DeclarationEnvironment env ) {
 		Symbol[ ] result;
-		
+
 		foreach ( decl; allDeclarations_ )
 			decl.executeDeclarations( env, ( s ) { result ~= s; } );
 

@@ -2,6 +2,8 @@ module beast.code.sym.var.static_;
 
 import beast.code.sym.toolkit;
 import beast.code.sym.var.variable;
+import beast.code.data.toolkit;
+import beast.code.data.entity.symnolrelated;
 
 /// User (programmer) defined variable
 abstract class Symbol_StaticVariable : Symbol_Variable {
@@ -26,17 +28,20 @@ public:
 		return staticData_;
 	}
 
+	/// Returns pointer to data of this variable
+	abstract MemoryPtr dataPtr( );
+
 private:
 	Namespace parentNamespace_;
 	StaticData staticData_;
 
 private:
-	final class StaticData : DataEntity {
+	final class StaticData : SymbolRelatedDataEntity {
 
 	public:
 		this( ) {
 			// Static variables are in global scope
-			super( null );
+			super( null, this.outer );
 		}
 
 	public:
@@ -48,12 +53,9 @@ private:
 			return false;
 		}
 
-		override Identifier identifier( ) {
-			return this.outer.identifier;
-		}
-
-		override string identificationString( ) {
-			return this.outer.identificationString;
+	public:
+		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+			cb.build_staticMemoryAccess( this.outer.dataPtr );
 		}
 
 	}

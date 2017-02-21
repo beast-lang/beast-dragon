@@ -10,7 +10,14 @@ public:
 public:
 	/// Returns list of decorators in the overloadset
 	Symbol_Decorator[ ] filter_decoratorsOnly( ) {
-		assert( 0 );
+		/*Symbol_Decorator[ ] result;
+
+		foreach( item; data ) {
+			if( item.dataType !is  )
+		}
+
+		return result;*/
+		return null;
 		// TODO:
 	}
 
@@ -30,6 +37,8 @@ public:
 		if ( !expectedType )
 			return this.single( );
 
+		benforce( data.length > 0, E.noMatchingOverload, "Empty overloadset (more explaining message should have been shown, this would probably deserve a bug report)" );
+
 		/// TODO: Implicit cast check
 		DataEntity result;
 
@@ -37,11 +46,17 @@ public:
 			if ( item.dataType !is expectedType )
 				continue;
 
-			benforce( result is null, E.ambiguousResolution, "Expression is ambigous: can be '%s' or '%s' (or possibly more)".format( result, item ) );
+			// TODO: Maybe better ambiguity error msg?
+			benforce( result is null, E.ambiguousResolution, "Expression is ambigous: can be '%s' or '%s' (or ...)".format( result, item ) );
 			result = item;
 		}
 
-		benforce( result !is null, E.noMatchingOverload, "Empty overloadset (more explaining message should have been shown, this would probably deserve a bug report)" );
+		benforce( result !is null, E.noMatchingOverload, //
+				data.length == 1 //
+				 ? "Cannot convert '%s' to '%s'".format( data[ 0 ].identificationString, expectedType.identificationString ) //
+				 : "None of the overloads are convertible to '%s'".format( expectedType.identificationString ) //
+				 );
+
 		return result;
 	}
 

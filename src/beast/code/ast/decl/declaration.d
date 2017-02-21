@@ -2,6 +2,7 @@ module beast.code.ast.decl.declaration;
 
 import beast.code.ast.decl.toolkit;
 import beast.code.ast.decl.variable;
+import beast.code.ast.decl.function_;
 
 abstract class AST_Declaration : AST_Node {
 
@@ -35,6 +36,10 @@ public:
 		// ";" || "=" => variable
 		if ( currentToken == Token.Special.semicolon || currentToken == Token.Operator.assign )
 			return AST_VariableDeclaration.parse( _gd, decorationList, type, identifier );
+
+		// "(" => function
+		else if ( currentToken == Token.Special.lParent )
+			return AST_FunctionDeclaration.parse( _gd, decorationList, type, identifier );
 
 		assert( 0, "Not implemented: " ~ currentToken.descStr );
 	}

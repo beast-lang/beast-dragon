@@ -22,13 +22,6 @@ public:
 		return this;
 	}
 
-public:
-	/// Marks symbol as related to this AST node (used in intellisense)
-	final void relateWithSymbol( Symbol sym ) {
-		synchronized ( this )
-			relatedSymbols_ ~= sym;
-	}
-
 protected:
 	/// This function should return all subnodes of given AST node. It can contain null elements.
 	InputRange!AST_Node _subnodes( ) {
@@ -68,10 +61,5 @@ protected:
 			return "inputRangeObject( chain(" ~ chainStr.joiner( "," ).to!string ~ ") )";
 		}( ) );
 	}
-
-private:
-	/// For semantic analysis, it is possible to link symbols to the AST nodes
-	/// HOWEVER, this can be accessed after EVERYTHING IS DONE
-	Symbol[ ] relatedSymbols_;
 
 }

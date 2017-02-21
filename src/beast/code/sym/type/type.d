@@ -14,7 +14,7 @@ public:
 		typeUID_ = typeUIDKeeper( this );
 
 		with ( memoryManager.session ) {
-			ctimeValue_ = memoryManager.alloc( size_t.sizeof );
+			ctimeValue_ = memoryManager.alloc( size_t.sizeof, MemoryBlock.Flags.doNotGCAtSessionEnd );
 			ctimeValue_.writePrimitive( typeUID_ );
 		}
 	}
@@ -31,8 +31,9 @@ public:
 	abstract Namespace namespace( );
 
 public:
-	/// Resolves identifier 
-	Overloadset resolveIdentifier( Identifier id, DataEntity instance = null ) {
+	/// Resolves identifier
+	/// Resolving an identifier might result in executing a code in compile time, hence the scope
+	Overloadset resolveIdentifier( Identifier id, DataEntity instance = null, DataScope scope_ = null ) {
 		{
 			auto result = appender!( DataEntity[ ] );
 

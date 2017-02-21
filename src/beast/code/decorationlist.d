@@ -48,6 +48,27 @@ public:
 		}
 	}
 
+	/// Applies all possible decorations in the functionDeclarationModifier context and removes them from the list
+	void apply_functionDeclarationModifier( FunctionDeclarationData var ) {
+		// Right decorators have higher priority
+		foreach_reverse ( ref Record rec; list_ ) {
+			// If the record has already resolved decorator, just try applying the decorator in the context
+			if( rec.decorator ) {
+				rec.decorator.apply_functionDeclarationModifier( var );
+				continue;
+			}
+
+			// Otherwise try resolving the decorator
+			// The only functionDeclarationModifier decorators are in core library (maybe will change in future?)
+			foreach ( decorator; coreLibrary.module_.data.resolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
+				if ( decorator.apply_functionDeclarationModifier( var ) ) {
+					rec.decorator = decorator;
+					break;
+				}
+			}
+		}
+	}
+
 private:
 	Record[ ] list_;
 

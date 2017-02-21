@@ -11,8 +11,11 @@ public:
 	alias ExprFunction = DataEntity delegate( );
 
 public:
+	/// Builds access to a static memory (passed by a pointer)
+	abstract void build_staticMemoryAccess( MemoryPtr pointer );
+
 	/// Builds the "if" construction
 	/// Condition has to be of type bool
 	abstract void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch );
-	
+
 }

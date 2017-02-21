@@ -18,6 +18,7 @@ import std.json;
 import std.meta;
 import std.stdio;
 import std.traits;
+import core.runtime;
 
 static __gshared Mutex stderrMutex;
 private alias warning = Decorator!( "error.warning" );
@@ -105,8 +106,11 @@ pragma( inline ) void breport( ErrorSeverity severity = ErrorSeverity.error, str
 
 	const string formattedMessage = project.messageFormatter.formatErrorMessage( msg );
 
-	synchronized ( stderrMutex )
+	synchronized ( stderrMutex ) {
 		stderr.writeln( formattedMessage );
+		if( project.configuration.showStackTrace )
+		stderr.writeln( defaultTraceHandler.toString );
+	}
 
 	if ( msg.severity == ErrorSeverity.error )
 		throw new BeastErrorException( message, file, line );

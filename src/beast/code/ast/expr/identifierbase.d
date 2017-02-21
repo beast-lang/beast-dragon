@@ -30,7 +30,7 @@ public:
 	}
 
 public:
-	override DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ ) {
+	override DataEntity buildTree( Symbol_Type expectedType, DataScope scope_ ) {
 		Overloadset result;
 
 		if ( precedingColon ) {

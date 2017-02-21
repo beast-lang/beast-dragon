@@ -7,7 +7,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 public:
 	this( DataScope scope_ ) {
 		super( scope_ );
-		assert( context.jobId == scope_.jobId );
+		debug assert( context.jobId == scope_.jobId );
 
 		basePointerOffset_ = scope_.currentBasePointerOffset;
 		scope_.currentBasePointerOffset += dataType.instanceSize;

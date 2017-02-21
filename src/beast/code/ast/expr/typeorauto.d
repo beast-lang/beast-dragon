@@ -28,9 +28,9 @@ public:
 	}
 
 public:
-	override DataEntity build( CodeBuilder cb, Symbol_Type expectedType, DataScope scope_ ) {
+	override DataEntity buildTree( Symbol_Type expectedType, DataScope scope_ ) {
 		assert( !isAuto );
-		return expr.build( cb, expectedType, scope_ );
+		return expr.buildTree( expectedType, scope_ );
 	}
 
 public:

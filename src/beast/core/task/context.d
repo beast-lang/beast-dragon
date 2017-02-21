@@ -38,7 +38,7 @@ public:
 	/// Context this context is waiting for to do something (for circular reference checking)
 	TaskContext blockingContext_;
 	/// Identifiaction string of the task guard blocking this context (that is waiting for another task to finish)
-	string blockingTaskGuardIdentificationString_;
+	string delegate() blockingTaskGuardIdentificationString_;
 
 public:
 	void setJob( Job job ) {

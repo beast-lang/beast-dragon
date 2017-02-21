@@ -2,6 +2,7 @@ module beast.code.sym.module_.module_;
 
 import beast.code.sym.toolkit;
 import beast.corelib.corelib;
+import beast.code.data.toolkit;
 
 /// Module as a symbol
 /// See also Module from beast.core.project.module_ with module as project file
@@ -57,6 +58,10 @@ private:
 			return this.outer.identificationString;
 		}
 
+		override AST_Node ast( ) {
+			return this.outer.ast;
+		}
+
 	public:
 		override Overloadset resolveIdentifier( Identifier id ) {
 			if ( auto result = super.resolveIdentifier( id ) )
@@ -81,6 +86,11 @@ private:
 			}
 
 			return Overloadset( );
+		}
+
+	public:
+		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+			assert( 0, "Not implemented" );
 		}
 
 	}

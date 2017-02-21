@@ -2,6 +2,8 @@ module beast.code.sym.type.staticclass;
 
 import beast.code.sym.toolkit;
 import beast.code.sym.type.class_;
+import beast.code.data.toolkit;
+import beast.code.data.entity.symnolrelated;
 
 abstract class Symbol_StaticClassType : Symbol_ClassType {
 
@@ -30,11 +32,11 @@ private:
 	StaticData staticData_;
 
 private:
-	final class StaticData : DataEntity {
+	final class StaticData : SymbolRelatedDataEntity {
 
 	public:
 		this( ) {
-			super( null );
+			super( null, this.outer );
 		}
 
 	public:
@@ -46,17 +48,11 @@ private:
 			return true;
 		}
 
-		override MemoryPtr ctValue( ) {
-			return ctimeValue_;
+		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+			cb.build_staticMemoryAccess( this.outer.ctimeValue_ );
 		}
 
-		override Identifier identifier( ) {
-			return this.outer.identifier;
-		}
-
-		override string identificationString( ) {
-			return this.outer.identificationString;
-		}
+		// TODO: resolve identifier
 
 	}
 
