@@ -32,8 +32,8 @@ public:
 		Symbol[ ] symbols;
 		void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-		types.initialize( module_.namespace, sink );
-		decorators.initialize( module_.namespace, sink );
+		types.initialize( sink );
+		decorators.initialize( sink );
 
 		module_.initialize( symbols );
 	}

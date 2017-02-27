@@ -3,10 +3,10 @@ module beast.code.ast.decl.function_;
 import beast.code.ast.toolkit;
 import beast.code.ast.decl.toolkit;
 import beast.code.decorationlist;
-import beast.code.sym.var.userstatic;
+import beast.code.data.var.userstatic;
 import beast.code.ast.expr.parameterlist;
 import beast.code.ast.stmt.codeblock;
-import beast.code.sym.function_.userstatic;
+import beast.code.data.function_.userstatic;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -23,7 +23,7 @@ public:
 		result.identifier = identifier;
 
 		result.parameterList = AST_ParameterList.parse( );
-		result.body_ = AST_CodeBlockStatement.parse();
+		result.body_ = AST_CodeBlockStatement.parse( );
 
 		result.codeLocation = _gd.get( );
 		return result;
@@ -38,9 +38,13 @@ public:
 		decorationList.apply_functionDeclarationModifier( declData );
 
 		if ( declData.isStatic && !declData.isCtime )
-			sink( new Symbol_UserStaticFunction( this, decorationList, env ) );
+			sink( new Symbol_UserStaticFunction( this, decorationList, declData ) );
 		else
 			berror( E.unimplemented, "Not implemented" );
+	}
+
+	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
+		berror( E.unimplemented, "Nested functions are not implemented yet" );
 	}
 
 public:

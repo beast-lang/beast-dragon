@@ -1,16 +1,11 @@
 module beast.corelib.decorators.static_;
 
-import beast.code.sym.toolkit;
-import beast.code.sym.decorator.decorator;
+import beast.code.data.toolkit;
+import beast.code.data.decorator.decorator;
 import beast.code.ast.decl.env;
 
 /// @static; used in variableDeclarationModifier context
 final class Symbol_Decorator_Static : Symbol_Decorator {
-
-public:
-	this( Namespace parentNamespace ) {
-		super( parentNamespace );
-	}
 
 public:
 	override Identifier identifier( ) {

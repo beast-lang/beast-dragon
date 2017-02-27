@@ -28,6 +28,10 @@ mixin template TaskGuard( string guardName ) {
 	import beast.util.identifiable;
 	import std.traits : fullyQualifiedName;
 
+public:
+	// Give the taskGuard function an useful name
+	mixin( "final pragma( inline ) void enforceDone_" ~ guardName ~ "() { _taskGuard_func(); }" );
+
 private:
 	shared ubyte _taskGuard_flags;
 
@@ -36,9 +40,9 @@ private:
 
 	enum _taskGuard_executeFunctionName = "execute_" ~ guardName;
 
-public:
+private:
 	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
-	void _taskGuard_func( ) {
+	final void _taskGuard_func( ) {
 		import beast.util.atomic : atomicFetchThenOr, atomicStore, atomicOp;
 		import beast.core.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, BeastErrorException;
 
@@ -156,16 +160,13 @@ public:
 			_taskGuard_issueWaitingTasks( );
 	}
 
-	// Give the taskGuard function an useful name
-	mixin( "alias enforceDone_" ~ guardName ~ " = _taskGuard_func;" );
-
 private:
-	pragma( inline ) TaskGuardId _taskGuard_id( ) {
+	pragma( inline ) final TaskGuardId _taskGuard_id( ) {
 		return &_taskGuard_flags;
 	}
 
 	/// Issue tasks that were waiting for this task to finish
-	void _taskGuard_issueWaitingTasks( ) {
+	final void _taskGuard_issueWaitingTasks( ) {
 		import beast.util.atomic : atomicFetchThenOr;
 		import beast.core.task.guard : taskGuardDependentsList, taskGuardResolvingMutex;
 

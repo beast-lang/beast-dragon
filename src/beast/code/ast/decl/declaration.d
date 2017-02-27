@@ -3,8 +3,9 @@ module beast.code.ast.decl.declaration;
 import beast.code.ast.decl.toolkit;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
+import beast.code.ast.stmt.statement;
 
-abstract class AST_Declaration : AST_Node {
+abstract class AST_Declaration : AST_Statement {
 
 public:
 	static bool canParse( ) {
@@ -45,7 +46,7 @@ public:
 	}
 
 public:
-	/// Processes the declaration, resulting in a symbol(s)
+	/// Processes the declaration, resulting in a symbol(s) - so module level declaration
 	/// For each symbol created, calls the function sink
 	abstract void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink );
 

@@ -9,7 +9,7 @@ public:
 	Symbol_Decorator_Static static_;
 
 public:
-	void initialize( Namespace nmspc, void delegate( Symbol ) sink ) {
-		sink( static_ = new Symbol_Decorator_Static( nmspc ) );
+	void initialize(void delegate( Symbol ) sink ) {
+		sink( static_ = new Symbol_Decorator_Static );
 	}
 }

@@ -3,7 +3,8 @@ module beast.code.ast.decl.variable;
 import beast.code.ast.toolkit;
 import beast.code.ast.decl.toolkit;
 import beast.code.decorationlist;
-import beast.code.sym.var.userstatic;
+import beast.code.data.var.userstatic;
+import beast.code.data.var.local;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -46,10 +47,23 @@ public:
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_variableDeclarationModifier( declData );
 
-		if ( declData.isStatic && !declData.isCtime )
-			sink( new Symbol_UserStaticVariable( this, decorationList, env ) );
+		if ( declData.isStatic )
+			sink( new Symbol_UserStaticVariable( this, decorationList, declData ) );
 		else
 			berror( E.unimplemented, "Not implemented" );
+	}
+
+	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
+		VariableDeclarationData declData = new VariableDeclarationData( env );
+		DecorationList decorationList = new DecorationList( decorationList );
+
+		// Apply possible decorators in the variableDeclarationModifier context
+		decorationList.apply_variableDeclarationModifier( declData );
+
+		benforce( !declData.isStatic, E.unimplemented, "Static variables in function bodies are not implemented yet" );
+
+		DataEntity_LocalVariable var = new DataEntity_LocalVariable( this, decorationList, declData );
+		scope_.addLocalVariable( var );
 	}
 
 public:

@@ -1,12 +1,13 @@
 module beast.code.ast.expr.expression;
 
 import beast.code.ast.toolkit;
-import beast.code.namespace.namespace;
 import beast.code.memory.mgr;
-import beast.code.data.scope_.root;
+import beast.code.data.entitycontainer.scope_.root;
 import beast.backend.ctime.codebuilder;
+import beast.code.data.entitycontainer.scope_.local;
+import beast.code.ast.stmt.statement;
 
-abstract class AST_Expression : AST_Node {
+abstract class AST_Expression : AST_Statement {
 
 public:
 	static bool canParse( ) {
@@ -19,18 +20,33 @@ public:
 
 public:
 	/// Builds semantic tree (no code is built) for this expression and returns data entity representing the result.
-	/// expectedType is used for type inferration and can be null
+	/// expectedType is used for type inferration and can be null (any result is then acceptable)
 	/// The scope is used only for identifier lookup
-	abstract DataEntity buildTree( Symbol_Type expectedType, DataScope scope_ );
+	/// Can result in executing ctime code
+	/// If errorOnFailure is false, returns null data entity if the expression cannot be built with given expectedType
+	abstract DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure );
+
+	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
+		buildSemanticTree( null, scope_ ).buildCode( cb, scope_ );
+	}
+
+/// Creates subscope and 
+	final MemoryPtr ctExec( Symbol_Type expectedType, DataScope scope_ ) {
+
+	}
 
 	/// Executes the expression in standalone scope and session, returing its value
-	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
+	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, EntityContainer parent ) {
 		with ( memoryManager.session ) {
-			RootDataScope scope_ = new RootDataScope( parent );
+			DataScope scope_ = new RootDataScope( parent.asNamespace, null );
 			CodeBuilder_Ctime codeBuilder = new CodeBuilder_Ctime;
-			buildTree( expectedType, scope_ ).buildCode( codeBuilder, scope_ );
+			this.buildSemanticTree( expectedType, scope_ ).buildCode( codeBuilder, scope_ );
+
+			scope_.finish();
 			return codeBuilder.result;
 		}
+
+		assert( 0 );
 	}
 
 }

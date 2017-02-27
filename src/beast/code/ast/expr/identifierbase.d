@@ -30,13 +30,13 @@ public:
 	}
 
 public:
-	override DataEntity buildTree( Symbol_Type expectedType, DataScope scope_ ) {
+	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_ ) {
 		Overloadset result;
 
 		if ( precedingColon ) {
 			// :ident variant
 			benforce( expectedType !is null, E.cannotInfer, "Cannot infer scope for identifier '%s' lookup".format( identifier.str ) );
-			result = expectedType.data.resolveIdentifierRecursively( identifier );
+			result = expectedType.data.resolveIdentifier( identifier );
 		}
 		else
 			result = scope_.resolveIdentifierRecursively( identifier );

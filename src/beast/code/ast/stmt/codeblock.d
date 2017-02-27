@@ -12,7 +12,7 @@ public:
 	}
 
 	static AST_CodeBlockStatement parse( ) {
-		return parse( codeLocationGuard(), null );
+		return parse( codeLocationGuard( ), null );
 	}
 
 	/// Continues parsing after decoration list
@@ -31,12 +31,19 @@ public:
 	}
 
 public:
+	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
+		foreach ( stmt; subStatements )
+			stmt.buildStatementCode( env, cb, scope_ );
+	}
+
+public:
 	AST_DecorationList decorationList;
+	AST_Statement[ ] subStatements;
 
 protected:
 	override InputRange!AST_Node _subnodes( ) {
 		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
-		return nodeRange( decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
+		return nodeRange( subStatements, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
 	}
 
 }

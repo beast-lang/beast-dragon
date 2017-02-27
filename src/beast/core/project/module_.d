@@ -2,14 +2,14 @@ module beast.core.project.module_;
 
 import beast.code.ast.decl.module_;
 import beast.code.lex.lexer;
-import beast.code.sym.module_.user;
+import beast.code.data.module_.user;
 import beast.core.project.codesource;
 import beast.core.project.configuration;
 import beast.toolkit;
 import std.regex;
 
 /// Abstraction of module in Beast (as a project file)
-/// See also Symbol_Module and Symbol_UserModule in beast.code.sym.module_.XX
+/// See also Symbol_Module and Symbol_UserModule in beast.code.data.module_.XX
 final class Module : CodeSource, Identifiable {
 	mixin TaskGuard!( "parsing" );
 

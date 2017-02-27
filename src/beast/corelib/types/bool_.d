@@ -1,16 +1,14 @@
 module beast.corelib.types.bool_;
 
-import beast.code.sym.toolkit;
-import beast.code.sym.type.staticclass;
-import beast.code.namespace.bootstrap;
+import beast.code.data.toolkit;
+import beast.code.data.type.staticclass;
+import beast.code.data.entitycontainer.namespace.bootstrap;
 
 final class Symbol_Type_Bool : Symbol_StaticClassType {
 
 public:
-	this( Namespace parentNamespace ) {
-		super( parentNamespace );
-
-		namespace_ = new BootstrapNamespace( this );
+	this() {
+		namespace_ = new BootstrapNamespace( this, null );
 		namespace_.initialize( null );
 	}
 

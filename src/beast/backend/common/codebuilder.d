@@ -1,7 +1,6 @@
 module beast.backend.common.codebuilder;
 
 import beast.backend.toolkit;
-import beast.code.data.toolkit;
 
 /// Root class for building code with any backend
 abstract class CodeBuilder {

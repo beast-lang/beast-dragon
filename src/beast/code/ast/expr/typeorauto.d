@@ -28,9 +28,9 @@ public:
 	}
 
 public:
-	override DataEntity buildTree( Symbol_Type expectedType, DataScope scope_ ) {
+	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_ ) {
 		assert( !isAuto );
-		return expr.buildTree( expectedType, scope_ );
+		return expr.buildSemanticTree( expectedType, scope_ );
 	}
 
 public:
