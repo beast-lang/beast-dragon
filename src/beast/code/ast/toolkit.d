@@ -11,9 +11,8 @@ public {
 	import beast.toolkit;
 	import beast.backend.common.codebuilder;
 	import beast.code.data.symbol;
-	import beast.code.data.entity.entity;
-	import beast.code.data.entitycontainer.scope_.scope_;
-	import beast.code.data.entitycontainer.container;
+	import beast.code.data.entity;
+	import beast.code.data.scope_.scope_;
 	import beast.code.data.type.type;
 	import beast.code.data.overloadset;
 	import beast.code.memory.ptr;

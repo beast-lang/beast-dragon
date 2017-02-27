@@ -4,9 +4,8 @@ public {
 	import beast.code.ast.decl.env;
 	import beast.code.ast.node;
 	import beast.code.data.decorator.decorator;
-	import beast.code.data.entity.entity;
-	import beast.code.data.entitycontainer.container;
-	import beast.code.data.entitycontainer.namespace.namespace;
+	import beast.code.data.entity;
+	import beast.code.data.codenamespace.namespace;
 	import beast.code.data.overloadset;
 	import beast.code.data.symbol;
 	import beast.code.data.type.type;

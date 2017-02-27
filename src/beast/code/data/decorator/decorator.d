@@ -11,12 +11,17 @@ public {
 abstract class Symbol_Decorator : Symbol {
 
 public:
+	this( DataEntity parent ) {
+		parent_ = parent;
+	}
+
+public:
 	final override DeclType declarationType( ) {
 		return DeclType.decorator;
 	}
 
 public:
-	final override DataEntity data( DataEntity instance ) {
+	final override DataEntity dataEntity( DataEntity parentInstance = null ) {
 		assert( 0 );
 		// TODO:
 	}
@@ -31,6 +36,9 @@ public:
 	bool apply_functionDeclarationModifier( FunctionDeclarationData data ) {
 		return false;
 	}
+
+private:
+	DataEntity parent_;
 
 }
 

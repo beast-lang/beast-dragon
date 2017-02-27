@@ -1,7 +1,7 @@
 module beast.code.ast.decl.env;
 
 import beast.code.toolkit;
-import beast.code.data.entitycontainer.scope_.scope_;
+import beast.code.data.scope_.scope_;
 
 /// Implicit declaration arguments
 final class DeclarationEnvironment {
@@ -24,6 +24,11 @@ public:
 
 public:
 	Symbol_Type parentType;
-	EntityContainer parent;
+
+	/// Parent for static members
+	DataEntity staticMembersParent;
+
+	/// 'Parent' for local variables
+	DataScope scope_;
 
 }

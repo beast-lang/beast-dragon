@@ -15,8 +15,7 @@ public:
 		ast_ = ast;
 
 		// User modules have corelib module as a parent
-		namespace_ = new UserNamespace( this, &execute_membersObtaining );
-		namespace_.parent = coreLibrary.module_.namespace;
+		namespace_ = new UserNamespace( &execute_membersObtaining );
 	}
 
 public:
@@ -28,27 +27,19 @@ public:
 		return module_.identifier[ $ - 1 ];
 	}
 
-	override string identificationString( ) {
-		return module_.identifier.str;
-	}
-
-	override Namespace namespace( ) {
-		return namespace_;
-	}
-
 	override AST_Node ast( ) {
 		return ast_;
 	}
 
-public:
-	override string identification( ) {
-		return module_.identifier.str;
+protected:
+	override Namespace namespace( ) {
+		return namespace_;
 	}
 
 private:
 	Symbol[ ] execute_membersObtaining( ) {
 		DeclarationEnvironment env = DeclarationEnvironment.newModule;
-		env.parent = namespace_;
+		env.staticMembersParent = dataEntity;
 
 		return ast_.declarationScope.executeDeclarations( env );
 	}

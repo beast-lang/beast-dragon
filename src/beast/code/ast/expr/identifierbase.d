@@ -30,18 +30,30 @@ public:
 	}
 
 public:
-	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_ ) {
+	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
 		Overloadset result;
 
 		if ( precedingColon ) {
 			// :ident variant
-			benforce( expectedType !is null, E.cannotInfer, "Cannot infer scope for identifier '%s' lookup".format( identifier.str ) );
-			result = expectedType.data.resolveIdentifier( identifier );
+			if ( expectedType is null ) {
+				if ( errorOnFailure )
+					berror( E.cannotInfer, "Cannot infer scope for identifier '%s' lookup".format( identifier.str ) );
+
+				return null;
+			}
+			
+			result = expectedType.dataEntity.resolveIdentifier( identifier, scope_ );
 		}
 		else
-			result = scope_.resolveIdentifierRecursively( identifier );
+			result = scope_.recursivelyResolveIdentifier( identifier, scope_ );
 
-		benforce( cast( bool ) result, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? expectedType.data.identificationString : scope_.identificationString ) );
+		if ( !result ) {
+			if ( errorOnFailure )
+				berror( E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? expectedType.dataEntity.identificationString : scope_.identificationString ) );
+
+			return null;
+		}
+
 		return result.single_expectType( expectedType );
 	}
 

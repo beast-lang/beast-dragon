@@ -8,6 +8,11 @@ import beast.code.ast.decl.env;
 final class Symbol_Decorator_Static : Symbol_Decorator {
 
 public:
+	this( DataEntity parent ) {
+		super( parent );
+	}
+
+public:
 	override Identifier identifier( ) {
 		return Identifier.preobtained!"#decorator_static";
 	}

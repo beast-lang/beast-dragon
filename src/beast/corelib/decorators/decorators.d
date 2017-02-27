@@ -9,7 +9,7 @@ public:
 	Symbol_Decorator_Static static_;
 
 public:
-	void initialize(void delegate( Symbol ) sink ) {
-		sink( static_ = new Symbol_Decorator_Static );
+	void initialize(void delegate( Symbol ) sink, DataEntity parent ) {
+		sink( static_ = new Symbol_Decorator_Static( parent ) );
 	}
 }

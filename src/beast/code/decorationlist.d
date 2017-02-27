@@ -39,7 +39,7 @@ public:
 
 			// Otherwise try resolving the decorator
 			// The only variableDeclarationModifier decorators are in core library (maybe will change in future?)
-			foreach ( decorator; coreLibrary.module_.data.resolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
+			foreach ( decorator; coreLibrary.module_.dataEntity.resolveIdentifier( rec.decoration.decoratorIdentifier, null ).filter_decoratorsOnly ) {
 				if ( decorator.apply_variableDeclarationModifier( var ) ) {
 					rec.decorator = decorator;
 					break;
@@ -60,7 +60,7 @@ public:
 
 			// Otherwise try resolving the decorator
 			// The only functionDeclarationModifier decorators are in core library (maybe will change in future?)
-			foreach ( decorator; coreLibrary.module_.data.resolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
+			foreach ( decorator; coreLibrary.module_.dataEntity.resolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
 				if ( decorator.apply_functionDeclarationModifier( var ) ) {
 					rec.decorator = decorator;
 					break;

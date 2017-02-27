@@ -10,6 +10,7 @@ public:
 		ast_ = ast;
 		decorationList_ = decorationList;
 		staticData_ = new Data;
+		parent_ = data.env.staticMembersParent;
 	}
 
 	override Identifier identifier( ) {
@@ -25,7 +26,7 @@ public:
 	}
 
 public:
-	final override DataEntity data( DataEntity parentInstance = null ) {
+	final override DataEntity dataEntity( DataEntity parentInstance = null ) {
 		return staticData_;
 	}
 
@@ -39,6 +40,7 @@ private:
 	AST_FunctionDeclaration ast_;
 	DecorationList decorationList_;
 	Data staticData_;
+	DataEntity parent_;
 
 private:
 	final class Data : SymbolRelatedDataEntity {
@@ -55,6 +57,10 @@ private:
 
 		override bool isCtime( ) {
 			return true;
+		}
+
+		final override DataEntity parent( ) {
+			return this.outer.parent_;
 		}
 
 	public:

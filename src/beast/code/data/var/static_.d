@@ -17,7 +17,7 @@ public:
 	}
 
 public:
-	final override DataEntity data( DataEntity parentInstance = null ) {
+	final override DataEntity dataEntity( DataEntity parentInstance = null ) {
 		return staticData_;
 	}
 

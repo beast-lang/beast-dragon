@@ -10,12 +10,13 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 	mixin TaskGuard!"memoryAllocation";
 
 public:
-	this( AST_VariableDeclaration ast, DecorationList decorationList, VariableDeclarationData declData ) {
-		assert( env.isStatic );
+	this( AST_VariableDeclaration ast, DecorationList decorationList, VariableDeclarationData data ) {
+		assert( data.isStatic );
 
 		ast_ = ast;
 		decorationList_ = decorationList;
-		isCtime_ = declData.isCtime;
+		isCtime_ = data.isCtime;
+		parent_ = data.env.staticMembersParent;
 
 		taskManager.issueJob( { enforceDone_typeDeduction( ); } );
 	}
@@ -48,6 +49,7 @@ private:
 	AST_VariableDeclaration ast_;
 	Symbol_Type type_;
 	MemoryPtr dataPtr_;
+	DataEntity parent_;
 	bool isCtime_;
 
 private:
@@ -55,7 +57,7 @@ private:
 		const auto _gd = ErrorGuard( ast_.type.codeLocation );
 
 		// TODO: if type auto
-		type_ = ast_.type.standaloneCtExec( coreLibrary.types.Type, parent ).readType( );
+		type_ = ast_.type.standaloneCtExec( coreLibrary.types.Type, parent_ ).readType( );
 
 		benforce!( ErrorSeverity.warning )( type_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( type_.identificationString ) );
 	}

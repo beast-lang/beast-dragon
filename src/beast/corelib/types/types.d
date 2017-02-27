@@ -18,12 +18,12 @@ public:
 	}
 
 public:
-	void initialize( void delegate( Symbol ) sink ) {
+	void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 		// Auto generated initialization function
 		foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
 			alias mem = Alias!( __traits( getMember, this, memName ) );
 			static if ( hasUDA!( mem, autoinit ) ) {
-				mem = new typeof( mem );
+				mem = new typeof( mem )( parent );
 				sink( mem );
 			}
 		}

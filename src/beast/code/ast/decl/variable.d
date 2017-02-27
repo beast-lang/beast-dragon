@@ -85,10 +85,15 @@ protected:
 final class VariableDeclarationData {
 
 public:
-	this( DeclarationEnvironment e ) {
-		isCtime = e.isCtime;
-		isStatic = e.isStatic;
+	this( DeclarationEnvironment env ) {
+		this.env = env;
+
+		isCtime = env.isCtime;
+		isStatic = env.isStatic;
 	}
+
+public:
+	DeclarationEnvironment env;
 
 public:
 	bool isCtime;

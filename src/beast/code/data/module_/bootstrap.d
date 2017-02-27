@@ -4,7 +4,7 @@ import beast.code.data.toolkit;
 import beast.core.project.module_;
 import beast.code.ast.decl.module_;
 import beast.code.data.module_.module_;
-import beast.code.data.entitycontainer.namespace.bootstrap;
+import beast.code.data.codenamespace.bootstrap;
 
 /// Module that is defined in this compiler code
 final class Symbol_BootstrapModule : Symbol_Module {
@@ -12,7 +12,7 @@ final class Symbol_BootstrapModule : Symbol_Module {
 public:
 	this( ExtendedIdentifier identifier ) {
 		identifier_ = identifier;
-		namespace_ = new BootstrapNamespace( this, null );
+		namespace_ = new BootstrapNamespace();
 	}
 
 	void initialize( Symbol[ ] symbols ) {
@@ -28,7 +28,8 @@ public:
 		return identifier_.str;
 	}
 
-	override Namespace namespace() {
+protected:
+	override Namespace namespace( ) {
 		return namespace_;
 	}
 

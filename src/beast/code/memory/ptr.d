@@ -12,8 +12,9 @@ public:
 
 public:
 	/// Writes a "primitive" (direct data copy - usually you should use hwenv) into given pointer
-	void writePrimitive( T )( const auto ref T data ) {
+	MemoryPtr writePrimitive( T )( const auto ref T data ) {
 		memoryManager.write( this, cast( void* )&data, data.sizeof );
+		return this;
 	}
 
 	/// Reads a "primitive" (direct data read - usually you should use hwenv) from a given pointer

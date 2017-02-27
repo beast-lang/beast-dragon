@@ -2,13 +2,15 @@ module beast.corelib.types.void_;
 
 import beast.code.data.toolkit;
 import beast.code.data.type.staticclass;
-import beast.code.data.entitycontainer.namespace.bootstrap;
+import beast.code.data.codenamespace.bootstrap;
 
 final class Symbol_Type_Void : Symbol_StaticClassType {
 
 public:
-	this() {
-		namespace_ = new BootstrapNamespace( this, null );
+	this( DataEntity parent ) {
+		super( parent );
+		
+		namespace_ = new BootstrapNamespace();
 		namespace_.initialize( null );
 	}
 

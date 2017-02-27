@@ -5,7 +5,9 @@ import beast.code.data.toolkit;
 abstract class DataEntity_LocalVariable : DataEntity {
 
 public:
-	this( Symbol_Type dataType, bool isCtime ) {
+	this( Symbol_Type dataType, VariableDeclarationData data ) {
+		auto scope_ = data.env.scope_;
+
 		debug assert( context.jobId == scope_.jobId );
 
 		dataType_ = dataType;
@@ -16,7 +18,7 @@ public:
 	}
 
 public:
-	final override Symbol_Type dataType() {
+	final override Symbol_Type dataType( ) {
 		return dataType_;
 	}
 

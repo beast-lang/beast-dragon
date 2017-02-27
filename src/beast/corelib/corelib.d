@@ -23,7 +23,7 @@ public:
 
 public:
 	/// Module where all core stuff is in
-	/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.resolveIdentifierRecursively
+	/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.recursivelyResolveIdentifier
 	Symbol_BootstrapModule module_;
 
 public:
@@ -32,8 +32,8 @@ public:
 		Symbol[ ] symbols;
 		void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-		types.initialize( sink );
-		decorators.initialize( sink );
+		types.initialize( sink, module_.dataEntity );
+		decorators.initialize( sink, module_.dataEntity );
 
 		module_.initialize( symbols );
 	}

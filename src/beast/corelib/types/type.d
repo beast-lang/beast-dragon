@@ -2,7 +2,7 @@ module beast.corelib.types.type;
 
 import beast.code.data.toolkit;
 import beast.code.data.type.staticclass;
-import beast.code.data.entitycontainer.namespace.bootstrap;
+import beast.code.data.codenamespace.bootstrap;
 
 /// Type 'Type' -- typeof all classes etc.
 /// The root of all good and evil in Beast.
@@ -10,7 +10,9 @@ import beast.code.data.entitycontainer.namespace.bootstrap;
 final class Symbol_Type_Type : Symbol_StaticClassType {
 
 public:
-	this() {
+	this( DataEntity parent ) {
+		super( parent );
+		
 		namespace_ = new BootstrapNamespace( this, null );
 		namespace_.initialize( null );
 	}
@@ -29,12 +31,12 @@ public:
 	}
 
 public:
-	override Overloadset resolveIdentifier( Identifier id, DataEntity instance = null, DataScope scope_ = null ) {
+	override Overloadset resolveIdentifier( Identifier id, DataScope scope_, DataEntity instance ) {
 		// Tweak so that Type T = C; T.cc evaluates to C.cc
 		// We want to return function now - this resolveIdentifier is called again with null instance from this call
 		if ( instance ) {
 			assert( instance.dataType is coreLibrary.types.Type );
-			return instance.ctExec( scope_ ).readType().resolveIdentifier( id );
+			return instance.ctExec_asType( scope_ ).resolveIdentifier( id, scope_ );
 		}
 
 		if ( auto result = super.resolveIdentifier( id, instance ) )

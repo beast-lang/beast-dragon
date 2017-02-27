@@ -2,9 +2,9 @@ module beast.code.ast.expr.expression;
 
 import beast.code.ast.toolkit;
 import beast.code.memory.mgr;
-import beast.code.data.entitycontainer.scope_.root;
+import beast.code.data.scope_.root;
 import beast.backend.ctime.codebuilder;
-import beast.code.data.entitycontainer.scope_.local;
+import beast.code.data.scope_.local;
 import beast.code.ast.stmt.statement;
 
 abstract class AST_Expression : AST_Statement {
@@ -24,21 +24,17 @@ public:
 	/// The scope is used only for identifier lookup
 	/// Can result in executing ctime code
 	/// If errorOnFailure is false, returns null data entity if the expression cannot be built with given expectedType
-	abstract DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure );
+	abstract DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true );
 
 	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
 		buildSemanticTree( null, scope_ ).buildCode( cb, scope_ );
 	}
 
-/// Creates subscope and 
-	final MemoryPtr ctExec( Symbol_Type expectedType, DataScope scope_ ) {
-
-	}
-
 	/// Executes the expression in standalone scope and session, returing its value
-	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, EntityContainer parent ) {
+	/// The scope the ctExec creates is never destroyed
+	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
 		with ( memoryManager.session ) {
-			DataScope scope_ = new RootDataScope( parent.asNamespace, null );
+			DataScope scope_ = new RootDataScope( parent );
 			CodeBuilder_Ctime codeBuilder = new CodeBuilder_Ctime;
 			this.buildSemanticTree( expectedType, scope_ ).buildCode( codeBuilder, scope_ );
 

@@ -6,8 +6,9 @@ import beast.code.data.type.class_;
 abstract class Symbol_StaticClassType : Symbol_ClassType {
 
 public:
-	this() {
+	this( DataEntity parent ) {
 		staticData_ = new Data;
+		parent_ = parent;
 	}
 
 public:
@@ -16,32 +17,20 @@ public:
 	}
 
 public:
-	final override DataEntity data( DataEntity parentInstance = null ) {
+	final override DataEntity dataEntity( DataEntity parentInstance = null ) {
 		return staticData_;
 	}
 
 private:
-	Data staticData_;
+	DataEntity staticData_;
+	DataEntity parent_;
 
 private:
-	final class Data : SymbolRelatedDataEntity {
+	final class Data : super.Data {
 
 	public:
-		this( ) {
-			super( this.outer );
-		}
-
-	public:
-		override Symbol_Type dataType( ) {
-			return coreLibrary.types.Type;
-		}
-
-		override bool isCtime( ) {
-			return true;
-		}
-
-		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-			cb.build_staticMemoryAccess( this.outer.ctimeValue_ );
+		final override DataEntity parent( ) {
+			return parent_;
 		}
 
 		// TODO: resolve identifier

@@ -39,10 +39,12 @@ public:
 
 		benforce( data.length > 0, E.noMatchingOverload, "Empty overloadset (more explaining message should have been shown, this would probably deserve a bug report)" );
 
-		/// TODO: Implicit cast check
 		DataEntity result;
 
 		foreach ( item; data ) {
+			/// TODO: Implicit cast check
+			/// TODO: alias this check
+
 			if ( item.dataType !is expectedType )
 				continue;
 
