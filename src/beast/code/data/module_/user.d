@@ -15,7 +15,7 @@ public:
 		ast_ = ast;
 
 		// User modules have corelib module as a parent
-		namespace_ = new UserNamespace( &execute_membersObtaining );
+		namespace_ = new UserNamespace( this, &execute_membersObtaining );
 	}
 
 public:

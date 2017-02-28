@@ -20,7 +20,6 @@ alias TaskGuardId = shared ubyte*;
 	This mixin ensures that each task is done exactly once, handles synchronization between threads and loop dependency.
 */
 mixin template TaskGuard( string guardName ) {
-	//static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface" );
 	static assert( __traits( hasMember, typeof( this ), _taskGuard_executeFunctionName ), "You must implement 'void " ~ fullyQualifiedName!( typeof( this ) ) ~ "." ~ _taskGuard_executeFunctionName ~ "()'." );
 
 	import beast.core.task.context : TaskContext;
@@ -43,6 +42,8 @@ private:
 private:
 	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
 	final void _taskGuard_func( ) {
+		static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof(this).stringof ) );
+
 		import beast.util.atomic : atomicFetchThenOr, atomicStore, atomicOp;
 		import beast.core.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, BeastErrorException;
 

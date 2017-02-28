@@ -6,6 +6,7 @@ struct Overloadset {
 
 public:
 	DataEntity[ ] data;
+	alias data this;
 
 public:
 	/// Returns list of decorators in the overloadset

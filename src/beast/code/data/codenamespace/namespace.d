@@ -3,7 +3,12 @@ module beast.code.data.codenamespace.namespace;
 import beast.code.data.toolkit;
 import std.functional;
 
-abstract class Namespace {
+abstract class Namespace : Identifiable {
+
+public:
+	this( Identifiable parent ) {
+		parent_ = parent;
+	}
 
 public:
 	/// If there are any symbols in this namespace with given identifier, returns them in an overloadset.
@@ -12,6 +17,11 @@ public:
 			return ( *result ).map!( x => x.dataEntity( instance ) ).array.Overloadset;
 
 		return Overloadset( );
+	}
+
+public:
+	final override string identificationString( ) {
+		return parent_.identificationString;
 	}
 
 protected:
@@ -30,6 +40,7 @@ protected:
 	}
 
 private:
+	Identifiable parent_;
 	Symbol[ ] members_;
 	Symbol[ ][ Identifier ] groupedMembers_;
 

@@ -7,6 +7,7 @@ import beast.code.data.var.userstatic;
 import beast.code.ast.expr.parameterlist;
 import beast.code.ast.stmt.codeblock;
 import beast.code.data.function_.userstatic;
+import beast.code.data.scope_.root;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -32,10 +33,12 @@ public:
 public:
 	override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
 		FunctionDeclarationData declData = new FunctionDeclarationData( env );
-		DecorationList decorationList = new DecorationList( decorationList );
+		DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
+
+		scope scope_ = new RootDataScope( env.staticMembersParent );
 
 		// Apply possible decorators in the variableDeclarationModifier context
-		decorationList.apply_functionDeclarationModifier( declData );
+		decorationList.apply_functionDeclarationModifier( declData, scope_ );
 
 		if ( declData.isStatic && !declData.isCtime )
 			sink( new Symbol_UserStaticFunction( this, decorationList, declData ) );

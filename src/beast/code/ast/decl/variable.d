@@ -5,6 +5,8 @@ import beast.code.ast.decl.toolkit;
 import beast.code.decorationlist;
 import beast.code.data.var.userstatic;
 import beast.code.data.var.local;
+import beast.code.data.scope_.root;
+import beast.code.data.var.userlocal;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -42,10 +44,12 @@ public:
 public:
 	override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
 		VariableDeclarationData declData = new VariableDeclarationData( env );
-		DecorationList decorationList = new DecorationList( decorationList );
+		DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
+		scope scope_ = new RootDataScope( env.staticMembersParent );
+		
 		// Apply possible decorators in the variableDeclarationModifier context
-		decorationList.apply_variableDeclarationModifier( declData );
+		decorationList.apply_variableDeclarationModifier( declData, scope_ );
 
 		if ( declData.isStatic )
 			sink( new Symbol_UserStaticVariable( this, decorationList, declData ) );
@@ -55,14 +59,14 @@ public:
 
 	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
 		VariableDeclarationData declData = new VariableDeclarationData( env );
-		DecorationList decorationList = new DecorationList( decorationList );
+		DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
 		// Apply possible decorators in the variableDeclarationModifier context
-		decorationList.apply_variableDeclarationModifier( declData );
+		decorationList.apply_variableDeclarationModifier( declData, scope_ );
 
 		benforce( !declData.isStatic, E.unimplemented, "Static variables in function bodies are not implemented yet" );
 
-		DataEntity_LocalVariable var = new DataEntity_LocalVariable( this, decorationList, declData );
+		DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorationList, declData );
 		scope_.addLocalVariable( var );
 	}
 

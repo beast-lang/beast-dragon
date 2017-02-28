@@ -72,7 +72,7 @@ public:
 
 	abstract Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ );
 
-protected:
+public:
 	debug final size_t jobId( ) {
 		return jobId_;
 	}
@@ -85,7 +85,7 @@ private:
 
 	size_t currentBasePointerOffset_;
 
-	public debug size_t jobId_;
+	debug size_t jobId_;
 	debug bool isFinished_;
 
 package:

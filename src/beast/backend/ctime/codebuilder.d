@@ -21,6 +21,13 @@ public:
 		result_ = pointer;
 	}
 
+	override void build_localVariableAccess( DataEntity_LocalVariable var ) {
+		benforce( var.isCtime, E.valueNotCtime, "Variable '%s' is not ctime".format( var.identificationString ) );
+		
+		result_ = var.ctimeValue;
+	}
+
+public:
 	override void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 		assert( condition.dataType is coreLibrary.types.Bool );
 

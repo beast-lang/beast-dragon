@@ -12,7 +12,7 @@ final class Symbol_BootstrapModule : Symbol_Module {
 public:
 	this( ExtendedIdentifier identifier ) {
 		identifier_ = identifier;
-		namespace_ = new BootstrapNamespace();
+		namespace_ = new BootstrapNamespace( this );
 	}
 
 	void initialize( Symbol[ ] symbols ) {

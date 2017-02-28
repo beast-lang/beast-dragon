@@ -26,12 +26,12 @@ public:
 	abstract size_t instanceSize( );
 
 public:
-	Overloadset resolveIdentifier( Identifier id, DataScope scope_, DataEntity instance ) {
+	final Overloadset resolveIdentifier( Identifier id, DataScope scope_, DataEntity instance ) {
 		{
 			auto result = appender!( DataEntity[ ] );
 
 			// Add direct members to the overloadset
-			result ~= namespace.resolveIdentifier( id, instance ).data;
+			result ~= namespace.resolveIdentifier( id, instance );
 
 			if ( result.data )
 				return Overloadset( result.data );
@@ -39,7 +39,7 @@ public:
 
 		// Look in the core.Type
 		if ( this !is coreLibrary.types.Type ) {
-			if ( auto result = coreLibrary.types.Type.dataEntity.resolveIdentifier( id, scope_ ) )
+			if ( auto result = coreLibrary.types.Type.resolveIdentifier( id, scope_, this.dataEntity ) )
 				return result;
 		}
 
@@ -67,12 +67,8 @@ protected:
 			return coreLibrary.types.Type;
 		}
 
-	public:
-		protected override Overloadset resolveIdentifier_main( Identifier id, DataScope scope_ ) {
-			if ( auto result = super.resolveIdentifier( id, scope_ ) )
-				return result;
-
-			return Overloadset( );
+		override bool isCtime() {
+			return true;
 		}
 
 	public:

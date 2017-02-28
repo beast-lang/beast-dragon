@@ -6,8 +6,9 @@ import beast.code.data.var.variable;
 /// User (programmer) defined variable
 abstract class Symbol_StaticVariable : Symbol_Variable {
 
-public:
-	this() {
+protected:
+	this( DataEntity parent ) {
+		parent_ = parent;
 		staticData_ = new Data;
 	}
 
@@ -26,8 +27,13 @@ public:
 	/// Returns pointer to data of this variable
 	abstract MemoryPtr dataPtr( );
 
+	final DataEntity parent() {
+		return parent_;
+	}
+
 private:
 	Data staticData_;
+	DataEntity parent_;
 
 private:
 	final class Data : SymbolRelatedDataEntity {
@@ -45,6 +51,10 @@ private:
 
 		override bool isCtime( ) {
 			return this.outer.isCtime;
+		}
+
+		override DataEntity parent() {
+			return this.outer.parent_;
 		}
 
 	public:

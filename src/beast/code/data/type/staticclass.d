@@ -29,7 +29,7 @@ private:
 	final class Data : super.Data {
 
 	public:
-		final override DataEntity parent( ) {
+		override DataEntity parent( ) {
 			return parent_;
 		}
 

@@ -11,7 +11,9 @@ public:
 	alias ObtainFunction = Symbol[ ]delegate( );
 
 public:
-	this( ObtainFunction obtainFunction ) {
+	this( Identifiable parent, ObtainFunction obtainFunction ) {
+		super( parent );
+
 		obtainFunction_ = obtainFunction;
 		taskManager.issueJob( { enforceDone_membersObtaining( ); } );
 	}

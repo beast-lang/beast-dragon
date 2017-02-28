@@ -46,6 +46,10 @@ private:
 			return true;
 		}
 
+		override DataEntity parent() {
+			return null;
+		}
+
 	public:
 		protected final override Overloadset resolveIdentifier_main( Identifier id, DataScope scope_ ) {
 			// TODO: Move this to Module core type

@@ -35,7 +35,7 @@ public:
 	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
 		with ( memoryManager.session ) {
 			DataScope scope_ = new RootDataScope( parent );
-			CodeBuilder_Ctime codeBuilder = new CodeBuilder_Ctime;
+			scope codeBuilder = new CodeBuilder_Ctime;
 			this.buildSemanticTree( expectedType, scope_ ).buildCode( codeBuilder, scope_ );
 
 			scope_.finish();

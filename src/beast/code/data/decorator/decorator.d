@@ -37,6 +37,12 @@ public:
 		return false;
 	}
 
+	/// Attempts to apply the decorator in the typeDecorator context. Returns true if successfull.
+	/// Type decorator takes one type and returns another
+	bool apply_typeWrapper( ref Symbol_Type type ) {
+		return false;
+	}
+
 private:
 	DataEntity parent_;
 

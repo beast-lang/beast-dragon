@@ -10,7 +10,7 @@ public:
 	this( DataEntity parent ) {
 		super( parent );
 		
-		namespace_ = new BootstrapNamespace();
+		namespace_ = new BootstrapNamespace( this );
 		namespace_.initialize( null );
 	}
 

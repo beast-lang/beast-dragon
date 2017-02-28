@@ -17,4 +17,5 @@ public {
 	import beast.code.memory.ptr;
 	import beast.corelib.corelib;
 	import beast.toolkit;
+	import beast.code.data.scope_.scope_;
 }

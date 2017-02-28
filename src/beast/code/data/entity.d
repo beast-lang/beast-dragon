@@ -82,14 +82,14 @@ public:
 
 public:
 	/// Builds code that matches the semantic tree (scope is used for variable allocations)
-	abstract void buildCode( CodeBuilder cb, DataScope scope_ ) {
+	void buildCode( CodeBuilder cb, DataScope scope_ ) {
 		assert( 0, "buildCode not implemented for " ~ identificationString );
 	}
 
 public:
 	/// Executes the expression in standalone scope and session, returing its value
 	final MemoryPtr ctExec( DataScope scope_ ) {
-		CodeBuilder_Ctime cb = new CodeBuilder_Ctime;
+		scope cb = new CodeBuilder_Ctime;
 		buildCode( cb, scope_ );
 		return cb.result;
 	}
@@ -107,7 +107,9 @@ protected:
 		return Overloadset( );
 	}
 
-	abstract Overloadset resolveIdentifier_main( Identifier id, DataScope scope_ );
+	Overloadset resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+		return Overloadset( );
+	}
 
 	Overloadset resolveIdentifier_post( Identifier id, DataScope scope_ ) {
 		if ( auto dataType = dataType ) {

@@ -9,7 +9,11 @@ import beast.code.ast.decl.variable;
 final class DecorationList {
 
 public:
-	this( AST_DecorationList list ) {
+	this( AST_DecorationList list, DataEntity context ) {
+		assert( context );
+
+		context_ = context;
+
 		// Group all decorations to an array
 		{
 			scope AST_DecorationList[ ] stack;
@@ -28,40 +32,36 @@ public:
 
 public:
 	/// Applies all possible decorations in the variableDeclarationModifier context and removes them from the list
-	void apply_variableDeclarationModifier( VariableDeclarationData var ) {
-		// Right decorators have higher priority
-		foreach_reverse ( ref Record rec; list_ ) {
-			// If the record has already resolved decorator, just try applying the decorator in the context
-			if( rec.decorator ) {
-				rec.decorator.apply_variableDeclarationModifier( var );
-				continue;
-			}
-
-			// Otherwise try resolving the decorator
-			// The only variableDeclarationModifier decorators are in core library (maybe will change in future?)
-			foreach ( decorator; coreLibrary.module_.dataEntity.resolveIdentifier( rec.decoration.decoratorIdentifier, null ).filter_decoratorsOnly ) {
-				if ( decorator.apply_variableDeclarationModifier( var ) ) {
-					rec.decorator = decorator;
-					break;
-				}
-			}
-		}
+	void apply_variableDeclarationModifier( VariableDeclarationData var, DataScope scope_ ) {
+		standardDecoratorProcedure!"variableDeclarationModifier"( coreLibrary.module_.dataEntity, scope_, var );
 	}
 
 	/// Applies all possible decorations in the functionDeclarationModifier context and removes them from the list
-	void apply_functionDeclarationModifier( FunctionDeclarationData var ) {
+	void apply_functionDeclarationModifier( FunctionDeclarationData var, DataScope scope_ ) {
+		standardDecoratorProcedure!"functionDeclarationModifier"( coreLibrary.module_.dataEntity, scope_, var );
+	}
+
+	Symbol_Type apply_typeWrapper( Symbol_Type originalType, DataScope scope_ ) {
+		// originalType is passed by reference
+		standardDecoratorProcedure!"typeWrapper"( context_, scope_, originalType );
+		return originalType;
+	}
+
+private:
+	void standardDecoratorProcedure( string applyFunctionName, Args... )( DataEntity context, DataScope scope_, auto ref Args args ) {
 		// Right decorators have higher priority
 		foreach_reverse ( ref Record rec; list_ ) {
 			// If the record has already resolved decorator, just try applying the decorator in the context
-			if( rec.decorator ) {
-				rec.decorator.apply_functionDeclarationModifier( var );
+			if ( rec.decorator ) {
+				auto deco = rec.decorator;
+				__traits( getMember, deco, "apply_" ~ applyFunctionName )( args );
 				continue;
 			}
 
 			// Otherwise try resolving the decorator
-			// The only functionDeclarationModifier decorators are in core library (maybe will change in future?)
-			foreach ( decorator; coreLibrary.module_.dataEntity.resolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
-				if ( decorator.apply_functionDeclarationModifier( var ) ) {
+			foreach ( decorator; context.recursivelyResolveIdentifier( rec.decoration.decoratorIdentifier, scope_ ).filter_decoratorsOnly ) {
+				// If the decorator is appliable in given context, mark the given decorator as resolved
+				if ( __traits( getMember, decorator, "apply_" ~ applyFunctionName )( args ) ) {
 					rec.decorator = decorator;
 					break;
 				}
@@ -71,6 +71,7 @@ public:
 
 private:
 	Record[ ] list_;
+	DataEntity context_;
 
 private:
 	static struct Record {

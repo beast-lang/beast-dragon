@@ -13,7 +13,7 @@ public:
 	this( DataEntity parent ) {
 		super( parent );
 		
-		namespace_ = new BootstrapNamespace( this, null );
+		namespace_ = new BootstrapNamespace( this );
 		namespace_.initialize( null );
 	}
 
@@ -29,22 +29,7 @@ public:
 	override Namespace namespace( ) {
 		return namespace_;
 	}
-
-public:
-	override Overloadset resolveIdentifier( Identifier id, DataScope scope_, DataEntity instance ) {
-		// Tweak so that Type T = C; T.cc evaluates to C.cc
-		// We want to return function now - this resolveIdentifier is called again with null instance from this call
-		if ( instance ) {
-			assert( instance.dataType is coreLibrary.types.Type );
-			return instance.ctExec_asType( scope_ ).resolveIdentifier( id, scope_ );
-		}
-
-		if ( auto result = super.resolveIdentifier( id, instance ) )
-			return result;
-
-		return Overloadset( );
-	}
-
+	
 private:
 	BootstrapNamespace namespace_;
 

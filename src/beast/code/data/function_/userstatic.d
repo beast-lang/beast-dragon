@@ -59,13 +59,8 @@ private:
 			return true;
 		}
 
-		final override DataEntity parent( ) {
+		override DataEntity parent( ) {
 			return this.outer.parent_;
-		}
-
-	public:
-		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-			// TODO:
 		}
 
 	}
