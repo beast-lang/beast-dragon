@@ -59,7 +59,7 @@ private:
 
 	public:
 		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-			cb.build_staticMemoryAccess( this.outer.dataPtr );
+			cb.build_memoryAccess( this.outer.dataPtr );
 		}
 
 	}

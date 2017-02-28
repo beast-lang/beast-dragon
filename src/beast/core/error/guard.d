@@ -23,6 +23,10 @@ public:
 		this( ( err ) { err.codeLocation = codeLocation; } );
 	}
 
+	this( T )( auto ref T t ) if ( __traits( hasMember, T, "codeLocation" ) ) {
+		this( t.codeLocation );
+	}
+
 	~this( ) {
 		debug assert( context.errorGuardData.stack[ $ - 1 ] == func );
 		context.errorGuardData.stack.length--;

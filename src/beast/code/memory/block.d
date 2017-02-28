@@ -4,6 +4,7 @@ import beast.code.memory.mgr;
 import beast.code.memory.ptr;
 import beast.code.toolkit;
 import core.memory;
+import beast.code.data.var.local;
 
 /// Block of interpreter memory
 final class MemoryBlock {
@@ -12,7 +13,7 @@ public:
 	enum Flags {
 		doNotGCAtAll = 1 << 0, /// Do not garbage collect this block at all
 		doNotGCAtSessionEnd = 1 << 1, /// Do not garbage collect this block at the end of the session (when only blocks created in the current session are garbage collected)
-		local = 1 << 2, /// Block is local - it cannot be accessed from other sessions (should not happen at all); tested only in debug
+		local = 1 << 2, /// Block is local - it cannot be accessed from other sessions (should not happen at all); tested only in debug; used for local and temporary variables
 		runtime = 1 << 3, /// Memory block is runtime - cannot be read/written at compile time
 	}
 
@@ -49,5 +50,9 @@ public:
 	const size_t session;
 	ubyte flags;
 	void* data;
+
+public:
+	/// Used when the block is related to a local variables
+	DataEntity_LocalVariable localVariable;
 
 }

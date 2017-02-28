@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 
 /// Declaration of something (not really explaining, I know)
 abstract class Symbol : Identifiable {
+	mixin TaskGuard!"outerHashObtaining";
 
 public:
 	enum DeclType {
@@ -30,9 +31,19 @@ public:
 		return null;
 	}
 
+	override string identificationString( ) {
+		return dataEntity.identificationString;
+	}
+
 	/// Location of where in the code the symbol was declared (or code that +- matches it)
 	final CodeLocation codeLocation( ) {
 		return ast ? ast.codeLocation : cast( CodeLocation ) null;
+	}
+
+	/// Outer hash - hash that is generated based on entity declaration and surroundings, not its definition (considering classes, functions, etc)
+	final Hash outerHash( ) {
+		enforceDone_outerHashObtaining( );
+		return outerHash_;
 	}
 
 public:
@@ -40,8 +51,20 @@ public:
 	abstract DataEntity dataEntity( DataEntity parentInstance = null );
 
 public:
-	override string identificationString( ) {
-		return dataEntity.identificationString;
+	/// Builds code for declarations/definitions of current symbol and all children symbols
+	void buildDefinitionsCode( CodeBuilder cb ) {
+		assert( 0, "buildDefinitionsCode not implemented for " ~ identificationString );
+	}
+
+protected:
+	Hash outerHash_;
+
+protected:
+	void execute_outerHashObtaining( ) {
+		outerHash_ = identifier.hash;
+
+		if ( auto parent = dataEntity.parent )
+			outerHash_ += parent.outerHash;
 	}
 
 }
@@ -60,6 +83,10 @@ public:
 
 	final override AST_Node ast( ) {
 		return symbol_.ast;
+	}
+
+	final override Hash outerHash( ) {
+		return symbol_.outerHash;
 	}
 
 private:

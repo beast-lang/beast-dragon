@@ -50,6 +50,11 @@ public:
 		return ast ? ast.codeLocation : cast( CodeLocation ) null;
 	}
 
+	/// Outer hash - hash that is generated based on entity declaration and surroundings, not its definition (considering classes, functions, etc)
+	Hash outerHash() {
+		return parent.outerHash;
+	}
+
 public:
 	/// Resolves identifier (drill-down)
 	/// The scope can be used for creating temporary variables

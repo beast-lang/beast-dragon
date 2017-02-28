@@ -13,6 +13,7 @@ abstract class Symbol_Decorator : Symbol {
 public:
 	this( DataEntity parent ) {
 		parent_ = parent;
+		staticData_ = new Data;
 	}
 
 public:
@@ -22,8 +23,7 @@ public:
 
 public:
 	final override DataEntity dataEntity( DataEntity parentInstance = null ) {
-		assert( 0 );
-		// TODO:
+		return staticData_;
 	}
 
 public:
@@ -43,8 +43,38 @@ public:
 		return false;
 	}
 
+public:
+	override void buildDefinitionsCode( CodeBuilder cb ) {
+		// Do nothing
+	}
+
 private:
 	DataEntity parent_;
+	DataEntity staticData_;
+
+private:
+	final class Data : SymbolRelatedDataEntity {
+
+	public:
+		this( ) {
+			super( this.outer );
+		}
+
+	public:
+		override Symbol_Type dataType( ) {
+			// TODO: decorator reflection
+			return null;
+		}
+
+		override bool isCtime( ) {
+			return true;
+		}
+
+		override DataEntity parent( ) {
+			return this.outer.parent_;
+		}
+
+	}
 
 }
 

@@ -12,7 +12,7 @@ final class Symbol_Type_Type : Symbol_StaticClassType {
 public:
 	this( DataEntity parent ) {
 		super( parent );
-		
+
 		namespace_ = new BootstrapNamespace( this );
 		namespace_.initialize( null );
 	}
@@ -29,7 +29,12 @@ public:
 	override Namespace namespace( ) {
 		return namespace_;
 	}
-	
+
+public:
+	override void buildDefinitionsCode( CodeBuilder cb ) {
+		// TODO:
+	}
+
 private:
 	BootstrapNamespace namespace_;
 

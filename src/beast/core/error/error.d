@@ -30,7 +30,7 @@ enum E {
 	invalidOpts, /// Invalid options passed to the application
 	fileError, /// File opening/reading error (or directory or smthg)
 	invalidProjectConfiguration, /// Error when parsing project file or invalid configuration combination
-	unimplemented, /// Feature not yet implemented
+	notImplemented, /// Feature not yet implemented
 	dependencyLoop, /// Task guard circular dependency
 	other, /// Other errors
 

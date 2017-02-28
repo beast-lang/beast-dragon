@@ -2,6 +2,7 @@ module beast.core.project.modulemgr;
 
 import beast.toolkit;
 import beast.core.project.module_;
+import beast.corelib.corelib;
 import std.file;
 import std.path;
 
@@ -32,7 +33,7 @@ public:
 			// Otherwise try adding it to the project
 			// TODO: Implement searching in include directories
 
-			berror( E.unimplemented, "" );
+			berror( E.notImplemented, "" );
 			assert( 0 );
 		}
 	}
@@ -57,7 +58,7 @@ protected:
 
 				// Test if the identifier is valid
 				foreach ( id; extId )
-					benforce( id.str.isValidModuleOrPackageIdentifier, E.invalidModuleIdentifier, "Identifier '" ~ id.str ~ "' of module '" ~ extId.str ~ "' (" ~ file.absolutePath( sourceDir ) ~ ") is not a valid module identifier." );
+					benforce( id.str.isValidModuleOrPackageIdentifier, E.invalidModuleIdentifier, "Identifier '%s' of module '%s' (%s) is not valid.".format( id.str, extId.str, file.absolutePath( sourceDir ) ) );
 
 				Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath( sourceDir ), extId );
 				result ~= m;
@@ -68,8 +69,8 @@ protected:
 		foreach ( string file; project.configuration.sourceFiles ) {
 			ExtendedIdentifier extId = ExtendedIdentifier( [ Identifier.obtain( file.baseName.stripExtension ) ] );
 
-			// Test if the identifier is valid
-			benforce( extId[ 0 ].str.isValidModuleOrPackageIdentifier, E.invalidModuleIdentifier, "Identifier '" ~ extId.str ~ "' of module '" ~ extId.str ~ "' (" ~ file ~ ") is not a valid module identifier." );
+			// Test if the identifier is valid (explicit source files have only one identifier in extid)
+			benforce( extId[ 0 ].str.isValidModuleOrPackageIdentifier, E.invalidModuleIdentifier, "Module identifier '%s' (%s) is not valid.".format( extId.str, file ) );
 
 			Module m = new Module( Module.CTOR_FromFile( ), file.absolutePath, extId );
 			result ~= m;

@@ -27,6 +27,7 @@ public:
 	enum StopOnPhase {
 		lexing, /// Do only lexical analysis
 		parsing, /// Do lexical and syntax analysis
+		codegen,
 		doEverything,
 	}
 

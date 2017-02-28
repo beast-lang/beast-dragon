@@ -7,7 +7,9 @@ abstract class Symbol_Function : Symbol {
 
 public:
 	/// Tries to match the function with given arguments
-	abstract FunctionMatch match( FunctionArgument[ ] args );
+	FunctionMatch match( FunctionArgument[ ] args ) {
+		assert( 0 );
+	}
 
 }
 

@@ -22,9 +22,16 @@ public:
 		return staticData_;
 	}
 
+	final override void buildDefinitionsCode( CodeBuilder cb ) {
+		cb.build_moduleDefinition( this, ( cb ) {
+			foreach ( sym; namespace.members )
+				sym.buildDefinitionsCode( cb );
+		} );
+	}
+
 protected:
 	abstract Namespace namespace( );
-
+	
 private:
 	Data staticData_;
 
@@ -46,7 +53,7 @@ private:
 			return true;
 		}
 
-		override DataEntity parent() {
+		override DataEntity parent( ) {
 			return null;
 		}
 

@@ -11,6 +11,10 @@ public:
 	}
 
 public:
+	Symbol[] members() {
+		return members_;
+	}
+
 	/// If there are any symbols in this namespace with given identifier, returns them in an overloadset.
 	Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
 		if ( auto result = id in groupedMembers_ )

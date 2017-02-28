@@ -8,6 +8,8 @@ import beast.core.project.project;
 import beast.core.task.mgr;
 import beast.corelib.corelib;
 import beast.toolkit;
+import beast.backend.common.backend;
+import beast.backend.cpp.backend;
 import std.concurrency;
 import std.file;
 import std.getopt;
@@ -144,6 +146,15 @@ void mainImpl( string[ ] args ) {
 		taskManager.issueJob( { m.enforceDone_parsing( ); } );
 
 	taskManager.spawnWorkers( );
+
+	// Finish phase 1
+	taskManager.waitForEverythingDone( );
+
+	if ( project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
+		// Start building code using backend
+		Backend backend = new Backend_Cpp;
+		backend.build( );
+	}
 }
 
 int main( string[ ] args ) {

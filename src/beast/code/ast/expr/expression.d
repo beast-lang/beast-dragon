@@ -19,6 +19,12 @@ public:
 	}
 
 public:
+	/// Returns if the expression is P1 or lower
+	bool isP1Expression( ) {
+		return false;
+	}
+
+public:
 	/// Builds semantic tree (no code is built) for this expression and returns data entity representing the result.
 	/// expectedType is used for type inferration and can be null (any result is then acceptable)
 	/// The scope is used only for identifier lookup
@@ -33,12 +39,14 @@ public:
 	/// Executes the expression in standalone scope and session, returing its value
 	/// The scope the ctExec creates is never destroyed
 	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
+		const auto _gd = ErrorGuard( this );
+
 		with ( memoryManager.session ) {
 			DataScope scope_ = new RootDataScope( parent );
 			scope codeBuilder = new CodeBuilder_Ctime;
 			this.buildSemanticTree( expectedType, scope_ ).buildCode( codeBuilder, scope_ );
 
-			scope_.finish();
+			scope_.finish( );
 			return codeBuilder.result;
 		}
 

@@ -17,4 +17,10 @@ public:
 		currentToken.reportUnexpectedToken( "expression (P1)" );
 		assert( 0 );
 	}
+
+public:
+	final override bool isP1Expression( ) {
+		return true;
+	}
+
 }

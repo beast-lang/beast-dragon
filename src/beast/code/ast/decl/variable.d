@@ -54,7 +54,7 @@ public:
 		if ( declData.isStatic )
 			sink( new Symbol_UserStaticVariable( this, decorationList, declData ) );
 		else
-			berror( E.unimplemented, "Not implemented" );
+			berror( E.notImplemented, "Not implemented" );
 	}
 
 	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
@@ -64,10 +64,12 @@ public:
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_variableDeclarationModifier( declData, scope_ );
 
-		benforce( !declData.isStatic, E.unimplemented, "Static variables in function bodies are not implemented yet" );
+		benforce( !declData.isStatic, E.notImplemented, "Static variables in function bodies are not implemented yet" );
 
 		DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorationList, declData );
 		scope_.addLocalVariable( var );
+
+		cb.build_localVariableDefinition( var );
 	}
 
 public:

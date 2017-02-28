@@ -10,7 +10,7 @@ final class DecorationList {
 
 public:
 	this( AST_DecorationList list, DataEntity context ) {
-		assert( context );
+		assert( context, "null context" );
 
 		context_ = context;
 

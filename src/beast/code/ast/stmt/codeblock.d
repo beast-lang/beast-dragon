@@ -23,7 +23,10 @@ public:
 		currentToken.expect( Token.Special.lBrace );
 		getNextToken( );
 
-		currentToken.expect( Token.Special.rBrace );
+		while ( AST_Statement.canParse )
+			result.subStatements ~= AST_Statement.parse( null );
+
+		currentToken.expect( Token.Special.rBrace, "statement or '}'" );
 		getNextToken( );
 
 		result.codeLocation = _gd.get( );

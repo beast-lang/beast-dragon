@@ -29,6 +29,10 @@ public:
 		/// Type of variable or return type of a function
 		AST_TypeOrAutoExpression type = AST_TypeOrAutoExpression.parse( );
 
+		return parse( _gd, decorationList, type );
+	}
+
+	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_TypeOrAutoExpression type ) {
 		/// Identifier
 		AST_Identifier identifier = AST_Identifier.parse( );
 

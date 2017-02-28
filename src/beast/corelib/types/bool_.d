@@ -28,7 +28,9 @@ public:
 	}
 
 public:
-	// TODO: more stuff
+	override void buildDefinitionsCode( CodeBuilder cb ) {
+		// TODO:
+	}
 
 private:
 	BootstrapNamespace namespace_;

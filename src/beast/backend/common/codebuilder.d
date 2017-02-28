@@ -6,18 +6,46 @@ import beast.backend.toolkit;
 abstract class CodeBuilder {
 
 public:
-	alias StmtFunction = void delegate( );
-	alias ExprFunction = DataEntity delegate( );
+	/// When called, StmtFunction should build given part of the statement using provided codebuilder
+	alias StmtFunction = void delegate( CodeBuilder cb );
 
-public:
-	/// Builds access to a static memory (passed by a pointer)
-	abstract void build_staticMemoryAccess( MemoryPtr pointer );
+	/// When called, DeclFunction should build relevant declarations using provided codebuilder
+	alias DeclFunction = void delegate( CodeBuilder cb );
 
-	abstract void build_localVariableAccess( DataEntity_LocalVariable var );
+public: // Declaration related build commands
+	void build_moduleDefinition( Symbol_Module module_, DeclFunction content ) {
+		assert( 0 );
+	}
 
-public:
+	void build_staticVariableDefinition( Symbol_StaticVariable var ) {
+		assert( 0 );
+	}
+
+	void build_localVariableDefinition( DataEntity_LocalVariable var ) {
+		assert( 0 );
+	}
+
+	void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
+		assert( 0 );
+	}
+
+public: // Expression related build commands
+	/// Builds access to a memory (passed by a pointer)
+	/// The memory doesn't have to be static! You have to check associated memory block flags (it can be local ctime variable or so)
+	void build_memoryAccess( MemoryPtr pointer ) {
+		assert( 0 );
+	}
+
+	abstract void build_localVariableAccess( DataEntity_LocalVariable var ) {
+		assert( 0 );
+	}
+
+public: // Statement related build commands
 	/// Builds the "if" construction
 	/// Condition has to be of type bool
-	abstract void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch );
+	/// elseBranch can be null
+	void build_if( DataScope scope_, DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+		assert( 0 );
+	}
 
 }

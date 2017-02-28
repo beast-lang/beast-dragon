@@ -7,14 +7,20 @@ import beast.backend.toolkit;
 final class CodeBuilder_Ctime : CodeBuilder {
 
 public:
-	/// Result of the last executed expression
+	/// Result of the last "built" (read "executed") code
 	MemoryPtr result( ) {
-		debug assert( result_ );
+		debug {
+			assert( result_ );
+
+			auto block = memoryManager.findMemoryBlock( result_ );
+			assert( block && !block.isRuntime );
+		}
+
 		return result_;
 	}
 
-public:
-	override void build_staticMemoryAccess( MemoryPtr pointer ) {
+public: // Expression related build commands
+	override void build_memoryAccess( MemoryPtr pointer ) {
 		MemoryBlock b = memoryManager.findMemoryBlock( pointer );
 		benforce( !b.isRuntime, E.valueNotCtime, "Variable is not ctime" );
 
@@ -23,16 +29,8 @@ public:
 
 	override void build_localVariableAccess( DataEntity_LocalVariable var ) {
 		benforce( var.isCtime, E.valueNotCtime, "Variable '%s' is not ctime".format( var.identificationString ) );
-		
+
 		result_ = var.ctimeValue;
-	}
-
-public:
-	override void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
-		assert( condition.dataType is coreLibrary.types.Bool );
-
-		result_ = nullMemoryPtr;
-		assert( 0 );
 	}
 
 private:

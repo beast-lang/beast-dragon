@@ -44,6 +44,11 @@ public:
 		return isCtime_;
 	}
 
+public:
+	final override void buildDefinitionsCode( CodeBuilder cb ) {
+		cb.build_staticVariableDefinition( this );
+	}
+
 private:
 	DecorationList decorationList_;
 	AST_VariableDeclaration ast_;

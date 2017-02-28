@@ -6,7 +6,7 @@ import beast.code.decorationlist;
 import beast.code.data.var.userstatic;
 import beast.code.ast.expr.parameterlist;
 import beast.code.ast.stmt.codeblock;
-import beast.code.data.function_.userstatic;
+import beast.code.data.function_.userstaticruntime;
 import beast.code.data.scope_.root;
 
 final class AST_FunctionDeclaration : AST_Declaration {
@@ -41,13 +41,13 @@ public:
 		decorationList.apply_functionDeclarationModifier( declData, scope_ );
 
 		if ( declData.isStatic && !declData.isCtime )
-			sink( new Symbol_UserStaticFunction( this, decorationList, declData ) );
+			sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData ) );
 		else
-			berror( E.unimplemented, "Not implemented" );
+			berror( E.notImplemented, "Not implemented" );
 	}
 
 	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
-		berror( E.unimplemented, "Nested functions are not implemented yet" );
+		berror( E.notImplemented, "Nested functions are not implemented yet" );
 	}
 
 public:

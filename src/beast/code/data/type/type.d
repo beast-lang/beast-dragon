@@ -73,7 +73,7 @@ protected:
 
 	public:
 		final override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-			cb.build_staticMemoryAccess( this.outer.ctimeValue_ );
+			cb.build_memoryAccess( this.outer.ctimeValue_ );
 		}
 
 	}

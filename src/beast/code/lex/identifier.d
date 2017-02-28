@@ -2,6 +2,7 @@ module beast.code.lex.identifier;
 
 import beast.code.ast.toolkit;
 import beast.toolkit;
+import beast.util.hash;
 
 final class Identifier {
 
@@ -26,12 +27,12 @@ public:
 
 public:
 	const string str;
-	const size_t hash;
+	const Hash hash;
 	const Token.Keyword keyword;
 
 public:
 	override size_t toHash( ) const {
-		return hash;
+		return hash.data;
 	}
 
 	// We don't need to compare strings, we only compare pointers
@@ -43,12 +44,7 @@ private:
 	this( string str, Token.Keyword keyword = Token.Keyword._noKeyword ) {
 		this.str = str;
 		this.keyword = keyword;
-
-		size_t hash_;
-		foreach ( ch; str )
-			hash_ = ( hash_ << 1 ) ^ 13 + ch;
-
-		this.hash = hash_;
+		this.hash = Hash( str );
 	}
 
 private:

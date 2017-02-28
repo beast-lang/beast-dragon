@@ -7,6 +7,8 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
 public:
 	this( AST_VariableDeclaration ast, DecorationList decorationList, VariableDeclarationData data ) {
+		ast_ = ast;
+
 		Symbol_Type dataType;
 
 		// Deduce data type
@@ -19,11 +21,15 @@ public:
 	}
 
 public:
+	final override Identifier identifier() {
+		return ast_.identifier.identifier;
+	}
+
 	final override AST_Node ast( ) {
 		return ast_;
 	}
 
 private:
-	AST_Node ast_;
+	AST_VariableDeclaration ast_;
 
 }

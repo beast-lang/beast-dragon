@@ -28,6 +28,17 @@ public:
 	}
 
 public:
+	this( ) {
+
+	}
+
+	/// Constructs AST_TypeOrAutoExpression from given expression (so no auto)
+	this( AST_Expression expr ) {
+		assert( expr.isP1Expression );
+		this.expr = expr;
+	}
+
+public:
 	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
 		assert( !isAuto );
 		return expr.buildSemanticTree( expectedType, scope_, errorOnFailure );
