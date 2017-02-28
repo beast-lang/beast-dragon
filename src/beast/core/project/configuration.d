@@ -59,6 +59,10 @@ public:
 		/// Compiler can be configured to stop at certaing compilation phase
 		@help( "The compiler can be configured to stop at certain compilation phase." )
 		StopOnPhase stopOnPhase = StopOnPhase.doEverything;
+
+		/// Test C++ output to stdout
+		@help("TEST ITEM")
+		bool testStdout;
 	}
 	debug @configurable {
 		/// Show stack trace on error report

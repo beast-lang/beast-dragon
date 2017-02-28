@@ -15,7 +15,8 @@ public:
 			m.symbol.buildDefinitionsCode( cb );
 
 		import std.stdio;
-		writeln( cb.result );
+		if( project.configuration.testStdout )
+			writeln( cb.result );
 	}
 
 }

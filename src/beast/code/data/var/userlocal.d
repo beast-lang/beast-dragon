@@ -13,6 +13,7 @@ public:
 
 		// Deduce data type
 		{
+			const auto _gd = ErrorGuard( ast.type );
 			DataScope localScope_ = new LocalDataScope( data.env.scope_ );
 			dataType = ast.type.buildSemanticTree( coreLibrary.types.Type, localScope_ ).ctExec_asType( localScope_ );
 		}

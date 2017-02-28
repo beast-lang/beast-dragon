@@ -24,7 +24,7 @@ public:
 	}
 
 	this( T )( auto ref T t ) if ( __traits( hasMember, T, "codeLocation" ) ) {
-		this( t.codeLocation );
+		this( ( err ) { err.codeLocation = t.codeLocation; } );
 	}
 
 	~this( ) {

@@ -40,7 +40,9 @@ public:
 
 public:
 	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
+		const auto _gd = ErrorGuard( this );
 		assert( !isAuto );
+	
 		return expr.buildSemanticTree( expectedType, scope_, errorOnFailure );
 	}
 

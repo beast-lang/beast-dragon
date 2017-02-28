@@ -31,6 +31,8 @@ public:
 
 public:
 	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
+		const auto _gd = ErrorGuard( this );
+		
 		Overloadset result;
 
 		if ( precedingColon ) {
