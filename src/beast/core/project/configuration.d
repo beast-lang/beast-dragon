@@ -4,14 +4,8 @@ import beast.core.project.codesource;
 import beast.toolkit;
 import beast.util.decorator;
 import beast.util.enumassoc;
-import std.file;
 import std.json;
-import std.conv;
-import std.path;
 import std.stdio;
-import std.traits;
-import std.meta;
-import std.uni;
 
 /// Project configuration storage class
 struct ProjectConfiguration {
@@ -61,7 +55,7 @@ public:
 		StopOnPhase stopOnPhase = StopOnPhase.doEverything;
 
 		/// Test C++ output to stdout
-		@help("TEST ITEM")
+		@help( "TEST ITEM" )
 		bool testStdout;
 	}
 	debug @configurable {
@@ -75,15 +69,15 @@ public:
 	void load( JSONValue[ string ] data ) {
 		itemIteration: foreach ( key, val; data ) {
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
-				alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
+				foreach ( uda; __traits( getAttributes, __traits( getMember, ProjectConfiguration, memberName ) ) ) {
+					static if ( is( uda == configurable ) ) {
+						if ( key != memberName )
+							continue;
 
-				static if ( hasUDA!( member, configurable ) ) {
-					if ( key != memberName )
-						continue;
+						loadItem!( typeof( __traits( getMember, ProjectConfiguration, memberName ) ), memberName )( key, val );
 
-					loadItem!( typeof( member ), memberName )( key, val );
-
-					continue itemIteration;
+						continue itemIteration;
+					}
 				}
 			}
 
@@ -96,23 +90,24 @@ public:
 	void printHelp( ) {
 		writeln( "Configuration options:" );
 
-		foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
-			alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
+		memberIteration: foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
+			foreach ( uda; __traits( getAttributes, __traits( getMember, ProjectConfiguration, memberName ) ) ) {
+				static if ( is( typeof( uda ) == help ) ) {
+					alias Member = typeof( __traits( getMember, ProjectConfiguration, memberName ) );
 
-			static if ( hasUDA!( member, configurable ) ) {
-				alias Member = typeof( member );
+					writef( "  %s = %s\n    %s\n\n", memberName, help_possibleValues!( Member ), uda.data[ 0 ].replace( "\n", "\n    " ) );
 
-				writef( "  %s = %s\n    %s\n\n", memberName, help_possibleValues!( Member ), getUDAs!( member, help )[ 0 ].data[ 0 ].replace( "\n", "\n    " ) );
+					// TODO: uncomment after UDAs on enum members are allowed
+					/*static if ( is( Member == enum ) ) {
+						foreach ( i, valueName; __traits( derivedMembers, Member ) ) {
+							alias value = Alias!( __traits( getMember, Member, valueName ) );
 
-				// TODO: uncomment after UDAs on enum members are allowed
-				/*static if ( is( Member == enum ) ) {
-					foreach ( i, valueName; __traits( derivedMembers, Member ) ) {
-						alias value = Alias!( __traits( getMember, Member, valueName ) );
-
-						writef( "    %s: %s\n", valueName, getUDAs!( value, help )[ 0 ].data[ 0 ] );
-					}
-					writeln;
-				}*/
+							writef( "    %s: %s\n", valueName, getUDAs!( value, help )[ 0 ].data[ 0 ] );
+						}
+						writeln;
+					}*/
+					continue memberIteration;
+				}
 			}
 		}
 	}
@@ -121,13 +116,11 @@ public:
 	/// Processes smart opt (used in --config key=value for comiler opts)
 	static JSONValue processSmartOpt( string key, string value ) {
 		foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
-			alias member = Alias!( __traits( getMember, ProjectConfiguration, memberName ) );
-
-			static if ( hasUDA!( member, configurable ) ) {
-				if ( key != memberName )
-					continue;
-
-				return smartOpt!( typeof( member ) )( key, value );
+			foreach ( uda; __traits( getAttributes, __traits( getMember, ProjectConfiguration, memberName ) ) ) {
+				static if ( is( uda == configurable ) ) {
+					if ( key == memberName )
+						return smartOpt!( typeof( __traits( getMember, ProjectConfiguration, memberName ) ) )( key, value );
+				}
 			}
 		}
 
@@ -250,12 +243,11 @@ public:
 			const string keyBase = fullKey.findSplit( "@" )[ 0 ];
 
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
-				static if ( hasUDA!( __traits( getMember, ProjectConfiguration, memberName ), ProjectConfiguration.configurable ) ) {
-					if ( keyBase != memberName )
-						continue;
-
-					data_[ fullKey ] = val;
-					continue itemIteration;
+				foreach ( uda; __traits( getAttributes, __traits( getMember, ProjectConfiguration, memberName ) ) ) {
+					static if ( is( uda == ProjectConfiguration.configurable ) ) {
+						if ( keyBase == memberName )
+							data_[ fullKey ] = val;
+					}
 				}
 			}
 

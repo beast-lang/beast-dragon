@@ -2,7 +2,6 @@ module beast.core.project.codelocation;
 
 import beast.core.project.codesource;
 import beast.core.context;
-import std.typecons;
 import beast.core.error.errormsg;
 import beast.core.error.guard;
 import beast.code.lex.toolkit;

@@ -1,7 +1,6 @@
 module beast.code.data.codenamespace.namespace;
 
 import beast.code.data.toolkit;
-import std.functional;
 
 abstract class Namespace : Identifiable {
 

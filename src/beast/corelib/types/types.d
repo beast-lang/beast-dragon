@@ -5,8 +5,6 @@ import beast.corelib.types.type;
 import beast.corelib.types.bool_;
 import beast.corelib.types.void_;
 import beast.util.decorator;
-import std.meta;
-import std.traits;
 
 struct CoreLibrary_Types {
 
@@ -19,14 +17,9 @@ public:
 
 public:
 	void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
-		// Auto generated initialization function
-		foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
-			alias mem = Alias!( __traits( getMember, this, memName ) );
-			static if ( hasUDA!( mem, autoinit ) ) {
-				mem = new typeof( mem )( parent );
-				sink( mem );
-			}
-		}
+		Type = new Symbol_Type_Type( parent );
+		Bool = new Symbol_Type_Bool( parent );
+		Void = new Symbol_Type_Void( parent );
 	}
 
 private:

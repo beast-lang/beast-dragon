@@ -4,8 +4,6 @@ import beast.code.lex.toolkit;
 import beast.core.project.codesource;
 import beast.core.project.codelocation;
 import beast.util.enumassoc;
-import std.algorithm;
-import std.meta;
 
 final class Token {
 

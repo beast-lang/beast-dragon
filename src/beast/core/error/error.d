@@ -12,12 +12,8 @@ import beast.core.project.configuration;
 import beast.toolkit;
 import beast.util.decorator;
 import beast.util.enumassoc;
-import core.sync.mutex;
-import std.exception;
-import std.json;
-import std.meta;
 import std.stdio;
-import std.traits;
+import core.sync.mutex;
 import core.runtime;
 
 static __gshared Mutex stderrMutex;

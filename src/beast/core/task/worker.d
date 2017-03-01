@@ -1,11 +1,11 @@
 module beast.core.task.worker;
 
+import beast.core.task.context;
+import beast.core.task.mgr;
+import beast.toolkit;
+import core.stdc.stdlib;
 import core.thread;
 import std.stdio;
-import beast.toolkit;
-import beast.core.task.mgr;
-import beast.core.task.context;
-import core.stdc.stdlib;
 
 final class Worker {
 

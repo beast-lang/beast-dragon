@@ -11,7 +11,6 @@ public {
 	import std.algorithm;
 	import std.array;
 	import std.conv : to;
-	import std.range.interfaces;
 	import std.range;
 	import std.string;
 	import std.typecons : Rebindable;

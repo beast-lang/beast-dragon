@@ -5,19 +5,27 @@ import std.digest.murmurhash;
 struct Hash {
 
 public:
+	alias Data = uint;
+
+public:
 	this( string str ) {
-		MurmurHash3!( size_t.sizeof * 8 ) hash;
+		MurmurHash3!( Data.sizeof * 8 ) hash;
 		hash.put( cast( const( ubyte )[ ] ) str );
 		hash.finalize( );
 		data = hash.get;
 	}
 
-	this( size_t data ) {
+	this( Data data ) {
 		this.data = data;
 	}
 
+	static if( !is( Data == size_t ) )
+	this( size_t data ) {
+		this.data = cast( Data ) data;
+	}
+
 public:
-	size_t data;
+	Data data;
 
 public:
 	/// Encodes hash into a valid identifier (a-zA-F)

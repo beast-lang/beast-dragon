@@ -1,6 +1,5 @@
 module beast.util.enumassoc;
 
-import std.traits;
 import beast.util.decorator;
 
 /// Returns associative array identifier => enum

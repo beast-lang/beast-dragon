@@ -5,9 +5,8 @@ import beast.code.memory.block;
 import beast.code.toolkit;
 import beast.core.task.context;
 import beast.util.uidgen;
-import core.stdc.string;
 import core.sync.rwmutex;
-import std.typecons;
+import core.stdc.string;
 
 /// MemoryManager is in charge of all @ctime-allocated memory
 __gshared MemoryManager memoryManager;

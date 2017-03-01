@@ -10,13 +10,12 @@ import beast.corelib.corelib;
 import beast.toolkit;
 import beast.backend.common.backend;
 import beast.backend.cpp.backend;
-import std.concurrency;
-import std.file;
-import std.getopt;
 import std.json;
-import std.path;
 import std.stdio;
+import std.file;
+import std.path;
 import core.stdc.stdlib;
+import std.getopt;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );

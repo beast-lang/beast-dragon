@@ -1,9 +1,8 @@
 module beast.code.lex.lexer;
 
-import std.conv;
-import std.ascii;
 import beast.code.lex.toolkit;
 import beast.core.project.codesource;
+import std.ascii;
 
 final class Lexer {
 

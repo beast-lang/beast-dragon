@@ -20,12 +20,9 @@ alias TaskGuardId = shared ubyte*;
 	This mixin ensures that each task is done exactly once, handles synchronization between threads and loop dependency.
 */
 mixin template TaskGuard( string guardName ) {
-	//static assert( __traits( hasMember, typeof( this ), _taskGuard_executeFunctionName ), "You must implement 'void " ~ fullyQualifiedName!( typeof( this ) ) ~ "." ~ _taskGuard_executeFunctionName ~ "()'." );
-
 	import beast.core.task.context : TaskContext;
 	import beast.core.task.guard : TaskGuardId;
 	import beast.util.identifiable;
-	import std.traits : fullyQualifiedName;
 
 public:
 	// Give the taskGuard function an useful name
