@@ -60,7 +60,6 @@ protected:
 
 			return "inputRangeObject( chain(" ~ chainStr.joiner( "," ).to!string ~ ") )";
 		}( ) );
-		return null;
 	}
 
 }
