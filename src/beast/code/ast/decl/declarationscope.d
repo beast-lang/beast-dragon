@@ -20,24 +20,21 @@ public:
 				AST_DecorationList decorationList = AST_DecorationList.parse( );
 
 				// @decor :
-				if ( currentToken == Token.Special.colon ) {
+				if ( currentToken.matchAndNext( Token.Special.colon ) ) {
 					decorationList.parentDecorationList = rootDecorationList;
 					scopeDecorationList = decorationList;
 					result.commonDecorationLists_ ~= decorationList;
 				}
 
 				// @decor { xx }
-			else if ( currentToken == Token.Special.lBrace ) {
+			else if ( currentToken.matchAndNext( Token.Special.lBrace ) ) {
 					decorationList.parentDecorationList = scopeDecorationList;
-
-					getNextToken( );
 
 					AST_DeclarationScope subScope = AST_DeclarationScope.parse( decorationList );
 					result.subScopes_ ~= subScope;
 					result.allDeclarations_ ~= subScope.allDeclarations_;
 
-					currentToken.expect( Token.Special.rBrace, "declaration or '}'" );
-					getNextToken( );
+					currentToken.expectAndNext( Token.Special.rBrace, "declaration or '}'" );
 				}
 
 				// @decor declaration;
@@ -49,7 +46,7 @@ public:
 				}
 
 				else
-					currentToken.reportUnexpectedToken( "':', '{' or declaration" );
+					currentToken.reportsyntaxError( "':', '{' or declaration" );
 			}
 
 			// Declaration
@@ -59,15 +56,12 @@ public:
 			}
 
 			// { block }
-			else if ( currentToken == Token.Special.lBrace ) {
-				getNextToken( );
-
+			else if ( currentToken.matchAndNext( Token.Special.lBrace ) ) {
 				AST_DeclarationScope subScope = AST_DeclarationScope.parse( scopeDecorationList );
 				result.subScopes_ ~= subScope;
 				result.allDeclarations_ ~= subScope.allDeclarations_;
 
-				currentToken.expect( Token.Special.rBrace, "declaration or '}'" );
-				getNextToken( );
+				currentToken.expectAndNext( Token.Special.rBrace, "declaration or '}'" );
 			}
 			
 			else

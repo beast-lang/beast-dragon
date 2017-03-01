@@ -78,10 +78,12 @@ public:
 		currentToken.expect( Token.Type.identifier );
 		ExtendedIdentifier result;
 		result ~= currentToken.identifier;
+		getNextToken();
 
-		while ( getNextToken( ) == Token.Special.dot ) {
-			getNextToken( ).expect( Token.Type.identifier );
+		while ( currentToken.matchAndNext( Token.Special.dot ) ) {
+			currentToken.expect( Token.Type.identifier );
 			result ~= currentToken.identifier;
+			getNextToken();
 		}
 
 		return result;

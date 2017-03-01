@@ -100,6 +100,11 @@ public:
 							return new Token( Token.Special.dot );
 						}
 
+					case ',': {
+							pos_++;
+							return new Token( Token.Special.comma );
+						}
+
 					case ';': {
 							pos_++;
 							return new Token( Token.Special.semicolon );

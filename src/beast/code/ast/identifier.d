@@ -17,7 +17,6 @@ public:
 		currentToken.expect( Token.Type.identifier );
 		result.identifier = currentToken.identifier;
 		result.codeLocation = currentToken.codeLocation;
-
 		getNextToken( );
 
 		return result;

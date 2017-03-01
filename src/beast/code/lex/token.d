@@ -67,7 +67,8 @@ public:
 		_noSpecial,
 		eof,
 
-		dot,
+		dot, /// '.'
+		comma, /// ','
 		semicolon, /// ';'
 		colon, /// ':'
 
@@ -160,7 +161,7 @@ public:
 	void expect( Type type, const Data data, lazy string whatExpected = null ) {
 		if ( this.type != type ) {
 			string we = whatExpected;
-			reportUnexpectedToken( "Expected " ~ ( we ? we : descStr( type, data ) ) ~ " but got " ~ descStr );
+			reportsyntaxError( we ? we : descStr( type, data ) );
 		}
 
 		bool result;
@@ -186,11 +187,26 @@ public:
 		}
 
 		if ( !result )
-			reportUnexpectedToken( "Expected " ~ ( whatExpected ? whatExpected : descStr( type, data ) ) ~ " but got " ~ descStr );
+			reportsyntaxError( whatExpected ? whatExpected : descStr( type, data ) );
 	}
 
-	void reportUnexpectedToken( string message ) {
-		berror( E.unexpectedToken, message, codeLocation.errGuardFunction );
+	/// Equivalent of expect( xxx ); getNextToken();
+	pragma( inline ) void expectAndNext( Args... )( Args args ) {
+		expect( args );
+		getNextToken( );
+	}
+
+	/// If the current token matches the match, calls getNextToken and returns true
+	pragma( inline ) bool matchAndNext( T )( T match ) {
+		bool result = this == match;
+		if ( result )
+			getNextToken( );
+
+		return result;
+	}
+
+	void reportsyntaxError( string whatExpected ) {
+		berror( E.syntaxError, "Expected %s but got %s".format( whatExpected, descStr ), codeLocation.errGuardFunction );
 	}
 
 public:

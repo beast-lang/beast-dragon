@@ -85,6 +85,6 @@ private:
 }
 
 bool isValidModuleOrPackageIdentifier( string str ) {
-	static auto rx = ctRegex!"^[a-z_][a-z0-9_]*$";
+	auto rx = ctRegex!"^[a-z_][a-z0-9_]*$";
 	return cast( bool ) str.matchFirst( rx );
 }

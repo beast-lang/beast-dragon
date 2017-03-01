@@ -16,26 +16,23 @@ public:
 	}
 
 	/// Continues parsing after "@deco Type name" part ( "= value;", ":= value;" or ";" can follow )
-	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_TypeOrAutoExpression type, AST_Identifier identifier ) {
+	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression type, AST_Identifier identifier ) {
 		AST_VariableDeclaration result = new AST_VariableDeclaration;
 		result.decorationList = decorationList;
 		result.type = type;
 		result.identifier = identifier;
 
-		if ( currentToken == Token.Operator.assign ) {
-			getNextToken( );
+		if ( currentToken.matchAndNext( Token.Operator.assign ) )
 			result.value = AST_Expression.parse( );
-		}
-		else if ( currentToken == Token.Operator.colonAssign ) {
-			getNextToken( );
+
+		else if ( currentToken.matchAndNext( Token.Operator.colonAssign ) ) {
 			result.valueColonAssign = true;
 			result.value = AST_Expression.parse( );
 		}
 		else
 			currentToken.expect( Token.Special.semicolon, "default value or ';'" );
 
-		currentToken.expect( Token.Special.semicolon );
-		getNextToken( );
+		currentToken.expectAndNext( Token.Special.semicolon );
 
 		result.codeLocation = _gd.get( );
 		return result;
@@ -47,7 +44,7 @@ public:
 		DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
 		scope scope_ = new RootDataScope( env.staticMembersParent );
-		
+
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_variableDeclarationModifier( declData, scope_ );
 
@@ -74,7 +71,7 @@ public:
 
 public:
 	AST_DecorationList decorationList;
-	AST_TypeOrAutoExpression type;
+	AST_Expression type;
 	AST_Identifier identifier;
 	AST_Expression value;
 	/// True if variable was declarated using "@deco Type name := value"

@@ -12,13 +12,11 @@ public:
 
 		// module a.b.c;
 		{
-			currentToken.expect( Token.Keyword.module_ );
-			getNextToken( );
+			currentToken.expectAndNext( Token.Keyword.module_ );
 
 			result.identifier = ExtendedIdentifier.parse( );
 
-			currentToken.expect( Token.Special.semicolon );
-			getNextToken( );
+			currentToken.expectAndNext( Token.Special.semicolon );
 		}
 
 		result.declarationScope = AST_DeclarationScope.parse( );

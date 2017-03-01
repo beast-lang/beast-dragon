@@ -15,14 +15,11 @@ public:
 		auto clg = codeLocationGuard( );
 		AST_IdentifierBaseExpression result = new AST_IdentifierBaseExpression( );
 
-		if ( currentToken == Token.Special.colon ) {
+		if ( currentToken.matchAndNext( Token.Special.colon ) )
 			result.precedingColon = true;
-			getNextToken( );
-		}
 
 		currentToken.expect( Token.Type.identifier );
 		result.identifier = currentToken.identifier;
-
 		getNextToken( );
 
 		result.codeLocation = clg.get( );

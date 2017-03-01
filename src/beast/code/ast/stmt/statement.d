@@ -24,7 +24,7 @@ public:
 
 			// expr identifier => declaration
 			if ( currentToken == Token.Type.identifier ) {
-				benforce( expr.isP1Expression, E.unexpectedToken, "Syntax error - either unexpected identifier or type expression uses forbidden operators" );
+				benforce( expr.isP1Expression, E.syntaxError, "Syntax error - either unexpected identifier or type expression uses forbidden operators" );
 				return AST_Declaration.parse( _gd, decorationList, new AST_TypeOrAutoExpression( expr ) );
 			}
 
@@ -33,7 +33,7 @@ public:
 			return expr;
 		}
 
-		currentToken.reportUnexpectedToken( "statement" );
+		currentToken.reportsyntaxError( "statement" );
 		assert( 0 );
 	}
 

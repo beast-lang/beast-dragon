@@ -1,7 +1,8 @@
-module beast.code.ast.expr.p1expression;
+module beast.code.ast.expr.p1;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.atomic;
+import beast.code.ast.expr.p1;
 
 abstract class AST_P1Expression : AST_Expression {
 
@@ -14,7 +15,10 @@ public:
 		if ( AST_AtomicExpression.canParse )
 			return AST_AtomicExpression.parse( );
 
-		currentToken.reportUnexpectedToken( "expression (P1)" );
+		else if ( AST_AutoExpression.canParse )
+			return AST_AutoExpression.parse( );
+
+		currentToken.reportsyntaxError( "expression (P1)" );
 		assert( 0 );
 	}
 

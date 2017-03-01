@@ -1,11 +1,13 @@
 module beast.code.ast.expr.expression;
 
-import beast.code.ast.toolkit;
-import beast.code.memory.mgr;
-import beast.code.data.scope_.root;
 import beast.backend.ctime.codebuilder;
-import beast.code.data.scope_.local;
+import beast.code.ast.expr.auto_;
 import beast.code.ast.stmt.statement;
+import beast.code.ast.toolkit;
+import beast.code.data.scope_.local;
+import beast.code.data.scope_.root;
+import beast.code.memory.mgr;
+import beast.code.ast.expr.vardecl;
 
 abstract class AST_Expression : AST_Statement {
 
@@ -15,13 +17,29 @@ public:
 	}
 
 	static AST_Expression parse( ) {
-		return AST_P1Expression.parse( );
+		auto _gd = codeLocationGuard( );
+		auto result = AST_P1Expression.parse( );
+
+		if ( result.isP1Expression && currentToken == Token.Type.identifier )
+			return new AST_VariableDeclaration( _gd, null, result, AST_Identifier.parse( ) );
+
+		return result;
 	}
 
 public:
 	/// Returns if the expression is P1 or lower
 	bool isP1Expression( ) {
 		return false;
+	}
+
+	/// Returns if the expression is auto (auto or auto? or auto ?! etc.)
+	AST_AutoExpression isAutoExpression( ) {
+		return null;
+	}
+
+	/// Returns if the expression is variable declaration
+	AST_VariableDeclarationExpression isVariableDeclaration( ) {
+		return null;
 	}
 
 public:

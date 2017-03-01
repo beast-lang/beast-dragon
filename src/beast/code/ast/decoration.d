@@ -14,9 +14,9 @@ public:
 	static AST_Decoration parse( ) {
 		auto result = new AST_Decoration;
 
-		currentToken.expect( Token.Special.at );
+		currentToken.expectAndNext( Token.Special.at );
 
-		getNextToken( ).expect( Token.Type.identifier, "decorator identifier" );
+		currentToken.expect( Token.Type.identifier, "decorator identifier" );
 		result.identifier = AST_Identifier.parse( );
 		result.decoratorIdentifier = result.identifier.decorationIdentifierToDecoratorIdentifier;
 

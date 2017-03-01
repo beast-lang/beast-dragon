@@ -35,7 +35,7 @@ enum E {
 	unclosedComment, /// Found EOF when scanning for end of comment block
 
 	// PARSER:
-	unexpectedToken, /// Unexpected token
+	syntaxError, /// Unexpected token
 
 	// MODULES:
 	moduleImportFail, /// Module import failed
@@ -79,16 +79,16 @@ enum ErrorSeverity {
 enum string[ ErrorSeverity ] ErrorSeverityStrings = [ ErrorSeverity.error : "error", ErrorSeverity.error_nothrow : "error", ErrorSeverity.warning : "warning", ErrorSeverity.hint : "hint" ];
 
 /// If the condition is not true, calls berror
-pragma( inline ) void benforce( ErrorSeverity severity = ErrorSeverity.error, string file = __FILE__, size_t line = __LINE__ )( bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null ) {
+void benforce( ErrorSeverity severity = ErrorSeverity.error )( bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {
 	if ( !condition )
-		breport!( severity, file, line )( error, message, errGdFunc );
+		breport!( severity )( error, message, errGdFunc, file, line );
 }
 
 /// If the confition is not true, reports a hint
-alias benforceHint( string file = __FILE__, size_t line = __LINE__ ) = benforce!( ErrorSeverity.hint, file, line );
+alias benforceHint = benforce!( ErrorSeverity.hint );
 
 /// Generates error/warning/hint, eventually throwing an exception
-pragma( inline ) void breport( ErrorSeverity severity = ErrorSeverity.error, string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {
+void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string message, ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {
 	ErrorMessage msg = new ErrorMessage;
 	msg.message = message;
 	msg.error = error;
@@ -113,8 +113,8 @@ pragma( inline ) void breport( ErrorSeverity severity = ErrorSeverity.error, str
 }
 
 /// Generates error/warning/hint, eventually throwing an exception
-pragma( inline ) void berror( string file = __FILE__, size_t line = __LINE__ )( E error, string message, ErrorGuardFunction errGdFunc = null ) {
-	breport!( ErrorSeverity.error, file, line )( error, message, errGdFunc );
+void berror( E error, string message, ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {
+	breport!( ErrorSeverity.error )( error, message, errGdFunc, file, line );
 }
 
 /// Base error class for all compiler generated exceptions (that are expected)

@@ -245,8 +245,10 @@ public:
 			foreach ( i, memberName; __traits( derivedMembers, ProjectConfiguration ) ) {
 				foreach ( uda; __traits( getAttributes, __traits( getMember, ProjectConfiguration, memberName ) ) ) {
 					static if ( is( uda == ProjectConfiguration.configurable ) ) {
-						if ( keyBase == memberName )
+						if ( keyBase == memberName ) {
 							data_[ fullKey ] = val;
+							continue itemIteration;
+						}
 					}
 				}
 			}

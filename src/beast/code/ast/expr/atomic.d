@@ -2,6 +2,7 @@ module beast.code.ast.expr.atomic;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.identifierbase;
+import beast.code.ast.expr.parentcomma;
 
 abstract class AST_AtomicExpression : AST_Expression {
 
@@ -14,7 +15,10 @@ public:
 		if ( AST_IdentifierBaseExpression.canParse )
 			return AST_IdentifierBaseExpression.parse( );
 
-		currentToken.reportUnexpectedToken( "expression (atomic)" );
+		else if( AST_ParentCommaExpression.canParse )
+			return AST_ParentCommaExpression.parse();
+
+		currentToken.reportsyntaxError( "expression (atomic)" );
 		assert( 0 );
 	}
 

@@ -20,14 +20,12 @@ public:
 		auto result = new AST_CodeBlockStatement;
 		result.decorationList = decorationList;
 
-		currentToken.expect( Token.Special.lBrace );
-		getNextToken( );
+		currentToken.expectAndNext( Token.Special.lBrace );
 
 		while ( AST_Statement.canParse )
 			result.subStatements ~= AST_Statement.parse( null );
 
-		currentToken.expect( Token.Special.rBrace, "statement or '}'" );
-		getNextToken( );
+		currentToken.expectAndNext( Token.Special.rBrace, "statement or '}'" );
 
 		result.codeLocation = _gd.get( );
 		return result;

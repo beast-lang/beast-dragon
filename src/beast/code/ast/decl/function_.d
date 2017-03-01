@@ -4,10 +4,11 @@ import beast.code.ast.toolkit;
 import beast.code.ast.decl.toolkit;
 import beast.code.decorationlist;
 import beast.code.data.var.userstatic;
-import beast.code.ast.expr.parameterlist;
+import beast.code.ast.expr.parentcomma;
 import beast.code.ast.stmt.codeblock;
 import beast.code.data.function_.userstaticruntime;
 import beast.code.data.scope_.root;
+import beast.code.data.function_.parameter;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -23,7 +24,7 @@ public:
 		result.returnType = returnType;
 		result.identifier = identifier;
 
-		result.parameterList = AST_ParameterList.parse( );
+		result.parameterList = AST_ParentCommaExpression.parse( );
 		result.body_ = AST_CodeBlockStatement.parse( );
 
 		result.codeLocation = _gd.get( );
@@ -35,10 +36,22 @@ public:
 		FunctionDeclarationData declData = new FunctionDeclarationData( env );
 		DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
-		scope scope_ = new RootDataScope( env.staticMembersParent );
+		DataScope scope_ = new RootDataScope( env.staticMembersParent );
 
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_functionDeclarationModifier( declData, scope_ );
+
+
+
+		foreach( e; subExpressions ) {
+			if( auto decl = e.isVariableDeclaration ) {
+				// auto declarations => templated
+				if( decl.type.isAutoExpression && result > ParameterListMatch.templatedParameterList )
+					result = ParameterListMatch.templatedParameterList;
+			}
+
+		return result;
+	}
 
 		if ( declData.isStatic && !declData.isCtime )
 			sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData ) );
@@ -53,7 +66,7 @@ public:
 public:
 	AST_DecorationList decorationList;
 	AST_TypeOrAutoExpression returnType;
-	AST_ParameterList parameterList;
+	AST_ParentCommaExpression parameterList;
 	AST_Identifier identifier;
 	AST_CodeBlockStatement body_;
 
