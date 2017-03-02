@@ -31,6 +31,15 @@ public:
 	}
 
 public:
+	bool dataEquals( MemoryPtr other, size_t comparedLength ) {
+		import core.stdc.string : memcmp;
+		
+		void* data1 = memoryManager.read( this, comparedLength );
+		void* data2 = memoryManager.read( this, comparedLength );
+		return memcmp( data1, data2, comparedLength ) == 0;
+	}
+
+public:
 	int opCmp( MemoryPtr other ) const {
 		if ( val > other.val )
 			return 1;

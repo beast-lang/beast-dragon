@@ -38,7 +38,7 @@ public: // Declaration related build commands
 
 	override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 		// TODO: implicit value
-		result_ ~= tabs ~ " " ~ cppIdentifier( var.dataType ) ~ " " ~ cppIdentifier( var ) ~ ";\n\n";
+		result_ ~= tabs ~ " " ~ cppIdentifier( var.dataType ) ~ " " ~ cppIdentifier( var ) ~ ";\n";
 	}
 
 	override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
@@ -59,6 +59,23 @@ public: // Expression related build commands
 
 	override void build_localVariableAccess( DataEntity_LocalVariable var ) {
 		resultVarName_ = cppIdentifier( var );
+	}
+
+	override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity[] arguments ) {
+		result_ ~= tabs ~ "{\n";
+		tabOffset_ ++;
+
+		string[] argumentNames;
+		foreach( arg; arguments ) {
+			arg.buildCode( this, scope_ );
+			argumentNames ~= resultVarName_;
+		}
+
+		result_ ~= tabs ~ cppIdentifier( function_ ) ~ "( " ~ argumentNames.joiner( ", " ).to!string ~ ");\n";
+		resultVarName_ = null; // TODO: return value
+
+		tabOffset_ --;
+		result_ ~= tabs ~ "}\n";
 	}
 
 public: // Statement related build commands
@@ -100,16 +117,29 @@ public: // Statement related build commands
 
 private:
 	void build_functionPrototype( Symbol_RuntimeFunction func ) {
-		size_t paremeterCount = 0;
-		result_ ~= tabs ~ "void " ~ cppIdentifier( func ) ~ "(";
+		size_t parameterCount = 0;
+		result_ ~= tabs ~ "void " ~ cppIdentifier( func ) ~ "( ";
 
 		// Return value is passed as a pointer
 		if ( func.returnType !is coreLibrary.types.Void ) {
 			result_ ~= cppIdentifier( func.returnType ) ~ " *result";
-			paremeterCount++;
+			parameterCount++;
 		}
 
-		result_ ~= ")";
+		foreach( param; func.parameters ) {
+			// Constant-value parameters do not go to the output code
+			if( param.constValue )
+				continue;
+
+			if( parameterCount )
+				result_ ~= ", ";
+
+			result_ ~= cppIdentifier( param.type ) ~ " " ~ param.identifier.str;
+
+			parameterCount++;
+		}
+
+		result_ ~= " ) ";
 	}
 
 private:

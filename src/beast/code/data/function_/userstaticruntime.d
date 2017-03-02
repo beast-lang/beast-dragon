@@ -28,8 +28,8 @@ public:
 		return returnType_;
 	}
 
-	final ExpandedFunctionParameter[] parameters() {
-		enforceDone_parameterExpanding();
+	override ExpandedFunctionParameter[ ] parameters( ) {
+		enforceDone_parameterExpanding( );
 		return expandedParameters_;
 	}
 
@@ -53,15 +53,25 @@ public:
 			scope env = DeclarationEnvironment.newFunctionBody;
 			env.scope_ = scope_;
 			env.staticMembersParent = dataEntity;
-			
+
 			ast_.body_.buildStatementCode( env, cb, scope_ );
 
-			scope_.finish();
+			scope_.finish( );
 		} );
 	}
 
+public:
+	final class Data : super.Data {
+
+	public:
+		override DataEntity parent( ) {
+			return this.outer.parent_;
+		}
+
+	}
+
 private:
-	ExpandedFunctionParameter[] expandedParameters_;
+	ExpandedFunctionParameter[ ] expandedParameters_;
 	Symbol_Type returnType_;
 
 private:
@@ -76,38 +86,15 @@ protected:
 		returnType_ = ast_.returnType.standaloneCtExec( coreLibrary.types.Type, parent_ ).readType( );
 	}
 
-	final void execute_parameterExpanding() {
-		with( memoryManager.session ) {
+	final void execute_parameterExpanding( ) {
+		with ( memoryManager.session ) {
 			auto scope_ = new RootDataScope( parent_ );
 
-			foreach( expr; ast_.parameterList.items )
+			foreach ( expr; ast_.parameterList.items )
 				expandedParameters_ ~= ExpandedFunctionParameter.process( expr, scope_ );
 
-			scope_.finish();
+			scope_.finish( );
 		}
-	}
-
-private:
-	final class Data : SymbolRelatedDataEntity {
-
-	public:
-		this( ) {
-			super( this.outer );
-		}
-
-	public:
-		override Symbol_Type dataType( ) {
-			return null;
-		}
-
-		override bool isCtime( ) {
-			return true;
-		}
-
-		override DataEntity parent( ) {
-			return this.outer.parent_;
-		}
-
 	}
 
 }

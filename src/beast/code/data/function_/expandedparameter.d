@@ -6,7 +6,7 @@ import beast.code.ast.expr.expression;
 import beast.code.ast.expr.vardecl;
 
 /// Expanded function parameter
-final class ExpandedFunctionParameter {
+final class ExpandedFunctionParameter : Identifiable {
 
 public:
 	/// Tries to expand expression into a function parameter.
@@ -18,7 +18,7 @@ public:
 
 			ExpandedFunctionParameter result = new ExpandedFunctionParameter( );
 			result.identifier = decl.identifier.identifier;
-			result.type = decl.type.ctExec( coreLibrary.types.Type, scope_ ).readType();
+			result.type = decl.type.ctExec( coreLibrary.types.Type, scope_ ).readType( );
 
 			return result;
 		}
@@ -40,5 +40,19 @@ public:
 
 	/// If the parameter is const-value (something like template specialization), this points to the value
 	MemoryPtr constValue;
+
+public:
+	override string identificationString( ) {
+		string result;
+		result ~= type.identificationString;
+
+		if ( identifier )
+			result ~= " " ~ identifier.str;
+
+		if ( constValue )
+			result ~= " = CONST";
+
+		return result;
+	}
 
 }

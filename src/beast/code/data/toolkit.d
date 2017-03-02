@@ -10,4 +10,6 @@ public {
 	import beast.code.data.symbol;
 	import beast.code.data.codenamespace.user;
 	import beast.code.toolkit;
+	import beast.code.data.callable;
+	import beast.code.ast.expr.expression;
 }

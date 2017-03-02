@@ -15,34 +15,33 @@ protected:
 	}
 
 public:
-	final ref size_t currentBasePointerOffset( ) {
-		return currentBasePointerOffset_;
-	}
-
 	/// Nearest DataEntity parent of the scope
 	final DataEntity parentEntity( ) {
 		return parentEntity_;
 	}
 
-	final override string identificationString() {
+	final override string identificationString( ) {
 		return parentEntity.identificationString;
 	}
 
 public:
-	/// Adds variable to the scope
-	final void addLocalVariable( DataEntity_LocalVariable var ) {
+	final void addEntity( DataEntity entity_ ) {
 		debug assert( context.jobId == jobId_ );
 		debug assert( !isFinished_ );
 
-		localVariables_ ~= var;
-
 		// Add to the overloadset
-		if ( auto id = var.identifier ) {
+		if ( auto id = entity_.identifier ) {
 			if ( auto it = id in groupedNamedVariables_ )
-				it.data ~= var;
+				it.data ~= entity_;
 			else
-				groupedNamedVariables_[ id ] = Overloadset( [ var ] );
+				groupedNamedVariables_[ id ] = Overloadset( [ entity_ ] );
 		}
+	}
+
+	/// Adds variable to the scope
+	final void addLocalVariable( DataEntity_LocalVariable var ) {
+		localVariables_ ~= var;
+		addEntity( var );
 	}
 
 public:
@@ -82,8 +81,6 @@ private:
 	/// All local variables, both named and temporary ones
 	DataEntity_LocalVariable[ ] localVariables_;
 	Overloadset[ Identifier ] groupedNamedVariables_;
-
-	size_t currentBasePointerOffset_;
 
 	debug size_t jobId_;
 	debug bool isFinished_;

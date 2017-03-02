@@ -21,6 +21,16 @@ public:
 	/// This is mostly used in operator overloading (ctime vs nonctime overloads)
 	abstract bool isCtime( );
 
+	/// Returns if the current entity is callable
+	bool isCallable() {
+		return false;
+	}
+
+	/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
+	CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
+		assert( 0, identificationString ~ " is not callable" );
+	}
+
 public:
 	/// Identifier of the data that vaguely corresponds with the symbol table (can be null)
 	Identifier identifier( ) {

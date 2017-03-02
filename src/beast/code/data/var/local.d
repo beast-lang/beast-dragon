@@ -17,9 +17,6 @@ public:
 
 		debug assert( context.jobId == scope__.jobId );
 
-		basePointerOffset_ = scope__.currentBasePointerOffset;
-		scope__.currentBasePointerOffset += dataType.instanceSize;
-
 		if ( isCtime_ ) {
 			auto block = memoryManager.allocBlock( dataType_.instanceSize );
 			block.flags |= MemoryBlock.Flags.local;
@@ -51,10 +48,6 @@ public:
 		return scope_.parentEntity( );
 	}
 
-	final size_t basePointerOffset( ) {
-		return basePointerOffset_;
-	}
-
 	override final Hash outerHash( ) {
 		enforceDone_outerHashObtaining( );
 		return outerHash_;
@@ -66,7 +59,6 @@ public:
 	}
 
 protected:
-	size_t basePointerOffset_;
 	Symbol_Type dataType_;
 	DataScope scope__;
 	MemoryPtr ctimeValue_;

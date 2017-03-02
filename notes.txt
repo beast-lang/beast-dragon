@@ -32,6 +32,8 @@ Special:
 For presentation:
 	Number slides (x/total)
 
+BBasile (does simple editor with syntax highlight): b2.temp@gmx.com
+
 
 -- Reflection of comments + documentation generation
 -- Ability to pass ctime string using a command line in beast

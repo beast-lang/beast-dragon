@@ -36,7 +36,11 @@ public: // Expression related build commands
 		assert( 0 );
 	}
 
-	abstract void build_localVariableAccess( DataEntity_LocalVariable var ) {
+	void build_localVariableAccess( DataEntity_LocalVariable var ) {
+		assert( 0 );
+	}
+
+	void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity[] arguments ) {
 		assert( 0 );
 	}
 

@@ -118,7 +118,7 @@ public:
 		string stdoutContent;
 		// Run process
 		{
-			ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
+			scope ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
 			const int exitCode = process.pid.wait( );
 
 			stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
