@@ -9,12 +9,12 @@ import beast.code.ast.expr.vardecl;
 final class ExpandedFunctionParameter {
 
 public:
-	/// Tries to expand expression into a function parameter. Return null on failure ('correct' failure - for example auto or variadic parameter)
+	/// Tries to expand expression into a function parameter.
 	static ExpandedFunctionParameter process( AST_Expression expr, DataScope scope_ ) {
 		if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
 			// Auto expressions cannot be expanded
 			if ( decl.type.isAutoExpression )
-				return null;
+				assert( 0, "Cannot expand auto parameter" );
 
 			ExpandedFunctionParameter result = new ExpandedFunctionParameter( );
 			result.identifier = decl.identifier.identifier;

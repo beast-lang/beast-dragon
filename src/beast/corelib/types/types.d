@@ -15,9 +15,9 @@ public:
 
 public:
 	void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
-		Type = new Symbol_Type_Type( parent );
-		Bool = new Symbol_Type_Bool( parent );
-		Void = new Symbol_Type_Void( parent );
+		sink( Type = new Symbol_Type_Type( parent ) );
+		sink( Bool = new Symbol_Type_Bool( parent ) );
+		sink( Void = new Symbol_Type_Void( parent ) );
 	}
 
 }

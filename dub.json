@@ -11,10 +11,5 @@
 	"workingDirectory": "bin",
 	"sourcePaths": [
 		"src"
-	],
-	"configurations": [
-		{
-			"name": "application"
-		}
 	]
 }

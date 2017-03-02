@@ -1,6 +1,7 @@
 module beast.code.ast.expr.parentcomma;
 
 import beast.code.ast.toolkit;
+import beast.code.ast.expr.vardecl;
 
 /// Parameter list used in declarations
 final class AST_ParentCommaExpression : AST_Expression {
@@ -33,6 +34,20 @@ public:
 
 public:
 	AST_Expression[ ] items;
+
+public:
+	/// Returns whether the parentcommaexpression could qualify as runtime parameter list
+	final bool isRuntimeParameterList() {
+		foreach( expr; items ) {
+			if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
+				// Auto expressions cannot be expanded
+				if ( decl.type.isAutoExpression )
+					return false;
+			}
+		}
+
+		return true;
+	}
 
 public:
 	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {

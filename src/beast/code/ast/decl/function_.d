@@ -42,22 +42,10 @@ public:
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_functionDeclarationModifier( declData, scope_ );
 
-		// Check if the function is runtime or not
-		ExpandedFunctionParameter[] expandedParameters;
-		with( memoryManager.session ) {
-			foreach( e; parameterList.items ) {
-				ExpandedFunctionParameter param = ExpandedFunctionParameter.process( e, scope_ );
-				if( !param )
-					break;
-			}
-
-			scope_.finish();
-		}
-
-		bool isRuntime = expandedParameters.length == parameterList.items.length;
+		bool isRuntime = parameterList.isRuntimeParameterList;
 
 		if ( declData.isStatic && !declData.isCtime && isRuntime )
-			sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData, expandedParameters ) );
+			sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData ) );
 		else
 			berror( E.notImplemented, "Not implemented" );
 	}

@@ -7,14 +7,16 @@ import beast.code.data.function_.expandedparameter;
 
 final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
+	mixin TaskGuard!"parameterExpanding";
 
 public:
-	this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data, ExpandedFunctionParameter[] expandedParameters ) {
+	this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
 		ast_ = ast;
 		decorationList_ = decorationList;
 		staticData_ = new Data;
 		parent_ = data.env.staticMembersParent;
-		expandedParameters_ = expandedParameters;
+
+		taskManager.issueJob( { enforceDone_returnTypeDeduction( ); enforceDone_parameterExpanding( ); } );
 	}
 
 	override Identifier identifier( ) {
@@ -24,6 +26,11 @@ public:
 	override Symbol_Type returnType( ) {
 		enforceDone_returnTypeDeduction( );
 		return returnType_;
+	}
+
+	final ExpandedFunctionParameter[] parameters() {
+		enforceDone_parameterExpanding();
+		return expandedParameters_;
 	}
 
 	override AST_Node ast( ) {
@@ -67,6 +74,17 @@ protected:
 	final void execute_returnTypeDeduction( ) {
 		benforce( !ast_.returnType.isAuto, E.notImplemented, "Auto return type is not implemented yet" );
 		returnType_ = ast_.returnType.standaloneCtExec( coreLibrary.types.Type, parent_ ).readType( );
+	}
+
+	final void execute_parameterExpanding() {
+		with( memoryManager.session ) {
+			auto scope_ = new RootDataScope( parent_ );
+
+			foreach( expr; ast_.parameterList.items )
+				expandedParameters_ ~= ExpandedFunctionParameter.process( expr, scope_ );
+
+			scope_.finish();
+		}
 	}
 
 private:
