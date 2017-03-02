@@ -11,7 +11,7 @@ public:
 
 	static AST_AutoExpression parse( ) {
 		auto _gd = codeLocationGuard( );
-		AST_TypeOrAutoExpression result = new AST_AutoExpression;
+		AST_AutoExpression result = new AST_AutoExpression;
 
 		currentToken.expect( Token.Keyword.auto_ );
 

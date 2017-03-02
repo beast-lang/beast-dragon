@@ -9,11 +9,9 @@ import beast.util.decorator;
 struct CoreLibrary_Types {
 
 public:
-	@autoinit {
-		Symbol_Type_Type Type;
-		Symbol_Type_Bool Bool;
-		Symbol_Type_Void Void;
-	}
+	Symbol_Type_Type Type;
+	Symbol_Type_Bool Bool;
+	Symbol_Type_Void Void;
 
 public:
 	void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
@@ -21,8 +19,5 @@ public:
 		Bool = new Symbol_Type_Bool( parent );
 		Void = new Symbol_Type_Void( parent );
 	}
-
-private:
-	alias autoinit = Decorator!"CoreLibrary_Types.initialize";
 
 }

@@ -3,16 +3,18 @@ module beast.code.data.function_.userstaticruntime;
 import beast.code.data.toolkit;
 import beast.code.data.function_.runtime;
 import beast.code.data.scope_.root;
+import beast.code.data.function_.expandedparameter;
 
 final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
 
 public:
-	this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
+	this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data, ExpandedFunctionParameter[] expandedParameters ) {
 		ast_ = ast;
 		decorationList_ = decorationList;
 		staticData_ = new Data;
 		parent_ = data.env.staticMembersParent;
+		expandedParameters_ = expandedParameters;
 	}
 
 	override Identifier identifier( ) {
@@ -46,15 +48,20 @@ public:
 			env.staticMembersParent = dataEntity;
 			
 			ast_.body_.buildStatementCode( env, cb, scope_ );
+
+			scope_.finish();
 		} );
 	}
+
+private:
+	ExpandedFunctionParameter[] expandedParameters_;
+	Symbol_Type returnType_;
 
 private:
 	AST_FunctionDeclaration ast_;
 	DecorationList decorationList_;
 	Data staticData_;
 	DataEntity parent_;
-	Symbol_Type returnType_;
 
 protected:
 	final void execute_returnTypeDeduction( ) {

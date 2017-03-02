@@ -17,10 +17,10 @@ public:
 		currentToken.expectAndNext( Token.Special.lParent );
 
 		if ( AST_Expression.canParse ) {
-			result.subExpressions ~= AST_Expression.parse( );
+			result.items ~= AST_Expression.parse( );
 
 			while ( currentToken.matchAndNext( Token.Special.comma ) )
-				result.subExpressions ~= AST_Expression.parse( );
+				result.items ~= AST_Expression.parse( );
 
 			currentToken.expectAndNext( Token.Special.rParent, "',' or ')' after expression" );
 		}
@@ -32,22 +32,22 @@ public:
 	}
 
 public:
-	AST_Expression[ ] subExpressions;
+	AST_Expression[ ] items;
 
 public:
 	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
 		// Maybe replace with void?
-		benforce( subExpressions.length > 0, E.syntaxError, "Empty parentheses" );
+		benforce( items.length > 0, E.syntaxError, "Empty parentheses" );
 
-		foreach ( e; subExpressions[ 0 .. $ - 1 ] )
+		foreach ( e; items[ 0 .. $ - 1 ] )
 			e.buildSemanticTree( null, scope_, errorOnFailure );
 
-		return subExpressions[ $ - 1 ].buildSemanticTree( expectedType, scope_, errorOnFailure );
+		return items[ $ - 1 ].buildSemanticTree( expectedType, scope_, errorOnFailure );
 	}
 
 protected:
 	override InputRange!AST_Node _subnodes( ) {
-		return nodeRange( subExpressions );
+		return nodeRange( items );
 	}
 
 }

@@ -16,12 +16,12 @@ public:
 		return AST_P1Expression.canParse;
 	}
 
-	static AST_Expression parse( ) {
+	static AST_Expression parse( bool parseDeclarations = true ) {
 		auto _gd = codeLocationGuard( );
 		auto result = AST_P1Expression.parse( );
 
-		if ( result.isP1Expression && currentToken == Token.Type.identifier )
-			return new AST_VariableDeclaration( _gd, null, result, AST_Identifier.parse( ) );
+		if ( parseDeclarations && result.isP1Expression && currentToken == Token.Type.identifier )
+			return AST_VariableDeclarationExpression.parse( _gd, null, result );
 
 		return result;
 	}
@@ -54,6 +54,10 @@ public:
 		buildSemanticTree( null, scope_ ).buildCode( cb, scope_ );
 	}
 
+	final MemoryPtr ctExec( Symbol_Type expectedType, DataScope scope_ ) {
+		return buildSemanticTree( expectedType, scope_ ).ctExec( scope_ );
+	}
+
 	/// Executes the expression in standalone scope and session, returing its value
 	/// The scope the ctExec creates is never destroyed
 	final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
@@ -61,11 +65,9 @@ public:
 
 		with ( memoryManager.session ) {
 			DataScope scope_ = new RootDataScope( parent );
-			scope codeBuilder = new CodeBuilder_Ctime;
-			this.buildSemanticTree( expectedType, scope_ ).buildCode( codeBuilder, scope_ );
-
+			MemoryPtr result = ctExec( expectedType, scope_ );
 			scope_.finish( );
-			return codeBuilder.result;
+			return result;
 		}
 
 		assert( 0 );

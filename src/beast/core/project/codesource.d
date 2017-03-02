@@ -30,7 +30,7 @@ public:
 			foreach ( int i, char ch; content ) {
 				if ( ch == '\n' )
 					newlinePositions ~= i;
-			}
+		}
 			newlinePositions ~= content.length;
 			newlinePositions_ = newlinePositions;
 		}

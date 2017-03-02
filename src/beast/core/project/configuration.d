@@ -156,7 +156,7 @@ private:
 
 	static JSONValue smartOpt( T )( string key, string value ) if ( is( T == enum ) ) {
 		alias assoc = enumAssoc!T;
-		benforce( ( value in assoc ) !is null, E.invalidOpts, "Key '" ~ key ~ "' (='" ~ value ~ "') can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
+		benforce( ( value in assoc ) !is null, E.invalidOpts, "Key '" ~ key ~ "' (='" ~ value ~ "') can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).to!string );
 
 		return value.JSONValue;
 	}
@@ -187,7 +187,7 @@ private:
 		alias assoc = enumAssoc!T;
 
 		benforce( val.type == JSON_TYPE.STRING, E.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
-		benforce( ( val.str in assoc ) !is null, E.invalidProjectConfiguration, "Project configuration: key '" ~ key ~ "' (='" ~ val.str ~ "') can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).array.to!string );
+		benforce( ( val.str in assoc ) !is null, E.invalidProjectConfiguration, "Project configuration: key '" ~ key ~ "' (='" ~ val.str ~ "') can only contain values " ~ assoc.byKey.map!( x => "'" ~ x ~ "'" ).joiner( ", " ).to!string );
 
 		__traits( getMember, this, memberName ) = assoc[ val.str ];
 	}

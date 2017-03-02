@@ -3,6 +3,7 @@ module beast.code.ast.expr.p1;
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.atomic;
 import beast.code.ast.expr.p1;
+import beast.code.ast.expr.auto_;
 
 abstract class AST_P1Expression : AST_Expression {
 

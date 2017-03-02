@@ -17,8 +17,6 @@ import core.sync.mutex;
 import core.runtime;
 
 static __gshared Mutex stderrMutex;
-private alias warning = Decorator!( "error.warning" );
-private alias hint = Decorator!( "error.hint" );
 
 /// Beast error
 enum E {

@@ -16,15 +16,15 @@ public:
 	}
 
 	/// Continues parsing after "@deco Type name" part ( "= value;", ":= value;" or ";" can follow )
-	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression type, AST_Identifier identifier ) {
+	static AST_VariableDeclaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression type, AST_Identifier identifier ) {
 		AST_VariableDeclaration result = new AST_VariableDeclaration;
 		result.decorationList = decorationList;
 		result.type = type;
 		result.identifier = identifier;
 
-		if ( currentToken.matchAndNext( Token.Operator.assign ) )
+		if ( currentToken.matchAndNext( Token.Operator.assign ) ) {
 			result.value = AST_Expression.parse( );
-
+		}
 		else if ( currentToken.matchAndNext( Token.Operator.colonAssign ) ) {
 			result.valueColonAssign = true;
 			result.value = AST_Expression.parse( );
@@ -47,6 +47,8 @@ public:
 
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_variableDeclarationModifier( declData, scope_ );
+
+		scope_.finish();
 
 		if ( declData.isStatic )
 			sink( new Symbol_UserStaticVariable( this, decorationList, declData ) );

@@ -59,9 +59,11 @@ public:
 		colonAssign, /// ':='
 
 		dollar, /// '$'
+
+		_length
 	}
 
-	static immutable string[ ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "$" ];
+	static immutable string[ Operator._length ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "$" ];
 
 	enum Special {
 		_noSpecial,
@@ -80,9 +82,11 @@ public:
 		rBrace, /// '}'
 		lParent, /// '('
 		rParent, /// ')'
+
+		_length
 	}
 
-	static immutable SpecialStr = [ "", "EOF", "dot '.'", "semicolon ';'", "':'", "'@'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
+	static immutable string[ Special._length ] SpecialStr = [ "", "EOF", "dot '.'", "','", "semicolon ';'", "':'", "'@'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
 
 public:
 	this( Special special ) {

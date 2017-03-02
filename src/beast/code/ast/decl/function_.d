@@ -8,7 +8,8 @@ import beast.code.ast.expr.parentcomma;
 import beast.code.ast.stmt.codeblock;
 import beast.code.data.function_.userstaticruntime;
 import beast.code.data.scope_.root;
-import beast.code.data.function_.parameter;
+import beast.code.data.function_.expandedparameter;
+import beast.code.memory.mgr;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -41,20 +42,22 @@ public:
 		// Apply possible decorators in the variableDeclarationModifier context
 		decorationList.apply_functionDeclarationModifier( declData, scope_ );
 
-
-
-		foreach( e; subExpressions ) {
-			if( auto decl = e.isVariableDeclaration ) {
-				// auto declarations => templated
-				if( decl.type.isAutoExpression && result > ParameterListMatch.templatedParameterList )
-					result = ParameterListMatch.templatedParameterList;
+		// Check if the function is runtime or not
+		ExpandedFunctionParameter[] expandedParameters;
+		with( memoryManager.session ) {
+			foreach( e; parameterList.items ) {
+				ExpandedFunctionParameter param = ExpandedFunctionParameter.process( e, scope_ );
+				if( !param )
+					break;
 			}
 
-		return result;
-	}
+			scope_.finish();
+		}
 
-		if ( declData.isStatic && !declData.isCtime )
-			sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData ) );
+		bool isRuntime = expandedParameters.length == parameterList.items.length;
+
+		if ( declData.isStatic && !declData.isCtime && isRuntime )
+			sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData, expandedParameters ) );
 		else
 			berror( E.notImplemented, "Not implemented" );
 	}
