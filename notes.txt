@@ -1,3 +1,7 @@
+Soon to-to:
+	- Return values of function call expressions
+	- correct C++ memory mapping
+	- memory garbage collecting
 
 Names:
 	Lion

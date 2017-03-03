@@ -14,7 +14,7 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 			identififer_ = identifier;
 
 			with ( memoryManager.session )
-				ctimeValue_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flags.doNotGCAtSessionEnd ).write( data, dataType.instanceSize );
+				memoryPtr_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flags.doNotGCAtSessionEnd ).write( data, dataType.instanceSize );
 		}
 
 	public:
@@ -30,13 +30,13 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 			return true;
 		}
 
-		override MemoryPtr dataPtr( ) {
-			return ctimeValue_;
+		override MemoryPtr memoryPtr( ) {
+			return memoryPtr_;
 		}
 
 	private:
 		Symbol_Type dataType_;
-		MemoryPtr ctimeValue_;
+		MemoryPtr memoryPtr_;
 		Identifier identififer_;
 
 }

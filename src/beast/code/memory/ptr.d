@@ -11,6 +11,12 @@ struct MemoryPtr {
 		size_t val;
 
 	public:
+		/// Returns memory block corresponding to this pointer
+		MemoryBlock block( ) {
+			return memoryManager.findMemoryBlock( this );
+		}
+
+	public:
 		/// Writes a "primitive" (direct data copy - usually you should use hwenv) into given pointer
 		MemoryPtr writePrimitive( T )( const auto ref T data ) {
 			memoryManager.write( this, cast( const void* )&data, data.sizeof );

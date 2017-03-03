@@ -22,15 +22,9 @@ public:
 public: // Expression related build commands
 	override void build_memoryAccess( MemoryPtr pointer ) {
 		MemoryBlock b = memoryManager.findMemoryBlock( pointer );
-		benforce( !b.isRuntime, E.valueNotCtime, "Variable is not ctime" );
+		benforce( !b.isRuntime, E.valueNotCtime, b.isLocal ? "Variable '%s' is not ctime".format( b.localVariable.identificationString ) : "Variable is not ctime" );
 
 		result_ = pointer;
-	}
-
-	override void build_localVariableAccess( DataEntity_LocalVariable var ) {
-		benforce( var.isCtime, E.valueNotCtime, "Variable '%s' is not ctime".format( var.identificationString ) );
-
-		result_ = var.ctimeValue;
 	}
 
 private:

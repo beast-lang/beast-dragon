@@ -47,17 +47,19 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 		final override void buildDefinitionsCode( CodeBuilder cb ) {
-			cb.build_functionDefinition( this, ( cb ) { //
-				scope scope_ = new RootDataScope( staticData_ );
+			with ( memoryManager.session ) {
+				cb.build_functionDefinition( this, ( cb ) { //
+					scope scope_ = new RootDataScope( staticData_ );
 
-				scope env = DeclarationEnvironment.newFunctionBody;
-				env.scope_ = scope_;
-				env.staticMembersParent = dataEntity;
+					scope env = DeclarationEnvironment.newFunctionBody;
+					env.scope_ = scope_;
+					env.staticMembersParent = dataEntity;
 
-				ast_.body_.buildStatementCode( env, cb, scope_ );
+					ast_.body_.buildStatementCode( env, cb, scope_ );
 
-				scope_.finish( );
-			} );
+					scope_.finish( );
+				} );
+			}
 		}
 
 	public:

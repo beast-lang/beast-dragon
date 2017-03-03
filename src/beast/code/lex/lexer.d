@@ -193,7 +193,7 @@ final class Lexer {
 							return new Token( Token.Operator.colonAssign );
 						}
 						else
-							return new Token( Token.Operator.assign );
+							return new Token( Token.Special.colon );
 					}
 
 				case State.singleLineComment: {

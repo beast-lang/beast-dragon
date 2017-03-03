@@ -86,7 +86,7 @@ public:
 		_length
 	}
 
-	static immutable string[ Special._length ] SpecialStr = [ "", "EOF", "dot '.'", "','", "semicolon ';'", "':'", "'@'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
+	static immutable string[ Special._length ] specialStr = [ "", "EOF", "dot '.'", "','", "semicolon ';'", "':'", "'@'", "'['", "']'", "'{'", "'}'", "'('", "')'" ];
 
 public:
 	this( Special special ) {
@@ -268,7 +268,7 @@ public:
 			break;
 
 		case Type.special: {
-				result ~= SpecialStr[ cast( int ) data.operator ];
+				result ~= specialStr[ cast( int ) data.operator ];
 			}
 			break;
 

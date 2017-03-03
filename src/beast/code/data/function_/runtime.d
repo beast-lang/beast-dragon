@@ -74,6 +74,9 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			protected:
 				override Level _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+					if( argumentIndex_ >= parameters.length )
+						return Level.noMatch;
+
 					ExpandedFunctionParameter param = parameters[ argumentIndex_ ];
 
 					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected

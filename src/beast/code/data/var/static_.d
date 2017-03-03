@@ -25,7 +25,7 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 		abstract bool isCtime( );
 
 		/// Returns pointer to data of this variable
-		abstract MemoryPtr dataPtr( );
+		abstract MemoryPtr memoryPtr( );
 
 		final DataEntity parent( ) {
 			return parent_;
@@ -33,7 +33,7 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 
 	public:
 		final override void buildDefinitionsCode( CodeBuilder cb ) {
-			cb.build_staticVariableDefinition( this );
+			// No static variable definition - that information should be obtained from the memory manager
 		}
 
 	private:
@@ -64,7 +64,7 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 
 			public:
 				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_memoryAccess( this.outer.dataPtr );
+					cb.build_memoryAccess( this.outer.memoryPtr );
 				}
 
 		}

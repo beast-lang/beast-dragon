@@ -35,9 +35,9 @@ public:
 		return ast_;
 	}
 
-	override MemoryPtr dataPtr( ) {
+	override MemoryPtr memoryPtr( ) {
 		enforceDone_memoryAllocation( );
-		return dataPtr_;
+		return memoryPtr_;
 	}
 
 	override bool isCtime( ) {
@@ -48,7 +48,7 @@ private:
 	DecorationList decorationList_;
 	AST_VariableDeclaration ast_;
 	Symbol_Type type_;
-	MemoryPtr dataPtr_;
+	MemoryPtr memoryPtr_;
 	bool isCtime_;
 
 private:
@@ -70,7 +70,7 @@ private:
 			if ( !isCtime_ )
 				b.flags |= MemoryBlock.Flags.runtime;
 
-			dataPtr_ = b.startPtr;
+			memoryPtr_ = b.startPtr;
 		}
 	}
 

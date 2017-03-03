@@ -54,6 +54,8 @@ abstract class CallableMatch {
 		}
 
 		final void finish( ) {
+			debug finished_ = true;
+			
 			// No need for further matching
 			if ( matchLevel_ == Level.noMatch )
 				return;
@@ -61,8 +63,6 @@ abstract class CallableMatch {
 			const auto lvl = _finish( );
 			if ( lvl < matchLevel_ )
 				matchLevel_ = lvl;
-
-			debug finished_ = true;
 		}
 
 		/// Constructs a data entity that represents the function call expression
