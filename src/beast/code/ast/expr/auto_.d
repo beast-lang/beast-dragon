@@ -31,8 +31,12 @@ public:
 		return this;
 	}
 
+	override bool isP1Expression() {
+		return true;
+	}
+
 public:
-	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
+	override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 		berror( E.syntaxError, "'auto' is not allowed here" );
 		assert( 0 );
 	}

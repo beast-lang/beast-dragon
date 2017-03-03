@@ -47,15 +47,19 @@ public:
 	/// expectedType is used for type inferration and can be null (any result is then acceptable)
 	/// The scope is used only for identifier lookup
 	/// Can result in executing ctime code
-	/// If errorOnFailure is false, returns null data entity if the expression cannot be built with given expectedType
-	abstract DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true );
+	/// If errorOnInferrationFailure is false, returns null data entity if the expression cannot be built with given expectedType
+	abstract Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true );
+
+	final DataEntity buildSemanticTree_single( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		return buildSemanticTree( expectedType, scope_, errorOnInferrationFailure ).single_expectType( expectedType );
+	}
 
 	override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
-		buildSemanticTree( null, scope_ ).buildCode( cb, scope_ );
+		buildSemanticTree_single( null, scope_ ).buildCode( cb, scope_ );
 	}
 
 	final MemoryPtr ctExec( Symbol_Type expectedType, DataScope scope_ ) {
-		return buildSemanticTree( expectedType, scope_ ).ctExec( scope_ );
+		return buildSemanticTree_single( expectedType, scope_ ).ctExec( scope_ );
 	}
 
 	/// Executes the expression in standalone scope and session, returing its value

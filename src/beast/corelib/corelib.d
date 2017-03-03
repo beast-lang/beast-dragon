@@ -3,40 +3,46 @@ module beast.corelib.corelib;
 import beast.corelib.toolkit;
 import beast.corelib.decorators.decorators;
 import beast.corelib.types.types;
+import beast.corelib.constants;
 
 /// Constructs core libraries (if they already are not constructed)
 void constructCoreLibrary( ) {
 	assert( !coreLibrary );
 
-	coreLibrary = new CoreLibrary( );
+	coreLibrary = new CoreLibrary;
+	coreLibrary.initialize( );
 }
 
 /// Class containing core libraries symbols
 class CoreLibrary {
 
-public:
-	/// Core types (primitives, Type, ...)
-	CoreLibrary_Types types;
+	public:
+		/// Core types (primitives, Type, ...)
+		CoreLibrary_Types types;
 
-	/// Core decorators
-	CoreLibrary_Decorators decorators;
+		/// Core decorators (static, ctime, ...)
+		CoreLibrary_Decorators decorators;
 
-public:
-	/// Module where all core stuff is in
-	/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.recursivelyResolveIdentifier
-	Symbol_BootstrapModule module_;
+		/// Core constants (true, false, ...)
+		CoreLibrary_Constants constants;
 
-public:
-	this( ) {
-		module_ = new Symbol_BootstrapModule( ExtendedIdentifier.preobtained!"core" );
-		Symbol[ ] symbols;
-		void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
+	public:
+		/// Module where all core stuff is in
+		/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.recursivelyResolveIdentifier
+		Symbol_BootstrapModule module_;
 
-		types.initialize( sink, module_.dataEntity );
-		decorators.initialize( sink, module_.dataEntity );
+	public:
+		void initialize( ) {
+			module_ = new Symbol_BootstrapModule( ExtendedIdentifier.preobtained!"core" );
+			Symbol[ ] symbols;
+			void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-		module_.initialize( symbols );
-	}
+			types.initialize( sink, module_.dataEntity );
+			constants.initialize( sink, module_.dataEntity );
+			decorators.initialize( sink, module_.dataEntity );
+
+			module_.initialize( symbols );
+		}
 
 }
 

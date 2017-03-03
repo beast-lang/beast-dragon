@@ -46,7 +46,7 @@ private:
 	public:
 		override Symbol_Type dataType( ) {
 			// TODO: Module reflection type
-			return null;
+			return coreLibrary.types.Void;
 		}
 
 		override bool isCtime( ) {

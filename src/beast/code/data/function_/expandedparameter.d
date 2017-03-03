@@ -24,7 +24,7 @@ public:
 		}
 
 		ExpandedFunctionParameter result = new ExpandedFunctionParameter( );
-		DataEntity constVal = expr.buildSemanticTree( null, scope_ );
+		DataEntity constVal = expr.buildSemanticTree_single( null, scope_ );
 
 		result.type = constVal.dataType;
 		result.constValue = constVal.ctExec( scope_ );

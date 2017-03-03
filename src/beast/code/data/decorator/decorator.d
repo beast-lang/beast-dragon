@@ -63,7 +63,7 @@ private:
 	public:
 		override Symbol_Type dataType( ) {
 			// TODO: decorator reflection
-			return null;
+			return coreLibrary.types.Void;
 		}
 
 		override bool isCtime( ) {

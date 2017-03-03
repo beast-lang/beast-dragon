@@ -9,7 +9,7 @@ abstract class AST_Declaration : AST_Statement {
 
 public:
 	static bool canParse( ) {
-		return AST_DecorationList.canParse || AST_TypeOrAutoExpression.canParse;
+		return AST_DecorationList.canParse || AST_P1Expression.canParse;
 	}
 
 	static AST_Declaration parse( AST_DecorationList parentDecorationList ) {
@@ -27,12 +27,12 @@ public:
 
 	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList ) {
 		/// Type of variable or return type of a function
-		AST_TypeOrAutoExpression type = AST_TypeOrAutoExpression.parse( );
+		AST_Expression type = AST_P1Expression.parse( );
 
 		return parse( _gd, decorationList, type );
 	}
 
-	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_TypeOrAutoExpression type ) {
+	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression type ) {
 		/// Identifier
 		AST_Identifier identifier = AST_Identifier.parse( );
 

@@ -45,7 +45,7 @@ public:
 	bool valueColonAssign;
 
 public:
-	override DataEntity buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnFailure = true ) {
+	override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 		berror( E.notImplemented, "Inexpr variable definitions are not implemented" );
 		assert( 0 );
 	}

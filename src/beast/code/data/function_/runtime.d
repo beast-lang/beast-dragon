@@ -23,17 +23,26 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			public:
 				override Symbol_Type dataType( ) {
-					return null;
+					// TODO: Function types
+					return coreLibrary.types.Void;
 				}
 
 				override bool isCtime( ) {
+					// TODO: This might not true for member functions
+					return true;
+				}
+
+				final override bool isCallable( ) {
 					return true;
 				}
 
 				override string identification( ) {
-					string result;
+					auto result = appender!string;
 					result ~= identifier ? identifier.str : "(anonymous function)";
-					result ~= "( ";
+					result ~= "(";
+
+					if ( parameters.length )
+						result ~= " ";
 
 					foreach ( i, param; parameters ) {
 						if ( i )
@@ -42,8 +51,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 						result ~= param.identificationString;
 					}
 
-					result ~= ") ";
-					return result;
+					if ( parameters.length )
+						result ~= " ";
+
+					result ~= ")";
+					return result.data;
 				}
 
 			public:
@@ -67,7 +79,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 					if ( !entity ) {
 						with ( memoryManager.session ) {
-							entity = expression.buildSemanticTree( param.type, scope_ );
+							entity = expression.buildSemanticTree_single( param.type, scope_ );
 							dataType = entity.dataType;
 						}
 					}
@@ -124,7 +136,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return this.outer.returnType;
 				}
 
-				override bool isCtime() {
+				override bool isCtime( ) {
 					// TODO:
 					return false;
 				}
@@ -133,11 +145,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return "%s( %s )".format( this.outer.identificationString, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
 				}
 
-				override DataEntity parent() {
+				override DataEntity parent( ) {
 					return this.outer.dataEntity;
 				}
 
-				override AST_Node ast() {
+				override AST_Node ast( ) {
 					return ast_;
 				}
 

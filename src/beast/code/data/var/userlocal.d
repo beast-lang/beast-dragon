@@ -15,7 +15,7 @@ public:
 		{
 			const auto _gd = ErrorGuard( ast.type );
 			DataScope localScope_ = new LocalDataScope( data.env.scope_ );
-			dataType = ast.type.buildSemanticTree( coreLibrary.types.Type, localScope_ ).ctExec_asType( localScope_ );
+			dataType = ast.type.buildSemanticTree_single( coreLibrary.types.Type, localScope_ ).ctExec_asType( localScope_ );
 			localScope_.finish();
 		}
 

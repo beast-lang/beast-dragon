@@ -2,7 +2,6 @@ module beast.code.ast.stmt.statement;
 
 import beast.code.ast.toolkit;
 import beast.code.decorationlist;
-import beast.code.ast.expr.typeorauto;
 
 /// Statement is anything in the function body
 abstract class AST_Statement : AST_Node {
@@ -25,7 +24,7 @@ public:
 			// expr identifier => declaration
 			if ( currentToken == Token.Type.identifier ) {
 				benforce( expr.isP1Expression, E.syntaxError, "Syntax error - either unexpected identifier or type expression uses forbidden operators" );
-				return AST_Declaration.parse( _gd, decorationList, new AST_TypeOrAutoExpression( expr ) );
+				return AST_Declaration.parse( _gd, decorationList, expr );
 			}
 
 			// Otherwise just expression statement

@@ -6,6 +6,4 @@ import beast.code.data.scope_.blurry;
 
 abstract class Symbol_Function : Symbol {
 
-
-
 }

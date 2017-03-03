@@ -19,7 +19,7 @@ public:
 	}
 
 	/// Continues parsing after "@deco Type name" part ( argument list follows )
-	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_TypeOrAutoExpression returnType, AST_Identifier identifier ) {
+	static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression returnType, AST_Identifier identifier ) {
 		AST_FunctionDeclaration result = new AST_FunctionDeclaration;
 		result.decorationList = decorationList;
 		result.returnType = returnType;
@@ -56,7 +56,7 @@ public:
 
 public:
 	AST_DecorationList decorationList;
-	AST_TypeOrAutoExpression returnType;
+	AST_Expression returnType;
 	AST_ParentCommaExpression parameterList;
 	AST_Identifier identifier;
 	AST_CodeBlockStatement body_;
