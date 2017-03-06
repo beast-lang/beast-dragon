@@ -19,7 +19,7 @@ abstract class AST_Statement : AST_Node {
 				return AST_Declaration.parse( decorationList );
 
 			if ( AST_Expression.canParse ) {
-				AST_Expression expr = AST_Expression.parse( );
+				AST_Expression expr = AST_Expression.parse( false );
 
 				// expr identifier => declaration
 				if ( currentToken == Token.Type.identifier ) {

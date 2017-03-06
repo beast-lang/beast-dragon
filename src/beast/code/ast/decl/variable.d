@@ -4,6 +4,7 @@ import beast.code.ast.toolkit;
 import beast.code.ast.decl.toolkit;
 import beast.code.decorationlist;
 import beast.code.data.var.userstatic;
+import beast.code.data.var.userlocal;
 import beast.code.data.var.local;
 import beast.code.data.scope_.root;
 
