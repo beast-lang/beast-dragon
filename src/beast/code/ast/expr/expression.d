@@ -6,7 +6,7 @@ import beast.code.ast.stmt.statement;
 import beast.code.ast.toolkit;
 import beast.code.data.scope_.local;
 import beast.code.data.scope_.root;
-import beast.code.memory.mgr;
+import beast.code.memory.memorymgr;
 import beast.code.ast.expr.vardecl;
 
 abstract class AST_Expression : AST_Statement {

@@ -14,6 +14,14 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		abstract ExpandedFunctionParameter[ ] parameters( );
 
 	protected:
+		override void execute_outerHashObtaining( ) {
+			super.execute_outerHashObtaining( );
+
+			foreach( param; parameters )
+				outerHash_ += param.dataType.outerHash;
+		}
+
+	protected:
 		abstract class Data : SymbolRelatedDataEntity {
 
 			public:
@@ -74,7 +82,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			protected:
 				override Level _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
-					if( argumentIndex_ >= parameters.length )
+					if ( argumentIndex_ >= parameters.length )
 						return Level.noMatch;
 
 					ExpandedFunctionParameter param = parameters[ argumentIndex_ ];
@@ -82,14 +90,14 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 					if ( !entity ) {
 						with ( memoryManager.session ) {
-							entity = expression.buildSemanticTree_single( param.type, scope_ );
+							entity = expression.buildSemanticTree_single( param.dataType, scope_ );
 							dataType = entity.dataType;
 						}
 					}
 					else // Add the entity to the scope so it is findable
 						scope_.addEntity( entity );
 
-					if ( dataType !is param.type )
+					if ( dataType !is param.dataType )
 						return Level.noMatch;
 
 					if ( param.constValue ) {

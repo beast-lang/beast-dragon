@@ -26,11 +26,6 @@ public:
 	override Namespace namespace( ) {
 		return namespace_;
 	}
-	
-public:
-	override void buildDefinitionsCode( CodeBuilder cb ) {
-		// TODO:
-	}
 
 private:
 	BootstrapNamespace namespace_;

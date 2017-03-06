@@ -18,11 +18,11 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			debug assert( context.jobId == scope__.jobId );
 
 			auto block = memoryManager.allocBlock( dataType_.instanceSize );
-			block.flags |= MemoryBlock.Flags.local;
+			block.flags |= MemoryBlock.Flag.local;
 			block.localVariable = this;
 
 			if ( !isCtime_ )
-				block.flags |= MemoryBlock.Flags.runtime;
+				block.flags |= MemoryBlock.Flag.runtime;
 
 			memoryPtr_ = block.startPtr;
 

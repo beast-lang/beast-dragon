@@ -1,23 +1,39 @@
 module beast.backend.cpp.codebuilder;
 
 import beast.backend.toolkit;
+import beast.code.data.function_.expandedparameter;
+import std.format;
 
 // TODO: Asynchronous proxy definition handler
 
 class CodeBuilder_Cpp : CodeBuilder {
+	public enum tab = "\t";
 
 	public:
 		this( CodeBuilder_Cpp parent ) {
-			result_ = appender!string;
+			tabsString_ = tab ~ tab ~ tab ~ tab;
 
-			if ( parent )
+			codeResult_ = appender!string;
+			declarationsResult_ = appender!string;
+			typesResult_ = appender!string;
+
+			if ( parent ) {
 				tabOffset_ = parent.tabOffset_ + 1;
+				hash_ = parent.hash_ + Hash( parent.childrenCounter_++ );
+			}
 		}
 
 	public:
-		/// Last built code
-		string result( ) {
-			return result_.data;
+		string code_types( ) {
+			return typesResult_.data;
+		}
+
+		string code_declarations( ) {
+			return declarationsResult_.data;
+		}
+
+		string code_implementations( ) {
+			return codeResult_.data;
 		}
 
 		/// When building an expression, result of the expression is stored into given variable
@@ -27,64 +43,89 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	public: // Declaration related build commands
 		override void build_moduleDefinition( Symbol_Module module_, DeclFunction content ) {
-			result_ ~= tabs ~ "// module " ~ module_.identificationString ~ "\n\n";
+			const string str = "\n%s// module %s\n".format( tabs, module_.identificationString );
+			declarationsResult_ ~= str;
+			typesResult_ ~= str;
 			content( this );
+
+			debug resultVarName_ = null;
 		}
 
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			// TODO: implicit value
-			result_ ~= tabs ~ " " ~ cppIdentifier( var.dataType ) ~ " " ~ cppIdentifier( var ) ~ ";\n";
+			resultVarName_ = cppIdentifier( var );
+			codeResult_.formattedWrite( "%s%s %sq\n", tabs, cppIdentifier( var.dataType ), resultVarName_ );
 		}
 
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
-			build_functionPrototype( func );
-			result_ ~= "{\n";
+			const string proto = functionPrototype( func );
+			declarationsResult_.formattedWrite( "%s%s;\n", tabs, proto );
+			codeResult_.formattedWrite( "%s%s {\n", tabs, proto );
 			tabOffset_++;
 
 			body_( this );
 
 			tabOffset_--;
-			result_ ~= tabs ~ "}\n\n";
+			codeResult_.formattedWrite( "%s}\n\n", tabs );
+
+			debug resultVarName_ = null;
+		}
+
+		override void build_typeDefinition( Symbol_Type type ) {
+			if ( auto instanceSize = type.instanceSize )
+				typesResult_.formattedWrite( "%stypedef unsigned char[ %s ] %s;\n", tabs, instanceSize, cppIdentifier( type ) );
+			else
+				typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
+
+			debug resultVarName_ = null;
 		}
 
 	public: // Expression related build commands
 		override void build_memoryAccess( MemoryPtr pointer ) {
 			MemoryBlock block = pointer.block;
+			block.markReferenced( );
 
-			if ( block.isLocal ) {
-				assert( block.localVariable );
-				resultVarName_ = cppIdentifier( block.localVariable );
-			}
+			if ( block.startPtr == pointer )
+				resultVarName_ = cppIdentifier( block );
 			else
-				resultVarName_ = "__staticMemory_%s".format( pointer.val );
+				resultVarName_ = "( %s + %s )".format( cppIdentifier( block ), pointer - block.startPtr );
 		}
 
 		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity[ ] arguments ) {
-			result_ ~= tabs ~ "{\n";
+			string resultVarName;
+			if ( function_.returnType !is coreLibrary.types.Void ) {
+				resultVarName = "_%s_tmp".format( getHash( ) );
+				codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( function_.returnType ), resultVarName );
+			}
+
+			codeResult_.formattedWrite( "%s{\n", tabs );
 			tabOffset_++;
 
 			string[ ] argumentNames;
+			if ( resultVarName )
+				argumentNames ~= "&" ~ resultVarName;
+
 			foreach ( arg; arguments ) {
 				arg.buildCode( this, scope_ );
-				argumentNames ~= resultVarName_;
+				argumentNames ~= "&" ~ resultVarName_;
 			}
 
-			result_ ~= tabs ~ cppIdentifier( function_ ) ~ "( " ~ argumentNames.joiner( ", " ).to!string ~ ");\n";
-			resultVarName_ = null; // TODO: return value
+			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
 			tabOffset_--;
-			result_ ~= tabs ~ "}\n";
+			codeResult_.formattedWrite( "%s}\n", tabs );
+			resultVarName_ = resultVarName;
 		}
 
 	public: // Statement related build commands
 		override void build_if( DataScope scope_, DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
-			result_ ~= tabs ~ "{\n";
+			codeResult_ ~= tabs ~ "{\n";
 			tabOffset_++;
 
 			// Build the condition
 			{
 				condition.buildCode( this, scope_ );
-				result_ ~= tabs ~ "if( " ~ resultVarName_ ~ " ) {\n";
+				codeResult_.formattedWrite( "%sif( %s ) {\n", tabs, resultVarName_ );
 			}
 
 			// Build then branch
@@ -93,34 +134,35 @@ class CodeBuilder_Cpp : CodeBuilder {
 				thenBranch( this );
 				tabOffset_--;
 
-				result_ ~= tabs ~ "}\n";
+				codeResult_.formattedWrite( "%s}\n", tabs );
 			}
 
 			// Build else branch
 			if ( elseBranch ) {
-				result_ ~= tabs ~ "else {\n";
+				codeResult_.formattedWrite( "%selse {\n", tabs );
 
 				tabOffset_++;
 				elseBranch( this );
 				tabOffset_--;
 
-				result_ ~= tabs ~ "}\n";
+				codeResult_.formattedWrite( "%s}\n", tabs );
 			}
 
 			tabOffset_--;
-			result_ ~= tabs ~ "}\n";
+			codeResult_.formattedWrite( "%s}\n", tabs );
 
-			resultVarName_ = null;
+			debug resultVarName_ = null;
 		}
 
 	protected:
-		void build_functionPrototype( Symbol_RuntimeFunction func ) {
+		string functionPrototype( Symbol_RuntimeFunction func ) {
 			size_t parameterCount = 0;
-			result_ ~= tabs ~ "void " ~ cppIdentifier( func ) ~ "( ";
+			auto result = appender!string;
+			result.formattedWrite( "void %s( ", cppIdentifier( func ) );
 
 			// Return value is passed as a pointer
 			if ( func.returnType !is coreLibrary.types.Void ) {
-				result_ ~= cppIdentifier( func.returnType ) ~ " *result";
+				result.formattedWrite( "%s *result", cppIdentifier( func.returnType ) );
 				parameterCount++;
 			}
 
@@ -130,37 +172,70 @@ class CodeBuilder_Cpp : CodeBuilder {
 					continue;
 
 				if ( parameterCount )
-					result_ ~= ", ";
+					result ~= ", ";
 
-				result_ ~= cppIdentifier( param.type ) ~ " " ~ param.identifier.str;
+				result.formattedWrite( "%s *%s", cppIdentifier( param.dataType ), cppIdentifier( param ) );
 
 				parameterCount++;
 			}
 
-			result_ ~= " ) ";
+			if ( parameterCount )
+				result ~= " ";
+				
+			result ~= ")";
+			return result.data;
+		}
+
+	public:
+		static string cppIdentifier( DataEntity_LocalVariable var ) {
+			return "_%s__%s".format( var.outerHash.str, var.identifier ? safeIdentifier( var.identifier.str ) : "tmp" );
+		}
+
+		static string cppIdentifier( Symbol sym ) {
+			return "_%s__%s".format( sym.outerHash.str, sym.identifier ? safeIdentifier( sym.identifier.str ) : "tmp" );
+		}
+
+		static string cppIdentifier( ExpandedFunctionParameter param ) {
+			return "_%s__%s".format( param.outerHash.str, safeIdentifier( param.identifier.str ) );
+		}
+
+		static string cppIdentifier( MemoryBlock block ) {
+			if ( block.isLocal ) {
+				assert( block.localVariable );
+				return cppIdentifier( block.localVariable );
+			}
+			else if ( block.identifier )
+				return "__s%s_%s".format( block.startPtr.val, safeIdentifier( block.identifier ) );
+			else
+				return "__s%s".format( block.startPtr.val );
+		}
+
+		static string safeIdentifier( string id ) {
+			return id.replace( "#", "_" );
 		}
 
 	protected:
-		string cppIdentifier( DataEntity_LocalVariable var ) {
-			return "_%s__%s".format( var.outerHash.str, var.identifier ? var.identifier.str : "tmp" );
+		final string tabs( ) {
+			while ( tabsString_.length < tabOffset_ * tab.length )
+				tabsString_ ~= tabsString_;
+
+			return tabsString_[ 0 .. tabOffset_ * tab.length ];
 		}
 
-		string cppIdentifier( Symbol sym ) {
-			return "_%s__%s".format( sym.outerHash.str, sym.identifier ? sym.identifier.str : "tmp" );
-		}
-
-	protected:
-		string tabs( ) {
-			string result;
-			foreach ( i; 0 .. tabOffset_ )
-				result ~= "\t";
-
-			return result;
+		final string getHash( ) {
+			return ( hash_ + Hash( hashCounter_++ ) ).str;
 		}
 
 	protected:
-		Appender!string result_;
+		Hash hash_;
+		/// Increments every time a child codegen is created -- because of hashing
+		size_t childrenCounter_;
+		/// Increments every time a new hash is needed
+		size_t hashCounter_;
+		Appender!string codeResult_, declarationsResult_, typesResult_;
 		string resultVarName_;
 		size_t tabOffset_;
+		/// Accumulator for optimized tabs output
+		string tabsString_;
 
 }

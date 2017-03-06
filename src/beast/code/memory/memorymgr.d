@@ -1,4 +1,4 @@
-module beast.code.memory.mgr;
+module beast.code.memory.memorymgr;
 
 import beast.code.hwenv.hwenv;
 import beast.code.memory.block;
@@ -17,14 +17,16 @@ final class MemoryManager {
 
 	public:
 		this( ) {
-			mut = new ReadWriteMutex;
+			blockListMutex = new ReadWriteMutex;
 		}
 
 	public:
 		MemoryBlock allocBlock( size_t bytes ) {
+			debug assert( !finished_ );
+
 			MemoryPtr endPtr = MemoryPtr( 1 /* +1 to prevent allocating on a null pointer */  );
 
-			synchronized ( mut.writer ) {
+			synchronized ( blockListMutex.writer ) {
 				debug assert( context.session in activeSessions, "Invalid session" );
 
 				// First, we try inserting the new block between currently existing memory blocks
@@ -51,16 +53,20 @@ final class MemoryManager {
 			return allocBlock( bytes ).startPtr;
 		}
 
-		MemoryPtr alloc( size_t bytes, ubyte flags ) {
+		MemoryPtr alloc( size_t bytes, ubyte flags, string identifier = null ) {
 			MemoryBlock result = allocBlock( bytes );
 			result.flags |= flags;
+			result.identifier = identifier;
 			return result.startPtr;
 		}
 
+
 		void free( MemoryPtr ptr ) {
+			debug assert( !finished_ );
+
 			checkNullptr( ptr );
 
-			synchronized ( mut.writer ) {
+			synchronized ( blockListMutex.writer ) {
 				debug assert( context.session in activeSessions, "Invalid session" );
 
 				foreach ( i, block; mmap ) {
@@ -81,12 +87,14 @@ final class MemoryManager {
 	public:
 		/// Tries to write data at a given pointer. Might fail.
 		void write( MemoryPtr ptr, const void* data, size_t bytes ) {
+			debug assert( !finished_ );
+
 			MemoryBlock block = findMemoryBlock( ptr );
 
 			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 			benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session" );
 			benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
-			benforce( !( block.flags & MemoryBlock.Flags.runtime ), E.invalidMemoryOperation, "Cannnot write to runtime memory" );
+			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot write to runtime memory" );
 
 			debug assert( block.session in activeSessions );
 			assert( context.session == block.session );
@@ -103,10 +111,10 @@ final class MemoryManager {
 			// Either the session the block was created in is no longer active (-> the block cannot be changed anymore), or the session belongs to the same task context as current session (meaning it is the same session or a derived one)
 			// Other cases should not happen
 			debug assert( block.session !in activeSessions || activeSessions[ block.session ] == context.jobId );
-			assert( !( block.flags & MemoryBlock.Flags.local ) || block.session == context.session, "Local memory block is accessed from a different session" );
+			assert( !( block.flags & MemoryBlock.Flag.local ) || block.session == context.session, "Local memory block is accessed from a different session" );
 
 			benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
-			benforce( !( block.flags & MemoryBlock.Flags.runtime ), E.invalidMemoryOperation, "Cannnot read from runtime memory" );
+			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot read from runtime memory" );
 			return block.data + ( ptr - block.startPtr ).val;
 		}
 
@@ -115,7 +123,7 @@ final class MemoryManager {
 		MemoryBlock findMemoryBlock( MemoryPtr ptr ) {
 			checkNullptr( ptr );
 
-			synchronized ( mut.reader ) {
+			synchronized ( blockListMutex.reader ) {
 				foreach ( block; mmap ) {
 					if ( ptr >= block.startPtr && ptr < block.endPtr )
 						return block;
@@ -166,11 +174,47 @@ final class MemoryManager {
 			benforce( ptr.val != 0, E.nullPointer, "Null pointer" );
 		}
 
+	public:
+		/// Disables all further memory manipulations
+		void finish( ) {
+			debug finished_ = true;
+		}
+
+	public:
+		/// Returns range for iterating memory blocks
+		MemoryIterator memoryBlocks( ) {
+			debug assert( finished_, "Cannot iterate blocks when not finished" );
+			return MemoryIterator( this );
+		}
+
 	private:
+		debug bool finished_;
 		/// Sorted array of memory blocks
 		MemoryBlock[ ] mmap; // TODO: Better implementation
 		/// Map of session id -> jobId
 		debug static __gshared size_t[ size_t ] activeSessions;
-		ReadWriteMutex mut;
+		ReadWriteMutex blockListMutex;
+
+	public:
+		struct MemoryIterator {
+
+			public:
+				MemoryBlock front( ) {
+					return mgr_.mmap[ i_ ];
+				}
+
+				bool empty( ) {
+					return i_ >= mgr_.mmap.length;
+				}
+
+				void popFront( ) {
+					i_++;
+				}
+
+			private:
+				MemoryManager mgr_;
+				size_t i_;
+
+		}
 
 }

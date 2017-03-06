@@ -14,7 +14,7 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 			identififer_ = identifier;
 
 			with ( memoryManager.session )
-				memoryPtr_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flags.doNotGCAtSessionEnd ).write( data, dataType.instanceSize );
+				memoryPtr_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd, identifier.str ).write( data, dataType.instanceSize );
 		}
 
 	public:

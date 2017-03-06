@@ -66,9 +66,10 @@ private:
 
 		with ( memoryManager.session ) {
 			MemoryBlock b = memoryManager.allocBlock( dataType.instanceSize );
+			b.identifier = identifier.str;
 
 			if ( !isCtime_ )
-				b.flags |= MemoryBlock.Flags.runtime;
+				b.flags |= MemoryBlock.Flag.runtime;
 
 			memoryPtr_ = b.startPtr;
 		}

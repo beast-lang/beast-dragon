@@ -42,7 +42,7 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 			foreach ( expr; items ) {
 				if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
 					// Auto expressions cannot be expanded
-					if ( decl.type.isAutoExpression )
+					if ( decl.dataType.isAutoExpression )
 						return false;
 				}
 			}

@@ -18,31 +18,31 @@ struct MemoryPtr {
 
 	public:
 		/// Writes a "primitive" (direct data copy - usually you should use hwenv) into given pointer
-		MemoryPtr writePrimitive( T )( const auto ref T data ) {
+		MemoryPtr writePrimitive( T )( const auto ref T data ) const {
 			memoryManager.write( this, cast( const void* )&data, data.sizeof );
 			return this;
 		}
 
-		MemoryPtr write( const void* data, size_t bytes ) {
+		MemoryPtr write( const void* data, size_t bytes ) const {
 			memoryManager.write( this, data, bytes );
 			return this;
 		}
 
 		/// Reads a "primitive" (direct data read - usually you should use hwenv) from a given pointer
-		T readPrimitive( T )( ) {
+		T readPrimitive( T )( ) const {
 			return *( cast( T* ) memoryManager.read( this, T.sizeof ) );
 		}
 
 	public:
 		/// Interprets the value as a Type variable
-		Symbol_Type readType( ) {
+		Symbol_Type readType( ) const{
 			Symbol_Type type = typeUIDKeeper[ readPrimitive!size_t ];
 			benforce( type !is null, E.invalidPointer, "Variable does not point to a valid type" );
 			return type;
 		}
 
 	public:
-		bool dataEquals( MemoryPtr other, size_t comparedLength ) {
+		bool dataEquals( MemoryPtr other, size_t comparedLength ) const {
 			import core.stdc.string : memcmp;
 
 			void* data1 = memoryManager.read( this, comparedLength );

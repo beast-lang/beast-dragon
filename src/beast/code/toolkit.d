@@ -13,7 +13,7 @@ public {
 	import beast.code.decorationlist;
 	import beast.code.hwenv.hwenv;
 	import beast.code.memory.block;
-	import beast.code.memory.mgr;
+	import beast.code.memory.memorymgr;
 	import beast.code.memory.ptr;
 	import beast.corelib.corelib;
 	import beast.toolkit;

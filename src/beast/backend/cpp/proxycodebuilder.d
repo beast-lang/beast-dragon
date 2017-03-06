@@ -13,31 +13,25 @@ final class CodeBuilder_CppProxy : CodeBuilder_Cpp {
 
 	public:
 		override void build_moduleDefinition( Symbol_Module module_, DeclFunction content ) {
-			auto tmp = result_;
-			result_ = appender!string;
-
 			try {
 				super.build_moduleDefinition( module_, content );
-				tmp ~= result_.data;
 			}
 			catch ( BeastErrorException exc ) {
+				codeResult_ ~= "\n// BUILD ERROR HERE\n";
+				typesResult_ ~= "\n// BUILD ERROR HERE\n";
+				declarationsResult_ ~= "\n// BUILD ERROR HERE\n";
 			}
-
-			result_ = tmp;
 		}
 
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
-			auto tmp = result_;
-			result_ = appender!string;
-
 			try {
 				super.build_functionDefinition( func, body_ );
-				tmp ~= result_.data;
 			}
 			catch ( BeastErrorException exc ) {
+				codeResult_ ~= "\n// BUILD ERROR HERE\n";
+				typesResult_ ~= "\n// BUILD ERROR HERE\n";
+				declarationsResult_ ~= "\n// BUILD ERROR HERE\n";
 			}
-
-			result_ = tmp;
 		}
 
 }

@@ -2,10 +2,10 @@ module beast.main;
 
 import beast.code.hwenv.hwenv;
 import beast.code.hwenv.native;
-import beast.code.memory.mgr;
+import beast.code.memory.memorymgr;
 import beast.core.project.configuration;
 import beast.core.project.project;
-import beast.core.task.mgr;
+import beast.core.task.taskmgr;
 import beast.corelib.corelib;
 import beast.toolkit;
 import beast.backend.common.backend;

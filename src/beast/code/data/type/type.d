@@ -14,7 +14,7 @@ abstract class Symbol_Type : Symbol {
 			typeUID_ = typeUIDKeeper( this );
 
 			with ( memoryManager.session )
-				ctimeValue_ = memoryManager.alloc( size_t.sizeof, MemoryBlock.Flags.doNotGCAtSessionEnd ).writePrimitive( typeUID_ );
+				ctimeValue_ = memoryManager.alloc( size_t.sizeof, MemoryBlock.Flag.doNotGCAtSessionEnd, "%s_typeid".format( identifier.str ) ).writePrimitive( typeUID_ );
 		}
 
 		/// Each type has uniquie UID in the project (differs each compiler run)
@@ -44,6 +44,11 @@ abstract class Symbol_Type : Symbol {
 			}
 
 			return Overloadset( );
+		}
+
+	public:
+		override void buildDefinitionsCode( CodeBuilder cb ) {
+			cb.build_typeDefinition( this );
 		}
 
 	protected:

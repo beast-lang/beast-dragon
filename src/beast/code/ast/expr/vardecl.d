@@ -12,10 +12,10 @@ public:
 	}
 
 	/// Continues parsing after "@deco Type name" part ( "= value;", ":= value;" or ";" can follow )
-	static AST_VariableDeclarationExpression parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression type ) {
+	static AST_VariableDeclarationExpression parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression dataType ) {
 		AST_VariableDeclarationExpression result = new AST_VariableDeclarationExpression;
 		result.decorationList = decorationList;
-		result.type = type;
+		result.dataType = dataType;
 
 		result.identifier = AST_Identifier.parse();
 
@@ -38,7 +38,7 @@ public:
 
 public:
 	AST_DecorationList decorationList;
-	AST_Expression type;
+	AST_Expression dataType;
 	AST_Identifier identifier;
 	AST_Expression value;
 	/// True if variable was declarated using "@deco Type name := value"
@@ -53,7 +53,7 @@ public:
 protected:
 	override InputRange!AST_Node _subnodes( ) {
 		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
-		return nodeRange( type, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
+		return nodeRange( dataType, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
 	}
 
 }

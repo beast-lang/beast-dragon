@@ -1,7 +1,7 @@
 module beast.core.task.worker;
 
 import beast.core.task.context;
-import beast.core.task.mgr;
+import beast.core.task.taskmgr;
 import beast.toolkit;
 import core.stdc.stdlib;
 import core.thread;
