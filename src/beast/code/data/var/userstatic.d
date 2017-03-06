@@ -28,7 +28,7 @@ public:
 
 	override Symbol_Type dataType( ) {
 		enforceDone_typeDeduction( );
-		return type_;
+		return dataType_;
 	}
 
 	override AST_Node ast( ) {
@@ -47,32 +47,24 @@ public:
 private:
 	DecorationList decorationList_;
 	AST_VariableDeclaration ast_;
-	Symbol_Type type_;
-	MemoryPtr memoryPtr_;
+	Symbol_Type dataType_;
 	bool isCtime_;
 
 private:
 	void execute_typeDeduction( ) {
-		const auto _gd = ErrorGuard( ast_.type.codeLocation );
+		const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
 		// TODO: if type auto
-		type_ = ast_.type.standaloneCtExec( coreLibrary.types.Type, parent ).readType( );
+		dataType_ = ast_.dataType.standaloneCtExec( coreLibrary.types.Type, parent ).readType( );
 
-		benforce!( ErrorSeverity.warning )( type_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( type_.identificationString ) );
+		benforce!( ErrorSeverity.warning )( dataType_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataType_.identificationString ) );
 	}
 
 	void execute_memoryAllocation( ) {
-		const auto _gd = ErrorGuard( ast_.type.codeLocation );
+		const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
-		with ( memoryManager.session ) {
-			MemoryBlock b = memoryManager.allocBlock( dataType.instanceSize );
-			b.identifier = identifier.str;
-
-			if ( !isCtime_ )
-				b.flags |= MemoryBlock.Flag.runtime;
-
-			memoryPtr_ = b.startPtr;
-		}
+		with ( memoryManager.session )
+			memoryPtr_ = memoryManager.alloc( dataType_.instanceSize, isCtime_ ? MemoryBlock.Flag.noFlag : MemoryBlock.Flag.runtime, identifier.str );
 	}
 
 }

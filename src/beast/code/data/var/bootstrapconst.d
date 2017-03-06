@@ -30,13 +30,8 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 			return true;
 		}
 
-		override MemoryPtr memoryPtr( ) {
-			return memoryPtr_;
-		}
-
-	private:
+	protected:
 		Symbol_Type dataType_;
-		MemoryPtr memoryPtr_;
 		Identifier identififer_;
 
 }

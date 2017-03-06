@@ -102,8 +102,8 @@ void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string me
 
 	synchronized ( stderrMutex ) {
 		stderr.writeln( formattedMessage );
-		if( project.configuration.showStackTrace )
-		stderr.writeln( defaultTraceHandler.toString );
+		debug if ( project.configuration.showStackTrace )
+			stderr.writeln( defaultTraceHandler.toString );
 	}
 
 	if ( msg.severity == ErrorSeverity.error )
@@ -118,10 +118,10 @@ void berror( E error, string message, ErrorGuardFunction errGdFunc = null, strin
 /// Base error class for all compiler generated exceptions (that are expected)
 final class BeastErrorException : Exception {
 
-public:
-	this( string message, string file = __FILE__, size_t line = __LINE__ ) {
-		super( message, file, line );
-	}
+	public:
+		this( string message, string file = __FILE__, size_t line = __LINE__ ) {
+			super( message, file, line );
+		}
 
 }
 

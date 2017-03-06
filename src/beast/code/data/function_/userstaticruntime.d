@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 import beast.code.data.function_.runtime;
 import beast.code.data.scope_.root;
 import beast.code.data.function_.expandedparameter;
+import beast.code.data.var.functionparameter;
 
 final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
@@ -50,6 +51,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
 					scope scope_ = new RootDataScope( staticData_ );
+					foreach ( param; parameters )
+						scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
 
 					scope env = DeclarationEnvironment.newFunctionBody;
 					env.scope_ = scope_;

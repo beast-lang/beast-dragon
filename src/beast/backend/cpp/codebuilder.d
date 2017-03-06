@@ -54,7 +54,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			// TODO: implicit value
 			resultVarName_ = cppIdentifier( var );
-			codeResult_.formattedWrite( "%s%s %sq\n", tabs, cppIdentifier( var.dataType ), resultVarName_ );
+			codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( var.dataType ), resultVarName_ );
 		}
 
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
@@ -103,11 +103,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			string[ ] argumentNames;
 			if ( resultVarName )
-				argumentNames ~= "&" ~ resultVarName;
+				argumentNames ~= resultVarName;
 
 			foreach ( arg; arguments ) {
 				arg.buildCode( this, scope_ );
-				argumentNames ~= "&" ~ resultVarName_;
+				argumentNames ~= resultVarName_;
 			}
 
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
@@ -181,7 +181,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			if ( parameterCount )
 				result ~= " ";
-				
+
 			result ~= ")";
 			return result.data;
 		}
@@ -200,7 +200,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		static string cppIdentifier( MemoryBlock block ) {
-			if ( block.isLocal ) {
+			if ( block.isFunctionParameter ) {
+				return cppIdentifier( block.functionParameter );
+			}
+			else if ( block.isLocal ) {
 				assert( block.localVariable );
 				return cppIdentifier( block.localVariable );
 			}

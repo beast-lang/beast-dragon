@@ -29,11 +29,14 @@ struct ContextData {
 		/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
 		size_t session;
 
+		/// List of all memory blocks allocated in the current session
+		MemoryBlock[] sessionMemoryBlocks;
+
 		/// Sessions can be nested (they're absolutely independent though); last session in the stack is saved in the session variable for speed up
 		size_t[ ] sessionStack;
 
 		/// Memory blocks allocated by the sessions in the stack
-		MemoryBlock[ ][ ] sessionMemoryBlvockStack;
+		MemoryBlock[ ][ ] sessionMemoryBlockStack;
 
 	public:
 		/// TaskContext of the current running task

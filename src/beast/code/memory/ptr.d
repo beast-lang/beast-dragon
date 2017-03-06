@@ -28,6 +28,11 @@ struct MemoryPtr {
 			return this;
 		}
 
+		MemoryPtr write( MemoryPtr data, size_t bytes ) const {
+			memoryManager.write( this, memoryManager.read( data, bytes ), bytes );
+			return this;
+		}
+
 		/// Reads a "primitive" (direct data read - usually you should use hwenv) from a given pointer
 		T readPrimitive( T )( ) const {
 			return *( cast( T* ) memoryManager.read( this, T.sizeof ) );
@@ -58,6 +63,10 @@ struct MemoryPtr {
 				return -1;
 			else
 				return 0;
+		}
+
+		bool isNull() const {
+			return val == 0;
 		}
 
 	public:

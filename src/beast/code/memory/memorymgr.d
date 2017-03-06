@@ -25,6 +25,7 @@ final class MemoryManager {
 			debug assert( !finished_ );
 
 			MemoryPtr endPtr = MemoryPtr( 1 /* +1 to prevent allocating on a null pointer */  );
+			MemoryBlock result;
 
 			synchronized ( blockListMutex.writer ) {
 				debug assert( context.session in activeSessions, "Invalid session" );
@@ -32,34 +33,43 @@ final class MemoryManager {
 				// First, we try inserting the new block between currently existing memory blocks
 				foreach ( i, block; mmap ) {
 					if ( endPtr + bytes <= block.startPtr ) {
-						MemoryBlock result = new MemoryBlock( endPtr, bytes );
+						result = new MemoryBlock( endPtr, bytes );
 						mmap.insertInPlace( i, result );
-						return result;
+						break;
 					}
 
 					endPtr = block.endPtr;
 				}
 
-				// If it fails, we add a new memory after all existing blocks
-				benforce( endPtr <= MemoryPtr( hardwareEnvironment.memorySize ), E.outOfMemory, "Failed to allocate %s bytes".format( bytes ) );
+				if ( !result ) {
+					// If it fails, we add a new memory after all existing blocks
+					benforce( endPtr <= MemoryPtr( hardwareEnvironment.memorySize ), E.outOfMemory, "Failed to allocate %s bytes".format( bytes ) );
 
-				MemoryBlock result = new MemoryBlock( endPtr, bytes );
-				mmap ~= result;
-				return result;
+					result = new MemoryBlock( endPtr, bytes );
+					mmap ~= result;
+				}
 			}
+
+			context.sessionMemoryBlocks ~= result;
+			return result;
+		}
+
+		MemoryBlock allocBlock( size_t bytes, MemoryBlock.Flags flags ) {
+			MemoryBlock result = allocBlock( bytes );
+			result.flags |= flags;
+			return result;
 		}
 
 		MemoryPtr alloc( size_t bytes ) {
 			return allocBlock( bytes ).startPtr;
 		}
 
-		MemoryPtr alloc( size_t bytes, ubyte flags, string identifier = null ) {
+		MemoryPtr alloc( size_t bytes, MemoryBlock.Flags flags, string identifier = null ) {
 			MemoryBlock result = allocBlock( bytes );
 			result.flags |= flags;
 			result.identifier = identifier;
 			return result.startPtr;
 		}
-
 
 		void free( MemoryPtr ptr ) {
 			debug assert( !finished_ );
@@ -82,6 +92,10 @@ final class MemoryManager {
 			}
 
 			berror( E.invalidMemoryOperation, "Cannot free - memory with this pointer is not allocated" );
+		}
+
+		void free( MemoryBlock block ) {
+			free( block.startPtr );
 		}
 
 	public:
@@ -135,11 +149,15 @@ final class MemoryManager {
 		}
 
 	public:
-		static void startSession( ) {
+		void startSession( ) {
 			static __gshared UIDGenerator sessionUIDGen;
 
 			size_t session = sessionUIDGen( );
-			context.sessionStack ~= session;
+
+			context.sessionMemoryBlockStack ~= context.sessionMemoryBlocks;
+			context.sessionMemoryBlocks = null;
+
+			context.sessionStack ~= context.session;
 			context.session = session;
 
 			debug synchronized ( memoryManager ) {
@@ -147,21 +165,35 @@ final class MemoryManager {
 			}
 		}
 
-		static void endSession( ) {
+		void endSession( ) {
+			foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
+				if ( ( block.isLocal || !block.isReferenced ) && !( block.flags & MemoryBlock.Flag.doNotGCAtSessionEnd ) )
+					free( block );
+			}
+
 			debug synchronized ( memoryManager ) {
 				assert( context.session in activeSessions, "Invalid session" );
 				activeSessions.remove( context.session );
 			}
 
-			context.sessionStack.length--;
-			context.session = context.sessionStack.length ? context.sessionStack[ $ - 1 ] : 0;
+			if ( context.sessionStack.length ) {
+				context.session = context.sessionStack[ $ - 1 ];
+				context.sessionStack.length--;
+
+				context.sessionMemoryBlocks = context.sessionMemoryBlockStack[ $ - 1 ];
+				context.sessionMemoryBlockStack.length--;
+			}
+			else {
+				context.session = 0;
+				debug context.sessionMemoryBlocks = null;
+			}
 		}
 
 		/// Utility function for use with with( memoryManager.session ) { xxx } - calls startSession on beginning and endSession on end
-		static auto session( ) {
+		auto session( ) {
 			static struct Result {
 				~this( ) {
-					endSession( );
+					memoryManager.endSession( );
 				}
 			}
 

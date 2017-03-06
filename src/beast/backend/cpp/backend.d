@@ -30,8 +30,9 @@ final class Backend_Cpp : Backend {
 					continue;
 
 				code_memory.formattedWrite(  //
-						"%sunsigned byte %s[%s] = { %s };\n", //
-						block.isRuntime ? "" : "const ", CodeBuilder_Cpp.cppIdentifier( block ), //
+						"unsigned byte %s[%s] = { %s };\n", //
+						//block.isRuntime ? "" : "const ", // Constness not implemented yet
+						CodeBuilder_Cpp.cppIdentifier( block ), //
 						block.size, //
 						( cast( ubyte[ ] ) block.data[ 0 .. block.size ] ).map!( x => x.to!string ).joiner( ", " ) // Block data
 						 );

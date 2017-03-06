@@ -6,7 +6,6 @@ import beast.code.decorationlist;
 import beast.code.data.var.userstatic;
 import beast.code.data.var.local;
 import beast.code.data.scope_.root;
-import beast.code.data.var.userlocal;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -16,10 +15,10 @@ public:
 	}
 
 	/// Continues parsing after "@deco Type name" part ( "= value;", ":= value;" or ";" can follow )
-	static AST_VariableDeclaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression type, AST_Identifier identifier ) {
+	static AST_VariableDeclaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList, AST_Expression dataType, AST_Identifier identifier ) {
 		AST_VariableDeclaration result = new AST_VariableDeclaration;
 		result.decorationList = decorationList;
-		result.type = type;
+		result.dataType = dataType;
 		result.identifier = identifier;
 
 		if ( currentToken.matchAndNext( Token.Operator.assign ) ) {
@@ -73,7 +72,7 @@ public:
 
 public:
 	AST_DecorationList decorationList;
-	AST_Expression type;
+	AST_Expression dataType;
 	AST_Identifier identifier;
 	AST_Expression value;
 	/// True if variable was declarated using "@deco Type name := value"
@@ -82,7 +81,7 @@ public:
 protected:
 	override InputRange!AST_Node _subnodes( ) {
 		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
-		return nodeRange( type, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
+		return nodeRange( dataType, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
 	}
 
 }

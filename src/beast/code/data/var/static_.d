@@ -24,9 +24,6 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 
 		abstract bool isCtime( );
 
-		/// Returns pointer to data of this variable
-		abstract MemoryPtr memoryPtr( );
-
 		final DataEntity parent( ) {
 			return parent_;
 		}

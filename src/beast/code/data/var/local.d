@@ -6,25 +6,21 @@ abstract class DataEntity_LocalVariable : DataEntity {
 	mixin TaskGuard!"outerHashObtaining";
 
 	public:
-		this( Symbol_Type dataType, DataScope scope_ ) {
+		this( Symbol_Type dataType, DataScope scope_, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag ) {
 			dataType_ = dataType;
-			scope__ = scope_;
 			isCtime_ = isCtime;
+			scope__ = scope_;
 
-			assert( scope_ );
 			assert( parent );
 			assert( dataType );
 
-			debug assert( context.jobId == scope__.jobId );
+			debug assert( context.jobId == scope_.jobId );
 
-			auto block = memoryManager.allocBlock( dataType_.instanceSize );
-			block.flags |= MemoryBlock.Flag.local;
-			block.localVariable = this;
+			memoryBlock_ = memoryManager.allocBlock( dataType_.instanceSize, MemoryBlock.Flag.local | additionalMemoryBlockFlags );
+			memoryBlock_.localVariable = this;
 
 			if ( !isCtime_ )
-				block.flags |= MemoryBlock.Flag.runtime;
-
-			memoryPtr_ = block.startPtr;
+				memoryBlock_.flags |= MemoryBlock.Flag.runtime;
 
 			// TODO: constructor calls?
 		}
@@ -39,15 +35,11 @@ abstract class DataEntity_LocalVariable : DataEntity {
 		}
 
 		final MemoryPtr memoryPtr( ) {
-			return memoryPtr_;
-		}
-
-		final DataScope scope_( ) {
-			return scope__;
+			return memoryBlock_.startPtr;
 		}
 
 		final override DataEntity parent( ) {
-			return scope_.parentEntity( );
+			return scope__.parentEntity( );
 		}
 
 		override final Hash outerHash( ) {
@@ -57,13 +49,13 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-			cb.build_memoryAccess( memoryPtr_ );
+			cb.build_memoryAccess( memoryPtr );
 		}
 
 	protected:
 		Symbol_Type dataType_;
 		DataScope scope__;
-		MemoryPtr memoryPtr_;
+		MemoryBlock memoryBlock_;
 		Hash outerHash_;
 		bool isCtime_;
 

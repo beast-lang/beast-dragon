@@ -6,17 +6,23 @@ import beast.code.toolkit;
 import core.memory;
 import core.atomic;
 import beast.code.data.var.local;
+import beast.code.data.function_.expandedparameter;
 
 /// Block of interpreter memory
 final class MemoryBlock {
 
 	public:
 		enum Flag {
+			noFlag = 0,
 			doNotGCAtAll = 1 << 0, /// Do not garbage collect this block at all
 			doNotGCAtSessionEnd = 1 << 1, /// Do not garbage collect this block at the end of the session (when only blocks created in the current session are garbage collected)
 			local = 1 << 2, /// Block is local - it cannot be accessed from other sessions (should not happen at all); tested only in debug; used for local and temporary variables
 			runtime = 1 << 3, /// Memory block is runtime - cannot be read/written at compile time
+			functionParameter = 1 << 4, /// Memory block represents a function parameter
 		}
+
+		alias Flags = Flag;
+
 		enum SharedFlag {
 			referenced = 1 << 0, /// The memory block is referenced from external source (codegen)
 		}
@@ -40,19 +46,40 @@ final class MemoryBlock {
 	public:
 		/// Returns if the block is marked as runtime (just a placeholder for a static variable)
 		bool isRuntime( ) {
-			return ( flags & Flag.runtime ) != 0;
+			return flag( Flag.runtime );
+		}
+
+		void isRuntime( bool set ) {
+			setFlag( Flag.runtime, set );
 		}
 
 		/// Returns if the block is local - if it coresponds to a variable on stack
 		bool isLocal( ) {
-			return ( flags & Flag.local ) != 0;
+			return flag( Flag.local );
 		}
 
-		void markReferenced() {
+		bool isFunctionParameter( ) {
+			return flag( Flag.functionParameter );
+		}
+
+		void markReferenced( ) {
 			atomicOp!"|="( sharedFlags, SharedFlag.referenced );
 		}
-		bool isReferenced() {
+
+		bool isReferenced( ) {
 			return sharedFlags & SharedFlag.referenced;
+		}
+
+	public:
+		bool flag( Flag flag ) {
+			return ( flags & flag ) != 0;
+		}
+
+		void setFlag( Flag flag, bool set ) {
+			if ( set )
+				flags |= flag;
+			else
+				flags &= ~flag;
 		}
 
 	public:
@@ -64,7 +91,8 @@ final class MemoryBlock {
 		const size_t size;
 		/// Session the current block was initialized in
 		const size_t session;
-		ubyte flags;
+		/// Flags of the block. Do not change after first write!
+		Flags flags;
 		/// Flags that can be modified asynchronously (atomic or write only)
 		shared ubyte sharedFlags;
 		void* data;
@@ -72,7 +100,12 @@ final class MemoryBlock {
 		string identifier;
 
 	public:
-		/// Used when the block is related to a local variables
-		DataEntity_LocalVariable localVariable;
+		union {
+			/// Used when the block is related to a local variables
+			DataEntity_LocalVariable localVariable;
+
+			/// Used when the block is related to a function parameter
+			ExpandedFunctionParameter functionParameter;
+		}
 
 }
