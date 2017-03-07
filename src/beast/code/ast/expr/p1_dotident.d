@@ -28,9 +28,15 @@ final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
 		AST_Identifier identifier;
 
 	public:
-		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, Symbol_Type expectedType, DataScope scope_ ) {
+		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ ) {
 			const auto _gd = ErrorGuard( this );
-			return leftSide.single.resolveIdentifier( identifier.identifier, scope_ );
+
+			DataEntity left = leftSide.single;
+			Overloadset result = left.resolveIdentifier( identifier, scope_ );
+
+			benforce( !result.isEmpty, E.unknownIdentifier, "'%s' has no member '%s'".format( left.identificationString, identifier.str ) );
+
+			return result;
 		}
 
 	protected:

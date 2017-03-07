@@ -4,20 +4,21 @@ import beast.code.ast.toolkit;
 import beast.code.ast.expr.auto_;
 import beast.code.ast.expr.vardecl;
 import beast.code.memory.ptr;
-import beast.code.ast.expr.p1;
 import beast.code.memory.memorymgr;
 import beast.code.data.scope_.root;
+import beast.code.ast.expr.logic;
 
 abstract class AST_Expression : AST_Statement {
+	alias LowerLevelExpression = AST_LogicExpression;
 
 	public:
 		static bool canParse( ) {
-			return AST_P1Expression.canParse;
+			return LowerLevelExpression.canParse;
 		}
 
 		static AST_Expression parse( bool parseDeclarations = true ) {
 			auto _gd = codeLocationGuard( );
-			auto result = AST_P1Expression.parse( );
+			auto result = LowerLevelExpression.parse( );
 
 			if ( parseDeclarations && result.isP1Expression && currentToken == Token.Type.identifier )
 				return AST_VariableDeclarationExpression.parse( _gd, null, result );
@@ -43,14 +44,14 @@ abstract class AST_Expression : AST_Statement {
 
 	public:
 		/// Builds semantic tree (no code is built) for this expression and returns data entity representing the result.
-		/// expectedType is used for type inferration and can be null (any result is then acceptable)
+		/// inferType is used for type inferration and can be null (any result is then acceptable)
 		/// The scope is used only for identifier lookup
 		/// Can result in executing ctime code
-		/// If errorOnInferrationFailure is false, returns null data entity if the expression cannot be built with given expectedType
-		abstract Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true );
+		/// If errorOnInferrationFailure is false, returns null data entity if the expression cannot be built with given inferredType
+		abstract Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true );
 
-		final DataEntity buildSemanticTree_single( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
-			return buildSemanticTree( expectedType, scope_, errorOnInferrationFailure ).single_expectType( expectedType );
+		final DataEntity buildSemanticTree_single( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+			return buildSemanticTree( inferredType, scope_, errorOnInferrationFailure ).single_expectType( inferredType );
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
@@ -58,7 +59,7 @@ abstract class AST_Expression : AST_Statement {
 		}
 
 		final MemoryPtr ctExec( Symbol_Type expectedType, DataScope scope_ ) {
-			return buildSemanticTree_single( expectedType, scope_ ).ctExec( scope_ );
+			return buildSemanticTree_single( expectedType, scope_ ).enforceCast( expectedType) .ctExec( scope_ );
 		}
 
 		/// Executes the expression in standalone scope and session, returing its value

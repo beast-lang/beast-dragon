@@ -17,7 +17,7 @@ final class Symbol_Type_Type : Symbol_StaticClassType {
 
 	public:
 		override Identifier identifier( ) {
-			return Identifier.preobtained!"Type";
+			return ID!"Type";
 		}
 
 		override size_t instanceSize( ) {

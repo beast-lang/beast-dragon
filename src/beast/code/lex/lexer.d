@@ -107,6 +107,18 @@ final class Lexer {
 							}
 							break;
 
+						case '&': {
+								state = State.andPrefix;
+								pos_++;
+							}
+							break;
+
+						case '|': {
+								state = State.orPrefix;
+								pos_++;
+							}
+							break;
+
 						case '=': {
 								pos_++;
 								return new Token( Token.Operator.assign );
@@ -200,7 +212,7 @@ final class Lexer {
 							pos_++;
 						}
 						else
-							return new Token( Token.Operator.slash );
+							return new Token( Token.Operator.divide );
 					}
 					break;
 
@@ -211,6 +223,24 @@ final class Lexer {
 						}
 						else
 							return new Token( Token.Special.colon );
+					}
+
+				case State.andPrefix: {
+						if ( currentChar_ == '&' ) {
+							pos_++;
+							return new Token( Token.Operator.logAnd );
+						}
+						else
+							return new Token( Token.Operator.bitAnd );
+					}
+
+				case State.orPrefix: {
+						if ( currentChar_ == '|' ) {
+							pos_++;
+							return new Token( Token.Operator.logOr );
+						}
+						else
+							return new Token( Token.Operator.bitOr );
 					}
 
 				case State.singleLineComment: {
@@ -277,6 +307,7 @@ final class Lexer {
 	private:
 		void error_unexpectedCharacter( string file = __FILE__, size_t line = __LINE__ ) {
 			import std.ascii : isPrintable;
+
 			berror( E.unexpectedCharacter, "Unexpected character: '%s' (%s)".format( currentChar_.isPrintable ? [ currentChar_ ] : null, ( cast( int ) currentChar_ ).to!string ) );
 		}
 
@@ -301,6 +332,8 @@ final class Lexer {
 			identifierOrKeyword,
 			slashPrefix, /// Token that begins with "/": can be "/", "/* comment */" or "// comment \n"
 			colonPrefix, /// Token that begins with ":": can be ":" or ":="
+			andPrefix, /// Token that begins with "&": can be "&" or "&&"
+			orPrefix, /// Token that begins with "|": can be "|" or "||"
 			singleLineComment,
 			multiLineComment,
 			multiLineComment_possibleEnd, /// When there's * in the multiline comment (beginning of */)

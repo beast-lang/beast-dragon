@@ -3,6 +3,9 @@ module beast.code.lex.identifier;
 import beast.code.lex.toolkit;
 import beast.util.hash;
 
+/// Preobtained identifier
+alias ID = Identifier.preobtained;
+
 final class Identifier {
 
 	public:

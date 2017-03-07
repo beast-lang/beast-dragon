@@ -113,8 +113,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 				argumentNames ~= resultVarName_;
 			}
 
-			foreach ( arg; arguments ) {
-				arg.buildCode( this, scope_ );
+			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
+				if ( param.isConstValue )
+					continue;
+
+				arguments[ i ].buildCode( this, scope_ );
 				argumentNames ~= resultVarName_;
 			}
 
@@ -184,7 +187,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			foreach ( param; func.parameters ) {
 				// Constant-value parameters do not go to the output code
-				if ( param.constValue )
+				if ( param.isConstValue )
 					continue;
 
 				if ( parameterCount )

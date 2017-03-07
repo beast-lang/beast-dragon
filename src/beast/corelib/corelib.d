@@ -43,6 +43,8 @@ class CoreLibrary {
 			constants.initialize( sink, module_.dataEntity );
 			decorators.initialize( sink, module_.dataEntity );
 
+			types.initialize2();
+
 			module_.initialize( symbols );
 		}
 

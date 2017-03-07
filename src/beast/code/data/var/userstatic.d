@@ -65,7 +65,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
 			with ( memoryManager.session )
-				memoryPtr_ = memoryManager.alloc( dataType_.instanceSize, isCtime_ ? MemoryBlock.Flag.noFlag : MemoryBlock.Flag.runtime, identifier.str );
+				memoryPtr_ = memoryManager.alloc( dataType_.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd | ( isCtime_ ? MemoryBlock.Flag.noFlag : MemoryBlock.Flag.runtime ), identifier.str );
 		}
 
 }

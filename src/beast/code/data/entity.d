@@ -71,7 +71,7 @@ abstract class DataEntity : Identifiable {
 		/// Resolves identifier (drill-down)
 		/// The scope can be used for creating temporary variables
 		final Overloadset resolveIdentifier( Identifier id, DataScope scope_ ) {
-			if ( id == Identifier.preobtained!"#type" )
+			if ( id == ID!"#type" )
 				return Overloadset( dataType ? dataType.dataEntity( ) : coreLibrary.types.Void.dataEntity( ) );
 
 			if ( auto result = resolveIdentifier_pre( id, scope_ ) )
@@ -98,6 +98,27 @@ abstract class DataEntity : Identifiable {
 			}
 
 			return Overloadset( );
+		}
+
+		/// Enforces that the resulting entity is of dataType targetType (either returns itself or creates a cast call)
+		DataEntity enforceCast( Symbol_Type targetType ) {
+			if ( dataType == targetType )
+				return this;
+
+			DataEntity result = tryCast( targetType );
+			benforce( result !is null, E.notImplemented, "Casting is not implemented yet" );
+
+			return result;
+		}
+
+		/// Tries to cast to the targetType (or returns itself if already is of targe type). Returns null on failure
+		DataEntity tryCast( Symbol_Type targetType ) {
+			if ( dataType == targetType )
+				return this;
+
+			/// TODO: Implicit cast check
+			/// TODO: alias this check
+			return null;
 		}
 
 	public:

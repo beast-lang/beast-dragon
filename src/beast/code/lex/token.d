@@ -50,20 +50,26 @@ final class Token {
 
 		enum Operator {
 			_noOperator,
-			plus, /// '+'
-			minus, /// '-'
-			asterisk, /// '*'
-			slash, /// '/'
+			add, /// '+'
+			subtract, /// '-'
+			multiply, /// '*'
+			divide, /// '/'
 
 			assign, /// '='
 			colonAssign, /// ':='
+
+			bitAnd, /// '&'
+			bitOr, /// '|'
+
+			logAnd, /// '&&'
+			logOr, /// '||'
 
 			dollar, /// '$'
 
 			_length
 		}
 
-		static immutable string[ Operator._length ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "$" ];
+		static immutable string[ Operator._length ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "&", "|", "&&", "||", "$" ];
 
 		enum Special {
 			_noSpecial,

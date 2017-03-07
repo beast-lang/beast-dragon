@@ -54,25 +54,25 @@ final class AST_P1Expression : AST_Expression {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
 			assert( items.length );
 
 			// We're passing null as expected type because expected type applies only to the rightmost part of the expression
-			Overloadset result = base.buildSemanticTree( null, scope_, errorOnInferrationFailure );
+			Overloadset result = base.buildSemanticTree( inferredType, scope_, errorOnInferrationFailure );
 			if ( !result )
-				return Overloadset( );
+				return result;
 
-			foreach ( item; items[ 0 .. $ - 1 ] )
-				result = item.p1expressionItem_buildSemanticTree( result, null, scope_ );
+			foreach ( item; items )
+				result = item.p1expressionItem_buildSemanticTree( result, scope_ );
 
-			return items[ $ - 1 ].p1expressionItem_buildSemanticTree( result, expectedType, scope_ );
+			return result;
 		}
 
 	protected:
 		override SubnodesRange _subnodes( ) {
-			return nodeRange( base, items.map!( x => cast( AST_Node ) x ) );
+			return nodeRange( base, cast( AST_Node[ ] ) items );
 		}
 
 }
@@ -80,6 +80,6 @@ final class AST_P1Expression : AST_Expression {
 interface AST_P1ExpressionItem {
 
 	public:
-		Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, Symbol_Type expectedType, DataScope scope_ );
+		Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ );
 
 }

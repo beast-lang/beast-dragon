@@ -81,8 +81,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			protected:
 				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
-					if ( argumentIndex_ >= parameters.length )
+					if ( argumentIndex_ >= parameters.length ) {
+						errorStr = "parameter count mismatch";
 						return MatchFlags.noMatch;
+					}
 
 					ExpandedFunctionParameter param = parameters[ argumentIndex_ ];
 
@@ -96,8 +98,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					else // Add the entity to the scope so it is findable
 						scope_.addEntity( entity );
 
-					if ( dataType !is param.dataType )
+					if ( dataType !is param.dataType ) {
+						errorStr = "argument index %s type mismatch (got %s, expected %s)".format( argumentIndex_, dataType.identificationString, param.dataType.identificationString );
 						return MatchFlags.noMatch;
+					}
 
 					if ( param.constValue ) {
 						// TODO: This will have to be solved better -- or not?
@@ -116,8 +120,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override MatchFlags _finish( ) {
-					if ( argumentIndex_ != parameters.length )
+					if ( argumentIndex_ != parameters.length ) {
+						errorStr = "parameter count mismatch";
 						return MatchFlags.noMatch;
+					}
 
 					return MatchFlags.fullMatch;
 				}

@@ -1,4 +1,4 @@
-module beast.code.data.var.boostrapconst;
+module beast.code.data.var.btspconst;
 
 import beast.code.data.toolkit;
 import beast.code.data.var.static_;

@@ -14,7 +14,7 @@ final class Symbol_Decorator_Static : Symbol_Decorator {
 
 	public:
 		override Identifier identifier( ) {
-			return Identifier.preobtained!"#decorator_static";
+			return ID!"#decorator_static";
 		}
 
 	public:

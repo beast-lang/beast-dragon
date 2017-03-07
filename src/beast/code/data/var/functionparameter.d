@@ -9,7 +9,7 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 	public:
 		this( DataScope scope_, ExpandedFunctionParameter param ) {
 			assert( param.identifier );
-			super( param.dataType, scope_, !param.constValue.isNull, MemoryBlock.Flag.functionParameter );
+			super( param.dataType, scope_, param.isConstValue, MemoryBlock.Flag.functionParameter );
 
 			memoryBlock_.functionParameter = param;
 			param_ = param;

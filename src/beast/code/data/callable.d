@@ -31,15 +31,25 @@ abstract class CallableMatch {
 			return sourceDataEntity_;
 		}
 
+		/// When the match is noMatch, this should return why does it not match
+		final string errorStr( ) {
+			return errorStr_;
+		}
+
 	public:
 		/// Tries to match next argument with the given function.
-		/// If the expression could have been processed into data entity without expectedType, passes the entity and dataType as arguments (use these instead of building the semantic tree again).
-		final void matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+		/// If the expression could have been processed into data entity without inferredType, passes the entity and dataType as arguments (use these instead of building the semantic tree again).
+		final CallableMatch matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 			// No need for further matching
 			if ( matchLevel_ == MatchFlags.noMatch )
-				return;
+				return this;
 
 			matchLevel_ |= _matchNextArgument( expression, entity, dataType );
+			return this;
+		}
+
+		final CallableMatch matchNextArgument( DataEntity entity ) {
+			return matchNextArgument( null, entity, entity.dataType );
 		}
 
 		final void finish( ) {
@@ -77,9 +87,14 @@ abstract class CallableMatch {
 			assert( 0 );
 		}
 
+		final void errorStr( string set ) {
+			errorStr_ = set;
+		}
+
 	private:
 		MatchFlags matchLevel_ = MatchFlags.fullMatch;
 		DataEntity sourceDataEntity_;
+		string errorStr_;
 		debug bool finished_ = false;
 
 }
@@ -111,8 +126,10 @@ abstract class SeriousCallableMatch : CallableMatch {
 final class InvalidCallableMatch : CallableMatch {
 
 	public:
-		this( DataEntity sourceDataEntity ) {
+		this( DataEntity sourceDataEntity, string errorStr ) {
 			super( sourceDataEntity );
+
+			this.errorStr = errorStr;
 		}
 
 	protected:

@@ -154,7 +154,7 @@ void mainImpl( string[ ] args ) {
 	// Finish phase 1
 	taskManager.waitForEverythingDone( );
 
-	if ( project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
+	if ( !wereErrors && project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
 		// Start building code using backend
 		Backend backend = new Backend_Cpp;
 		backend.build( );

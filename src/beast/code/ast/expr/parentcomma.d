@@ -25,7 +25,7 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 				while ( currentToken.matchAndNext( Token.Special.comma ) )
 					result.items ~= AST_Expression.parse( );
 
-				currentToken.expectAndNext( Token.Special.rParent, "',' or ')' after expression" );
+				currentToken.expectAndNext( Token.Special.rParent, "',' or ')'" );
 			}
 			else
 				currentToken.expectAndNext( Token.Special.rParent, "expression or ')'" );
@@ -52,15 +52,15 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
 			// Maybe replace with void?
 			benforce( items.length > 0, E.syntaxError, "Empty parentheses" );
 
-			// We're passing null as expectedType because expectedType only applies to the rightmost part of the expression
+			// We're passing null as inferredType because inferredType only applies to the rightmost part of the expression
 			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single( null, scope_ ) ).array;
-			DataEntity base = items[ $ - 1 ].buildSemanticTree_single( expectedType, scope_, errorOnInferrationFailure );
+			DataEntity base = items[ $ - 1 ].buildSemanticTree_single( inferredType, scope_, errorOnInferrationFailure );
 
 			if ( payload.length == 0 )
 				return base.Overloadset;
@@ -68,9 +68,9 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 			return new DataEntity_ParentComma( payload, base, this ).Overloadset;
 		}
 
-		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, Symbol_Type expectedType, DataScope scope_ ) {
+		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ ) {
 			const auto _gd = ErrorGuard( this );
-			return leftSide.resolveCall( this, scope_ ).toDataEntity.Overloadset;
+			return leftSide.CallMatchSet( scope_, this ).arguments( items ).finish( ).Overloadset;
 		}
 
 	protected:

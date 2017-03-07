@@ -5,5 +5,5 @@ public {
 	import beast.corelib.corelib : coreLibrary;
 	import beast.code.data.entity : DataEntity;
 	import beast.code.data.symbol : Symbol;
-	import beast.code.lex.identifier : Identifier;
+	import beast.code.lex.identifier : Identifier, ID;
 }

@@ -1,13 +1,14 @@
 module beast.backend.cpp.backend;
 
-import beast.backend.toolkit;
 import beast.backend.common.backend;
-import beast.backend.cpp.proxycodebuilder;
-import std.array : appender, Appender;
-import std.format : formattedWrite;
 import beast.backend.cpp.codebuilder;
-import std.stdio : writeln;
+import beast.backend.cpp.proxycodebuilder;
+import beast.backend.toolkit;
+import beast.core.error.error;
+import std.array : appender, Appender;
 import std.file : write;
+import std.format : formattedWrite;
+import std.stdio : writeln;
 
 final class Backend_Cpp : Backend {
 
@@ -41,6 +42,9 @@ final class Backend_Cpp : Backend {
 						( cast( ubyte[ ] ) block.data[ 0 .. block.size ] ).map!( x => x.to!string ).joiner( ", " ) // Block data
 						 );
 			}
+
+			if ( wereErrors )
+				return;
 
 			auto result = appender!string;
 			result ~= "#define PRIMITIVE_VAL( var, type ) ( *( ( type* )( var ) ) )\n\n";

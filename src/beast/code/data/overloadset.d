@@ -57,10 +57,9 @@ struct Overloadset {
 			DataEntity result;
 
 			foreach ( item; data ) {
-				/// TODO: Implicit cast check
-				/// TODO: alias this check
+				item = item.tryCast( expectedType );
 
-				if ( item.dataType !is expectedType )
+				if ( !item )
 					continue;
 
 				// TODO: Maybe better ambiguity error msg?
@@ -77,65 +76,6 @@ struct Overloadset {
 			return result;
 		}
 
-		/// Resolves a function call with this overloadset
-		CallableMatch resolveCall( AST_ParentCommaExpression ast, DataScope scope_ ) {
-			// TODO: Little help of expectedType?
-
-			CallableMatch[ ] matches = data.filter!( x => x.isCallable ).map!( x => x.startCallMatch( scope_, ast ) ).array;
-			benforce( matches.length > 0, E.noMatchingOverload, "No callable overloads in the %s".format( identificationString ) );
-
-			/// List of types of arguments, null item means item needs inferring
-			Symbol_Type[ ] argumentTypes;
-
-			bool reportErrors = matches.length == 1;
-
-			// We have to go one argument at a time, because processing arguments can change @ctime variables
-			scope subScope = new LocalDataScope( scope_ );
-			foreach ( AST_Expression argExpr; ast.items ) {
-				DataEntity entity = argExpr.buildSemanticTree_single( null, scope_, reportErrors );
-				Symbol_Type dataType = entity ? entity.dataType : null;
-				argumentTypes ~= dataType;
-
-				foreach ( func; matches ) {
-					/// Further parsing has to be in custom session so any resolution attempt doesn't mutate local ctime variable
-					with ( memoryManager.session )
-						func.matchNextArgument( argExpr, entity, dataType );
-				}
-			}
-
-			subScope.finish( );
-
-			// Now find best match
-			CallableMatch bestMatch = matches[ 0 ];
-			size_t bestMatchCount = 1;
-
-			matches[ 0 ].finish( );
-
-			foreach ( match; matches[ 1 .. $ ] ) {
-				match.finish( );
-
-				if ( match.matchLevel > bestMatch.matchLevel ) {
-					bestMatch = match;
-					bestMatchCount = 1;
-				}
-				else if ( match.matchLevel == bestMatch.matchLevel )
-					bestMatchCount++;
-			}
-
-			// TODO: error messages when matchLevel is noMatch
-			benforce( bestMatch.matchLevel != CallableMatch.MatchFlags.noMatch, E.noMatchingOverload, //
-					"None of the overloads %s matches arguments %s".format(  //
-						identificationString, argumentListIdentificationString( argumentTypes ) //
-					 ) );
-			benforce( bestMatchCount == 1, E.ambiguousResolution, //
-					"Ambiguous overload resolution: %s for %s".format(  //
-						matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => x.sourceDataEntity ).array.Overloadset.identificationString, //
-						argumentListIdentificationString( argumentTypes ) //
-						 ) );
-
-			return bestMatch;
-		}
-
 	public:
 		string identificationString( ) {
 			return "[ %s ]".format( data.map!( x => x.dataType.identificationString ).joiner( ", " ).array );
@@ -146,18 +86,10 @@ struct Overloadset {
 			return data.length == 0;
 		}
 
-		bool isNotEmpty( ) const {
-			return data.length > 0;
-		}
-
 	public:
 		bool opCast( T : bool )( ) const {
 			return data.length > 0;
 		}
-
-	private:
-		static string argumentListIdentificationString( Symbol_Type[ ] args ) {
-			return "( %s )".format( args.map!( x => x is null ? "(infer)" : x.identificationString ).joiner( ", " ).to!string );
-		}
+		
 
 }

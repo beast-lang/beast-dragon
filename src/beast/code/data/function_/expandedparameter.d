@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 import beast.util.identifiable;
 import beast.code.ast.expr.expression;
 import beast.code.ast.expr.vardecl;
+import beast.code.data.var.static_;
 
 /// Expanded function parameter
 final class ExpandedFunctionParameter : Identifiable {
@@ -55,11 +56,22 @@ final class ExpandedFunctionParameter : Identifiable {
 						scope_.finish( );
 					}
 				}
+				else static if ( is( Arg : Symbol_StaticVariable ) ) {
+					param.dataType = arg.dataType;
+					param.constValue = arg.memoryPtr;
+				}
 				else
 					static assert( 0, "Invalid parameter %s of type %s".format( i, Arg.stringof ) );
+
+				result ~= param;
 			}
 
 			return result;
+		}
+
+	public:
+		bool isConstValue( ) {
+			return !constValue.isNull;
 		}
 
 	public:
@@ -89,7 +101,7 @@ final class ExpandedFunctionParameter : Identifiable {
 			if ( identifier )
 				result ~= " " ~ identifier.str;
 
-			if ( constValue )
+			if ( isConstValue )
 				result ~= " = CONST";
 
 			return result;

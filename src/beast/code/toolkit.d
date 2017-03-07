@@ -2,9 +2,10 @@ module beast.code.toolkit;
 
 public {
 	import beast.toolkit;
-	import beast.code.lex.identifier : Identifier;
+	import beast.code.lex.identifier : Identifier, ID;
 	import beast.backend.common.codebuilder : CodeBuilder;
 	import beast.code.data.overloadset : Overloadset;
+	import beast.code.data.callmatchset : CallMatchSet;
 	import beast.code.data.type.type : Symbol_Type;
 	import beast.code.data.entity : DataEntity;
 	import beast.code.data.scope_.scope_ : DataScope;

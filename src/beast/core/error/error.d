@@ -9,6 +9,9 @@ import core.runtime : defaultTraceHandler;
 
 static __gshared Mutex stderrMutex;
 
+/// Stores if there were any (reported) errors since now
+static __gshared bool wereErrors;
+
 /// Beast error
 enum E {
 	// GENERAL: 
@@ -53,6 +56,7 @@ enum E {
 	ambiguousResolution, /// Multiple overloads match given parameters
 	unknownIdentifier, /// Identifier was not found (either recursively or not)
 	cannotInfer, /// No expected type was given where it was needed (mostly inferations)
+	cannotResolve, /// Something like noMatchingOverload, but this is reported when multiple approaches to resolution are possible - for example operator resolution (a && b => a.#operator( Operator.or, b ) or b.#operator( Operator.orRight, a ) )
 
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
@@ -93,6 +97,10 @@ void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string me
 
 	synchronized ( stderrMutex ) {
 		stderr.writeln( formattedMessage );
+
+		if ( msg.severity == ErrorSeverity.error )
+			wereErrors = true;
+
 		debug if ( project.configuration.showStackTrace )
 			stderr.writeln( defaultTraceHandler.toString );
 	}

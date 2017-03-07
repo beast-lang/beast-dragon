@@ -27,25 +27,25 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
 			Overloadset result;
 
 			if ( precedingColon ) {
 				// :ident variant
-				if ( expectedType is null ) {
+				if ( inferredType is null ) {
 					if ( errorOnInferrationFailure )
 						berror( E.cannotInfer, "Cannot infer scope for identifier '%s' lookup".format( identifier.str ) );
 
 					return Overloadset( );
 				}
 
-				result = expectedType.dataEntity.resolveIdentifier( identifier, scope_ );
+				result = inferredType.dataEntity.resolveIdentifier( identifier, scope_ );
 
 				if ( result.isEmpty ) {
 					if ( errorOnInferrationFailure )
-						berror( E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? expectedType.dataEntity.identificationString : scope_.identificationString ) );
+						berror( E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : scope_.identificationString ) );
 
 					return Overloadset( );
 				}
@@ -53,7 +53,7 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 			else {
 				result = scope_.recursivelyResolveIdentifier( identifier, scope_ );
 
-				benforce( result.isNotEmpty, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? expectedType.dataEntity.identificationString : scope_.identificationString ) );
+				benforce( !result.isEmpty, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : scope_.identificationString ) );
 			}
 
 			return result;

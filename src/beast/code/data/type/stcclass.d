@@ -1,4 +1,4 @@
-module beast.code.data.type.staticclass;
+module beast.code.data.type.stcclass;
 
 import beast.code.data.toolkit;
 import beast.code.data.type.class_;

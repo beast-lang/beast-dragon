@@ -24,6 +24,7 @@ final class MemoryManager {
 			import std.array : insertInPlace;
 
 			debug assert( !finished_ );
+			assert( bytes, "Trying to allocate 0 bytes" );
 
 			MemoryPtr endPtr = MemoryPtr( 1 /* +1 to prevent allocating on a null pointer */  );
 			MemoryBlock result;
@@ -52,6 +53,7 @@ final class MemoryManager {
 			}
 
 			context.sessionMemoryBlocks ~= result;
+			assert( findMemoryBlock( result.startPtr ) is result );
 			return result;
 		}
 
@@ -175,6 +177,8 @@ final class MemoryManager {
 				if ( ( block.isLocal || !block.isReferenced ) && !( block.flags & MemoryBlock.Flag.doNotGCAtSessionEnd ) )
 					free( block );
 			}
+
+			context.sessionMemoryBlocks = null;
 
 			debug synchronized ( memoryManager ) {
 				assert( context.session in activeSessions, "Invalid session" );

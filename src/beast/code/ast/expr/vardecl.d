@@ -44,7 +44,7 @@ final class AST_VariableDeclarationExpression : AST_Expression {
 		bool valueColonAssign;
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 			berror( E.notImplemented, "Inexpr variable definitions are not implemented" );
 			assert( 0 );
 		}
