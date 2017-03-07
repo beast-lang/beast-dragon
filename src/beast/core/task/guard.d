@@ -181,7 +181,6 @@ private:
 			taskGuardDependentsList.remove( _taskGuard_id );
 		}
 	}
-
 }
 
 enum TaskGuardFlags : ubyte {

@@ -6,7 +6,7 @@ import beast.code.decorationlist;
 import beast.code.data.var.userstatic;
 import beast.code.ast.expr.parentcomma;
 import beast.code.ast.stmt.codeblock;
-import beast.code.data.function_.userstaticruntime;
+import beast.code.data.function_.usrstcrt;
 import beast.code.data.scope_.root;
 import beast.code.data.function_.expandedparameter;
 import beast.code.memory.memorymgr;

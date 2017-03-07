@@ -38,7 +38,7 @@ protected:
 
 private:
 	Symbol[ ] execute_membersObtaining( ) {
-		DeclarationEnvironment env = DeclarationEnvironment.newModule;
+		scope env = DeclarationEnvironment.newModule();
 		env.staticMembersParent = dataEntity;
 
 		return ast_.declarationScope.executeDeclarations( env );

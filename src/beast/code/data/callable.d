@@ -7,30 +7,21 @@ import beast.code.ast.expr.expression;
 abstract class CallableMatch {
 
 	public:
-		enum Level {
-			noMatch, /// Function does not match the arguments at all
-			implicitCastsNeeded, /// At least one implicit cast was needed
-			inferrationsNeeded, /// At least one inferration was needed
-			fullMatch /// All types match
+		enum MatchFlags {
+			fullMatch = 0, /// All types match
+			noMatch = -1, /// Function does not match the arguments at all
+			implicitCastsNeeded = 1 << 0, /// At least one implicit cast was needed
+			inferrationsNeeded = 1 << 1, /// At least one inferration was needed
+			staticCall = 1 << 2, /// Called static function via an object instance // TODO: this is not handled at all so far
 		}
 
 	public:
-		this( DataScope scope_, DataEntity sourceDataEntity, AST_Node ast ) {
-			scope__ = new BlurryDataScope( scope_ );
+		this( DataEntity sourceDataEntity ) {
 			sourceDataEntity_ = sourceDataEntity;
-			ast_ = ast;
 		}
 
 	public:
-		final BlurryDataScope scope_( ) {
-			return scope__;
-		}
-
-		final AST_Node ast( ) {
-			return ast_;
-		}
-
-		final Level matchLevel( ) {
+		final MatchFlags matchLevel( ) {
 			debug assert( finished_ );
 			return matchLevel_;
 		}
@@ -45,49 +36,88 @@ abstract class CallableMatch {
 		/// If the expression could have been processed into data entity without expectedType, passes the entity and dataType as arguments (use these instead of building the semantic tree again).
 		final void matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 			// No need for further matching
-			if ( matchLevel_ == Level.noMatch )
+			if ( matchLevel_ == MatchFlags.noMatch )
 				return;
 
-			const auto lvl = _matchNextArgument( expression, entity, dataType );
-			if ( lvl < matchLevel_ )
-				matchLevel_ = lvl;
+			matchLevel_ |= _matchNextArgument( expression, entity, dataType );
 		}
 
 		final void finish( ) {
 			debug finished_ = true;
-			
+
 			// No need for further matching
-			if ( matchLevel_ == Level.noMatch )
+			if ( matchLevel_ == MatchFlags.noMatch )
 				return;
 
-			const auto lvl = _finish( );
-			if ( lvl < matchLevel_ )
-				matchLevel_ = lvl;
+			matchLevel_ |= _finish( );
 		}
 
 		/// Constructs a data entity that represents the function call expression
 		final DataEntity toDataEntity( ) {
 			debug assert( finished_ );
-			assert( matchLevel_ != Level.noMatch );
+			assert( matchLevel_ != MatchFlags.noMatch );
 
 			return _toDataEntity( );
 		}
 
 	protected:
 		/// The actual matchLevel is minimal match level from all _matchNextArgument and _finish calls
-		abstract Level _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType );
+		MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+			return MatchFlags.fullMatch;
+		}
 
 		/// This is to handle for example when function requires more parameters than provided
 		/// The actual matchLevel is minimal match level from all _matchNextArgument and _finish calls
-		abstract Level _finish( );
+		MatchFlags _finish( ) {
+			return MatchFlags.fullMatch;
+		}
 
-		abstract DataEntity _toDataEntity( );
+		/// Creates and returns data entity that represents calling the function with given arguments
+		DataEntity _toDataEntity( ) {
+			assert( 0 );
+		}
 
 	private:
-		Level matchLevel_ = Level.fullMatch;
-		BlurryDataScope scope__;
+		MatchFlags matchLevel_ = MatchFlags.fullMatch;
 		DataEntity sourceDataEntity_;
-		AST_Node ast_;
 		debug bool finished_ = false;
+
+}
+
+abstract class SeriousCallableMatch : CallableMatch {
+	public:
+		this( DataScope scope_, DataEntity sourceDataEntity, AST_Node ast ) {
+			super( sourceDataEntity );
+			scope__ = new BlurryDataScope( scope_ );
+			ast_ = ast;
+		}
+
+	public:
+		final BlurryDataScope scope_( ) {
+			return scope__;
+		}
+
+		final AST_Node ast( ) {
+			return ast_;
+		}
+
+	private:
+		BlurryDataScope scope__;
+		AST_Node ast_;
+
+}
+
+/// When it is certain that the function call has no match from the beginning (for example when calling a member function without a context instance)
+final class InvalidCallableMatch : CallableMatch {
+
+	public:
+		this( DataEntity sourceDataEntity ) {
+			super( sourceDataEntity );
+		}
+
+	protected:
+		final override MatchFlags _finish( ) {
+			return MatchFlags.noMatch;
+		}
 
 }

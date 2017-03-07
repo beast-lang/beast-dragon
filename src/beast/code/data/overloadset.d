@@ -120,7 +120,7 @@ struct Overloadset {
 			}
 
 			// TODO: error messages when matchLevel is noMatch
-			benforce( bestMatch.matchLevel != CallableMatch.Level.noMatch, E.noMatchingOverload, //
+			benforce( bestMatch.matchLevel != CallableMatch.MatchFlags.noMatch, E.noMatchingOverload, //
 					"None of the overloads %s matches arguments %s".format(  //
 						identificationString, argumentListIdentificationString( argumentTypes ) //
 					 ) );

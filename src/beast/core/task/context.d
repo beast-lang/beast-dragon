@@ -2,10 +2,10 @@ module beast.core.task.context;
 
 import core.thread;
 import std.stdio;
-import beast.toolkit;
-import beast.core.task.guard;
+import beast.core.context;
 import beast.util.uidgen;
 import core.stdc.stdlib;
+import beast.core.error.error;
 
 final class TaskContextQuittingException : Exception {
 	public this( ) {

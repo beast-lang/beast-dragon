@@ -1,7 +1,8 @@
-module beast.code.data.function_.userstaticruntime;
+/// USeR StaTiC RunTime
+module beast.code.data.function_.usrstcrt;
 
 import beast.code.data.toolkit;
-import beast.code.data.function_.runtime;
+import beast.code.data.function_.rt;
 import beast.code.data.scope_.root;
 import beast.code.data.function_.expandedparameter;
 import beast.code.data.var.functionparameter;
@@ -38,23 +39,24 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			return ast_;
 		}
 
-		final override DeclType declarationType( ) {
+		override DeclType declarationType( ) {
 			return DeclType.staticFunction;
 		}
 
 	public:
-		final override DataEntity dataEntity( DataEntity parentInstance = null ) {
+		override DataEntity dataEntity( DataEntity parentInstance = null ) {
+			// TODO: MatchFlags
 			return staticData_;
 		}
 
-		final override void buildDefinitionsCode( CodeBuilder cb ) {
+		override void buildDefinitionsCode( CodeBuilder cb ) {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
 					scope scope_ = new RootDataScope( staticData_ );
 					foreach ( param; parameters )
 						scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
 
-					scope env = DeclarationEnvironment.newFunctionBody;
+					scope env = DeclarationEnvironment.newFunctionBody( );
 					env.scope_ = scope_;
 					env.staticMembersParent = dataEntity;
 
@@ -63,16 +65,6 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 					scope_.finish( );
 				} );
 			}
-		}
-
-	public:
-		final class Data : super.Data {
-
-			public:
-				override DataEntity parent( ) {
-					return this.outer.parent_;
-				}
-
 		}
 
 	private:
@@ -100,6 +92,16 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 				scope_.finish( );
 			}
+		}
+
+	protected:
+		final class Data : super.Data {
+
+			public:
+				override DataEntity parent( ) {
+					return this.outer.parent_;
+				}
+
 		}
 
 }

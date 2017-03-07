@@ -19,6 +19,7 @@ final class MemoryBlock {
 			local = 1 << 2, /// Block is local - it cannot be accessed from other sessions (should not happen at all); tested only in debug; used for local and temporary variables
 			runtime = 1 << 3, /// Memory block is runtime - cannot be read/written at compile time
 			functionParameter = 1 << 4, /// Memory block represents a function parameter
+			contextPtr = 1 << 5, /// Memory block represents a context pointer
 		}
 
 		alias Flags = Flag;

@@ -48,7 +48,10 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		override void buildDefinitionsCode( CodeBuilder cb ) {
-			cb.build_typeDefinition( this );
+			cb.build_typeDefinition( this, ( cb ) {
+				foreach ( sym; namespace.members )
+					sym.buildDefinitionsCode( cb );
+			} );
 		}
 
 	protected:

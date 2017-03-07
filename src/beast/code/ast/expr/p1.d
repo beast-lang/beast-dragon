@@ -2,7 +2,7 @@ module beast.code.ast.expr.p1;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.atomic;
-import beast.code.ast.expr.p1;
+import beast.code.ast.expr.p1_dotident;
 import beast.code.ast.expr.auto_;
 import beast.code.ast.expr.parentcomma;
 
@@ -27,6 +27,8 @@ final class AST_P1Expression : AST_Expression {
 			while ( true ) {
 				if ( AST_ParentCommaExpression.canParse )
 					items ~= AST_ParentCommaExpression.parse( );
+				else if ( AST_P1_DotIdent.canParse )
+					items ~= AST_P1_DotIdent.parse( );
 				else
 					break;
 			}
@@ -66,6 +68,11 @@ final class AST_P1Expression : AST_Expression {
 				result = item.p1expressionItem_buildSemanticTree( result, null, scope_ );
 
 			return items[ $ - 1 ].p1expressionItem_buildSemanticTree( result, expectedType, scope_ );
+		}
+
+	protected:
+		override InputRange!AST_Node _subnodes( ) {
+			return nodeRange( base, items.map!( x => cast( AST_Node ) x ) );
 		}
 
 }

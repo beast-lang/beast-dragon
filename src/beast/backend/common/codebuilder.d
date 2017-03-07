@@ -25,7 +25,7 @@ public: // Declaration related build commands
 		assert( 0 );
 	}
 
-	void build_typeDefinition( Symbol_Type type ) {
+	void build_typeDefinition( Symbol_Type type, DeclFunction content ) {
 		assert( 0 );
 	}
 
@@ -36,7 +36,7 @@ public: // Expression related build commands
 		assert( 0 );
 	}
 
-	void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity[] arguments ) {
+	void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[] arguments ) {
 		assert( 0 );
 	}
 

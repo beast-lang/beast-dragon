@@ -35,6 +35,33 @@ final class ExpandedFunctionParameter : Identifiable {
 			return result;
 		}
 
+		static ExpandedFunctionParameter[ ] bootstrap( Args... )( Args args ) {
+			ExpandedFunctionParameter[ ] result;
+
+			foreach ( i, arg; args ) {
+				ExpandedFunctionParameter param = new ExpandedFunctionParameter;
+				param.index = i;
+				param.identifier = Identifier( "p%s".format( i ) );
+
+				alias Arg = typeof( arg );
+				static if ( is( Arg : Symbol_Type ) )
+					param.dataType = arg;
+				else static if ( is( Arg : DataEntity ) ) {
+					param.dataType = arg.dataType;
+
+					with ( memoryManager.session ) {
+						auto scope_ = new RootDataScope( null );
+						param.constValue = arg.ctExec( scope_ );
+						scope_.finish( );
+					}
+				}
+				else
+					static assert( 0, "Invalid parameter %s of type %s".format( i, Arg.stringof ) );
+			}
+
+			return result;
+		}
+
 	public:
 		/// Can be null for const-value parameters
 		Identifier identifier;

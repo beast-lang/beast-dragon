@@ -1,33 +1,39 @@
 module beast.corelib.types.bool_;
 
-import beast.code.data.toolkit;
-import beast.code.data.type.staticclass;
-import beast.code.data.codenamespace.bootstrap;
+import beast.corelib.types.toolkit;
 
 final class Symbol_Type_Bool : Symbol_StaticClassType {
 
-public:
-	this( DataEntity parent ) {
-		super( parent );
-		
-		namespace_ = new BootstrapNamespace( this );
-		namespace_.initialize( null );
-	}
+	public:
+		this( DataEntity parent ) {
+			super( parent );
 
-public:
-	override Identifier identifier( ) {
-		return Identifier.preobtained!"Bool";
-	}
+			namespace_ = new BootstrapNamespace( this );
 
-	override size_t instanceSize( ) {
-		return 1;
-	}
+			Symbol[ ] members;
 
-	override Namespace namespace( ) {
-		return namespace_;
-	}
+			members ~= new Symbol_BootstrapMemberRuntimeFunction( "#operatorOr", this, this, //
+					ExpandedFunctionParameter.bootstrap( this ), //
+					( cb, scope_, params ) { //
+						// Do nothing
+					} );
 
-private:
-	BootstrapNamespace namespace_;
+			namespace_.initialize( members );
+		}
 
+	public:
+		override Identifier identifier( ) {
+			return Identifier.preobtained!"Bool";
+		}
+
+		override size_t instanceSize( ) {
+			return 1;
+		}
+
+		override Namespace namespace( ) {
+			return namespace_;
+		}
+
+	private:
+		BootstrapNamespace namespace_;
 }

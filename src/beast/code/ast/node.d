@@ -2,6 +2,9 @@ module beast.code.ast.node;
 
 import beast.code.ast.toolkit;
 
+public import beast.core.project.codelocation : CodeLocationGuard;
+public import std.range.interfaces : InputRange;
+
 /// Base class for arr abstract syntax tree nodes
 abstract class AST_Node {
 

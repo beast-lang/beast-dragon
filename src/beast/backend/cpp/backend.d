@@ -39,6 +39,8 @@ final class Backend_Cpp : Backend {
 			}
 
 			auto result = appender!string;
+			result ~= "#define PRIMITIVE_VAL( var, type ) ( *( ( type* )( var ) ) )\n\n";
+
 			result ~= "// TYPES\n";
 			result ~= cb.code_types;
 			result ~= "\n// MEMORY BLOCKS\n\n";

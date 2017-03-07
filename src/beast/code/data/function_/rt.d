@@ -1,4 +1,5 @@
-module beast.code.data.function_.runtime;
+/// RunTime
+module beast.code.data.function_.rt;
 
 import beast.code.data.toolkit;
 import beast.code.data.function_.function_;
@@ -17,8 +18,12 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		override void execute_outerHashObtaining( ) {
 			super.execute_outerHashObtaining( );
 
-			foreach( param; parameters )
+			foreach ( param; parameters )
 				outerHash_ += param.dataType.outerHash;
+		}
+
+		final string baseIdentifier( ) {
+			return identifier ? identifier.str : "(anonymous function)";
 		}
 
 	protected:
@@ -46,18 +51,13 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 				override string identification( ) {
 					auto result = appender!string;
-					result ~= identifier ? identifier.str : "(anonymous function)";
+					result ~= baseIdentifier;
 					result ~= "(";
 
 					if ( parameters.length )
 						result ~= " ";
 
-					foreach ( i, param; parameters ) {
-						if ( i )
-							result ~= ", ";
-
-						result ~= param.identificationString;
-					}
+					result ~= parameters.map!( x => x.identificationString ).joiner( ", " );
 
 					if ( parameters.length )
 						result ~= " ";
@@ -73,7 +73,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 		}
 
-		final class Match : CallableMatch {
+		class Match : SeriousCallableMatch {
 
 			public:
 				this( DataScope scope_, DataEntity sourceEntity, AST_Node ast ) {
@@ -81,9 +81,9 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 			protected:
-				override Level _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 					if ( argumentIndex_ >= parameters.length )
-						return Level.noMatch;
+						return MatchFlags.noMatch;
 
 					ExpandedFunctionParameter param = parameters[ argumentIndex_ ];
 
@@ -98,29 +98,29 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 						scope_.addEntity( entity );
 
 					if ( dataType !is param.dataType )
-						return Level.noMatch;
+						return MatchFlags.noMatch;
 
 					if ( param.constValue ) {
 						// TODO: This will have to be solved better -- or not?
 						if ( !entity.isCtime )
-							return Level.noMatch;
+							return MatchFlags.noMatch;
 
 						MemoryPtr entityData = entity.ctExec( scope_ );
 						if ( !entityData.dataEquals( param.constValue, dataType.instanceSize ) )
-							return Level.noMatch;
+							return MatchFlags.noMatch;
 					}
 
 					arguments_ ~= entity;
 					argumentIndex_++;
 
-					return Level.fullMatch;
+					return MatchFlags.fullMatch;
 				}
 
-				override Level _finish( ) {
+				override MatchFlags _finish( ) {
 					if ( argumentIndex_ != parameters.length )
-						return Level.noMatch;
+						return MatchFlags.noMatch;
 
-					return Level.fullMatch;
+					return MatchFlags.fullMatch;
 				}
 
 				override DataEntity _toDataEntity( ) {
@@ -134,7 +134,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 		}
 
-		final class MatchData : DataEntity {
+		class MatchData : DataEntity {
 
 			public:
 				this( Match match ) {
@@ -148,16 +148,16 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override bool isCtime( ) {
-					// TODO:
+					// TODO: ctime deduction (long-time target)
 					return false;
 				}
 
 				override string identification( ) {
-					return "%s( %s )".format( this.outer.identificationString, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
+					return "%s.%s( %s )".format( parent.identificationString, baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
 				}
 
 				override DataEntity parent( ) {
-					return this.outer.dataEntity;
+					return dataEntity.parent;
 				}
 
 				override AST_Node ast( ) {
@@ -166,10 +166,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			public:
 				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_functionCall( scope_, this.outer, arguments_ );
+					cb.build_functionCall( scope_, this.outer, null, arguments_ );
 				}
 
-			private:
+			protected:
 				DataEntity[ ] arguments_;
 				AST_Node ast_;
 

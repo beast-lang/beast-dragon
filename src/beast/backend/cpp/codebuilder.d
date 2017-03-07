@@ -72,13 +72,15 @@ class CodeBuilder_Cpp : CodeBuilder {
 			debug resultVarName_ = null;
 		}
 
-		override void build_typeDefinition( Symbol_Type type ) {
+		override void build_typeDefinition( Symbol_Type type, DeclFunction content ) {
 			if ( auto instanceSize = type.instanceSize )
 				typesResult_.formattedWrite( "%stypedef unsigned char %s[ %s ];\n", tabs, cppIdentifier( type ), instanceSize );
 			else
 				typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
 
 			debug resultVarName_ = null;
+
+			content( this );
 		}
 
 	public: // Expression related build commands
@@ -92,7 +94,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				resultVarName_ = "( %s + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
 		}
 
-		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity[ ] arguments ) {
+		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			string resultVarName;
 			if ( function_.returnType !is coreLibrary.types.Void ) {
 				resultVarName = "_%s_tmp".format( getHash( ) );
@@ -105,6 +107,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 			string[ ] argumentNames;
 			if ( resultVarName )
 				argumentNames ~= "&" ~ resultVarName;
+
+			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
+				parentInstance.buildCode( this, scope_ );
+				argumentNames ~= resultVarName_;
+			}
 
 			foreach ( arg; arguments ) {
 				arg.buildCode( this, scope_ );
@@ -164,6 +171,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 			// Return value is passed as a pointer
 			if ( func.returnType !is coreLibrary.types.Void ) {
 				result.formattedWrite( "%s *result", cppIdentifier( func.returnType ) );
+				parameterCount++;
+			}
+
+			if ( func.declarationType == Symbol.DeclType.memberFunction ) {
+				if ( parameterCount )
+					result ~= ", ";
+
+				result.formattedWrite( "%s *context", cppIdentifier( func.dataEntity.parent.dataType ) );
 				parameterCount++;
 			}
 
