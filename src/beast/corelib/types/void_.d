@@ -1,33 +1,31 @@
 module beast.corelib.types.void_;
 
-import beast.code.data.toolkit;
-import beast.code.data.type.staticclass;
-import beast.code.data.codenamespace.bootstrap;
+import beast.corelib.types.toolkit;
 
 final class Symbol_Type_Void : Symbol_StaticClassType {
 
-public:
-	this( DataEntity parent ) {
-		super( parent );
-		
-		namespace_ = new BootstrapNamespace( this );
-		namespace_.initialize( null );
-	}
+	public:
+		this( DataEntity parent ) {
+			super( parent );
 
-public:
-	override Identifier identifier( ) {
-		return Identifier.preobtained!"Void";
-	}
+			namespace_ = new BootstrapNamespace( this );
+			namespace_.initialize( null );
+		}
 
-	override size_t instanceSize( ) {
-		return 0;
-	}
+	public:
+		override Identifier identifier( ) {
+			return Identifier.preobtained!"Void";
+		}
 
-	override Namespace namespace( ) {
-		return namespace_;
-	}
+		override size_t instanceSize( ) {
+			return 0;
+		}
 
-private:
-	BootstrapNamespace namespace_;
+		override Namespace namespace( ) {
+			return namespace_;
+		}
+
+	private:
+		BootstrapNamespace namespace_;
 
 }

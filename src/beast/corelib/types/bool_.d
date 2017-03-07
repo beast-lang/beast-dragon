@@ -1,6 +1,7 @@
 module beast.corelib.types.bool_;
 
 import beast.corelib.types.toolkit;
+import beast.code.data.function_.btspmemrt;
 
 final class Symbol_Type_Bool : Symbol_StaticClassType {
 

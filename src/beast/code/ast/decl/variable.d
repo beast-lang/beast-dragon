@@ -1,12 +1,10 @@
 module beast.code.ast.decl.variable;
 
-import beast.code.ast.toolkit;
 import beast.code.ast.decl.toolkit;
-import beast.code.decorationlist;
+import beast.code.ast.identifier;
+import beast.code.data.scope_.root;
 import beast.code.data.var.userstatic;
 import beast.code.data.var.userlocal;
-import beast.code.data.var.local;
-import beast.code.data.scope_.root;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -80,7 +78,7 @@ public:
 	bool valueColonAssign;
 
 protected:
-	override InputRange!AST_Node _subnodes( ) {
+	override SubnodesRange _subnodes( ) {
 		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
 		return nodeRange( dataType, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
 	}

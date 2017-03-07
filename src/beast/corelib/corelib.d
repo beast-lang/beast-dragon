@@ -1,9 +1,11 @@
 module beast.corelib.corelib;
 
 import beast.corelib.toolkit;
-import beast.corelib.decorators.decorators;
 import beast.corelib.types.types;
+import beast.corelib.decorators.decorators;
 import beast.corelib.constants;
+import beast.code.data.module_.bootstrap;
+import beast.code.lex.identifier;
 
 /// Constructs core libraries (if they already are not constructed)
 void constructCoreLibrary( ) {

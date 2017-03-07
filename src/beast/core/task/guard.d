@@ -1,9 +1,8 @@
 module beast.core.task.guard;
 
-import core.sync.mutex;
-import beast.toolkit;
-import beast.util.identifiable;
+import core.sync.mutex : Mutex;
 import beast.core.task.context;
+import beast.toolkit;
 
 alias TaskGuardId = shared ubyte*;
 
@@ -22,165 +21,166 @@ alias TaskGuardId = shared ubyte*;
 */
 mixin template TaskGuard( string guardName ) {
 	import beast.core.task.context : TaskContext;
-	import beast.core.task.guard : TaskGuardId;
-	import beast.util.identifiable;
+	import beast.core.task.guard : taskGuardResolvingMutex, TaskGuardId, taskGuardDependentsList;
 
-public:
-	// Give the taskGuard function an useful name
-	mixin( "final pragma( inline ) void enforceDone_" ~ guardName ~ "() { _taskGuard_func(); }" );
+	public:
+		// Give the taskGuard function an useful name
+		mixin( "final pragma( inline ) void enforceDone_" ~ guardName ~ "() { _taskGuard_func(); }" );
 
-	// And generate abstract execute function that the programmer has to override
-	mixin( "void execute_" ~ guardName ~ "() { assert( 0, \"execute_\" ~ guardName ~ \" not implemented for \" ~ typeof(this).stringof ~ \" \" ~ identificationString ); }" );
+		// And generate abstract execute function that the programmer has to override
+		mixin( "void execute_" ~ guardName ~ "() { assert( 0, \"execute_\" ~ guardName ~ \" not implemented for \" ~ typeof(this).stringof ~ \" \" ~ identificationString ); }" );
 
-private:
-	shared ubyte _taskGuard_flags;
+	private:
+		shared ubyte _taskGuard_flags;
 
-	/// Context this task is being processed in
-	TaskContext _taskGuard_context;
+		/// Context this task is being processed in
+		TaskContext _taskGuard_context;
 
-	enum _taskGuard_executeFunctionName = "execute_" ~ guardName;
+		enum _taskGuard_executeFunctionName = "execute_" ~ guardName;
 
-private:
-	/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
-	final void _taskGuard_func( ) {
-		static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof(this).stringof ) );
+	private:
+		/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
+		final void _taskGuard_func( ) {
+			import core.atomic : atomicOp;
+			import beast.util.atomic : atomicFetchThenOr;
+			import beast.code.memory.block : MemoryBlock;
+			import beast.core.task.guard : Flags = TaskGuardFlags;
+			import beast.util.identifiable : Identifiable;
+			import beast.core.error.error : BeastErrorException;
 
-		import beast.util.atomic : atomicFetchThenOr, atomicStore, atomicOp;
-		import beast.core.task.guard : Flags = TaskGuardFlags, taskGuardDependentsList, taskGuardResolvingMutex, BeastErrorException;
+			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
 
-		const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
+			const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
 
-		if ( initialFlags & Flags.error )
-			throw new BeastErrorException( "#poison" );
+			if ( initialFlags & Flags.error )
+				throw new BeastErrorException( "#poison" );
 
-		// Task is already done, no problem
-		if ( initialFlags & Flags.done )
-			return;
+			// Task is already done, no problem
+			if ( initialFlags & Flags.done )
+				return;
 
-		// If not, we have to check if it is work in progress
-		if ( initialFlags & Flags.workInProgress ) {
-			synchronized ( taskGuardResolvingMutex ) {
+			// If not, we have to check if it is work in progress
+			if ( initialFlags & Flags.workInProgress ) {
+				synchronized ( taskGuardResolvingMutex ) {
 
-				// Mark that there are tasks waiting for it
-				const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
+					// Mark that there are tasks waiting for it
+					const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
 
-				// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
-				if ( wipFlags & Flags.error )
-					throw new BeastErrorException( "#poison" );
+					// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
+					if ( wipFlags & Flags.error )
+						throw new BeastErrorException( "#poison" );
 
-				if ( wipFlags & Flags.done )
-					return;
+					if ( wipFlags & Flags.done )
+						return;
 
-				// Mark current context as waiting on this task	(for circular dependency checks)
-				context.taskContext.blockingContext_ = _taskGuard_context;
-				context.taskContext.blockingTaskGuardIdentificationString_ = { return "%s.(%s)".format( identificationString, guardName ); };
+					// Mark current context as waiting on this task	(for circular dependency checks)
+					context.taskContext.blockingContext_ = _taskGuard_context;
+					context.taskContext.blockingTaskGuardIdentificationString_ = { return "%s.(%s)".format( identificationString, guardName ); };
 
-				// Check for circular dependencies
-				{
-					// Wait for the worker context to mark itself to this guard (this is not done atomically)
-					while ( !( _taskGuard_flags & Flags.contextSet ) ) {
-						// TODO: Benchmark this
-					}
-
-					TaskContext ctx = _taskGuard_context;
-					const TaskContext thisContext = context.taskContext;
-					while ( ctx ) {
-						if ( ctx is thisContext ) {
-							// Walk the dependencies again, this time record contexts we were walking
-							TaskContext ctx2 = _taskGuard_context;
-							string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_() ];
-							while ( ctx2 !is thisContext ) {
-								assert( ctx2.blockingTaskGuardIdentificationString_ );
-								ctx2 = ctx2.blockingContext_;
-								loopList ~= ctx2.blockingTaskGuardIdentificationString_();
-							}
-
-							loopList ~= loopList[ 0 ];
-							// TODO: Better loop dependency message - gotta wake all looped contexts and get context guard data from them
-
-							// If the circular loop is this context to this context, 
-							if ( !( wipFlags & Flags.dependentTasksWaiting ) )
-								taskGuardDependentsList[ _taskGuard_id ] = [];
-
-							berror( E.dependencyLoop, "Circular dependency loop: %s".format( loopList.joiner( " - " ).to!string ) );
+					// Check for circular dependencies
+					{
+						// Wait for the worker context to mark itself to this guard (this is not done atomically)
+						while ( !( _taskGuard_flags & Flags.contextSet ) ) {
+							// TODO: Benchmark this
 						}
 
-						ctx = ctx.blockingContext_;
+						TaskContext ctx = _taskGuard_context;
+						const TaskContext thisContext = context.taskContext;
+						while ( ctx ) {
+							if ( ctx is thisContext ) {
+								// Walk the dependencies again, this time record contexts we were walking
+								TaskContext ctx2 = _taskGuard_context;
+								string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_( ) ];
+								while ( ctx2 !is thisContext ) {
+									assert( ctx2.blockingTaskGuardIdentificationString_ );
+									ctx2 = ctx2.blockingContext_;
+									loopList ~= ctx2.blockingTaskGuardIdentificationString_( );
+								}
+
+								loopList ~= loopList[ 0 ];
+								// TODO: Better loop dependency message - gotta wake all looped contexts and get context guard data from them
+
+								// If the circular loop is this context to this context, 
+								if ( !( wipFlags & Flags.dependentTasksWaiting ) )
+									taskGuardDependentsList[ _taskGuard_id ] = [ ];
+
+								berror( E.dependencyLoop, "Circular dependency loop: %s".format( loopList.joiner( " - " ).to!string ) );
+							}
+
+							ctx = ctx.blockingContext_;
+						}
 					}
+
+					// Mark current context to be woken when the task is finished, the _taskGuard_issueWaitingTasks is called anyway - we have to ensure it has a record to work with
+					assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
+
+					if ( wipFlags & Flags.dependentTasksWaiting )
+						taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
+					else
+						taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
 				}
 
-				// Mark current context to be woken when the task is finished, the _taskGuard_issueWaitingTasks is called anyway - we have to ensure it has a record to work with
-				assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
+				// Yield the current context
+				context.taskContext.yield( );
 
-				if ( wipFlags & Flags.dependentTasksWaiting )
-					taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
-				else
-					taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
+				synchronized ( taskGuardResolvingMutex )
+					context.taskContext.blockingContext_ = null;
+
+				assert( _taskGuard_flags & Flags.done );
+
+				if ( _taskGuard_flags & Flags.error )
+					throw new BeastErrorException( "#posion" );
+
+				// After this context is resumed, the task should be done
+				return;
 			}
 
-			// Yield the current context
-			context.taskContext.yield( );
+			_taskGuard_context = context.taskContext;
+			atomicOp!( "|=" )( _taskGuard_flags, Flags.contextSet );
 
-			synchronized ( taskGuardResolvingMutex )
-				context.taskContext.blockingContext_ = null;
+			try {
+				__traits( getMember, this, _taskGuard_executeFunctionName )( );
+			}
 
-			assert( _taskGuard_flags & Flags.done );
+			catch ( BeastErrorException exc ) {
+				// Mark this task as erroreous
+				const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
 
-			if ( _taskGuard_flags & Flags.error )
-				throw new BeastErrorException( "#posion" );
+				// If there were tasks waiting for this guard, issue them (they should be poisoned)
+				if ( data & Flags.dependentTasksWaiting )
+					_taskGuard_issueWaitingTasks( );
 
-			// After this context is resumed, the task should be done
-			return;
-		}
+				// Rethrow the exception
+				throw exc;
+			}
 
-		_taskGuard_context = context.taskContext;
-		atomicOp!( "|=" )( _taskGuard_flags, Flags.contextSet );
+			assert( _taskGuard_flags & Flags.workInProgress && !( _taskGuard_flags & Flags.done ) );
 
-		try {
-			__traits( getMember, this, _taskGuard_executeFunctionName )( );
-		}
+			// Finish
+			const ubyte endData = atomicFetchThenOr( _taskGuard_flags, Flags.done );
 
-		catch ( BeastErrorException exc ) {
-			// Mark this task as erroreous
-			const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
-
-			// If there were tasks waiting for this guard, issue them (they should be poisoned)
-			if ( data & Flags.dependentTasksWaiting )
+			// If there were tasks waiting for this guard, issue them
+			if ( endData & Flags.dependentTasksWaiting )
 				_taskGuard_issueWaitingTasks( );
-
-			// Rethrow the exception
-			throw exc;
 		}
 
-		assert( _taskGuard_flags & Flags.workInProgress && !( _taskGuard_flags & Flags.done ) );
-
-		// Finish
-		const ubyte endData = atomicFetchThenOr( _taskGuard_flags, Flags.done );
-
-		// If there were tasks waiting for this guard, issue them
-		if ( endData & Flags.dependentTasksWaiting )
-			_taskGuard_issueWaitingTasks( );
-	}
-
-private:
-	pragma( inline ) final TaskGuardId _taskGuard_id( ) {
-		return &_taskGuard_flags;
-	}
-
-	/// Issue tasks that were waiting for this task to finish
-	final void _taskGuard_issueWaitingTasks( ) {
-		import beast.util.atomic : atomicFetchThenOr;
-		import beast.core.task.guard : taskGuardDependentsList, taskGuardResolvingMutex;
-
-		synchronized ( taskGuardResolvingMutex ) {
-			assert( _taskGuard_id in taskGuardDependentsList );
-
-			foreach ( ctx; taskGuardDependentsList[ _taskGuard_id ] )
-				taskManager.issueTask( ctx );
-
-			taskGuardDependentsList.remove( _taskGuard_id );
+	private:
+		pragma( inline ) final TaskGuardId _taskGuard_id( ) {
+			return &_taskGuard_flags;
 		}
-	}
+
+		/// Issue tasks that were waiting for this task to finish
+		final void _taskGuard_issueWaitingTasks( ) {
+
+			synchronized ( taskGuardResolvingMutex ) {
+				assert( _taskGuard_id in taskGuardDependentsList );
+
+				foreach ( ctx; taskGuardDependentsList[ _taskGuard_id ] )
+					taskManager.issueTask( ctx );
+
+				taskGuardDependentsList.remove( _taskGuard_id );
+			}
+		}
 }
 
 enum TaskGuardFlags : ubyte {

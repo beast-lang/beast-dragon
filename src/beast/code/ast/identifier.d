@@ -1,7 +1,6 @@
 module beast.code.ast.identifier;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.expression;
 
 /// Identifier wrapped in the AST node because of codeLocation and relatedSymbol
 final class AST_Identifier : AST_Node {

@@ -1,12 +1,11 @@
 module beast.code.memory.memorymgr;
 
-import beast.code.hwenv.hwenv;
-import beast.code.memory.block;
 import beast.code.toolkit;
-import beast.core.task.context;
+import beast.code.memory.block;
+import beast.code.memory.ptr;
+import core.sync.rwmutex : ReadWriteMutex;
+import beast.code.hwenv.hwenv;
 import beast.util.uidgen;
-import core.sync.rwmutex;
-import core.stdc.string;
 
 /// MemoryManager is in charge of all @ctime-allocated memory
 __gshared MemoryManager memoryManager;
@@ -22,6 +21,8 @@ final class MemoryManager {
 
 	public:
 		MemoryBlock allocBlock( size_t bytes ) {
+			import std.array : insertInPlace;
+
 			debug assert( !finished_ );
 
 			MemoryPtr endPtr = MemoryPtr( 1 /* +1 to prevent allocating on a null pointer */  );
@@ -72,6 +73,8 @@ final class MemoryManager {
 		}
 
 		void free( MemoryPtr ptr ) {
+			import std.algorithm.mutation : remove;
+
 			debug assert( !finished_ );
 
 			checkNullptr( ptr );
@@ -101,6 +104,8 @@ final class MemoryManager {
 	public:
 		/// Tries to write data at a given pointer. Might fail.
 		void write( MemoryPtr ptr, const void* data, size_t bytes ) {
+			import core.stdc.string : memcpy;
+
 			debug assert( !finished_ );
 
 			MemoryBlock block = findMemoryBlock( ptr );

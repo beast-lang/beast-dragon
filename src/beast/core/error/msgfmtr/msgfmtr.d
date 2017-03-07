@@ -1,20 +1,17 @@
 module beast.core.error.msgfmtr.msgfmtr;
 
-public {
-	import beast.core.error.msgfmtr.gnu;
-	import beast.core.error.msgfmtr.json;
-}
-
 import beast.toolkit;
-import beast.core.project.configuration;
 import beast.core.error.errormsg;
+import beast.core.project.configuration;
+import beast.core.error.msgfmtr.gnu;
+import beast.core.error.msgfmtr.json;
 
 MessageFormatter function( )[ ProjectConfiguration.MessageFormat ] messageFormatterFactory;
 
 abstract class MessageFormatter {
 
-public:
-	abstract string formatErrorMessage( ErrorMessage msg );
+	public:
+		abstract string formatErrorMessage( ErrorMessage msg );
 
 }
 

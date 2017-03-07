@@ -6,24 +6,24 @@ import beast.code.data.toolkit;
 /// This is used in overload resolution, where multiple overloads have open scopes at the same time
 final class BlurryDataScope : DataScope {
 
-public:
-	this( DataScope parentScope ) {
-		super( parentScope.parentEntity );
-		parentScope_ = parentScope;
-	}
+	public:
+		this( DataScope parentScope ) {
+			super( parentScope.parentEntity );
+			parentScope_ = parentScope;
+		}
 
-public:
-	final override Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
-		if ( auto result = resolveIdentifier( id, scope_ ) )
-			return result;
+	public:
+		final override Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
+			if ( auto result = resolveIdentifier( id, scope_ ) )
+				return result;
 
-		if ( auto result = parentScope_.recursivelyResolveIdentifier( id, scope_ ) )
-			return result;
+			if ( auto result = parentScope_.recursivelyResolveIdentifier( id, scope_ ) )
+				return result;
 
-		return Overloadset( );
-	}
+			return Overloadset( );
+		}
 
-private:
-	DataScope parentScope_;
+	private:
+		DataScope parentScope_;
 
 }

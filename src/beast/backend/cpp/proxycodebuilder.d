@@ -2,6 +2,7 @@ module beast.backend.cpp.proxycodebuilder;
 
 import beast.backend.toolkit;
 import beast.backend.cpp.codebuilder;
+import beast.core.error.error;
 
 /// Proxy codebuilder processes independent symbols parallel and does not stop the entire building because of one exception
 final class CodeBuilder_CppProxy : CodeBuilder_Cpp {

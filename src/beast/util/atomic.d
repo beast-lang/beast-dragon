@@ -1,6 +1,6 @@
 module beast.util.atomic;
 
-public import core.atomic;
+import core.atomic : atomicLoad, MemoryOrder, cas;
 
 /// Ors the data with the orMask and returns its previous value
 ubyte atomicFetchThenOr( T )( shared ref T data, T orMask ) {

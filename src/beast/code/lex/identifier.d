@@ -1,7 +1,6 @@
 module beast.code.lex.identifier;
 
-import beast.code.ast.toolkit;
-import beast.toolkit;
+import beast.code.lex.toolkit;
 import beast.util.hash;
 
 final class Identifier {
@@ -64,6 +63,8 @@ struct ExtendedIdentifier {
 		template preobtained( string str ) {
 			static __gshared ExtendedIdentifier preobtained;
 			shared static this( ) {
+				import std.algorithm.iteration : splitter;
+
 				preobtained = str.splitter( "." ).map!( x => Identifier( x ) ).array.ExtendedIdentifier;
 			}
 		}

@@ -1,6 +1,6 @@
 module beast.util.enumassoc;
 
-import beast.util.decorator;
+
 
 /// Returns associative array identifier => enum
 template enumAssoc( Enum ) if ( is( Enum == enum ) ) {

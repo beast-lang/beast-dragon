@@ -1,20 +1,20 @@
 module beast.util.uidgen;
 
-import core.atomic;
-import core.sync.mutex;
+import core.sync.mutex : Mutex;
+import core.atomic : atomicOp;
 
 /// Structure responsible for handling UIDs with thread support (basically an atomic counter)
 /// Usage: gen()
 struct UIDGenerator {
 
-public:
-	/// Generates the UID and returns it
-	size_t opCall( ) {
-		return counter_.atomicOp!"+="( 1 );
-	}
+	public:
+		/// Generates the UID and returns it
+		size_t opCall( ) {
+			return counter_.atomicOp!"+="( 1 );
+		}
 
-private:
-	shared size_t counter_;
+	private:
+		shared size_t counter_;
 
 }
 
@@ -22,34 +22,34 @@ private:
 /// YOU HAVE TO CALL .initialize !!!
 struct UIDKeeper( Type ) if ( is( Type == class ) || is( Type == interface ) ) {
 
-public:
-	void initialize( ) {
-		mutex = new Mutex;
-	}
-
-public:
-	/// Generates the UID, assigns it with the object and returns it
-	size_t opCall( Type obj ) {
-		synchronized ( mutex ) {
-			counter++;
-			map[ counter ] = obj;
-			return counter;
+	public:
+		void initialize( ) {
+			mutex = new Mutex;
 		}
-	}
 
-	/// Return object asssigned with the UID or null
-	Type opIndex( size_t uid ) {
-		synchronized ( mutex ) {
-			if ( auto result = uid in map )
-				return *result;
-
-			return null;
+	public:
+		/// Generates the UID, assigns it with the object and returns it
+		size_t opCall( Type obj ) {
+			synchronized ( mutex ) {
+				counter++;
+				map[ counter ] = obj;
+				return counter;
+			}
 		}
-	}
 
-private:
-	size_t counter;
-	Type[ size_t ] map;
-	Mutex mutex;
+		/// Return object asssigned with the UID or null
+		Type opIndex( size_t uid ) {
+			synchronized ( mutex ) {
+				if ( auto result = uid in map )
+					return *result;
+
+				return null;
+			}
+		}
+
+	private:
+		size_t counter;
+		Type[ size_t ] map;
+		Mutex mutex;
 
 }

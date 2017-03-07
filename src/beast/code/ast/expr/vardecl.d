@@ -1,9 +1,7 @@
 module beast.code.ast.expr.vardecl;
 
 import beast.code.ast.toolkit;
-import beast.code.decorationlist;
-import beast.code.ast.decl.variable;
-import beast.code.data.var.userlocal;
+import beast.code.ast.identifier;
 
 final class AST_VariableDeclarationExpression : AST_Expression {
 
@@ -52,7 +50,7 @@ final class AST_VariableDeclarationExpression : AST_Expression {
 		}
 
 	protected:
-		override InputRange!AST_Node _subnodes( ) {
+		override SubnodesRange _subnodes( ) {
 			// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
 			return nodeRange( dataType, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
 		}

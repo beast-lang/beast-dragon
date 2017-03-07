@@ -1,8 +1,8 @@
 module beast.code.ast.expr.p1_dotident;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.vardecl;
-import beast.code.data.callable;
+import beast.code.ast.expr.p1;
+import beast.code.ast.identifier;
 
 /// expr.ident
 final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
@@ -34,7 +34,7 @@ final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
 		}
 
 	protected:
-		override InputRange!AST_Node _subnodes( ) {
+		override SubnodesRange _subnodes( ) {
 			return nodeRange( identifier );
 		}
 

@@ -1,10 +1,9 @@
 module beast.core.project.modulemgr;
 
 import beast.toolkit;
+import beast.core.project.codelocation;
+import beast.code.lex.identifier;
 import beast.core.project.module_;
-import beast.corelib.corelib;
-import std.file;
-import std.path;
 
 /// Class that handles mapping modules on files in the filesystem (eventually stdin or whatever)
 final class ModuleManager {
@@ -44,6 +43,9 @@ final class ModuleManager {
 
 	protected:
 		Module[ ] getInitialModuleList( ) {
+			import std.file : dirEntries, SpanMode;
+			import std.path : asRelativePath, baseName, absolutePath, stripExtension, pathSplitter;
+
 			Module[ ] result;
 
 			// Scan source directories

@@ -5,11 +5,11 @@ import beast.corelib.decorators.static_;
 
 struct CoreLibrary_Decorators {
 
-public:
-	Symbol_Decorator_Static static_;
+	public:
+		Symbol_Decorator_Static static_;
 
-public:
-	void initialize(void delegate( Symbol ) sink, DataEntity parent ) {
-		sink( static_ = new Symbol_Decorator_Static( parent ) );
-	}
+	public:
+		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
+			sink( static_ = new Symbol_Decorator_Static( parent ) );
+		}
 }

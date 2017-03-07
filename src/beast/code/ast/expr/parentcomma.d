@@ -1,8 +1,9 @@
 module beast.code.ast.expr.parentcomma;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.vardecl;
+import beast.code.ast.expr.p1;
 import beast.code.data.callable;
+import beast.code.ast.expr.vardecl;
 
 /// Parameter list used in declarations
 final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
@@ -73,7 +74,7 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 		}
 
 	protected:
-		override InputRange!AST_Node _subnodes( ) {
+		override SubnodesRange _subnodes( ) {
 			return nodeRange( items );
 		}
 
@@ -98,6 +99,8 @@ final class DataEntity_ParentComma : DataEntity {
 		}
 
 		override bool isCtime( ) {
+			import std.algorithm.searching : all;
+
 			return base_.isCtime && payload_.all!( x => x.isCtime );
 		}
 

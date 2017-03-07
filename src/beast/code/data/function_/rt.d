@@ -1,10 +1,7 @@
 /// RunTime
 module beast.code.data.function_.rt;
 
-import beast.code.data.toolkit;
-import beast.code.data.function_.function_;
-import beast.code.data.function_.expandedparameter;
-import beast.code.ast.expr.expression;
+import beast.code.data.function_.toolkit;
 
 /// Runtime function = function without @ctime arguments (or expanded ones)
 abstract class Symbol_RuntimeFunction : Symbol_Function {
@@ -50,6 +47,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override string identification( ) {
+					import std.array : appender;
+					
 					auto result = appender!string;
 					result ~= baseIdentifier;
 					result ~= "(";

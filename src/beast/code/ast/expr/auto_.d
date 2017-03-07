@@ -4,45 +4,45 @@ import beast.code.ast.toolkit;
 
 final class AST_AutoExpression : AST_Expression {
 
-public:
-	static bool canParse( ) {
-		return currentToken == Token.Keyword.auto_;
-	}
+	public:
+		static bool canParse( ) {
+			return currentToken == Token.Keyword.auto_;
+		}
 
-	static AST_AutoExpression parse( ) {
-		auto _gd = codeLocationGuard( );
-		AST_AutoExpression result = new AST_AutoExpression;
+		static AST_AutoExpression parse( ) {
+			auto _gd = codeLocationGuard( );
+			AST_AutoExpression result = new AST_AutoExpression;
 
-		currentToken.expect( Token.Keyword.auto_ );
+			currentToken.expect( Token.Keyword.auto_ );
 
-		// TODO: auto mut etc.
+			// TODO: auto mut etc.
 
-		result.codeLocation = _gd.get( );
-		return result;
-	}
+			result.codeLocation = _gd.get( );
+			return result;
+		}
 
-public:
-	this( ) {
+	public:
+		this( ) {
 
-	}
+		}
 
-public:
-	override AST_AutoExpression isAutoExpression( ) {
-		return this;
-	}
+	public:
+		override AST_AutoExpression isAutoExpression( ) {
+			return this;
+		}
 
-	override bool isP1Expression() {
-		return true;
-	}
+		override bool isP1Expression( ) {
+			return true;
+		}
 
-public:
-	override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
-		berror( E.syntaxError, "'auto' is not allowed here" );
-		assert( 0 );
-	}
+	public:
+		override Overloadset buildSemanticTree( Symbol_Type expectedType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+			berror( E.syntaxError, "'auto' is not allowed here" );
+			assert( 0 );
+		}
 
-public:
-	bool isMut;
-	bool isRef;
+	public:
+		bool isMut;
+		bool isRef;
 
 }

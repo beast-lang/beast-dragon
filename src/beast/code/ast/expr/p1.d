@@ -2,9 +2,9 @@ module beast.code.ast.expr.p1;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.atomic;
-import beast.code.ast.expr.p1_dotident;
 import beast.code.ast.expr.auto_;
 import beast.code.ast.expr.parentcomma;
+import beast.code.ast.expr.p1_dotident;
 
 final class AST_P1Expression : AST_Expression {
 
@@ -71,7 +71,7 @@ final class AST_P1Expression : AST_Expression {
 		}
 
 	protected:
-		override InputRange!AST_Node _subnodes( ) {
+		override SubnodesRange _subnodes( ) {
 			return nodeRange( base, items.map!( x => cast( AST_Node ) x ) );
 		}
 

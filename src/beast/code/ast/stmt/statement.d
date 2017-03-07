@@ -1,11 +1,10 @@
 module beast.code.ast.stmt.statement;
 
 import beast.code.ast.toolkit;
-import beast.code.decorationlist;
+import beast.code.ast.decl.declaration;
 
 /// Statement is anything in the function body
 abstract class AST_Statement : AST_Node {
-	public import beast.code.ast.decl.env : DeclarationEnvironment;
 
 	public:
 		static bool canParse( ) {

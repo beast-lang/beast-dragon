@@ -1,92 +1,92 @@
 module beast.code.data.scope_.scope_;
 
 import beast.code.data.toolkit;
-import beast.core.task.context;
-import beast.core.task.context;
+import beast.util.identifiable;
+import beast.code.data.var.local;
 
 /// "Scope" is where local variables exist; exiting the scope results in destroying them
 /// Scope is expected to be accessed from one context only
 abstract class DataScope : Identifiable {
 
-protected:
-	this( DataEntity parentEntity ) {
-		parentEntity_ = parentEntity;
-		debug jobId_ = context.jobId;
-	}
-
-public:
-	/// Nearest DataEntity parent of the scope
-	final DataEntity parentEntity( ) {
-		return parentEntity_;
-	}
-
-	final override string identificationString( ) {
-		return parentEntity.identificationString;
-	}
-
-public:
-	final void addEntity( DataEntity entity_ ) {
-		debug assert( context.jobId == jobId_ );
-		debug assert( !isFinished_ );
-
-		// Add to the overloadset
-		if ( auto id = entity_.identifier ) {
-			if ( auto it = id in groupedNamedVariables_ )
-				it.data ~= entity_;
-			else
-				groupedNamedVariables_[ id ] = Overloadset( [ entity_ ] );
+	protected:
+		this( DataEntity parentEntity ) {
+			parentEntity_ = parentEntity;
+			debug jobId_ = context.jobId;
 		}
-	}
 
-	/// Adds variable to the scope
-	final void addLocalVariable( DataEntity_LocalVariable var ) {
-		localVariables_ ~= var;
-		addEntity( var );
-	}
-
-public:
-	/// Builds a scope cleanup code (destruction of all variables in the scope)
-	final void buildCleanup( CodeBuilder cb ) {
-		debug assert( context.jobId == jobId_ );
-		// TODO:
-	}
-
-	/// Marks the scope as not being editable anymore
-	void finish( ) {
-		debug {
-			assert( !isFinished_ );
-			isFinished_ = true;
+	public:
+		/// Nearest DataEntity parent of the scope
+		final DataEntity parentEntity( ) {
+			return parentEntity_;
 		}
-	}
 
-public:
-	Overloadset resolveIdentifier( Identifier id, DataScope scope_ ) {
-		debug assert( context.jobId == jobId_ );
+		final override string identificationString( ) {
+			return parentEntity.identificationString;
+		}
 
-		if ( auto result = id in groupedNamedVariables_ )
-			return *result;
+	public:
+		final void addEntity( DataEntity entity_ ) {
+			debug assert( context.jobId == jobId_ );
+			debug assert( !isFinished_ );
 
-		return Overloadset( );
-	}
+			// Add to the overloadset
+			if ( auto id = entity_.identifier ) {
+				if ( auto it = id in groupedNamedVariables_ )
+					it.data ~= entity_;
+				else
+					groupedNamedVariables_[ id ] = Overloadset( [ entity_ ] );
+			}
+		}
 
-	abstract Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ );
+		/// Adds variable to the scope
+		final void addLocalVariable( DataEntity_LocalVariable var ) {
+			localVariables_ ~= var;
+			addEntity( var );
+		}
 
-public:
-	debug final size_t jobId( ) {
-		return jobId_;
-	}
+	public:
+		/// Builds a scope cleanup code (destruction of all variables in the scope)
+		final void buildCleanup( CodeBuilder cb ) {
+			debug assert( context.jobId == jobId_ );
+			// TODO:
+		}
 
-private:
-	DataEntity parentEntity_;
-	/// All local variables, both named and temporary ones
-	DataEntity_LocalVariable[ ] localVariables_;
-	Overloadset[ Identifier ] groupedNamedVariables_;
+		/// Marks the scope as not being editable anymore
+		void finish( ) {
+			debug {
+				assert( !isFinished_ );
+				isFinished_ = true;
+			}
+		}
 
-	debug size_t jobId_;
-	debug bool isFinished_;
+	public:
+		Overloadset resolveIdentifier( Identifier id, DataScope scope_ ) {
+			debug assert( context.jobId == jobId_ );
 
-package:
-	/// Currently open subscope (used for checking there's maximally one at a time)
-	debug DataScope openSubscope_;
+			if ( auto result = id in groupedNamedVariables_ )
+				return *result;
+
+			return Overloadset( );
+		}
+
+		abstract Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ );
+
+	public:
+		debug final size_t jobId( ) {
+			return jobId_;
+		}
+
+	private:
+		DataEntity parentEntity_;
+		/// All local variables, both named and temporary ones
+		DataEntity_LocalVariable[ ] localVariables_;
+		Overloadset[ Identifier ] groupedNamedVariables_;
+
+		debug size_t jobId_;
+		debug bool isFinished_;
+
+	package:
+		/// Currently open subscope (used for checking there's maximally one at a time)
+		debug DataScope openSubscope_;
 
 }

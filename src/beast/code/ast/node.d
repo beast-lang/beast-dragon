@@ -1,68 +1,76 @@
 module beast.code.ast.node;
 
 import beast.code.ast.toolkit;
-
-public import beast.core.project.codelocation : CodeLocationGuard;
-public import std.range.interfaces : InputRange;
+import beast.core.project.codelocation;
+import std.range.interfaces : InputRange;
 
 /// Base class for arr abstract syntax tree nodes
 abstract class AST_Node {
 
-public:
-	/// Location of code corresponding with the AST node
-	CodeLocation codeLocation;
+	public:
+		alias SubnodesRange = InputRange!AST_Node;
 
-public:
-	/// All nodes that are direct children of the current node
-	final AST_Node[ ] subnodes( ) {
-		return _subnodes.filter!( x => x !is null ).array.sort!( ( a, b ) { //
-			assert( a.codeLocation.source is b.codeLocation.source );
-			return a.codeLocation.startPos < b.codeLocation.startPos;
-		} ).array;
-	}
+	public:
+		/// Location of code corresponding with the AST node
+		CodeLocation codeLocation;
 
-	AST_Node toNode( ) {
-		return this;
-	}
+	public:
+		/// All nodes that are direct children of the current node
+		final AST_Node[ ] subnodes( ) {
+			import std.algorithm.sorting : sort;
 
-protected:
-	/// This function should return all subnodes of given AST node. It can contain null elements.
-	InputRange!AST_Node _subnodes( ) {
-		return inputRangeObject( cast( AST_Node[ ] ) null );
-	}
+			return _subnodes.filter!( x => x !is null ).array.sort!( ( a, b ) { //
+				assert( a.codeLocation.source is b.codeLocation.source );
+				return a.codeLocation.startPos < b.codeLocation.startPos;
+			} ).array;
+		}
 
-	/**
+		AST_Node toNode( ) {
+			return this;
+		}
+
+	protected:
+		/// This function should return all subnodes of given AST node. It can contain null elements.
+		SubnodesRange _subnodes( ) {
+			return nodeRange( );
+		}
+
+		/**
 	Utility function for constructing subnode list.
 
 	Arguments can be:
 		* Any class derived from AST_Node
 		* Any range with elements derived from AST_Node
 	*/
-	static InputRange!AST_Node nodeRange( Args... )( auto ref Args args ) {
-		return mixin( {
-			string[ ] arrayStr, chainStr;
-			foreach ( i, Arg; Args ) {
-				static if ( is( Arg : AST_Node ) )
-					arrayStr ~= "args[%s].toNode".format( i );
+		static SubnodesRange nodeRange( Args... )( auto ref Args args ) {
+			import std.range.interfaces : inputRangeObject;
+			import std.range.primitives : isInputRange, ElementType;
+			import std.range : chain;
 
-				else static if ( isInputRange!Arg && is( ElementType!Arg == AST_Node ) )
-					chainStr ~= "args[%s]".format( i );
+			return mixin( {
+				string[ ] arrayStr, chainStr;
+				foreach ( i, Arg; Args ) {
+					static if ( is( Arg : AST_Node ) )
+						arrayStr ~= "args[%s].toNode".format( i );
 
-				else static if ( isInputRange!Arg && is( ElementType!Arg : AST_Node ) )
-					chainStr ~= "args[%s].map!( x => x.toNode )".format( i );
+					else static if ( isInputRange!Arg && is( ElementType!Arg == AST_Node ) )
+						chainStr ~= "args[%s]".format( i );
 
-				else
-					static assert( 0, "Unsupported parameter type: " ~ typeof( arg ).stringof );
-			}
+					else static if ( isInputRange!Arg && is( ElementType!Arg : AST_Node ) )
+						chainStr ~= "args[%s].map!( x => x.toNode )".format( i );
 
-			if ( arrayStr.length )
-				chainStr ~= "[" ~ arrayStr.join( ", " ) ~ "]";
+					else
+						static assert( 0, "Unsupported parameter type: " ~ Arg.stringof );
+				}
 
-			if ( !chainStr.length )
-				chainStr ~= "cast(AST_Node[]) []";
+				if ( arrayStr.length )
+					chainStr ~= "[" ~ arrayStr.joiner( ", " ).to!string ~ "]";
 
-			return "inputRangeObject( chain(" ~ chainStr.joiner( "," ).to!string ~ ") )";
-		}( ) );
-	}
+				if ( !chainStr.length )
+					chainStr ~= "cast(AST_Node[]) []";
+
+				return "inputRangeObject( chain(" ~ chainStr.joiner( "," ).to!string ~ ") )";
+			}( ) );
+		}
 
 }

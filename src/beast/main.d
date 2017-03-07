@@ -1,21 +1,26 @@
 module beast.main;
 
+import beast.backend.common.backend;
+import beast.backend.cpp.backend;
 import beast.code.hwenv.hwenv;
 import beast.code.hwenv.native;
 import beast.code.memory.memorymgr;
+import beast.core.error.error;
 import beast.core.project.configuration;
 import beast.core.project.project;
 import beast.core.task.taskmgr;
 import beast.corelib.corelib;
 import beast.toolkit;
-import beast.backend.common.backend;
-import beast.backend.cpp.backend;
+import core.stdc.stdlib : exit, EXIT_SUCCESS, EXIT_FAILURE;
+import std.algorithm.searching : findSplit;
+import std.array : replace;
+import std.file : exists;
+import std.getopt : getopt, GetoptResult, GetOptException;
 import std.json;
-import std.stdio;
-import std.file;
-import std.path;
-import core.stdc.stdlib;
-import std.getopt;
+import std.path : absolutePath, dirName;
+import std.stdio : stdin, writeln, writef, stderr;
+import std.string : strip;
+static import std.getopt;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );

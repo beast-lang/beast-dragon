@@ -1,7 +1,6 @@
 module beast.code.data.function_.ctime;
 
-import beast.code.data.toolkit;
-import beast.code.data.function_.function_;
+import beast.code.data.function_.toolkit;
 
 /// Templated function = function with @ctime arguments
 abstract class Symbol_TemplatedFunction : Symbol_Function {

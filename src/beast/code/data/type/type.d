@@ -2,6 +2,8 @@ module beast.code.data.type.type;
 
 import beast.code.data.toolkit;
 import beast.util.uidgen;
+import beast.toolkit;
+import beast.code.data.codenamespace.namespace;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -27,6 +29,8 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		final Overloadset resolveIdentifier( Identifier id, DataScope scope_, DataEntity instance ) {
+			import std.array : appender;
+			
 			{
 				auto result = appender!( DataEntity[ ] );
 

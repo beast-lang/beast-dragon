@@ -1,12 +1,10 @@
 module beast.code.memory.block;
 
-import beast.code.memory.memorymgr;
-import beast.code.memory.ptr;
 import beast.code.toolkit;
-import core.memory;
-import core.atomic;
+import beast.code.memory.ptr;
 import beast.code.data.var.local;
 import beast.code.data.function_.expandedparameter;
+import core.memory : GC;
 
 /// Block of interpreter memory
 final class MemoryBlock {
@@ -64,6 +62,8 @@ final class MemoryBlock {
 		}
 
 		void markReferenced( ) {
+			import core.atomic : atomicOp;
+
 			atomicOp!"|="( sharedFlags, SharedFlag.referenced );
 		}
 

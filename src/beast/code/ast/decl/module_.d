@@ -1,39 +1,40 @@
 module beast.code.ast.decl.module_;
 
 import beast.code.ast.decl.toolkit;
+import beast.code.lex.identifier;
 import beast.code.ast.decl.declarationscope;
 
 final class AST_Module : AST_Node {
 
-public:
-	static AST_Module parse( ) {
-		auto clg = codeLocationGuard( );
-		auto result = new AST_Module;
+	public:
+		static AST_Module parse( ) {
+			auto clg = codeLocationGuard( );
+			auto result = new AST_Module;
 
-		// module a.b.c;
-		{
-			currentToken.expectAndNext( Token.Keyword.module_ );
+			// module a.b.c;
+			{
+				currentToken.expectAndNext( Token.Keyword.module_ );
 
-			result.identifier = ExtendedIdentifier.parse( );
+				result.identifier = ExtendedIdentifier.parse( );
 
-			currentToken.expectAndNext( Token.Special.semicolon );
+				currentToken.expectAndNext( Token.Special.semicolon );
+			}
+
+			result.declarationScope = AST_DeclarationScope.parse( );
+
+			currentToken.expect( Token.Special.eof, "declaration or EOF" );
+
+			result.codeLocation = clg.get( );
+			return result;
 		}
 
-		result.declarationScope = AST_DeclarationScope.parse( );
+	public:
+		ExtendedIdentifier identifier;
+		AST_DeclarationScope declarationScope;
 
-		currentToken.expect( Token.Special.eof, "declaration or EOF" );
-
-		result.codeLocation = clg.get( );
-		return result;
-	}
-
-public:
-	ExtendedIdentifier identifier;
-	AST_DeclarationScope declarationScope;
-
-protected:
-	override InputRange!AST_Node _subnodes( ) {
-		return nodeRange( declarationScope );
-	}
+	protected:
+		override SubnodesRange _subnodes( ) {
+			return nodeRange( declarationScope );
+		}
 
 }

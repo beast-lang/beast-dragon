@@ -2,8 +2,10 @@ module beast.code.data.entity;
 
 import beast.code.data.toolkit;
 import beast.util.identifiable;
-import beast.code.data.scope_.root;
-import beast.backend.ctime.codebuilder;
+import beast.code.data.callable;
+import beast.core.project.codelocation;
+import beast.code.memory.ptr;
+import beast.code.data.type.type;
 
 /// DataEntity stores information about a value: what is its type and how to obtain it (how to build code that obtains it)
 /// It is practically a semantic tree node

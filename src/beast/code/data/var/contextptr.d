@@ -1,7 +1,7 @@
 module beast.code.data.var.contextptr;
 
 import beast.code.data.toolkit;
-import beast.code.data.function_.expandedparameter;
+import beast.code.data.var.local;
 
 final class DataEntity_ContextPointer : DataEntity_LocalVariable {
 

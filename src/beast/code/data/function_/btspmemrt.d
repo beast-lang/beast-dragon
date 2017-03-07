@@ -1,11 +1,8 @@
 /// BootStraP MEMber RunTime
 module beast.code.data.function_.btspmemrt;
 
-import beast.code.data.toolkit;
-import beast.code.data.function_.rt;
-import beast.code.data.scope_.root;
-import beast.code.data.function_.expandedparameter;
-import beast.code.data.var.functionparameter;
+import beast.code.data.function_.toolkit;
+import beast.code.ast.decl.env;
 
 /// Bootstrap (compiler-defined) member (non-static) runtime (non-templated) function
 final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
@@ -21,7 +18,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 			parameters_ = parameters;
 			codeFunction_ = codeFunction;
 
-			staticData_ = new StaticData();
+			staticData_ = new StaticData( );
 		}
 
 		override Identifier identifier( ) {

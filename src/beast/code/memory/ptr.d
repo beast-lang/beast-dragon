@@ -1,6 +1,9 @@
 module beast.code.memory.ptr;
 
 import beast.code.toolkit;
+import beast.code.memory.block;
+import beast.code.memory.memorymgr;
+import beast.code.data.type.type;
 
 enum nullMemoryPtr = MemoryPtr( 0 );
 
@@ -40,7 +43,7 @@ struct MemoryPtr {
 
 	public:
 		/// Interprets the value as a Type variable
-		Symbol_Type readType( ) const{
+		Symbol_Type readType( ) const {
 			Symbol_Type type = typeUIDKeeper[ readPrimitive!size_t ];
 			benforce( type !is null, E.invalidPointer, "Variable does not point to a valid type" );
 			return type;
@@ -65,7 +68,7 @@ struct MemoryPtr {
 				return 0;
 		}
 
-		bool isNull() const {
+		bool isNull( ) const {
 			return val == 0;
 		}
 

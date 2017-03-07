@@ -1,20 +1,11 @@
 module beast.core.error.error;
 
-public {
-	import beast.core.error.errormsg;
-	import beast.core.error.guard;
-	import std.format : format;
-}
-
-import beast.core.error.error;
-import beast.core.project.codelocation;
-import beast.core.project.configuration;
-import beast.toolkit;
-import beast.util.decorator;
-import beast.util.enumassoc;
-import std.stdio;
 import core.sync.mutex;
-import core.runtime;
+import beast.core.error.guard;
+import beast.toolkit;
+import beast.core.error.errormsg;
+import std.stdio : stderr, writeln;
+import core.runtime : defaultTraceHandler;
 
 static __gshared Mutex stderrMutex;
 
@@ -36,7 +27,7 @@ enum E {
 	syntaxError, /// Unexpected token
 
 	// MODULES:
-	moduleImportFail, /// Module import failed
+	moduleImportFail, /// Module 
 	invalidModuleIdentifier, /// Invalid module identifier - contains unsupported characters
 	moduleNameConflict, /// Two modules with same name
 	moduleNameMismatch, /// Expected module name does not match with the actual one (in module statement in the beginning of the file)

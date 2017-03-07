@@ -1,13 +1,11 @@
 module beast.core.context;
 
-import beast.toolkit;
-import beast.code.lex.lexer;
 import beast.core.project.project;
-import beast.core.task.context;
 import beast.core.task.taskmgr;
-import beast.code.memory.memorymgr;
-import beast.code.hwenv.hwenv;
+import beast.code.lex.lexer;
 import beast.code.memory.block;
+import beast.core.task.context;
+import beast.core.error.guard;
 
 /// General project-related data
 __gshared Project project;
@@ -30,7 +28,7 @@ struct ContextData {
 		size_t session;
 
 		/// List of all memory blocks allocated in the current session
-		MemoryBlock[] sessionMemoryBlocks;
+		MemoryBlock[ ] sessionMemoryBlocks;
 
 		/// Sessions can be nested (they're absolutely independent though); last session in the stack is saved in the session variable for speed up
 		size_t[ ] sessionStack;

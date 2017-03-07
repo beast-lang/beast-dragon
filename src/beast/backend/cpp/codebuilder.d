@@ -1,8 +1,8 @@
 module beast.backend.cpp.codebuilder;
 
 import beast.backend.toolkit;
-import beast.code.data.function_.expandedparameter;
-import std.format;
+import std.array : Appender, appender;
+import std.format : formattedWrite;
 
 // TODO: Asynchronous proxy definition handler
 
@@ -231,6 +231,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		static string safeIdentifier( string id ) {
+			import std.array : replace;
+
 			return id.replace( "#", "_" );
 		}
 

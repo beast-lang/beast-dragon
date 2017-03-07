@@ -1,9 +1,13 @@
 module beast.backend.cpp.backend;
 
 import beast.backend.toolkit;
+import beast.backend.common.backend;
 import beast.backend.cpp.proxycodebuilder;
+import std.array : appender, Appender;
+import std.format : formattedWrite;
 import beast.backend.cpp.codebuilder;
-import std.format;
+import std.stdio : writeln;
+import std.file : write;
 
 final class Backend_Cpp : Backend {
 
@@ -52,11 +56,8 @@ final class Backend_Cpp : Backend {
 
 			result ~= "void main() {}";
 
-			import std.stdio : writeln;
-
 			string filename = "%s.cpp".format( project.configuration.targetFilename );
 
-			import std.file : write;
 			filename.write( result.data );
 
 			if ( project.configuration.testStdout )

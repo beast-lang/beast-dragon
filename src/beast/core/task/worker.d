@@ -1,45 +1,45 @@
 module beast.core.task.worker;
 
+import core.thread : Thread;
+import beast.core.context;
 import beast.core.task.context;
-import beast.core.task.taskmgr;
-import beast.toolkit;
-import core.stdc.stdlib;
-import core.thread;
-import std.stdio;
 
 final class Worker {
 
-package:
-	this( ) {
-		thread_ = new Thread( &run );
-		thread_.start( );
-	}
+	package:
+		this( ) {
+			thread_ = new Thread( &run );
+			thread_.start( );
+		}
 
-package:
-	void waitForEnd() {
-		thread_.join();
-	}
+	package:
+		void waitForEnd( ) {
+			thread_.join( );
+		}
 
-private:
-	Thread thread_;
+	private:
+		Thread thread_;
 
-private:
-	void run( ) {
-		try {
-			while ( true ) {
-				TaskContext task = taskManager.askForAJob( );
+	private:
+		void run( ) {
+			import core.stdc.stdlib : exit, EXIT_FAILURE;
+			import std.stdio : stderr, writeln;
 
-				if ( !task )
-					return;
+			try {
+				while ( true ) {
+					TaskContext task = taskManager.askForAJob( );
 
-				// Execute the job
-				task.execute( );
+					if ( !task )
+						return;
+
+					// Execute the job
+					task.execute( );
+				}
+			}
+			catch ( Throwable t ) {
+				stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
+				// Disgracefully shutdown the application
+				exit( EXIT_FAILURE );
 			}
 		}
-		catch( Throwable t ) {
-			stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
-			// Disgracefully shutdown the application
-			exit( EXIT_FAILURE );
-		}
-	}
 }

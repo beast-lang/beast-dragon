@@ -1,8 +1,12 @@
 module beast.code.data.var.userlocal;
 
 import beast.code.data.toolkit;
-import beast.code.data.scope_.local;
+import beast.code.data.var.local;
+import beast.code.decorationlist;
+import beast.code.ast.decl.variable;
 import beast.code.ast.expr.vardecl;
+import beast.code.ast.expr.expression;
+import beast.code.data.scope_.local;
 
 final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
@@ -12,11 +16,13 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 			identifier_ = ast.identifier.identifier;
 			this( ast.dataType, decorationList, data );
 		}
+
 		this( AST_VariableDeclarationExpression ast, DecorationList decorationList, VariableDeclarationData data ) {
 			ast_ = ast;
 			identifier_ = ast.identifier.identifier;
 			this( ast.dataType, decorationList, data );
 		}
+
 		private this( AST_Expression typeExpression, DecorationList decorationList, VariableDeclarationData data ) {
 			Symbol_Type dataType;
 
@@ -41,7 +47,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 		}
 
 	private:
-	Identifier identifier_;
+		Identifier identifier_;
 		AST_Node ast_;
 
 }

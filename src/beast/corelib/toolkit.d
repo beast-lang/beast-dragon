@@ -2,8 +2,8 @@ module beast.corelib.toolkit;
 
 public {
 	import beast.toolkit;
-	import beast.code.data.module_.bootstrap;
-	import beast.code.data.symbol;
-	import beast.code.data.entity;
-	import beast.corelib.corelib;
+	import beast.corelib.corelib : coreLibrary;
+	import beast.code.data.entity : DataEntity;
+	import beast.code.data.symbol : Symbol;
+	import beast.code.lex.identifier : Identifier;
 }

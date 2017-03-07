@@ -1,7 +1,7 @@
 module beast.code.data.function_.expandedparameter;
 
-import beast.code.toolkit;
-import beast.code.ast.identifier;
+import beast.code.data.toolkit;
+import beast.util.identifiable;
 import beast.code.ast.expr.expression;
 import beast.code.ast.expr.vardecl;
 

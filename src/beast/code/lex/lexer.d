@@ -2,7 +2,24 @@ module beast.code.lex.lexer;
 
 import beast.code.lex.toolkit;
 import beast.core.project.codesource;
-import std.ascii;
+import beast.core.project.codelocation;
+
+pragma( inline ) {
+	/// Context-local lexer instance
+	Lexer lexer( ) {
+		return context.lexer;
+	}
+
+	/// Current token of the current context lexer
+	Token currentToken( ) {
+		return lexer.currentToken;
+	}
+
+	/// Commands current context lexer to scan for next token and returns it
+	Token getNextToken( ) {
+		return lexer.getNextToken;
+	}
+}
 
 final class Lexer {
 
@@ -51,7 +68,7 @@ final class Lexer {
 			while ( true ) {
 				currentChar_ = pos_ < source_.content.length ? source_.content[ pos_ ] : EOF;
 
-				/*import std.stdio;
+				/*
 			writeln( "char ", currentChar_, " state ", state );*/
 
 				if ( currentChar_ == '\n' )
@@ -259,6 +276,7 @@ final class Lexer {
 
 	private:
 		void error_unexpectedCharacter( string file = __FILE__, size_t line = __LINE__ ) {
+			import std.ascii : isPrintable;
 			berror( E.unexpectedCharacter, "Unexpected character: '%s' (%s)".format( currentChar_.isPrintable ? [ currentChar_ ] : null, ( cast( int ) currentChar_ ).to!string ) );
 		}
 

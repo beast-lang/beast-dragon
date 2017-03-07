@@ -1,6 +1,7 @@
 module beast.code.data.var.functionparameter;
 
 import beast.code.data.toolkit;
+import beast.code.data.var.local;
 import beast.code.data.function_.expandedparameter;
 
 final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
@@ -25,5 +26,5 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 
 	private:
 		ExpandedFunctionParameter param_;
-		
+
 }
