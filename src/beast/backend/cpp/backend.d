@@ -30,7 +30,7 @@ final class Backend_Cpp : Backend {
 					continue;
 
 				code_memory.formattedWrite(  //
-						"unsigned byte %s[%s] = { %s };\n", //
+						"unsigned char %s[%s] = { %s };\n", //
 						//block.isRuntime ? "" : "const ", // Constness not implemented yet
 						CodeBuilder_Cpp.cppIdentifier( block ), //
 						block.size, //
@@ -38,18 +38,27 @@ final class Backend_Cpp : Backend {
 						 );
 			}
 
-			import std.stdio;
+			auto result = appender!string;
+			result ~= "// TYPES\n";
+			result ~= cb.code_types;
+			result ~= "\n// MEMORY BLOCKS\n\n";
+			result ~= code_memory.data;
+			result ~= "\n// DECLARATIONS\n";
+			result ~= cb.code_declarations;
+			result ~= "\n//DEFINITIONS\n";
+			result ~= cb.code_implementations;
 
-			if ( project.configuration.testStdout ) {
-				writeln( "// TYPES" );
-				writeln( cb.code_types );
-				writeln( "// MEMORY BLOCKS\n" );
-				writeln( code_memory.data );
-				writeln( "// DECLARATIONS" );
-				writeln( cb.code_declarations );
-				writeln( "// DEFINITONS" );
-				writeln( cb.code_implementations );
-			}
+			result ~= "void main() {}";
+
+			import std.stdio : writeln;
+
+			string filename = "%s.cpp".format( project.configuration.targetFilename );
+
+			import std.file : write;
+			filename.write( result.data );
+
+			if ( project.configuration.testStdout )
+				writeln( result.data );
 		}
 
 }

@@ -53,6 +53,8 @@ public:
 				file = file.absolutePath( basePath );
 				benforce( file.exists && file.isFile, E.fileError, "Source file '" ~ file ~ "' does not exist" );
 			}
+
+			configuration.targetFilename = configuration.targetFilename.absolutePath( basePath );
 		}
 
 		moduleManager.initialize( );

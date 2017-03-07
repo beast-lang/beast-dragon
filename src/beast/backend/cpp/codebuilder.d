@@ -46,6 +46,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			const string str = "\n%s// module %s\n".format( tabs, module_.identificationString );
 			declarationsResult_ ~= str;
 			typesResult_ ~= str;
+			codeResult_ ~= str;
 			content( this );
 
 			debug resultVarName_ = null;
@@ -73,7 +74,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		override void build_typeDefinition( Symbol_Type type ) {
 			if ( auto instanceSize = type.instanceSize )
-				typesResult_.formattedWrite( "%stypedef unsigned char[ %s ] %s;\n", tabs, instanceSize, cppIdentifier( type ) );
+				typesResult_.formattedWrite( "%stypedef unsigned char %s[ %s ];\n", tabs, cppIdentifier( type ), instanceSize );
 			else
 				typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
 
@@ -86,9 +87,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 			block.markReferenced( );
 
 			if ( block.startPtr == pointer )
-				resultVarName_ = cppIdentifier( block );
+				resultVarName_ = cppIdentifier( block, true );
 			else
-				resultVarName_ = "( %s + %s )".format( cppIdentifier( block ), pointer - block.startPtr );
+				resultVarName_ = "( %s + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
 		}
 
 		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity[ ] arguments ) {
@@ -103,7 +104,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			string[ ] argumentNames;
 			if ( resultVarName )
-				argumentNames ~= resultVarName;
+				argumentNames ~= "&" ~ resultVarName;
 
 			foreach ( arg; arguments ) {
 				arg.buildCode( this, scope_ );
@@ -199,18 +200,19 @@ class CodeBuilder_Cpp : CodeBuilder {
 			return "_%s__%s".format( param.outerHash.str, safeIdentifier( param.identifier.str ) );
 		}
 
-		static string cppIdentifier( MemoryBlock block ) {
+		static string cppIdentifier( MemoryBlock block, bool addrOf = false ) {
+			string addrOfStr = addrOf ? "&" : "";
 			if ( block.isFunctionParameter ) {
 				return cppIdentifier( block.functionParameter );
 			}
 			else if ( block.isLocal ) {
 				assert( block.localVariable );
-				return cppIdentifier( block.localVariable );
+				return addrOfStr ~ cppIdentifier( block.localVariable );
 			}
 			else if ( block.identifier )
-				return "__s%s_%s".format( block.startPtr.val, safeIdentifier( block.identifier ) );
+				return "%s__s%s_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
 			else
-				return "__s%s".format( block.startPtr.val );
+				return "%s__s%s".format( addrOfStr, block.startPtr.val );
 		}
 
 		static string safeIdentifier( string id ) {
