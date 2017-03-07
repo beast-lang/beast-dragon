@@ -24,7 +24,9 @@ final class AST_LogicExpression : AST_Expression {
 			result.base = base;
 
 			while ( currentToken == Token.Operator.logOr || currentToken == Token.Operator.logAnd ) {
-				currentToken.expectAndNext( result.op, "You cannot mix && and || operators, use parentheses" );
+				benforce( currentToken == result.op, E.invalidOpCombination, "You cannot mix && and || operators, use parentheses", ( err ) { err.codeLocation = currentToken.codeLocation; } );
+				getNextToken();
+
 				result.items ~= LowerLevelExpression.parse( );
 			}
 

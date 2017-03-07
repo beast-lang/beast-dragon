@@ -28,6 +28,7 @@ enum E {
 
 	// PARSER:
 	syntaxError, /// Unexpected token
+	invalidOpCombination, /// Invalid operator combination
 
 	// MODULES:
 	moduleImportFail, /// Module 

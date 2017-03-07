@@ -46,23 +46,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return true;
 				}
 
-				override string identification( ) {
-					import std.array : appender;
-					
-					auto result = appender!string;
-					result ~= baseIdentifier;
-					result ~= "(";
-
-					if ( parameters.length )
-						result ~= " ";
-
-					result ~= parameters.map!( x => x.identificationString ).joiner( ", " );
-
-					if ( parameters.length )
-						result ~= " ";
-
-					result ~= ")";
-					return result.data;
+				override string identificationString( ) {
+					return "%s %s.%s( %s )".format( returnType.identificationString, parent.identificationString, baseIdentifier, parameters.map!( x => x.identificationString ).joiner( ", " ) );
 				}
 
 			public:
@@ -157,8 +142,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return false;
 				}
 
-				override string identification( ) {
-					return "%s.%s( %s )".format( parent.identificationString, baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
+				override string identificationString( ) {
+					return "%s %s.%s( ... )( %s )".format( returnType.identificationString, parent.identificationString, baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
 				}
 
 				override DataEntity parent( ) {

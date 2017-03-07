@@ -1,9 +1,9 @@
-module beast.testsuite.directive.onlylexing;
+module beast.testsuite.directive.onlyparsing;
 
 import beast.testsuite.directive.directive;
 
 /// Passes an argument to the compiler so only lexing phase is done
-final class TestDirective_OnlyLexing : TestDirective {
+final class TestDirective_OnlyParsing : TestDirective {
 
 	public:
 		this( TestDirectiveArguments args ) {
@@ -11,7 +11,7 @@ final class TestDirective_OnlyLexing : TestDirective {
 
 	public:
 		override void onBeforeTestStart( ) {
-			test.args ~= [ "--config", "stopOnPhase=lexing" ];
+			test.args ~= [ "--config", "stopOnPhase=parsing" ];
 		}
 
 }
