@@ -59,6 +59,8 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			dataType_ = ast_.dataType.standaloneCtExec( coreLibrary.types.Type, parent ).readType( );
 
 			benforce!( ErrorSeverity.warning )( dataType_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataType_.identificationString ) );
+
+			decorationList_.enforceAllResolved();
 		}
 
 		void execute_memoryAllocation( ) {

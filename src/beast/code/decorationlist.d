@@ -26,11 +26,13 @@ final class DecorationList {
 					list = list.parentDecorationList;
 				}
 
-				auto sink = list_.appender;
+				auto sink = appender!( Record[ ] )( );
 
 				// We want the top level decorator list items first
 				foreach_reverse ( it; stack )
 					sink ~= it.list.map!( x => Record( x ) );
+
+				list_ = sink.data;
 			}
 		}
 
@@ -51,13 +53,19 @@ final class DecorationList {
 			return originalType;
 		}
 
+	public:
+		/// Enforces that all decorators are resolved, otherwise reports an error
+		void enforceAllResolved( ) {
+			auto unresolvedList = list_.filter!( x => x.decorator is null );
+			benforce( unresolvedList.empty, E.unresolvedDecorators, "Could not resolve decorators: %s".format( unresolvedList.map!( x => "'%s'".format( x.decoration.identifier.str ) ).joiner( ", " ) ) );
+		}
+
 	private:
 		void standardDecoratorProcedure( string applyFunctionName, Args... )( DataEntity context, DataScope scope_, auto ref Args args ) {
 			// Right decorators have higher priority
 			foreach_reverse ( ref Record rec; list_ ) {
 				// If the record has already resolved decorator, just try applying the decorator in the context
-				if ( rec.decorator ) {
-					auto deco = rec.decorator;
+				if ( auto deco = rec.decorator ) {
 					__traits( getMember, deco, "apply_" ~ applyFunctionName )( args );
 					continue;
 				}

@@ -23,5 +23,5 @@ Expects error/warning/hint on the file and line of the directive.
 `noLine` - error is not related to the line (it does not have line attribute) \
 `noFile` - error is not related to the file (it does not have file attribute)
 
-## onlyLexing 
-Compiler performs only lexing phase
+## onlyLexing, onlyParsing
+Compiler performs only lexing/parsing phase

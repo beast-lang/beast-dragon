@@ -25,15 +25,15 @@ struct Overloadset {
 	public:
 		/// Returns list of decorators in the overloadset
 		Symbol_Decorator[ ] filter_decoratorsOnly( ) {
-			/*Symbol_Decorator[ ] result;
+			import std.array : appender;
 
-		foreach( item; data ) {
-			if( item.dataType !is  )
-		}
+			auto result = appender!( Symbol_Decorator[ ] );
+			foreach ( item; data ) {
+				if ( auto deco = item.isDecorator )
+					result ~= deco;
+			}
 
-		return result;*/
-			return null;
-			// TODO:
+			return result.data;
 		}
 
 	public:
@@ -90,6 +90,5 @@ struct Overloadset {
 		bool opCast( T : bool )( ) const {
 			return data.length > 0;
 		}
-		
 
 }

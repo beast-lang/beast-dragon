@@ -40,6 +40,7 @@ enum E {
 	// DECORATORS:
 	decoratorConflict, /// Two decorators are incompatible with each other
 	duplicitModification, /// For example when using @static twice or when using @static where static is implicit; this is a hint
+	unresolvedDecorators, /// There are some unresolved decorators
 
 	// MEMORY (interpreter related, not the compiler memory):
 	outOfMemory, /// Interpreter has run out of memory (target machine pointer size can be smaller)

@@ -14,6 +14,12 @@ abstract class AST_Statement : AST_Node {
 		static AST_Statement parse( AST_DecorationList decorationList ) {
 			auto _gd = codeLocationGuard( );
 
+			if( AST_DecorationList.canParse ) {
+				AST_DecorationList newDecorationList = AST_DecorationList.parse();
+				newDecorationList.parentDecorationList = decorationList;
+				decorationList = newDecorationList;
+			}
+
 			if ( currentToken == Token.Keyword.auto_ )
 				return AST_Declaration.parse( decorationList );
 

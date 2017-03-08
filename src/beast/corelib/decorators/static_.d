@@ -19,7 +19,7 @@ final class Symbol_Decorator_Static : Symbol_Decorator {
 
 	public:
 		override bool apply_variableDeclarationModifier( VariableDeclarationData data ) {
-			benforceHint( !data.isStatic, E.duplicitModification, "@static is reduntant (staticity is either implicit or set by another decorator)" );
+			benforceHint( !data.isStatic, E.duplicitModification, "@static is redundant (staticity is either implicit or set by another decorator)" );
 			data.isStatic = true;
 			return true;
 		}

@@ -1,7 +1,7 @@
-dub build --force
+dub build
 
 cd test
-dub build --force
+dub build
 
 cd ../bin
 ./beast_testsuite

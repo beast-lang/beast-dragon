@@ -31,17 +31,17 @@ final class AST_FunctionDeclaration : AST_Declaration {
 	public:
 		override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
 			FunctionDeclarationData declData = new FunctionDeclarationData( env );
-			DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
+			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 
 			DataScope scope_ = new RootDataScope( env.staticMembersParent );
 
 			// Apply possible decorators in the variableDeclarationModifier context
-			decorationList.apply_functionDeclarationModifier( declData, scope_ );
+			decorations.apply_functionDeclarationModifier( declData, scope_ );
 
 			bool isRuntime = parameterList.isRuntimeParameterList;
 
 			if ( declData.isStatic && !declData.isCtime && isRuntime )
-				sink( new Symbol_UserStaticRuntimeFunction( this, decorationList, declData ) );
+				sink( new Symbol_UserStaticRuntimeFunction( this, decorations, declData ) );
 			else
 				berror( E.notImplemented, "Not implemented" );
 		}

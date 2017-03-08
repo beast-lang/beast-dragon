@@ -24,17 +24,20 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 		}
 
 		private this( AST_Expression typeExpression, DecorationList decorationList, VariableDeclarationData data ) {
+			const auto _gd = ErrorGuard( this );
+
 			Symbol_Type dataType;
 
 			// Deduce data type
 			{
-				const auto _gd = ErrorGuard( typeExpression );
 				DataScope localScope_ = new LocalDataScope( data.env.scope_ );
 				dataType = typeExpression.buildSemanticTree_single( coreLibrary.types.Type, localScope_ ).ctExec_asType( localScope_ );
 				localScope_.finish( );
 			}
 
 			super( dataType, data.env.scope_, data.isCtime );
+
+			decorationList.enforceAllResolved( );
 		}
 
 	public:

@@ -20,10 +20,9 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 			currentToken.expectAndNext( Token.Special.lParent );
 
 			if ( AST_Expression.canParse ) {
-				result.items ~= AST_Expression.parse( );
-
-				while ( currentToken.matchAndNext( Token.Special.comma ) )
+				do
 					result.items ~= AST_Expression.parse( );
+				while ( currentToken.matchAndNext( Token.Special.comma ) );
 
 				currentToken.expectAndNext( Token.Special.rParent, "',' or ')'" );
 			}

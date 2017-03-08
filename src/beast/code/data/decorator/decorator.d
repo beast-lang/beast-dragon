@@ -71,6 +71,10 @@ abstract class Symbol_Decorator : Symbol {
 					return this.outer.parent_;
 				}
 
+				override Symbol_Decorator isDecorator( ) {
+					return this.outer;
+				}
+
 		}
 
 }

@@ -6,6 +6,7 @@ import beast.code.data.callable;
 import beast.core.project.codelocation;
 import beast.code.memory.ptr;
 import beast.code.data.type.type;
+import beast.code.data.decorator.decorator;
 
 /// DataEntity stores information about a value: what is its type and how to obtain it (how to build code that obtains it)
 /// It is practically a semantic tree node
@@ -31,6 +32,10 @@ abstract class DataEntity : Identifiable {
 		/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
 		CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
 			assert( 0, identificationString ~ " is not callable" );
+		}
+
+		Symbol_Decorator isDecorator( ) {
+			return null;
 		}
 
 	public:

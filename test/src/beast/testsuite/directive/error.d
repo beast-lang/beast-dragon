@@ -44,7 +44,7 @@ final class TestDirective_Error : TestDirective {
 
 	protected:
 		string errorMsg( ) {
-			string result = "Expected error";
+			string result = "Expected " ~ severity;
 
 			if ( errorType )
 				result ~= " '%s'".format( errorType );

@@ -26,6 +26,11 @@ final class AST_DecorationList : AST_Node {
 		/// Decoration lists are in a linked list for easier parsing
 		AST_DecorationList parentDecorationList;
 
+	public:
+		string debugString( ) {
+			return "%s( %s )".format( parentDecorationList ? parentDecorationList.debugString ~ " + " : "", list.map!( x => x.identifier.identifier.str ) );
+		}
+
 	protected:
 		override SubnodesRange _subnodes( ) {
 			return nodeRange( list );
