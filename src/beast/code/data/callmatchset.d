@@ -21,7 +21,7 @@ struct CallMatchSet {
 				else {
 					foreach ( suboverload; overload.resolveIdentifier( Identifier.preobtained!"#operator", scope_ ) ) {
 						if ( overload.isCallable )
-							matches ~= suboverload.startCallMatch( scope_, ast ).matchNextArgument( coreLibrary.constants.operator_call.dataEntity );
+							matches ~= suboverload.startCallMatch( scope_, ast ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
 					}
 				}
 			}
@@ -43,9 +43,7 @@ struct CallMatchSet {
 		}
 
 		ref CallMatchSet argument( AST_Expression expr ) {
-			const bool reportErrors = reportErrors && matches.length == 1;
-
-			DataEntity entity = expr.buildSemanticTree_single( null, scope_, reportErrors );
+			DataEntity entity = expr.buildSemanticTree_single( null, scope_, false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
 			argumentTypes ~= dataType;
 
@@ -126,7 +124,7 @@ struct CallMatchSet {
 
 	public:
 		string argumentListIdentificationString( ) {
-			return "( %s )".format( argumentTypes.map!( x => x is null ? "(infer)" : x.identificationString ).joiner( ", " ).to!string );
+			return "( %s )".format( argumentTypes.map!( x => x is null ? "#inferred#" : x.identificationString ).joiner( ", " ).to!string );
 		}
 
 }

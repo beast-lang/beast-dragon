@@ -7,6 +7,7 @@ public {
 	import std.array : array;
 	import std.conv : to;
 	import std.format : format;
+	import std.typecons : scoped;
 }
 
 import beast.util.hooks;

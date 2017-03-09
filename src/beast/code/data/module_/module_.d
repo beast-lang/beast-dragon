@@ -10,6 +10,7 @@ abstract class Symbol_Module : Symbol {
 	public:
 		this( ) {
 			staticData_ = new Data;
+			importSpaceData_ = new ImportSpaceData;
 		}
 
 	public:
@@ -34,6 +35,7 @@ abstract class Symbol_Module : Symbol {
 
 	private:
 		Data staticData_;
+		ImportSpaceData importSpaceData_;
 
 	private:
 		final class Data : SymbolRelatedDataEntity {
@@ -46,7 +48,39 @@ abstract class Symbol_Module : Symbol {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: Module reflection type
-					return coreLibrary.types.Void;
+					return coreLibrary.type.Void;
+				}
+
+				override bool isCtime( ) {
+					return true;
+				}
+
+				override DataEntity parent( ) {
+					return importSpaceData_;
+				}
+
+			public:
+				override string identificationString( ) {
+					return identification;
+				}
+
+			protected:
+				protected override Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+					// TODO: Copy this to Module core type
+					if ( auto result = namespace.resolveIdentifier( id, null ) )
+						return result;
+
+					return Overloadset( );
+				}
+
+		}
+
+		final class ImportSpaceData : DataEntity {
+
+			public:
+				override Symbol_Type dataType( ) {
+					// TODO: Maybe better dataType?
+					return coreLibrary.type.Void;
 				}
 
 				override bool isCtime( ) {
@@ -58,21 +92,18 @@ abstract class Symbol_Module : Symbol {
 				}
 
 			public:
-				protected final override Overloadset resolveIdentifier_main( Identifier id, DataScope scope_ ) {
-					// TODO: Move this to Module core type
-					if ( auto result = namespace.resolveIdentifier( id, null ) )
-						return result;
-
-					// TODO: public imports
-
-					return Overloadset( );
+				override AST_Node ast( ) {
+					return null;
 				}
 
-				override Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
-					if ( auto result = resolveIdentifier( id, scope_ ) )
-						return result;
+				override Hash outerHash( ) {
+					return Hash( );
+				}
 
-					// Look into core library
+			protected:
+				override Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+					// TODO: imports and public imports
+
 					if ( this.outer !is coreLibrary.module_ ) {
 						if ( auto result = coreLibrary.module_.dataEntity.resolveIdentifier( id, scope_ ) )
 							return result;

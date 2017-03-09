@@ -1,4 +1,4 @@
-module t_basicset;
+module t_basic;
 
 Void foo1() {
 
@@ -41,5 +41,5 @@ Void fail4() {
 }
 
 Void fail5() {
-	foo3( :test ); //! error: cannotInfer
+	foo3( :test ); //! error: unknownIdentifier
 }

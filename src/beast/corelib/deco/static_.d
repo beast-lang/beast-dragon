@@ -1,4 +1,4 @@
-module beast.corelib.decorators.static_;
+module beast.corelib.deco.static_;
 
 import beast.corelib.toolkit;
 import beast.code.data.decorator.decorator;

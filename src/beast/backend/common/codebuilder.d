@@ -36,6 +36,22 @@ abstract class CodeBuilder {
 			assert( 0 );
 		}
 
+		/// Builds write to a memory
+		final void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
+			if ( data.isCtime )
+				_build_memoryWrite( target, data.ctExec( scope_ ), data.dataType.instanceSize );
+			else
+				_build_memoryWrite( scope_, target, data );
+		}
+
+		protected void _build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
+			assert( 0 );
+		}
+
+		protected void _build_memoryWrite( MemoryPtr target, MemoryPtr data, size_t dataSize ) {
+			assert( 0 );
+		}
+
 		void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0 );
 		}

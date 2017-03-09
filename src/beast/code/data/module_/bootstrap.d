@@ -25,6 +25,9 @@ final class Symbol_BootstrapModule : Symbol_Module {
 		}
 
 		override string identificationString( ) {
+			if ( this is null )
+				return "#error#";
+				
 			return identifier_.str;
 		}
 

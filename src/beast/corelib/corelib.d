@@ -1,11 +1,12 @@
 module beast.corelib.corelib;
 
 import beast.corelib.toolkit;
-import beast.corelib.types.types;
-import beast.corelib.decorators.decorators;
-import beast.corelib.constants;
+import beast.corelib.type.types;
+import beast.corelib.deco.decorators;
+import beast.corelib.const_.constants;
 import beast.code.data.module_.bootstrap;
 import beast.code.lex.identifier;
+import beast.corelib.const_.enums;
 
 /// Constructs core libraries (if they already are not constructed)
 void constructCoreLibrary( ) {
@@ -20,13 +21,16 @@ class CoreLibrary {
 
 	public:
 		/// Core types (primitives, Type, ...)
-		CoreLibrary_Types types;
+		CoreLibrary_Types type;
 
 		/// Core decorators (static, ctime, ...)
-		CoreLibrary_Decorators decorators;
+		CoreLibrary_Decorators decorator;
 
 		/// Core constants (true, false, ...)
-		CoreLibrary_Constants constants;
+		CoreLibrary_Constants constant;
+
+		/// Core enums (Operator, ...)
+		CoreLibrary_Enums enum_;
 
 	public:
 		/// Module where all core stuff is in
@@ -39,11 +43,12 @@ class CoreLibrary {
 			Symbol[ ] symbols;
 			void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-			types.initialize( sink, module_.dataEntity );
-			constants.initialize( sink, module_.dataEntity );
-			decorators.initialize( sink, module_.dataEntity );
+			type.initialize( sink, module_.dataEntity );
+			constant.initialize( sink, module_.dataEntity );
+			decorator.initialize( sink, module_.dataEntity );
+			enum_.initialize( sink, module_.dataEntity );
 
-			types.initialize2();
+			type.initialize2( );
 
 			module_.initialize( symbols );
 		}

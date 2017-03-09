@@ -31,7 +31,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 			// Deduce data type
 			{
 				DataScope localScope_ = new LocalDataScope( data.env.scope_ );
-				dataType = typeExpression.buildSemanticTree_single( coreLibrary.types.Type, localScope_ ).ctExec_asType( localScope_ );
+				dataType = typeExpression.buildSemanticTree_single( coreLibrary.type.Type, localScope_ ).ctExec_asType( localScope_ );
 				localScope_.finish( );
 			}
 

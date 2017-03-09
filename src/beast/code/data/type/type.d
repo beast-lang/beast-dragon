@@ -29,8 +29,12 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		final Overloadset resolveIdentifier( Identifier id, DataScope scope_, DataEntity instance ) {
+			/*import std.stdio;
+
+			writefln( "Resolve %s for %s ( entity %s of type %s )", id.str, identificationString, instance ? instance.identificationString : "#", instance ? instance.dataType.identificationString : "#" );*/
+
 			import std.array : appender;
-			
+
 			{
 				auto result = appender!( DataEntity[ ] );
 
@@ -41,9 +45,13 @@ abstract class Symbol_Type : Symbol {
 					return Overloadset( result.data );
 			}
 
+			if ( auto result = _resolveIdentifier_mid( id, scope_, instance ) )
+				return result;
+
 			// Look in the core.Type
-			if ( this !is coreLibrary.types.Type ) {
-				if ( auto result = coreLibrary.types.Type.resolveIdentifier( id, scope_, this.dataEntity ) )
+			if ( this !is coreLibrary.type.Type ) {
+				// We don't pass an instance to this because that would cause loop
+				if ( auto result = coreLibrary.type.Type.resolveIdentifier( id, scope_, null ) )
 					return result;
 			}
 
@@ -62,6 +70,11 @@ abstract class Symbol_Type : Symbol {
 		/// Namespace with members of this type (static and dynamic)
 		abstract Namespace namespace( );
 
+	protected:
+		Overloadset _resolveIdentifier_mid( Identifier id, DataScope scope_, DataEntity instance ) {
+			return Overloadset( );
+		}
+
 	private:
 		MemoryPtr ctimeValue_;
 		size_t typeUID_;
@@ -76,7 +89,7 @@ abstract class Symbol_Type : Symbol {
 
 			public:
 				override Symbol_Type dataType( ) {
-					return coreLibrary.types.Type;
+					return coreLibrary.type.Type;
 				}
 
 				override bool isCtime( ) {

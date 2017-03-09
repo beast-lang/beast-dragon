@@ -53,6 +53,9 @@ abstract class DataEntity : Identifiable {
 		}
 
 		string identificationString( ) {
+			if ( this is null )
+				return "#error#";
+
 			if ( auto parent = parent )
 				return parent.identificationString ~ "." ~ identification;
 
@@ -77,15 +80,15 @@ abstract class DataEntity : Identifiable {
 		/// The scope can be used for creating temporary variables
 		final Overloadset resolveIdentifier( Identifier id, DataScope scope_ ) {
 			if ( id == ID!"#type" )
-				return Overloadset( dataType ? dataType.dataEntity( ) : coreLibrary.types.Void.dataEntity( ) );
+				return Overloadset( dataType.dataEntity );
 
-			if ( auto result = resolveIdentifier_pre( id, scope_ ) )
+			if ( auto result = _resolveIdentifier_pre( id, scope_ ) )
 				return result;
 
-			if ( auto result = resolveIdentifier_main( id, scope_ ) )
+			if ( auto result = _resolveIdentifier_main( id, scope_ ) )
 				return result;
 
-			if ( auto result = resolveIdentifier_post( id, scope_ ) )
+			if ( auto result = dataType.resolveIdentifier( id, scope_, this ) )
 				return result;
 
 			return Overloadset( );
@@ -93,7 +96,7 @@ abstract class DataEntity : Identifiable {
 
 		/// Resolves identifier recursively (looking into parent entities)
 		/// The scope can be used for creating temporary variables
-		Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
+		final Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
 			if ( auto result = resolveIdentifier( id, scope_ ) )
 				return result;
 
@@ -142,25 +145,20 @@ abstract class DataEntity : Identifiable {
 
 		/// Expects the data to point at Type instance
 		final Symbol_Type ctExec_asType( DataScope scope_ ) {
-			assert( dataType is coreLibrary.types.Type );
+			assert( dataType is coreLibrary.type.Type );
 			Symbol_Type type = typeUIDKeeper[ ctExec( scope_ ).readPrimitive!size_t ];
 			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
 			return type;
 		}
 
 	protected:
-		Overloadset resolveIdentifier_pre( Identifier id, DataScope scope_ ) {
+		/// These are only meant to be shortcut, identifier resolution should be also available "the second way" for example Class -> x and Class -> Type -> Class -> x
+		Overloadset _resolveIdentifier_pre( Identifier id, DataScope scope_ ) {
 			return Overloadset( );
 		}
 
-		Overloadset resolveIdentifier_main( Identifier id, DataScope scope_ ) {
-			return Overloadset( );
-		}
-
-		Overloadset resolveIdentifier_post( Identifier id, DataScope scope_ ) {
-			if ( auto result = dataType.resolveIdentifier( id, scope_, this ) )
-				return result;
-
+		/// These are only meant to be shortcut, identifier resolution should be also available "the second way" for example Class -> x and Class -> Type -> Class -> x
+		Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
 			return Overloadset( );
 		}
 

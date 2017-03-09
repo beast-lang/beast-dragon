@@ -21,7 +21,14 @@ abstract class DataScope : Identifiable {
 		}
 
 		final override string identificationString( ) {
+			if ( this is null )
+				return "#error#";
+				
 			return parentEntity.identificationString;
+		}
+
+		final size_t itemCount() {
+			return localVariables_.length;
 		}
 
 	public:
@@ -49,6 +56,12 @@ abstract class DataScope : Identifiable {
 		final void buildCleanup( CodeBuilder cb ) {
 			debug assert( context.jobId == jobId_ );
 			// TODO:
+		}
+
+		/// Cleans up the scope at compile time (calls destructors on local variables)
+		final void ctimeCleanup() {
+			scope cb = new CodeBuilder_Ctime();
+			buildCleanup( cb );
 		}
 
 		/// Marks the scope as not being editable anymore

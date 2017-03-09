@@ -25,6 +25,9 @@ abstract class Namespace : Identifiable {
 
 	public:
 		final override string identificationString( ) {
+			if ( this is null )
+				return "#error#";
+				
 			return parent_.identificationString;
 		}
 

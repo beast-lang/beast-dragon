@@ -96,7 +96,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			string resultVarName;
-			if ( function_.returnType !is coreLibrary.types.Void ) {
+			if ( function_.returnType !is coreLibrary.type.Void ) {
 				resultVarName = "_%s_tmp".format( getHash( ) );
 				codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( function_.returnType ), resultVarName );
 			}
@@ -172,7 +172,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			result.formattedWrite( "void %s( ", cppIdentifier( func ) );
 
 			// Return value is passed as a pointer
-			if ( func.returnType !is coreLibrary.types.Void ) {
+			if ( func.returnType !is coreLibrary.type.Void ) {
 				result.formattedWrite( "%s *result", cppIdentifier( func.returnType ) );
 				parameterCount++;
 			}

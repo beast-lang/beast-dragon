@@ -6,10 +6,19 @@ import beast.core.task.context;
 
 final class Worker {
 
+	public:
+		static Worker current;
+
 	package:
-		this( ) {
+		this( size_t id ) {
 			thread_ = new Thread( &run );
 			thread_.start( );
+			id_ = id;
+		}
+
+	public:
+		size_t id( ) {
+			return id_;
 		}
 
 	package:
@@ -19,11 +28,14 @@ final class Worker {
 
 	private:
 		Thread thread_;
+		size_t id_;
 
 	private:
 		void run( ) {
 			import core.stdc.stdlib : exit, EXIT_FAILURE;
 			import std.stdio : stderr, writeln;
+
+			current = this;
 
 			try {
 				while ( true ) {

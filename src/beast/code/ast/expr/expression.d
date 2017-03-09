@@ -51,7 +51,12 @@ abstract class AST_Expression : AST_Statement {
 		abstract Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true );
 
 		final DataEntity buildSemanticTree_single( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
-			return buildSemanticTree( inferredType, scope_, errorOnInferrationFailure ).single_expectType( inferredType );
+			Overloadset result = buildSemanticTree( inferredType, scope_, errorOnInferrationFailure );
+
+			if( !result.length && !errorOnInferrationFailure )
+				return null;
+
+			return result.single_expectType( inferredType );
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
@@ -68,9 +73,13 @@ abstract class AST_Expression : AST_Statement {
 			const auto _gd = ErrorGuard( this );
 
 			with ( memoryManager.session ) {
-				DataScope scope_ = new RootDataScope( parent );
+				auto scope_ = scoped!RootDataScope( parent );
 				MemoryPtr result = ctExec( expectedType, scope_ );
+
 				scope_.finish( );
+				assert( scope_.itemCount <= 1, "StandaloneCtExec scope has %s items".format( scope_.itemCount ) );
+
+				// No cleanup build - bulit variables remain (should be only one)
 				return result;
 			}
 

@@ -41,6 +41,10 @@ struct MemoryPtr {
 			return *( cast( T* ) memoryManager.read( this, T.sizeof ) );
 		}
 
+		void* read( size_t bytes ) const {
+			return memoryManager.read( this, bytes );
+		}
+
 	public:
 		/// Interprets the value as a Type variable
 		Symbol_Type readType( ) const {
@@ -53,9 +57,7 @@ struct MemoryPtr {
 		bool dataEquals( MemoryPtr other, size_t comparedLength ) const {
 			import core.stdc.string : memcmp;
 
-			void* data1 = memoryManager.read( this, comparedLength );
-			void* data2 = memoryManager.read( this, comparedLength );
-			return memcmp( data1, data2, comparedLength ) == 0;
+			return memcmp( memoryManager.read( this, comparedLength ), memoryManager.read( other, comparedLength ), comparedLength ) == 0;
 		}
 
 	public:

@@ -4,11 +4,9 @@ import beast.core.task.context;
 import core.sync.mutex : Mutex;
 import core.sync.condition : Condition;
 import beast.core.task.worker;
+import std.parallelism : totalCPUs;
 
 final class TaskManager {
-
-	public:
-		enum workerCount = 4;
 
 	public:
 		this( ) {
@@ -20,12 +18,14 @@ final class TaskManager {
 
 	public:
 		void spawnWorkers( ) {
+			const auto workerCount = totalCPUs * 2;
+
 			synchronized ( workerSyncMutex_ ) {
 				assert( !workers_.length );
 
 				// Spawn workers
 				foreach ( i; 0 .. workerCount )
-					workers_ ~= new Worker( );
+					workers_ ~= new Worker( i + 1 );
 			}
 		}
 
@@ -55,22 +55,24 @@ final class TaskManager {
 		}
 
 		void issueTask( TaskContext context ) {
-			synchronized ( workerSyncMutex_ )
+			synchronized ( workerSyncMutex_ ) {
 				plannedTasks_ ~= context;
-
-			idleWorkersCondition_.notify( );
+				idleWorkersCondition_.notify( );
+			}
 		}
 
 		void issueJob( TaskContext.Job job ) {
-			synchronized ( workerSyncMutex_ )
+			synchronized ( workerSyncMutex_ ) {
 				plannedJobs_ ~= job;
+				idleWorkersCondition_.notify( );
+			}
 		}
 
 	package:
 		/// A function called by Worker, returns task context to be executes or waits or a condition or returns null (signals quitting)
 		TaskContext askForAJob( ) {
 			import std.range.primitives : front, popFront;
-			
+
 			// Wait for a job
 			synchronized ( workerSyncMutex_ ) {
 				while ( true ) {

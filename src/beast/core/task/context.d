@@ -38,6 +38,10 @@ final class TaskContext {
 		/// Identifiaction string of the task guard blocking this context (that is waiting for another task to finish)
 		string delegate( ) blockingTaskGuardIdentificationString_;
 
+		ContextData contextData() {
+			return contextData_;
+		}
+
 	public:
 		void setJob( Job job ) {
 			synchronized ( this ) {

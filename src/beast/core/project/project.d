@@ -13,7 +13,7 @@ final class Project : Identifiable {
 	public:
 		this( ) {
 			import std.file : getcwd;
-			
+
 			basePath = getcwd( );
 			messageFormatter = new MessageFormatter_GNU( );
 			moduleManager = new ModuleManager;

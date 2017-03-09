@@ -34,7 +34,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: Function types
-					return coreLibrary.types.Void;
+					return coreLibrary.type.Void;
 				}
 
 				override bool isCtime( ) {
@@ -47,7 +47,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override string identificationString( ) {
-					return "%s %s.%s( %s )".format( returnType.identificationString, parent.identificationString, baseIdentifier, parameters.map!( x => x.identificationString ).joiner( ", " ) );
+					if ( this is null )
+						return "#error#";
+
+					return "%s %s.%s( %s )".format( returnType ? returnType.identificationString : "#error", parent.identificationString, baseIdentifier, parameters.map!( x => x.identificationString ).joiner( ", " ) );
 				}
 
 			public:
@@ -84,18 +87,22 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 						scope_.addEntity( entity );
 
 					if ( dataType !is param.dataType ) {
-						errorStr = "argument index %s type mismatch (got %s, expected %s)".format( argumentIndex_, dataType.identificationString, param.dataType.identificationString );
+						errorStr = "argument %s type mismatch (got %s, expected %s)".format( argumentIndex_, dataType.identificationString, param.dataType.identificationString );
 						return MatchFlags.noMatch;
 					}
 
 					if ( param.constValue ) {
 						// TODO: This will have to be solved better -- or not?
-						if ( !entity.isCtime )
+						if ( !entity.isCtime ) {
+							errorStr = "argument %s not ctime, cannot compare".format( argumentIndex_ );
 							return MatchFlags.noMatch;
+						}
 
 						MemoryPtr entityData = entity.ctExec( scope_ );
-						if ( !entityData.dataEquals( param.constValue, dataType.instanceSize ) )
+						if ( !entityData.dataEquals( param.constValue, dataType.instanceSize ) ) {
+							errorStr = "argument %s value mismatch".format( argumentIndex_ );
 							return MatchFlags.noMatch;
+						}
 					}
 
 					arguments_ ~= entity;
@@ -110,7 +117,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 						return MatchFlags.noMatch;
 					}
 
-					return MatchFlags.fullMatch;
+					return MatchFlags.fullMatch | super._finish( );
 				}
 
 				override DataEntity _toDataEntity( ) {
@@ -143,6 +150,9 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override string identificationString( ) {
+					if ( this is null )
+						return "#error#";
+
 					return "%s %s.%s( ... )( %s )".format( returnType.identificationString, parent.identificationString, baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
 				}
 

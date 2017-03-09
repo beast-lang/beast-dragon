@@ -1,7 +1,7 @@
-module beast.corelib.decorators.decorators;
+module beast.corelib.deco.decorators;
 
 import beast.corelib.toolkit;
-import beast.corelib.decorators.static_;
+import beast.corelib.deco.static_;
 
 struct CoreLibrary_Decorators {
 

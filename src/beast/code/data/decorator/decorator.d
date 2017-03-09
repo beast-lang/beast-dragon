@@ -60,7 +60,7 @@ abstract class Symbol_Decorator : Symbol {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: decorator reflection
-					return coreLibrary.types.Void;
+					return coreLibrary.type.Void;
 				}
 
 				override bool isCtime( ) {

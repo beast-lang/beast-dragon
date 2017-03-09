@@ -1,8 +1,11 @@
-module beast.corelib.types.btsp;
+module beast.code.data.type.btspstcclass;
 
-import beast.corelib.types.toolkit;
+import beast.code.data.toolkit;
+import beast.code.data.type.stcclass;
+import beast.code.data.codenamespace.namespace;
+import beast.code.data.codenamespace.bootstrap;
 
-final class Symbol_CorelibBoostrapType : Symbol_StaticClassType {
+final class Symbol_BootstrapStaticClass : Symbol_StaticClass {
 
 	public:
 		this( DataEntity parent, Identifier identifier, size_t instanceSize ) {

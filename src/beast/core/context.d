@@ -6,6 +6,7 @@ import beast.code.lex.lexer;
 import beast.code.memory.block;
 import beast.core.task.context;
 import beast.core.error.guard;
+import beast.core.task.worker;
 
 /// General project-related data
 __gshared Project project;

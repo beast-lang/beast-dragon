@@ -3,7 +3,7 @@ module beast.code.data.type.stcclass;
 import beast.code.data.toolkit;
 import beast.code.data.type.class_;
 
-abstract class Symbol_StaticClassType : Symbol_ClassType {
+abstract class Symbol_StaticClass : Symbol_Class {
 
 	public:
 		this( DataEntity parent ) {
@@ -21,7 +21,7 @@ abstract class Symbol_StaticClassType : Symbol_ClassType {
 			return staticData_;
 		}
 
-	private:
+	protected:
 		DataEntity staticData_;
 		DataEntity parent_;
 
@@ -32,8 +32,6 @@ abstract class Symbol_StaticClassType : Symbol_ClassType {
 				override DataEntity parent( ) {
 					return parent_;
 				}
-
-				// TODO: resolve identifier
 
 		}
 

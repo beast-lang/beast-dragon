@@ -41,6 +41,7 @@ mixin template TaskGuard( string guardName ) {
 	private:
 		/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
 		final void _taskGuard_func( ) {
+			debug import beast.core.task.worker;
 			import core.atomic : atomicOp;
 			import beast.util.atomic : atomicFetchThenOr;
 			import beast.code.memory.block : MemoryBlock;
@@ -49,6 +50,7 @@ mixin template TaskGuard( string guardName ) {
 			import beast.core.error.error : BeastErrorException;
 
 			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
+			debug assert( Worker.current, "All task guards must be processed in worker threads" );
 
 			const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
 
@@ -75,7 +77,12 @@ mixin template TaskGuard( string guardName ) {
 
 					// Mark current context as waiting on this task	(for circular dependency checks)
 					context.taskContext.blockingContext_ = _taskGuard_context;
-					context.taskContext.blockingTaskGuardIdentificationString_ = { return "%s.(%s)".format( identificationString, guardName ); };
+					context.taskContext.blockingTaskGuardIdentificationString_ = { //
+						try
+							return "%s.(%s)".format( identificationString, guardName );
+						catch ( BeastErrorException e )
+							return "#error#";
+					};
 
 					// Check for circular dependencies
 					{
@@ -88,6 +95,9 @@ mixin template TaskGuard( string guardName ) {
 						const TaskContext thisContext = context.taskContext;
 						while ( ctx ) {
 							if ( ctx is thisContext ) {
+								// Mark error to prevent dependency loop while resolving identificationStrings for dependency loop
+								_taskGuard_flags.atomicOp!"|="( Flags.error );
+
 								// Walk the dependencies again, this time record contexts we were walking
 								TaskContext ctx2 = _taskGuard_context;
 								string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_( ) ];
@@ -141,7 +151,6 @@ mixin template TaskGuard( string guardName ) {
 			try {
 				__traits( getMember, this, _taskGuard_executeFunctionName )( );
 			}
-
 			catch ( BeastErrorException exc ) {
 				// Mark this task as erroreous
 				const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );

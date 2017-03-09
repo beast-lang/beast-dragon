@@ -51,9 +51,11 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		override void buildDefinitionsCode( CodeBuilder cb ) {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
-					scope scope_ = new RootDataScope( staticData_ );
-					foreach ( param; parameters )
-						scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
+					auto scope_ = scoped!RootDataScope( staticData_ );
+					foreach ( param; parameters ) {
+						if ( param.identifier )
+							scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
+					}
 
 					scope env = DeclarationEnvironment.newFunctionBody( );
 					env.scope_ = scope_;
@@ -79,17 +81,18 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	protected:
 		final void execute_returnTypeDeduction( ) {
 			benforce( !ast_.returnType.isAutoExpression, E.notImplemented, "Auto return type is not implemented yet" );
-			returnType_ = ast_.returnType.standaloneCtExec( coreLibrary.types.Type, parent_ ).readType( );
+			returnType_ = ast_.returnType.standaloneCtExec( coreLibrary.type.Type, parent_ ).readType( );
 		}
 
 		final void execute_parameterExpanding( ) {
 			with ( memoryManager.session ) {
-				auto scope_ = new RootDataScope( parent_ );
+				auto scope_ = scoped!RootDataScope( parent_ );
 
 				foreach ( expr; ast_.parameterList.items )
 					expandedParameters_ ~= ExpandedFunctionParameter.process( expr, scope_ );
 
 				scope_.finish( );
+				// Do not cleanup the scope - it can and will be used
 			}
 		}
 

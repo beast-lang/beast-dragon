@@ -116,6 +116,12 @@ abstract class SeriousCallableMatch : CallableMatch {
 			return ast_;
 		}
 
+	protected:
+		override MatchFlags _finish( ) {
+			scope__.finish( );
+			return MatchFlags.fullMatch;
+		}
+
 	private:
 		BlurryDataScope scope__;
 		AST_Node ast_;

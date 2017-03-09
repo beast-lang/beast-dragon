@@ -33,12 +33,15 @@ final class AST_FunctionDeclaration : AST_Declaration {
 			FunctionDeclarationData declData = new FunctionDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 
-			DataScope scope_ = new RootDataScope( env.staticMembersParent );
+			auto scope_ = scoped!RootDataScope( env.staticMembersParent );
 
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorations.apply_functionDeclarationModifier( declData, scope_ );
 
-			bool isRuntime = parameterList.isRuntimeParameterList;
+			scope_.finish( );
+			assert( scope_.itemCount == 0 );
+
+			immutable isRuntime = parameterList.isRuntimeParameterList;
 
 			if ( declData.isStatic && !declData.isCtime && isRuntime )
 				sink( new Symbol_UserStaticRuntimeFunction( this, decorations, declData ) );

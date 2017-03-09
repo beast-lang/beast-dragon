@@ -48,7 +48,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		override void buildDefinitionsCode( CodeBuilder cb ) {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
-					scope scope_ = new RootDataScope( staticData_ );
+					auto scope_ = scoped!RootDataScope( staticData_ );
 
 					DataEntity_FunctionParameter[ ] paramEntities;
 					foreach ( param; parameters ) {

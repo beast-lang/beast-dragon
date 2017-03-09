@@ -22,7 +22,7 @@ final class ExpandedFunctionParameter : Identifiable {
 					assert( 0, "Cannot expand auto parameter" );
 
 				result.identifier = decl.identifier.identifier;
-				result.dataType = decl.dataType.ctExec( coreLibrary.types.Type, scope_ ).readType( );
+				result.dataType = decl.dataType.ctExec( coreLibrary.type.Type, scope_ ).readType( );
 			}
 			// Constant value parameter
 			else {
@@ -51,9 +51,10 @@ final class ExpandedFunctionParameter : Identifiable {
 					param.dataType = arg.dataType;
 
 					with ( memoryManager.session ) {
-						auto scope_ = new RootDataScope( null );
+						auto scope_ = scoped!RootDataScope( null );
 						param.constValue = arg.ctExec( scope_ );
 						scope_.finish( );
+						assert( scope_.itemCount <= 1 );
 					}
 				}
 				else static if ( is( Arg : Symbol_StaticVariable ) ) {
@@ -95,6 +96,9 @@ final class ExpandedFunctionParameter : Identifiable {
 		}
 
 		override string identificationString( ) {
+			if ( this is null )
+				return "#error#";
+
 			string result;
 			result ~= dataType.identificationString;
 

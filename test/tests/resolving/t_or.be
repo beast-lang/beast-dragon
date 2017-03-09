@@ -1,4 +1,4 @@
-module t_opor;
+module t_or;
 
 Bool staticVar;
 
@@ -15,6 +15,7 @@ Void main() {
 	poo( staticVar || false );
 	true || ( false && true );
 	true || false || true;
+	true.#operator( Operator.binOr, true );
 }
 
 Void err1() {

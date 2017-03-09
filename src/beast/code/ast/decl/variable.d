@@ -43,11 +43,12 @@ final class AST_VariableDeclaration : AST_Declaration {
 			VariableDeclarationData declData = new VariableDeclarationData( env );
 			DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
-			scope scope_ = new RootDataScope( env.staticMembersParent );
+			auto scope_ = scoped!RootDataScope( env.staticMembersParent );
 
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorationList.apply_variableDeclarationModifier( declData, scope_ );
 
+			assert( scope_.itemCount == 0 );
 			scope_.finish( );
 
 			if ( declData.isStatic )

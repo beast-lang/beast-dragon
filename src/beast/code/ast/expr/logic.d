@@ -48,8 +48,8 @@ final class AST_LogicExpression : AST_Expression {
 				return Overloadset( );
 
 			// TODO: also and operator
-			DataEntity opArg = coreLibrary.constants.operator_or.dataEntity;
-			DataEntity opRightArg = coreLibrary.constants.operator_orRight.dataEntity;
+			DataEntity opArg = coreLibrary.enum_.operator.binOr.dataEntity;
+			DataEntity opRightArg = coreLibrary.enum_.operator.binOrR.dataEntity;
 
 			foreach ( item; items ) {
 				if ( auto op = result.resolveIdentifier( ID!"#operator", scope_ ).CallMatchSet( scope_, this, false ).argument( opArg ).argument( item ).finish( ) ) {

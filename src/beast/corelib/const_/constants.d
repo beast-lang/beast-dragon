@@ -1,4 +1,4 @@
-module beast.corelib.constants;
+module beast.corelib.const_.constants;
 
 import beast.corelib.toolkit;
 import beast.code.data.var.btspconst;
@@ -18,20 +18,10 @@ struct CoreLibrary_Constants {
 		Symbol_BoostrapConstant false_;
 
 	public:
-		@constant( "Int", 1 )
-		Symbol_BoostrapConstant operator_or;
-
-		@constant( "Int", 2 )
-		Symbol_BoostrapConstant operator_orRight;
-
-		@constant( "Int", 3 )
-		Symbol_BoostrapConstant operator_call;
-
-	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			import std.string : chomp;
 
-			auto types = coreLibrary.types;
+			auto types = coreLibrary.type;
 
 			foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
 				foreach ( attr; __traits( getAttributes, __traits( getMember, this, memName ) ) ) {
