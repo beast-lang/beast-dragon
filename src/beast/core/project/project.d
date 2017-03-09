@@ -17,6 +17,8 @@ final class Project : Identifiable {
 			basePath = getcwd( );
 			messageFormatter = new MessageFormatter_GNU( );
 			moduleManager = new ModuleManager;
+
+			configuration.initialize( );
 		}
 
 	public:

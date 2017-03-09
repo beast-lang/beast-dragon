@@ -7,6 +7,8 @@ import beast.util.enumassoc;
 import beast.core.project.codesource;
 import beast.core.error.guard;
 import beast.core.project.codelocation;
+import std.parallelism : totalCPUs;
+import std.typecons : Typedef;
 
 /// Project configuration storage class
 struct ProjectConfiguration {
@@ -25,6 +27,8 @@ struct ProjectConfiguration {
 			codegen,
 			doEverything,
 		}
+
+		alias IntGt0 = Typedef!( int, 1, "IntGt0" );
 
 	public:
 		@configurable {
@@ -55,6 +59,10 @@ struct ProjectConfiguration {
 			@help( "The compiler can be configured to stop at certain compilation phase." )
 			StopOnPhase stopOnPhase = StopOnPhase.doEverything;
 
+			/// Compiler can be configured to stop at certaing compilation phase
+			@help( "How many thread workers will spawn (implicit = number of cores)" )
+			IntGt0 workerCount; // = totalCPUs; in initialize
+
 			/// Test C++ output to stdout
 			@help( "TEST ITEM" )
 			bool testStdout;
@@ -66,6 +74,10 @@ struct ProjectConfiguration {
 		}
 
 	public:
+		void initialize( ) {
+			workerCount = totalCPUs;
+		}
+
 		/// Loads cofnguration from specified configuration builder
 		void load( JSONValue[ string ] data ) {
 		itemIteration:
@@ -172,6 +184,14 @@ struct ProjectConfiguration {
 			return value.JSONValue;
 		}
 
+		static JSONValue smartOpt( T : IntGt0 )( string key, string value ) {
+			import std.format : formattedRead;
+
+			int val;
+			benforce( key.formattedRead( "%s", &val ) == 1, E.invalidOpts, "Key '%s' (='%s') is not a number".format( key, value ) );
+			return JSONValue( val );
+		}
+
 	private:
 		void loadItem( T : string, string memberName )( string key, JSONValue val ) {
 			benforce( val.type == JSON_TYPE.STRING, E.invalidProjectConfiguration, "Project configuration: expected string for key '" ~ key ~ "'" );
@@ -203,6 +223,13 @@ struct ProjectConfiguration {
 			__traits( getMember, this, memberName ) = assoc[ val.str ];
 		}
 
+		void loadItem( T : IntGt0, string memberName )( string key, JSONValue val ) {
+			benforce( val.type == JSON_TYPE.INTEGER, E.invalidProjectConfiguration, "Project configuration: expected number for key '" ~ key ~ "'" );
+			benforce( val.integer >= 1, E.invalidProjectConfiguration, "Project configuration: key '%s' must be greater than 0".format( key ) );
+
+			__traits( getMember, this, memberName ) = cast( int ) val.integer;
+		}
+
 	private:
 		string help_possibleValues( T : string )( ) {
 			return "string";
@@ -214,6 +241,10 @@ struct ProjectConfiguration {
 
 		string help_possibleValues( T : string[ ] )( ) {
 			return "array of strings";
+		}
+
+		string help_possibleValues( T : IntGt0 )( ) {
+			return "number > 0";
 		}
 
 		string help_possibleValues( T )( ) if ( is( T == enum ) ) {

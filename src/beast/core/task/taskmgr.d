@@ -1,10 +1,10 @@
 module beast.core.task.taskmgr;
 
 import beast.core.task.context;
-import core.sync.mutex : Mutex;
-import core.sync.condition : Condition;
 import beast.core.task.worker;
-import std.parallelism : totalCPUs;
+import beast.toolkit;
+import core.sync.condition : Condition;
+import core.sync.mutex : Mutex;
 
 final class TaskManager {
 
@@ -18,13 +18,11 @@ final class TaskManager {
 
 	public:
 		void spawnWorkers( ) {
-			const auto workerCount = totalCPUs * 2;
-
 			synchronized ( workerSyncMutex_ ) {
 				assert( !workers_.length );
 
 				// Spawn workers
-				foreach ( i; 0 .. workerCount )
+				foreach ( i; 0 .. cast( int ) project.configuration.workerCount )
 					workers_ ~= new Worker( i + 1 );
 			}
 		}
