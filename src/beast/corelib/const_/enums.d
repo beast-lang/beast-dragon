@@ -26,8 +26,20 @@ struct CoreLibrary_Enums {
 		OperatorItems operator;
 
 	public:
+		@enum_( "Int" )
+		Symbol_BootstrapEnum XXCtor;
+
+		struct XXCtorItems {
+			Symbol_BoostrapConstant opAssign, opRefAssign;
+		}
+
+		@standardEnumItems( "XXCtor" )
+		XXCtorItems xxctor;
+
+	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			import std.string : chomp;
+			import std.regex : ctRegex, replaceAll;
 
 			auto types = coreLibrary.type;
 
@@ -37,7 +49,7 @@ struct CoreLibrary_Enums {
 						sink(  //
 								__traits( getMember, this, memName ) = new Symbol_BootstrapEnum(  //
 								parent, //
-								memName.chomp( "_" ).Identifier, //
+								memName.chomp( "_" ).replaceAll( ctRegex!"XX", "#" ).Identifier, //
 								__traits( getMember, types, attr[ 0 ] ), //
 								 ) //
 						 );

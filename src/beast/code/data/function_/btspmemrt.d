@@ -3,12 +3,14 @@ module beast.code.data.function_.btspmemrt;
 
 import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.env;
+import beast.code.data.var.local;
 
 /// Bootstrap (compiler-defined) member (non-static) runtime (non-templated) function
 final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
-		alias CodeFunction = void delegate( CodeBuilder cb, DataScope scope_, DataEntity_FunctionParameter[ ] parameters );
+		// 0th param is this pointer
+		alias CodeFunction = void delegate( CodeBuilder cb, DataScope scope_, DataEntity_LocalVariable[ ] parameters );
 
 	public:
 		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
@@ -50,7 +52,14 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 				cb.build_functionDefinition( this, ( cb ) { //
 					auto scope_ = scoped!RootDataScope( staticData_ );
 
-					DataEntity_FunctionParameter[ ] paramEntities;
+					DataEntity_LocalVariable[ ] paramEntities;
+
+					{
+						auto thisPtr = new DataEntity_ContextPointer( scope_, null, parent_ );
+						scope_.addLocalVariable( thisPtr );
+						paramEntities ~= thisPtr;
+					}
+
 					foreach ( param; parameters ) {
 						auto ent = new DataEntity_FunctionParameter( scope_, param );
 						scope_.addLocalVariable( ent );

@@ -26,12 +26,12 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 		override Symbol_Type returnType( ) {
 			enforceDone_returnTypeDeduction( );
-			return returnType_;
+			return returnTypeWIP_;
 		}
 
 		override ExpandedFunctionParameter[ ] parameters( ) {
 			enforceDone_parameterExpanding( );
-			return expandedParameters_;
+			return expandedParametersWIP_;
 		}
 
 		override AST_Node ast( ) {
@@ -69,8 +69,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	private:
-		ExpandedFunctionParameter[ ] expandedParameters_;
-		Symbol_Type returnType_;
+		ExpandedFunctionParameter[ ] expandedParametersWIP_;
+		Symbol_Type returnTypeWIP_;
 
 	private:
 		AST_FunctionDeclaration ast_;
@@ -81,7 +81,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	protected:
 		final void execute_returnTypeDeduction( ) {
 			benforce( !ast_.returnType.isAutoExpression, E.notImplemented, "Auto return type is not implemented yet" );
-			returnType_ = ast_.returnType.standaloneCtExec( coreLibrary.type.Type, parent_ ).readType( );
+			returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreLibrary.type.Type, parent_ ).readType( );
 		}
 
 		final void execute_parameterExpanding( ) {
@@ -89,7 +89,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 				auto scope_ = scoped!RootDataScope( parent_ );
 
 				foreach ( expr; ast_.parameterList.items )
-					expandedParameters_ ~= ExpandedFunctionParameter.process( expr, scope_ );
+					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr, scope_ );
 
 				scope_.finish( );
 				// Do not cleanup the scope - it can and will be used

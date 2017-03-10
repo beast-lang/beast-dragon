@@ -6,15 +6,19 @@ import beast.code.data.var.local;
 final class DataEntity_ContextPointer : DataEntity_LocalVariable {
 
 	public:
-		this( DataScope scope_, string identifier, Symbol_Type parentType, MemoryPtr ctimeValue = MemoryPtr( 0 ) ) {
+		this( DataScope scope_, Identifier identifier, Symbol_Type parentType, MemoryPtr ctimeValue = MemoryPtr( 0 ) ) {
 			super( parentType, scope_, !ctimeValue.isNull, MemoryBlock.Flag.contextPtr );
 
-			identifier_ = Identifier( identifier );
+			identifier_ = identifier;
 		}
 
 	public:
 		override Identifier identifier( ) {
 			return identifier_;
+		}
+
+		override AST_Node ast( ) {
+			return null;
 		}
 
 	private:

@@ -4,6 +4,8 @@ import beast.code.data.toolkit;
 import beast.code.data.var.static_;
 import beast.code.decorationlist;
 import beast.code.ast.decl.variable;
+import beast.code.data.scope_.root;
+import beast.backend.ctime.codebuilder;
 
 /// User (programmer) defined static variable
 final class Symbol_UserStaticVariable : Symbol_StaticVariable {
@@ -19,7 +21,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			decorationList_ = decorationList;
 			isCtime_ = data.isCtime;
 
-			taskManager.issueJob( { enforceDone_typeDeduction( ); } );
+			taskManager.issueJob( { enforceDone_memoryAllocation( ); } );
 		}
 
 	public:
@@ -29,7 +31,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 		override Symbol_Type dataType( ) {
 			enforceDone_typeDeduction( );
-			return dataType_;
+			return dataTypeWIP_;
 		}
 
 		override AST_Node ast( ) {
@@ -38,7 +40,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 		override MemoryPtr memoryPtr( ) {
 			enforceDone_memoryAllocation( );
-			return memoryPtr_;
+			return memoryPtrWIP_;
 		}
 
 		override bool isCtime( ) {
@@ -48,7 +50,8 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 	private:
 		DecorationList decorationList_;
 		AST_VariableDeclaration ast_;
-		Symbol_Type dataType_;
+		Symbol_Type dataTypeWIP_;
+		MemoryPtr memoryPtrWIP_;
 		bool isCtime_;
 
 	private:
@@ -56,18 +59,25 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
 			// TODO: if type auto
-			dataType_ = ast_.dataType.standaloneCtExec( coreLibrary.type.Type, parent ).readType( );
+			dataTypeWIP_ = ast_.dataType.standaloneCtExec( coreLibrary.type.Type, parent ).readType( );
 
-			benforce!( ErrorSeverity.warning )( dataType_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataType_.identificationString ) );
+			benforce!( ErrorSeverity.warning )( dataTypeWIP_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataTypeWIP_.identificationString ) );
 
-			decorationList_.enforceAllResolved();
+			decorationList_.enforceAllResolved( );
 		}
 
 		void execute_memoryAllocation( ) {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
-			with ( memoryManager.session )
-				memoryPtr_ = memoryManager.alloc( dataType_.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd | ( isCtime_ ? MemoryBlock.Flag.noFlag : MemoryBlock.Flag.runtime ), identifier.str );
+			with ( memoryManager.session ) {
+				auto scope_ = scoped!RootDataScope( parent );
+				auto cb = scoped!CodeBuilder_Ctime( );
+
+				memoryPtrWIP_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd | ( isCtime_ ? MemoryBlock.Flag.noFlag : MemoryBlock.Flag.runtime ), identifier.str );
+				ast_.buildConstructor( dataEntity, scope_, cb );
+
+				scope_.finish( );
+			}
 		}
 
 }

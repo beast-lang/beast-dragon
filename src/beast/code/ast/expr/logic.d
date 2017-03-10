@@ -25,7 +25,7 @@ final class AST_LogicExpression : AST_Expression {
 
 			while ( currentToken == Token.Operator.logOr || currentToken == Token.Operator.logAnd ) {
 				benforce( currentToken == result.op, E.invalidOpCombination, "You cannot mix && and || operators, use parentheses", ( err ) { err.codeLocation = currentToken.codeLocation; } );
-				getNextToken();
+				getNextToken( );
 
 				result.items ~= LowerLevelExpression.parse( );
 			}
@@ -43,7 +43,7 @@ final class AST_LogicExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
-			DataEntity result = base.buildSemanticTree( inferredType, scope_, true ).single( );
+			DataEntity result = base.buildSemanticTree_single( inferredType, scope_, true );
 			if ( !result )
 				return Overloadset( );
 
@@ -52,13 +52,13 @@ final class AST_LogicExpression : AST_Expression {
 			DataEntity opRightArg = coreLibrary.enum_.operator.binOrR.dataEntity;
 
 			foreach ( item; items ) {
-				if ( auto op = result.resolveIdentifier( ID!"#operator", scope_ ).CallMatchSet( scope_, this, false ).argument( opArg ).argument( item ).finish( ) ) {
+				if ( auto op = result.resolveIdentifier( ID!"#operator", scope_ ).resolveCall( scope_, this, false, opArg, item ) ) {
 					result = op;
 					continue;
 				}
 
 				DataEntity entity = item.buildSemanticTree( null, scope_, false ).single;
-				if ( auto op = entity.resolveIdentifier( ID!"#operator", scope_ ).CallMatchSet( scope_, this, false ).argument( opRightArg ).argument( item ).finish( ) ) {
+				if ( auto op = entity.resolveIdentifier( ID!"#operator", scope_ ).resolveCall( scope_, this, false, opRightArg, item ) ) {
 					result = op;
 					continue;
 				}

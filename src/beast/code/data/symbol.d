@@ -49,7 +49,7 @@ abstract class Symbol : Identifiable {
 		/// Outer hash - hash that is generated based on entity declaration and surroundings, not its definition (considering classes, functions, etc)
 		final Hash outerHash( ) {
 			enforceDone_outerHashObtaining( );
-			return outerHash_;
+			return outerHashWIP_;
 		}
 
 	public:
@@ -63,14 +63,14 @@ abstract class Symbol : Identifiable {
 		}
 
 	protected:
-		Hash outerHash_;
+		Hash outerHashWIP_;
 
 	protected:
 		void execute_outerHashObtaining( ) {
-			outerHash_ = identifier.hash;
+			outerHashWIP_ = identifier.hash;
 
 			if ( auto parent = dataEntity.parent )
-				outerHash_ += parent.outerHash;
+				outerHashWIP_ += parent.outerHash;
 		}
 
 }

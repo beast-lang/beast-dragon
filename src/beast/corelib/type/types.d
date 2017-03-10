@@ -7,7 +7,7 @@ import beast.code.data.function_.btspmemrt;
 import beast.code.data.type.btspenum;
 
 struct CoreLibrary_Types {
-	/// ( instanceSize )
+	/// ( instanceSize, defaultValue )
 	alias bootstrapType = Decorator!( "corelib.types.bootstrap", size_t );
 	alias enumType = Decorator!( "corelib.types.enum", string );
 
@@ -52,6 +52,15 @@ struct CoreLibrary_Types {
 		void initialize2( ) {
 			{
 				Symbol[ ] sym;
+
+				// Implicit constructor
+				sym ~= new Symbol_BootstrapMemberRuntimeFunction( "#ctor", Bool, Void, //
+						ExpandedFunctionParameter.bootstrap( ), //
+						( cb, scope_, params ) { //
+							// Bool is false by default
+							cb.build_memoryWrite( scope_, params[ 0 ].memoryPtr, coreLibrary.constant.false_.dataEntity );
+						} );
+
 				sym ~= new Symbol_BootstrapMemberRuntimeFunction( "#operator", Bool, Bool, //
 						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binOr, Bool ), //
 						( cb, scope_, params ) { //

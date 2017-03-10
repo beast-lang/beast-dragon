@@ -16,7 +16,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 			super.execute_outerHashObtaining( );
 
 			foreach ( param; parameters )
-				outerHash_ += param.dataType.outerHash;
+				outerHashWIP_ += param.dataType.outerHash;
 		}
 
 		final string baseIdentifier( ) {

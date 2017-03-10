@@ -251,6 +251,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 			return ( hash_ + Hash( hashCounter_++ ) ).str;
 		}
 
+	public:
+		final string identificationString( ) {
+			return "codebuilder.c++";
+		}
+
 	protected:
 		Hash hash_;
 		/// Increments every time a child codegen is created -- because of hashing

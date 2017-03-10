@@ -26,6 +26,10 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 			return dataType_;
 		}
 
+		override MemoryPtr memoryPtr() {
+			return memoryPtr_;
+		}
+
 		override bool isCtime( ) {
 			return true;
 		}
@@ -33,5 +37,6 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 	protected:
 		Symbol_Type dataType_;
 		Identifier identififer_;
+		MemoryPtr memoryPtr_;
 
 }

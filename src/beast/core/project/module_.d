@@ -29,19 +29,19 @@ final class Module : CodeSource, Identifiable {
 
 		AST_Module ast( ) {
 			enforceDone_parsing( );
-			return ast_;
+			return astWIP_;
 		}
 
 		/// Symbol of the module
 		Symbol_UserModule symbol( ) {
 			enforceDone_parsing( );
-			return symbol_;
+			return symbolWIP_;
 		}
 
 		Token[ ] tokenList( ) {
 			// TODO: Don't always keep tokenlist
 			enforceDone_parsing( );
-			return tokenList_;
+			return tokenListWIP_;
 		}
 
 	public:
@@ -66,28 +66,28 @@ final class Module : CodeSource, Identifiable {
 				while ( lexer.getNextToken != Token.Special.eof ) {
 				}
 
-				tokenList_ = lexer.generatedTokens;
+				tokenListWIP_ = lexer.generatedTokens;
 				return;
 			}
 
 			// Read first token
 			lexer.getNextToken( );
 
-			ast_ = AST_Module.parse( );
-			benforce( ast_.identifier == identifier, E.moduleNameMismatch, "Module '" ~ ast_.identifier.str ~ "' should be named '" ~ identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
+			astWIP_ = AST_Module.parse( );
+			benforce( astWIP_.identifier == identifier, E.moduleNameMismatch, "Module '" ~ astWIP_.identifier.str ~ "' should be named '" ~ identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
 
-			tokenList_ = lexer.generatedTokens;
+			tokenListWIP_ = lexer.generatedTokens;
 
 			if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
 				return;
 
-			symbol_ = new Symbol_UserModule( this, ast_ );
+			symbolWIP_ = new Symbol_UserModule( this, astWIP_ );
 		}
 
 	private:
-		AST_Module ast_;
-		Symbol_UserModule symbol_;
-		Token[ ] tokenList_;
+		AST_Module astWIP_;
+		Symbol_UserModule symbolWIP_;
+		Token[ ] tokenListWIP_;
 
 }
 

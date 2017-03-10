@@ -39,20 +39,17 @@ final class AST_VariableDeclaration : AST_Declaration {
 	public:
 		override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
 			const auto __gd = ErrorGuard( this );
-			
+
 			VariableDeclarationData declData = new VariableDeclarationData( env );
 			DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
-			auto scope_ = scoped!RootDataScope( env.staticMembersParent );
-
 			// Apply possible decorators in the variableDeclarationModifier context
-			decorationList.apply_variableDeclarationModifier( declData, scope_ );
+			decorationList.apply_variableDeclarationModifier( declData, null );
 
-			assert( scope_.itemCount == 0 );
-			scope_.finish( );
-
-			if ( declData.isStatic )
+			if ( declData.isStatic ) {
+				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
 				sink( new Symbol_UserStaticVariable( this, decorationList, declData ) );
+			}
 			else
 				berror( E.notImplemented, "Not implemented" );
 		}
@@ -64,16 +61,18 @@ final class AST_VariableDeclaration : AST_Declaration {
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 
 			// Apply possible decorators in the variableDeclarationModifier context
-			decorations.apply_variableDeclarationModifier( declData, scope_ );
+			decorations.apply_variableDeclarationModifier( declData, null );
 
 			if ( declData.isStatic ) {
+				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
 				Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
-				scope_.addEntity( var.dataEntity );
+				scope_.addEntity( var );
 			}
 			else {
 				DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorations, declData );
-				scope_.addLocalVariable( var );
 				cb.build_localVariableDefinition( var );
+				buildConstructor( var, scope_, cb );
+				scope_.addLocalVariable( var );
 			}
 		}
 
@@ -89,6 +88,23 @@ final class AST_VariableDeclaration : AST_Declaration {
 		override SubnodesRange _subnodes( ) {
 			// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
 			return nodeRange( dataType, identifier, value, decorationList.codeLocation.isInside( codeLocation ) ? decorationList : null );
+		}
+
+	public:
+		void buildConstructor( DataEntity entity, DataScope scope_, CodeBuilder cb ) {
+			auto match = entity.expectResolveIdentifier( ID!"#ctor", scope_ ).CallMatchSet( scope_, this, true );
+
+			if ( value ) {
+				// colonAssign calls #ctor( #Ctor.opRefAssign, value );
+				if ( valueColonAssign )
+					match.arg( coreLibrary.enum_.xxctor.opRefAssign );
+				else
+					match.arg( coreLibrary.enum_.xxctor.opAssign );
+
+				match.arg( value.buildSemanticTree_single( entity.dataType, scope_ ) );
+			}
+
+			match.finish( ).buildCode( cb, scope_ );
 		}
 
 }

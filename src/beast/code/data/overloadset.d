@@ -77,6 +77,17 @@ struct Overloadset {
 		}
 
 	public:
+		/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
+		DataEntity resolveCall( Args... )( DataScope parentScope, AST_Node ast, bool reportErrors, Args args ) {
+			CallMatchSet match = CallMatchSet( this, parentScope, ast, reportErrors );
+
+			foreach ( arg; args )
+				match.arg( arg );
+
+			return match.finish( );
+		}
+
+	public:
 		string identificationString( ) {
 			return "[ %s ]".format( data.map!( x => x.dataType.identificationString ).joiner( ", " ).array );
 		}

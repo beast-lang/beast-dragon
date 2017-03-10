@@ -69,7 +69,7 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 
 		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ ) {
 			const auto _gd = ErrorGuard( this );
-			return leftSide.CallMatchSet( scope_, this ).arguments( items ).finish( ).Overloadset;
+			return leftSide.resolveCall( scope_, this, true, items ).Overloadset;
 		}
 
 	protected:

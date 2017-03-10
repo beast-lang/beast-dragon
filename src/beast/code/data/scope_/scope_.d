@@ -45,6 +45,10 @@ abstract class DataScope : Identifiable {
 			}
 		}
 
+		final void addEntity( Symbol sym ) {
+			addEntity( sym.dataEntity );
+		}
+
 		/// Adds variable to the scope
 		final void addLocalVariable( DataEntity_LocalVariable var ) {
 			localVariables_ ~= var;

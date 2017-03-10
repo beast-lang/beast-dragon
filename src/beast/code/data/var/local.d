@@ -44,7 +44,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 		override final Hash outerHash( ) {
 			enforceDone_outerHashObtaining( );
-			return outerHash_;
+			return outerHashWIP_;
 		}
 
 	public:
@@ -56,12 +56,12 @@ abstract class DataEntity_LocalVariable : DataEntity {
 		Symbol_Type dataType_;
 		DataScope scope__;
 		MemoryBlock memoryBlock_;
-		Hash outerHash_;
+		Hash outerHashWIP_;
 		bool isCtime_;
 
 	private:
 		void execute_outerHashObtaining( ) {
-			outerHash_ = parent.outerHash + ( identifier ? identifier.hash : Hash( cast( size_t ) cast( void* ) this ) );
+			outerHashWIP_ = parent.outerHash + ( identifier ? identifier.hash : Hash( cast( size_t ) cast( void* ) this ) );
 		}
 
 }

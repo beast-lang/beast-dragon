@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 import beast.code.data.callable;
 import beast.code.data.scope_.local;
 import beast.code.ast.expr.expression;
+import std.range.primitives : isInputRange, ElementType;
 
 /// Structure that handles overload matching
 struct CallMatchSet {
@@ -26,11 +27,11 @@ struct CallMatchSet {
 				}
 			}
 
-			benforce( !reportErrors || matches.length != 0, E.noMatchingOverload, "No callable overloads in overloadset %s".format( overloadset.identificationString ) );
+			benforce( !reportErrors || matches.length != 0, E.noMatchingOverload, "No callable overloads" );
 		}
 
 	public:
-		ref CallMatchSet argument( DataEntity entity ) {
+		ref CallMatchSet arg( T : DataEntity )( T entity ) {
 			Symbol_Type dataType = entity.dataType;
 			argumentTypes ~= dataType;
 
@@ -42,7 +43,11 @@ struct CallMatchSet {
 			return this;
 		}
 
-		ref CallMatchSet argument( AST_Expression expr ) {
+		ref CallMatchSet arg( T : Symbol )( T sym ) {
+			return arg( sym.dataEntity );
+		}
+
+		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
 			DataEntity entity = expr.buildSemanticTree_single( null, scope_, false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
 			argumentTypes ~= dataType;
@@ -55,10 +60,9 @@ struct CallMatchSet {
 			return this;
 		}
 
-	public:
-		ref CallMatchSet arguments( AST_Expression[ ] expressions ) {
-			foreach ( expr; expressions )
-				argument( expr );
+		ref CallMatchSet arg( R )( R args ) if ( isInputRange!R ) {
+			foreach ( argv; args )
+				arg( argv );
 
 			return this;
 		}

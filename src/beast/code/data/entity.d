@@ -94,6 +94,13 @@ abstract class DataEntity : Identifiable {
 			return Overloadset( );
 		}
 
+		/// Resolves the identifier, throws an error if the overloadset is empty
+		final Overloadset expectResolveIdentifier( Identifier id, DataScope scope_ ) {
+			auto result = resolveIdentifier( id, scope_ );
+			benforce( !result.isEmpty, E.unknownIdentifier, "Could not resolve identifier '%s' for %s".format( id.str, identificationString ) );
+			return result;
+		}
+
 		/// Resolves identifier recursively (looking into parent entities)
 		/// The scope can be used for creating temporary variables
 		final Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
