@@ -3,6 +3,7 @@ module beast.backend.cpp.codebuilder;
 import beast.backend.toolkit;
 import std.array : Appender, appender;
 import std.format : formattedWrite;
+import beast.code.data.scope_.local;
 
 // TODO: Asynchronous proxy definition handler
 
@@ -53,7 +54,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
-			// TODO: implicit value
+			addToScope( var );
+
 			resultVarName_ = cppIdentifier( var );
 			codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( var.dataType ), resultVarName_ );
 		}
@@ -62,11 +64,13 @@ class CodeBuilder_Cpp : CodeBuilder {
 			const string proto = functionPrototype( func );
 			declarationsResult_.formattedWrite( "%s%s;\n", tabs, proto );
 			codeResult_.formattedWrite( "%s%s {\n", tabs, proto );
-			tabOffset_++;
+
+			pushScope( );
 
 			body_( this );
 
-			tabOffset_--;
+			popScope( );
+
 			codeResult_.formattedWrite( "%s}\n\n", tabs );
 
 			debug resultVarName_ = null;
@@ -94,22 +98,35 @@ class CodeBuilder_Cpp : CodeBuilder {
 				resultVarName_ = "( %s + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
 		}
 
+		override void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
+			data.buildCode( this, scope_ );
+			const string rightOp = resultVarName_;
+
+			build_memoryAccess( target );
+			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, resultVarName_, rightOp, data.dataType.instanceSize );
+		}
+
 		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			string resultVarName;
 			if ( function_.returnType !is coreLibrary.type.Void ) {
-				resultVarName = "_%s_tmp".format( getHash( ) );
-				codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( function_.returnType ), resultVarName );
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, scope_, false );
+				build_localVariableDefinition( resultVar );
+				resultVarName = cppIdentifier( resultVar );
 			}
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
-			tabOffset_++;
+
+			auto subScope = scoped!LocalDataScope( scope_ );
+			pushScope( );
 
 			string[ ] argumentNames;
 			if ( resultVarName )
 				argumentNames ~= "&" ~ resultVarName;
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
-				parentInstance.buildCode( this, scope_ );
+				assert( parentInstance );
+
+				parentInstance.buildCode( this, subScope );
 				argumentNames ~= resultVarName_;
 			}
 
@@ -117,51 +134,82 @@ class CodeBuilder_Cpp : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
-				arguments[ i ].buildCode( this, scope_ );
-				argumentNames ~= resultVarName_;
+				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, subScope, false );
+				build_localVariableDefinition( argVar );
+				build_copyCtor( argVar, arguments[ i ], subScope );
+
+				argumentNames ~= cppIdentifier( argVar );
 			}
 
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
-			tabOffset_--;
+			popScope( );
+
 			codeResult_.formattedWrite( "%s}\n", tabs );
 			resultVarName_ = resultVarName;
 		}
 
+		override void build_primitiveOperation( DataScope scope_, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			static import beast.backend.cpp.primitiveop;
+
+			string[ ] argumentNames;
+			string instName;
+
+			auto subScope = scoped!LocalDataScope( scope_ );
+			pushScope( );
+
+			if ( parentInstance ) {
+				parentInstance.buildCode( this, subScope );
+				instName = resultVarName_;
+			}
+
+			foreach ( i, arg; arguments ) {
+				arguments[ i ].buildCode( this, subScope );
+				argumentNames ~= resultVarName_;
+			}
+
+			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( CodeBuilder_Cpp cb, string instName, string[ ] argumentNames ) {
+				mixin( "cb.resultVarName_ = beast.backend.cpp.primitiveop.primitiveOp_%s( cb, instName, argumentNames );".format( opStr ) );
+			}
+
+			mixin(  //
+					"final switch( op ) {\n%s\n}".format(  //
+					[ __traits( derivedMembers, BackendPrimitiveOperation ) ].map!(  //
+					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( this, instName, argumentNames ); break;\n".format( x, x, x ) //
+					 ).joiner ) );
+
+			popScope( );
+		}
+
 	public: // Statement related build commands
 		override void build_if( DataScope scope_, DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
-			codeResult_ ~= tabs ~ "{\n";
-			tabOffset_++;
-
-			// Build the condition
+			codeResult_.formattedWrite( "%s{\n", tabs );
+			pushScope( );
+			auto subScope = scoped!LocalDataScope( scope_ ); // Build the condition
 			{
-				condition.buildCode( this, scope_ );
+				condition.buildCode( this, subScope );
 				codeResult_.formattedWrite( "%sif( %s ) {\n", tabs, resultVarName_ );
 			}
 
 			// Build then branch
 			{
-				tabOffset_++;
+				pushScope( );
 				thenBranch( this );
-				tabOffset_--;
-
+				popScope( );
 				codeResult_.formattedWrite( "%s}\n", tabs );
 			}
 
 			// Build else branch
 			if ( elseBranch ) {
 				codeResult_.formattedWrite( "%selse {\n", tabs );
-
-				tabOffset_++;
+				pushScope( );
 				elseBranch( this );
-				tabOffset_--;
-
+				popScope( );
 				codeResult_.formattedWrite( "%s}\n", tabs );
 			}
 
-			tabOffset_--;
+			popScope( );
 			codeResult_.formattedWrite( "%s}\n", tabs );
-
 			debug resultVarName_ = null;
 		}
 
@@ -169,9 +217,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		string functionPrototype( Symbol_RuntimeFunction func ) {
 			size_t parameterCount = 0;
 			auto result = appender!string;
-			result.formattedWrite( "void %s( ", cppIdentifier( func ) );
-
-			// Return value is passed as a pointer
+			result.formattedWrite( "void %s( ", cppIdentifier( func ) ); // Return value is passed as a pointer
 			if ( func.returnType !is coreLibrary.type.Void ) {
 				result.formattedWrite( "%s *result", cppIdentifier( func.returnType ) );
 				parameterCount++;
@@ -180,7 +226,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( func.declarationType == Symbol.DeclType.memberFunction ) {
 				if ( parameterCount )
 					result ~= ", ";
-
 				result.formattedWrite( "%s *context", cppIdentifier( func.dataEntity.parent.dataType ) );
 				parameterCount++;
 			}
@@ -189,18 +234,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 				// Constant-value parameters do not go to the output code
 				if ( param.isConstValue )
 					continue;
-
 				if ( parameterCount )
 					result ~= ", ";
-
 				result.formattedWrite( "%s *%s", cppIdentifier( param.dataType ), cppIdentifier( param ) );
-
 				parameterCount++;
 			}
 
 			if ( parameterCount )
 				result ~= " ";
-
 			result ~= ")";
 			return result.data;
 		}
@@ -239,11 +280,15 @@ class CodeBuilder_Cpp : CodeBuilder {
 			return id.replace( "#", "_" );
 		}
 
-	protected:
+	public:
+		final string identificationString( ) {
+			return "codebuilder.c++";
+		}
+
+	package:
 		final string tabs( ) {
 			while ( tabsString_.length < tabOffset_ * tab.length )
 				tabsString_ ~= tabsString_;
-
 			return tabsString_[ 0 .. tabOffset_ * tab.length ];
 		}
 
@@ -251,21 +296,25 @@ class CodeBuilder_Cpp : CodeBuilder {
 			return ( hash_ + Hash( hashCounter_++ ) ).str;
 		}
 
-	public:
-		final string identificationString( ) {
-			return "codebuilder.c++";
+	protected:
+		override void pushScope( ) {
+			tabOffset_++;
+			super.pushScope( );
 		}
 
-	protected:
-		Hash hash_;
-		/// Increments every time a child codegen is created -- because of hashing
-		size_t childrenCounter_;
-		/// Increments every time a new hash is needed
-		size_t hashCounter_;
-		Appender!string codeResult_, declarationsResult_, typesResult_;
-		string resultVarName_;
-		size_t tabOffset_;
-		/// Accumulator for optimized tabs output
-		string tabsString_;
+		override void popScope( ) {
+			foreach ( var; scopeItems )
+				codeResult_.formattedWrite( "%s// #dtor %s\n", tabs, cppIdentifier( var ) );
+			super.popScope( );
+			tabOffset_--;
+		}
 
+	package:
+		Hash hash_; /// Increments every time a child codegen is created -- because of hashing
+		size_t childrenCounter_; /// Increments every time a new hash is needed
+		size_t hashCounter_;
+		Appender!string codeResult_, declarationsResult_, typesResult_; /// Identifier of a variable representing result of last build expression
+		string resultVarName_;
+		size_t tabOffset_; /// Accumulator for optimized tabs output
+		string tabsString_;
 }

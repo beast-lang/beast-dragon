@@ -38,26 +38,19 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		/// Builds write to a memory
-		final void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
-			if ( data.isCtime )
-				_build_memoryWrite( target, data.ctExec( scope_ ), data.dataType.instanceSize );
-			else
-				_build_memoryWrite( scope_, target, data );
+		void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
 		final void build_memoryWrite( DataScope scope_, MemoryPtr target, Symbol sym ) {
 			build_memoryWrite( scope_, target, sym.dataEntity );
 		}
 
-		protected void _build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
-			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
-		}
-
-		protected void _build_memoryWrite( MemoryPtr target, MemoryPtr data, size_t dataSize ) {
-			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
-		}
-
 		void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
+		void build_primitiveOperation( DataScope scope_,BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
@@ -68,5 +61,42 @@ abstract class CodeBuilder : Identifiable {
 		void build_if( DataScope scope_, DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
+
+	public:
+		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue, DataScope scope_ ) {
+			var.resolveIdentifier( ID!"#ctor", scope_ ).resolveCall( scope_, var.ast, true, coreLibrary.enum_.xxctor.copy, initValue ).buildCode( this, scope_ );
+		}
+
+	protected:
+		/// Creates a new scope (scopes are stored on a stack)
+		/// CodeBuilder scopes are used for destructor generating
+		void pushScope( ) {
+			scopeStack_ ~= topScope_;
+			topScope_ = null;
+		}
+
+		/// Destroys the last scope
+		/// CodeBuilder scopes are used for destructor generating
+		void popScope( ) {
+			// TODO: generate destructors
+
+			assert( scopeStack_.length );
+
+			topScope_ = scopeStack_[ $ - 1 ];
+			scopeStack_.length--;
+		}
+
+		final void addToScope( DataEntity_LocalVariable var ) {
+			topScope_ ~= var;
+		}
+
+		final DataEntity_LocalVariable[ ] scopeItems( ) {
+			return topScope_;
+		}
+
+	private:
+		DataEntity_LocalVariable[ ] topScope_;
+		// There should always be one empty scope - for optimizations
+		DataEntity_LocalVariable[ ][ ] scopeStack_ = [ [ ] ];
 
 }

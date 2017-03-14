@@ -9,7 +9,11 @@ final class DataEntity_ContextPointer : DataEntity_LocalVariable {
 		this( DataScope scope_, Identifier identifier, Symbol_Type parentType, MemoryPtr ctimeValue = MemoryPtr( 0 ) ) {
 			super( parentType, scope_, !ctimeValue.isNull, MemoryBlock.Flag.contextPtr );
 
+			if( !ctimeValue.isNull )
+				memoryPtr.write( ctimeValue, parentType.instanceSize );
+
 			identifier_ = identifier;
+			interpreterBpOffset = -1; // Context pointer is always bp offset -1 (even if there is no context needed)
 		}
 
 	public:

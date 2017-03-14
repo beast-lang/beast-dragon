@@ -52,6 +52,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
 					auto scope_ = scoped!RootDataScope( staticData_ );
+					
 					foreach ( param; parameters ) {
 						if ( param.identifier )
 							scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
@@ -98,6 +99,12 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	protected:
 		final class Data : super.Data {
+
+			public:
+				this() {
+					assert( this.outer );
+					super();
+				}
 
 			public:
 				override DataEntity parent( ) {

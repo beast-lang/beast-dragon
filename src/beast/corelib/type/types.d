@@ -4,7 +4,9 @@ import beast.corelib.type.toolkit;
 import beast.corelib.type.type;
 import beast.util.decorator;
 import beast.code.data.function_.btspmemrt;
+import beast.code.data.function_.primmemrt;
 import beast.code.data.type.btspenum;
+import beast.backend.common.primitiveop;
 
 struct CoreLibrary_Types {
 	/// ( instanceSize, defaultValue )
@@ -54,12 +56,10 @@ struct CoreLibrary_Types {
 				Symbol[ ] sym;
 
 				// Implicit constructor
-				sym ~= new Symbol_BootstrapMemberRuntimeFunction( "#ctor", Bool, Void, //
+				sym ~= new Symbol_PrimitiveMemberRuntimeFunction( "#ctor", Bool, Void, //
 						ExpandedFunctionParameter.bootstrap( ), //
-						( cb, scope_, params ) { //
-							// Bool is false by default
-							cb.build_memoryWrite( scope_, params[ 0 ].memoryPtr, coreLibrary.constant.false_.dataEntity );
-						} );
+						BackendPrimitiveOperation.boolCtor //
+						 );
 
 				sym ~= new Symbol_BootstrapMemberRuntimeFunction( "#operator", Bool, Bool, //
 						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binOr, Bool ), //

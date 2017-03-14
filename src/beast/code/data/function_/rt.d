@@ -2,9 +2,17 @@
 module beast.code.data.function_.rt;
 
 import beast.code.data.function_.toolkit;
+import beast.backend.interpreter.codeblock;
+import beast.backend.interpreter.codebuilder;
 
 /// Runtime function = function without @ctime arguments (or expanded ones)
 abstract class Symbol_RuntimeFunction : Symbol_Function {
+	mixin TaskGuard!"codeProcessing";
+
+	protected:
+		this( ) {
+
+		}
 
 	public:
 		abstract Symbol_Type returnType( );
@@ -19,15 +27,25 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				outerHashWIP_ += param.dataType.outerHash;
 		}
 
+		final void execute_codeProcessing( ) {
+			auto cb = scoped!CodeBuilder_Interpreter( );
+			buildDefinitionsCode( cb );
+			interpreterCodeWIP_ = cb.result;
+		}
+
 		final string baseIdentifier( ) {
 			return identifier ? identifier.str : "(anonymous function)";
 		}
+
+	private:
+		InterpreterCodeBlock interpreterCodeWIP_;
 
 	protected:
 		abstract class Data : SymbolRelatedDataEntity {
 
 			public:
 				this( ) {
+					assert( this.outer );
 					super( this.outer );
 				}
 

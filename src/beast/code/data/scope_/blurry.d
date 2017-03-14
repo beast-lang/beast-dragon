@@ -9,6 +9,7 @@ final class BlurryDataScope : DataScope {
 	public:
 		this( DataScope parentScope ) {
 			super( parentScope.parentEntity );
+			assert( parentScope_ );
 			parentScope_ = parentScope;
 		}
 

@@ -30,6 +30,7 @@ struct CoreLibrary_Enums {
 		Symbol_BootstrapEnum XXCtor;
 
 		struct XXCtorItems {
+			Symbol_BoostrapConstant copy;
 			Symbol_BoostrapConstant opAssign, opRefAssign;
 		}
 
@@ -68,7 +69,8 @@ struct CoreLibrary_Enums {
 									parent, //
 									subMemName.chomp( "_" ).Identifier, //
 									baseClass, //
-									&i ) //
+									i //
+									 ) //
 							 );
 
 							i++;

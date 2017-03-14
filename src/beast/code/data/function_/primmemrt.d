@@ -1,25 +1,25 @@
-/// BootStraP MEMber RunTime
-module beast.code.data.function_.btspmemrt;
+/// PRIMitive MEMber RunTime
+module beast.code.data.function_.primmemrt;
 
 import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.env;
 import beast.code.data.var.local;
+import beast.backend.common.primitiveop;
 
-/// Bootstrap (compiler-defined) member (non-static) runtime (non-templated) function
-final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
+/// Primitive (compiler-defined, handled by backend) member (non-static) runtime (non-templated) function
+final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		// 0th param is this pointer
 		alias CodeFunction = void delegate( CodeBuilder cb, DataScope scope_, DataEntity_LocalVariable[ ] parameters );
 
 	public:
-		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
+		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, BackendPrimitiveOperation op ) {
 			identifier_ = Identifier( identifier );
 			parent_ = parent;
 			returnType_ = returnType;
 			parameters_ = parameters;
-			codeFunction_ = codeFunction;
-
+			op_ = op;
 			staticData_ = new StaticData( );
 		}
 
@@ -48,33 +48,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 		override void buildDefinitionsCode( CodeBuilder cb ) {
-			with ( memoryManager.session ) {
-				cb.build_functionDefinition( this, ( cb ) { //
-					auto scope_ = scoped!RootDataScope( staticData_ );
-
-					DataEntity_LocalVariable[ ] paramEntities;
-
-					{
-						auto thisPtr = new DataEntity_ContextPointer( scope_, ID!"this", parent_ );
-						scope_.addLocalVariable( thisPtr );
-						paramEntities ~= thisPtr;
-					}
-
-					foreach ( param; parameters ) {
-						auto ent = new DataEntity_FunctionParameter( scope_, param );
-						scope_.addLocalVariable( ent );
-						paramEntities ~= ent;
-					}
-
-					scope env = DeclarationEnvironment.newFunctionBody( );
-					env.scope_ = scope_;
-					env.staticMembersParent = dataEntity;
-
-					codeFunction_( cb, scope_, paramEntities );
-
-					scope_.finish( );
-				} );
-			}
+			// Do nothing
 		}
 
 	private:
@@ -83,7 +57,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		Symbol_Type returnType_;
 		StaticData staticData_;
 		ExpandedFunctionParameter[ ] parameters_;
-		CodeFunction codeFunction_;
+		BackendPrimitiveOperation op_;
 
 	protected:
 		final class Data : super.Data {
@@ -151,7 +125,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_functionCall( scope_, this.outer, parentInstance_, arguments_ );
+					cb.build_primitiveOperation( scope_, op_, parentInstance_, arguments_ );
 				}
 
 			private:

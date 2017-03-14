@@ -56,6 +56,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
 			const auto __gd = ErrorGuard( this );
+			assert( scope_ );
 
 			VariableDeclarationData declData = new VariableDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );

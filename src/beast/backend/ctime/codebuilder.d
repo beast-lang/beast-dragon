@@ -28,7 +28,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 	public: // Expression related build commands
 		override void build_memoryAccess( MemoryPtr pointer ) {
 			debug assert( context.jobId == jobId_ );
-			
+
 			MemoryBlock b = memoryManager.findMemoryBlock( pointer );
 			benforce( !b.isRuntime, E.valueNotCtime, b.isLocal ? "Variable '%s' is not ctime".format( b.localVariable.identificationString ) : "Variable is not ctime" );
 

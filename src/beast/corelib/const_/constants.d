@@ -31,19 +31,14 @@ struct CoreLibrary_Constants {
 								parent, //
 								memName.chomp( "_" ).Identifier, //
 								__traits( getMember, types, attr[ 0 ] ), //
-								literal!( attr[ 1 ] ) ) //
+								attr[ 1 ] //
+								 ) //
 						 );
 
 						break;
 					}
 				}
 			}
-		}
-
-	private:
-		template literal( alias val ) {
-			static immutable ulong data = val;
-			static immutable literal = &data;
 		}
 
 }

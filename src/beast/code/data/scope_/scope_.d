@@ -4,7 +4,8 @@ import beast.code.data.toolkit;
 import beast.util.identifiable;
 import beast.code.data.var.local;
 
-/// "Scope" is where local variables exist; exiting the scope results in destroying them
+/// DatScope is basically a namespace for data entities (the "Namespace" class stores symbols) - it is a namespace with a context
+/// DataScope is not responsible for calling destructors or constructors - destructors are handled by a codebuilder
 /// Scope is expected to be accessed from one context only
 abstract class DataScope : Identifiable {
 
@@ -23,11 +24,11 @@ abstract class DataScope : Identifiable {
 		final override string identificationString( ) {
 			if ( this is null )
 				return "#error#";
-				
+
 			return parentEntity.identificationString;
 		}
 
-		final size_t itemCount() {
+		final size_t itemCount( ) {
 			return localVariables_.length;
 		}
 
@@ -36,13 +37,14 @@ abstract class DataScope : Identifiable {
 			debug assert( context.jobId == jobId_ );
 			debug assert( !isFinished_ );
 
+			auto id = entity_.identifier;
+			assert( id, "You cannot add entities without an identifier to a scope" );
+
 			// Add to the overloadset
-			if ( auto id = entity_.identifier ) {
-				if ( auto it = id in groupedNamedVariables_ )
-					it.data ~= entity_;
-				else
-					groupedNamedVariables_[ id ] = Overloadset( [ entity_ ] );
-			}
+			if ( auto it = id in groupedNamedVariables_ )
+				it.data ~= entity_;
+			else
+				groupedNamedVariables_[ id ] = Overloadset( [ entity_ ] );
 		}
 
 		final void addEntity( Symbol sym ) {
@@ -53,19 +55,6 @@ abstract class DataScope : Identifiable {
 		final void addLocalVariable( DataEntity_LocalVariable var ) {
 			localVariables_ ~= var;
 			addEntity( var );
-		}
-
-	public:
-		/// Builds a scope cleanup code (destruction of all variables in the scope)
-		final void buildCleanup( CodeBuilder cb ) {
-			debug assert( context.jobId == jobId_ );
-			// TODO:
-		}
-
-		/// Cleans up the scope at compile time (calls destructors on local variables)
-		final void ctimeCleanup() {
-			scope cb = new CodeBuilder_Ctime();
-			buildCleanup( cb );
 		}
 
 		/// Marks the scope as not being editable anymore

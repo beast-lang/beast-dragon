@@ -79,6 +79,7 @@ abstract class SymbolRelatedDataEntity : DataEntity {
 
 	public:
 		this( Symbol symbol ) {
+			assert( symbol );
 			symbol_ = symbol;
 		}
 

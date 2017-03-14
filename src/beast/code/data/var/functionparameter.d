@@ -13,6 +13,11 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 
 			memoryBlock_.functionParameter = param;
 			param_ = param;
+
+			// Context pointer is always bp offset -1 (even if there is no context needed
+			// Function parameters always start on -2
+			// Return value is before function parameters
+			interpreterBpOffset = -param.index - 2;
 		}
 
 	public:

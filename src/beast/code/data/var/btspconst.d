@@ -7,14 +7,15 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 
 	public:
 		/// Length of the data is inferred from the dataType instance size
-		this( DataEntity parent, Identifier identifier, Symbol_Type dataType, const void* data ) {
+		this( DataEntity parent, Identifier identifier, Symbol_Type dataType, ulong data ) {
 			super( parent );
+			assert( dataType.instanceSize <= data.sizeof );
 
 			dataType_ = dataType;
 			identififer_ = identifier;
 
 			with ( memoryManager.session )
-				memoryPtr_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd, identifier.str ).write( data, dataType.instanceSize );
+				memoryPtr_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd, identifier.str ).write( &data, dataType.instanceSize );
 		}
 
 	public:

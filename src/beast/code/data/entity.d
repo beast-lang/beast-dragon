@@ -145,9 +145,11 @@ abstract class DataEntity : Identifiable {
 	public:
 		/// Executes the expression in standalone scope and session, returing its value
 		final MemoryPtr ctExec( DataScope scope_ ) {
-			scope cb = new CodeBuilder_Ctime;
-			buildCode( cb, scope_ );
-			return cb.result;
+			with ( memoryManager.session ) {
+				scope cb = new CodeBuilder_Ctime;
+				buildCode( cb, scope_ );
+				return cb.result;
+			}
 		}
 
 		/// Expects the data to point at Type instance

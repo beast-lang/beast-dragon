@@ -103,6 +103,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 	public:
 		this( DataScope scope_, DataEntity sourceDataEntity, AST_Node ast ) {
 			super( sourceDataEntity );
+			assert( scope_ );
 			scope__ = new BlurryDataScope( scope_ );
 			ast_ = ast;
 		}
