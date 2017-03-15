@@ -3,10 +3,6 @@ module beast.corelib.type.types;
 import beast.corelib.type.toolkit;
 import beast.corelib.type.type;
 import beast.util.decorator;
-import beast.code.data.function_.btspmemrt;
-import beast.code.data.function_.primmemrt;
-import beast.code.data.type.btspenum;
-import beast.backend.common.primitiveop;
 
 struct CoreLibrary_Types {
 	/// ( instanceSize, defaultValue )
@@ -52,23 +48,8 @@ struct CoreLibrary_Types {
 
 		/// Second phase of initialization
 		void initialize2( ) {
-			{
-				Symbol[ ] sym;
-
-				// Implicit constructor
-				sym ~= new Symbol_PrimitiveMemberRuntimeFunction( "#ctor", Bool, Void, //
-						ExpandedFunctionParameter.bootstrap( ), //
-						BackendPrimitiveOperation.boolCtor //
-						 );
-
-				sym ~= new Symbol_BootstrapMemberRuntimeFunction( "#operator", Bool, Bool, //
-						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binOr, Bool ), //
-						( cb, scope_, params ) { //
-							// Do nothing
-						} );
-
-				Bool.initialize( sym );
-			}
+			import beast.corelib.type.bool_ : initialize_Bool;
+			initialize_Bool( this );
 		}
 
 }

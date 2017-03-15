@@ -43,6 +43,12 @@ abstract class TestDirective {
 
 		}
 
+		/// This is called when the compiler process exists with given return code
+		/// If the code was not 0 and no directive returns true, it is an error (unexpected exit code)
+		bool onExitCode( int code ) {
+			return false;
+		}
+
 	protected:
 		void enforce( bool condition, lazy string message ) {
 			if ( !condition )

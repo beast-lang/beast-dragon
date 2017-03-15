@@ -127,49 +127,66 @@ class CodeBuilder_Cpp : CodeBuilder {
 				assert( parentInstance );
 
 				parentInstance.buildCode( this, subScope );
-				argumentNames ~= resultVarName_;
+				argumentNames ~= "&" ~ resultVarName_;
 			}
 
 			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
 				if ( param.isConstValue )
 					continue;
 
-				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, subScope, false );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, subScope, false );
 				build_localVariableDefinition( argVar );
 				build_copyCtor( argVar, arguments[ i ], subScope );
 
-				argumentNames ~= cppIdentifier( argVar );
+				argumentNames ~= "&" ~ cppIdentifier( argVar );
 			}
 
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
 			popScope( );
+			subScope.finish( );
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
 			resultVarName_ = resultVarName;
 		}
 
-		override void build_primitiveOperation( DataScope scope_, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.cpp.primitiveop;
 
 			string[ ] argumentNames;
 			string instName;
+			debug resultVarName_ = null;
 
+			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, scope_, false );
+				build_localVariableDefinition( resultVar );
+				resultVarName_ = cppIdentifier( resultVar );
+			}
+			else
+				debug resultVarName_ = null;
+
+			codeResult_.formattedWrite( "%s{\n", tabs );
 			auto subScope = scoped!LocalDataScope( scope_ );
 			pushScope( );
 
-			if ( parentInstance ) {
+			if ( wrapperFunction.declarationType == Symbol.DeclType.memberFunction ) {
 				parentInstance.buildCode( this, subScope );
 				instName = resultVarName_;
 			}
 
-			foreach ( i, arg; arguments ) {
+			foreach ( i, ExpandedFunctionParameter param; wrapperFunction.parameters ) {
+				if ( param.isConstValue )
+					continue;
+
 				arguments[ i ].buildCode( this, subScope );
 				argumentNames ~= resultVarName_;
 			}
 
 			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( CodeBuilder_Cpp cb, string instName, string[ ] argumentNames ) {
-				mixin( "cb.resultVarName_ = beast.backend.cpp.primitiveop.primitiveOp_%s( cb, instName, argumentNames );".format( opStr ) );
+				static if ( __traits( hasMember, beast.backend.cpp.primitiveop, "primitiveOp_%s".format( opStr ) ) )
+					mixin( "beast.backend.cpp.primitiveop.primitiveOp_%s( cb, instName, argumentNames );".format( opStr ) );
+				else
+					assert( 0, "primitiveOp %s is not implemented for %s".format( opStr, cb.identificationString ) );
 			}
 
 			mixin(  //
@@ -179,6 +196,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 					 ).joiner ) );
 
 			popScope( );
+			subScope.finish( );
+			codeResult_.formattedWrite( "%s}\n", tabs );
 		}
 
 	public: // Statement related build commands
@@ -209,6 +228,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			}
 
 			popScope( );
+			subScope.finish( );
 			codeResult_.formattedWrite( "%s}\n", tabs );
 			debug resultVarName_ = null;
 		}

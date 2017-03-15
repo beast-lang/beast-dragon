@@ -1,12 +1,8 @@
 module beast.code.data.var.tmplocal;
 
 import beast.code.data.toolkit;
-import beast.code.data.var.local;
-import beast.code.decorationlist;
-import beast.code.ast.decl.variable;
-import beast.code.ast.expr.vardecl;
-import beast.code.ast.expr.expression;
 import beast.code.data.scope_.local;
+import beast.code.data.var.local;
 
 final class DataEntity_TmpLocalVariable : DataEntity_LocalVariable {
 

@@ -50,7 +50,7 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
-		void build_primitiveOperation( DataScope scope_,BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
@@ -64,7 +64,7 @@ abstract class CodeBuilder : Identifiable {
 
 	public:
 		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue, DataScope scope_ ) {
-			var.resolveIdentifier( ID!"#ctor", scope_ ).resolveCall( scope_, var.ast, true, coreLibrary.enum_.xxctor.copy, initValue ).buildCode( this, scope_ );
+			var.expectResolveIdentifier( ID!"#ctor", scope_ ).resolveCall( scope_, var.ast, true, coreLibrary.enum_.xxctor.copy, initValue ).buildCode( this, scope_ );
 		}
 
 	protected:

@@ -1,6 +1,6 @@
 module t_zerosizevariable;
 
-Void x; //! warning: zeroSizeVariable
+Void x; //! error: zeroSizeVariable
 
 Void main() {
 	

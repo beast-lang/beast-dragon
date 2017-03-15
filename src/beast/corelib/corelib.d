@@ -49,6 +49,7 @@ class CoreLibrary {
 			enum_.initialize( sink, module_.dataEntity );
 
 			type.initialize2( );
+			enum_.initialize2( );
 
 			module_.initialize( symbols );
 		}

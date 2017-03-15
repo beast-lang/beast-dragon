@@ -6,6 +6,7 @@ import beast.code.decorationlist;
 import beast.code.ast.decl.variable;
 import beast.code.data.scope_.root;
 import beast.backend.ctime.codebuilder;
+import beast.code.data.util.subst;
 
 /// User (programmer) defined static variable
 final class Symbol_UserStaticVariable : Symbol_StaticVariable {
@@ -61,7 +62,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			// TODO: if type auto
 			dataTypeWIP_ = ast_.dataType.standaloneCtExec( coreLibrary.type.Type, parent ).readType( );
 
-			benforce!( ErrorSeverity.warning )( dataTypeWIP_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataTypeWIP_.identificationString ) );
+			benforce( dataTypeWIP_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataTypeWIP_.identificationString ) );
 
 			decorationList_.enforceAllResolved( );
 		}
@@ -73,8 +74,17 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 				auto scope_ = scoped!RootDataScope( parent );
 				auto cb = scoped!CodeBuilder_Ctime( );
 
-				memoryPtrWIP_ = memoryManager.alloc( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd | ( isCtime_ ? MemoryBlock.Flag.noFlag : MemoryBlock.Flag.runtime ), identifier.str );
-				ast_.buildConstructor( dataEntity, scope_, cb );
+				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
+				block.identifier = identifier.str;
+				memoryPtrWIP_ = block.startPtr;
+
+				// We can't use this.dataEntity because that would cause a dependency loop (as we would require memoryPtr for this in it)
+				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataType );
+				ast_.buildConstructor( substEntity, scope_, cb );
+
+				// We have to mark the variable as runtime after calling its constructor (which is done at ctime)
+				if ( !isCtime_ )
+					block.flags |= MemoryBlock.Flag.runtime;
 
 				scope_.finish( );
 			}

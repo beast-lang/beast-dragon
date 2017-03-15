@@ -14,7 +14,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
 			ast_ = ast;
 			decorationList_ = decorationList;
-			staticData_ = new Data;
+			staticData_ = new Data( this );
 			parent_ = data.env.staticMembersParent;
 
 			taskManager.issueJob( { enforceDone_returnTypeDeduction( ); enforceDone_parameterExpanding( ); } );
@@ -52,7 +52,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
 					auto scope_ = scoped!RootDataScope( staticData_ );
-					
+
 					foreach ( param; parameters ) {
 						if ( param.identifier )
 							scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
@@ -101,15 +101,20 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Data : super.Data {
 
 			public:
-				this() {
+				this( Symbol_UserStaticRuntimeFunction sym ) {
 					assert( this.outer );
-					super();
+					super( sym );
+
+					sym_ = sym;
 				}
 
 			public:
 				override DataEntity parent( ) {
-					return this.outer.parent_;
+					return sym_.parent_;
 				}
+
+			private:
+				Symbol_UserStaticRuntimeFunction sym_;
 
 		}
 

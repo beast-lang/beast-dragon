@@ -204,10 +204,19 @@ final class MemoryManager {
 				~this( ) {
 					memoryManager.endSession( );
 				}
+
+				debug size_t prevSession, newSession;
+				
 			}
 
+			debug auto prevSession = context.session;
 			startSession( );
-			return Result( );
+
+			debug {
+				return Result( prevSession, context.session );
+			}
+			else
+				return Result( );
 		}
 
 	public:

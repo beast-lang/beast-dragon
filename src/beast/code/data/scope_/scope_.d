@@ -14,6 +14,9 @@ abstract class DataScope : Identifiable {
 			parentEntity_ = parentEntity;
 			debug jobId_ = context.jobId;
 		}
+		~this() {
+			//debug assert( isFinished_, "Scope destroyed but not finished" );
+		}
 
 	public:
 		/// Nearest DataEntity parent of the scope
@@ -60,7 +63,7 @@ abstract class DataScope : Identifiable {
 		/// Marks the scope as not being editable anymore
 		void finish( ) {
 			debug {
-				assert( !isFinished_ );
+				assert( !isFinished_, "Duplicate finish() of scope" );
 				isFinished_ = true;
 			}
 		}

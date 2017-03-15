@@ -30,13 +30,7 @@ final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
 	public:
 		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ ) {
 			const auto _gd = ErrorGuard( this );
-
-			DataEntity left = leftSide.single;
-			Overloadset result = left.resolveIdentifier( identifier, scope_ );
-
-			benforce( !result.isEmpty, E.unknownIdentifier, "'%s' has no member '%s'".format( left.identificationString, identifier.str ) );
-
-			return result;
+			return leftSide.single.expectResolveIdentifier( identifier, scope_ );
 		}
 
 	protected:

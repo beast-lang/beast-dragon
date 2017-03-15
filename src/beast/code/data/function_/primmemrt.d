@@ -10,17 +10,13 @@ import beast.backend.common.primitiveop;
 final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
-		// 0th param is this pointer
-		alias CodeFunction = void delegate( CodeBuilder cb, DataScope scope_, DataEntity_LocalVariable[ ] parameters );
-
-	public:
-		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, BackendPrimitiveOperation op ) {
-			identifier_ = Identifier( identifier );
+		this( Identifier identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, BackendPrimitiveOperation op ) {
+			identifier_ = identifier;
 			parent_ = parent;
 			returnType_ = returnType;
 			parameters_ = parameters;
 			op_ = op;
-			staticData_ = new StaticData( );
+			staticData_ = new StaticData( this );
 		}
 
 		override Identifier identifier( ) {
@@ -44,7 +40,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			if ( !parentInstance )
 				return staticData_;
 			else
-				return new Data( parentInstance );
+				return new Data( this, parentInstance );
 		}
 
 		override void buildDefinitionsCode( CodeBuilder cb ) {
@@ -63,9 +59,11 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final class Data : super.Data {
 
 			public:
-				this( DataEntity parentInstance ) {
+				this( Symbol_PrimitiveMemberRuntimeFunction sym, DataEntity parentInstance ) {
+					super( sym );
 					assert( parentInstance.dataType is parent_ );
 
+					sym_ = sym;
 					parentInstance_ = parentInstance;
 				}
 
@@ -75,15 +73,21 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-					return new Match( scope_, this, ast );
+					return new Match( sym_, scope_, this, ast );
 				}
 
 			private:
 				DataEntity parentInstance_;
+				Symbol_PrimitiveMemberRuntimeFunction sym_;
 
 		}
 
 		final class StaticData : super.Data {
+
+			public:
+				this( Symbol_PrimitiveMemberRuntimeFunction sym ) {
+					super( sym );
+				}
 
 			public:
 				override DataEntity parent( ) {
@@ -99,37 +103,42 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( DataScope scope_, Data sourceEntity, AST_Node ast ) {
-					super( scope_, sourceEntity, ast );
+				this( Symbol_PrimitiveMemberRuntimeFunction sym, DataScope scope_, Data sourceEntity, AST_Node ast ) {
+					super( sym, scope_, sourceEntity, ast );
 
 					parentInstance_ = sourceEntity.parentInstance_;
+					sym_ = sym;
 				}
 
 			protected:
 				override DataEntity _toDataEntity( ) {
-					return new MatchData( this );
+					return new MatchData( sym_, this );
 				}
 
 			private:
 				DataEntity parentInstance_;
+				Symbol_PrimitiveMemberRuntimeFunction sym_;
 
 		}
 
 		final class MatchData : super.MatchData {
 
 			public:
-				this( Match match ) {
-					super( match );
+				this( Symbol_PrimitiveMemberRuntimeFunction sym, Match match ) {
+					super( sym, match );
+
 					parentInstance_ = match.parentInstance_;
+					sym_ = sym;
 				}
 
 			public:
 				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_primitiveOperation( scope_, op_, parentInstance_, arguments_ );
+					cb.build_primitiveOperation( scope_, sym_, op_, parentInstance_, arguments_ );
 				}
 
 			private:
 				DataEntity parentInstance_;
+				Symbol_PrimitiveMemberRuntimeFunction sym_;
 
 		}
 

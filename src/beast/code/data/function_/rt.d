@@ -41,12 +41,12 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		InterpreterCodeBlock interpreterCodeWIP_;
 
 	protected:
-		abstract class Data : SymbolRelatedDataEntity {
+		abstract static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( ) {
-					assert( this.outer );
-					super( this.outer );
+				this( Symbol_RuntimeFunction sym ) {
+					super( sym );
+					sym_ = sym;
 				}
 
 			public:
@@ -68,31 +68,35 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					if ( this is null )
 						return "#error#";
 
-					return "%s %s.%s( %s )".format( returnType ? returnType.identificationString : "#error", parent.identificationString, baseIdentifier, parameters.map!( x => x.identificationString ).joiner( ", " ) );
+					return "%s %s.%s( %s )".format( sym_.returnType ? sym_.returnType.identificationString : "#error", parent.identificationString, sym_.baseIdentifier, sym_.parameters.map!( x => x.identificationString ).joiner( ", " ) );
 				}
 
 			public:
 				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-					return new Match( scope_, this, ast );
+					return new Match( sym_, scope_, this, ast );
 				}
+
+			private:
+				Symbol_RuntimeFunction sym_;
 
 		}
 
-		class Match : SeriousCallableMatch {
+		static class Match : SeriousCallableMatch {
 
 			public:
-				this( DataScope scope_, DataEntity sourceEntity, AST_Node ast ) {
+				this( Symbol_RuntimeFunction sym, DataScope scope_, DataEntity sourceEntity, AST_Node ast ) {
 					super( scope_, sourceEntity, ast );
+					sym_ = sym;
 				}
 
 			protected:
 				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
-					if ( argumentIndex_ >= parameters.length ) {
+					if ( argumentIndex_ >= sym_.parameters.length ) {
 						errorStr = "parameter count mismatch";
 						return MatchFlags.noMatch;
 					}
 
-					ExpandedFunctionParameter param = parameters[ argumentIndex_ ];
+					ExpandedFunctionParameter param = sym_.parameters[ argumentIndex_ ];
 
 					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 					if ( !entity ) {
@@ -101,8 +105,6 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 							dataType = entity.dataType;
 						}
 					}
-					else // Add the entity to the scope so it is findable
-						scope_.addEntity( entity );
 
 					if ( dataType !is param.dataType ) {
 						errorStr = "argument %s type mismatch (got %s, expected %s)".format( argumentIndex_, dataType.identificationString, param.dataType.identificationString );
@@ -121,6 +123,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 							errorStr = "argument %s value mismatch".format( argumentIndex_ );
 							return MatchFlags.noMatch;
 						}
+
 					}
 
 					arguments_ ~= entity;
@@ -130,7 +133,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override MatchFlags _finish( ) {
-					if ( argumentIndex_ != parameters.length ) {
+					if ( argumentIndex_ != sym_.parameters.length ) {
 						errorStr = "parameter count mismatch";
 						return MatchFlags.noMatch;
 					}
@@ -139,27 +142,28 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override DataEntity _toDataEntity( ) {
-					return new MatchData( this );
+					return new MatchData( sym_, this );
 				}
 
 			private:
-				Symbol_RuntimeFunction func_;
+				Symbol_RuntimeFunction sym_;
 				DataEntity[ ] arguments_;
 				size_t argumentIndex_;
 
 		}
 
-		class MatchData : DataEntity {
+		static class MatchData : DataEntity {
 
 			public:
-				this( Match match ) {
+				this( Symbol_RuntimeFunction sym, Match match ) {
 					arguments_ = match.arguments_;
 					ast_ = match.ast;
+					sym_ = sym;
 				}
 
 			public:
 				override Symbol_Type dataType( ) {
-					return this.outer.returnType;
+					return sym_.returnType;
 				}
 
 				override bool isCtime( ) {
@@ -171,11 +175,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					if ( this is null )
 						return "#error#";
 
-					return "%s %s.%s( ... )( %s )".format( returnType.identificationString, parent.identificationString, baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
+					return "%s %s.%s( ... )( %s )".format( sym_.returnType.identificationString, parent.identificationString, sym_.baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
 				}
 
 				override DataEntity parent( ) {
-					return dataEntity.parent;
+					return sym_.dataEntity.parent;
 				}
 
 				override AST_Node ast( ) {
@@ -184,12 +188,14 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			public:
 				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_functionCall( scope_, this.outer, null, arguments_ );
+					const auto _gd = ErrorGuard( ast_ );
+					cb.build_functionCall( scope_, sym_, null, arguments_ );
 				}
 
 			protected:
 				DataEntity[ ] arguments_;
 				AST_Node ast_;
+				Symbol_RuntimeFunction sym_;
 
 		}
 

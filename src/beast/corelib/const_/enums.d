@@ -18,7 +18,7 @@ struct CoreLibrary_Enums {
 
 		struct OperatorItems {
 			Symbol_BoostrapConstant binOr, binOrR;
-			Symbol_BoostrapConstant andOr, andOrR;
+			Symbol_BoostrapConstant binAnd, binAndR;
 			Symbol_BoostrapConstant funcCall;
 		}
 
@@ -30,8 +30,9 @@ struct CoreLibrary_Enums {
 		Symbol_BootstrapEnum XXCtor;
 
 		struct XXCtorItems {
-			Symbol_BoostrapConstant copy;
-			Symbol_BoostrapConstant opAssign, opRefAssign;
+			Symbol_BoostrapConstant copy; /// Copy constructor: #ctor( #Ctor.copy, other )
+			Symbol_BoostrapConstant opAssign; /// Assign constructor: #ctor( #Ctor.opAssign, val ) -> Var x = y
+			Symbol_BoostrapConstant opRefAssign; /// Ref assign constructor: #ctor( #Ctor.opRefAssign, val ) -> Var x := y
 		}
 
 		@standardEnumItems( "XXCtor" )
@@ -58,17 +59,16 @@ struct CoreLibrary_Enums {
 						break;
 					}
 					else static if ( is( typeof( attr ) == standardEnumItems ) ) {
-						auto baseClass = __traits( getMember, this, attr[ 0 ] );
+						InitRecord rec;
+						rec.baseClass = __traits( getMember, this, attr[ 0 ] );
 						ulong i = 0;
 
-						Symbol[ ] initList;
-
 						foreach ( subMemName; __traits( derivedMembers, typeof( __traits( getMember, typeof( this ), memName ) ) ) ) {
-							initList ~= (  //
+							rec.items ~= (  //
 									__traits( getMember, __traits( getMember, this, memName ), subMemName ) = new Symbol_BoostrapConstant(  //
 									parent, //
 									subMemName.chomp( "_" ).Identifier, //
-									baseClass, //
+									rec.baseClass, //
 									i //
 									 ) //
 							 );
@@ -76,16 +76,25 @@ struct CoreLibrary_Enums {
 							i++;
 						}
 
-						baseClass.initialize( initList );
+						initList_ ~= rec;
 					}
 				}
 			}
 		}
 
-	private:
-		template literal( alias val ) {
-			static immutable ulong data = val;
-			static immutable literal = &data;
+		void initialize2( ) {
+			foreach ( rec; initList_ )
+				rec.baseClass.initialize( rec.items );
+
+			initList_ = null;
 		}
+
+	private:
+		struct InitRecord {
+			Symbol_BootstrapEnum baseClass;
+			Symbol[ ] items;
+		}
+
+		InitRecord[ ] initList_;
 
 }

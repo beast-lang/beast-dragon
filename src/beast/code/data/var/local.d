@@ -66,6 +66,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 	private:
 		void execute_outerHashObtaining( ) {
+			// TODO: hashing this pointer is horrible
 			outerHashWIP_ = parent.outerHash + ( identifier ? identifier.hash : Hash( cast( size_t ) cast( void* ) this ) );
 		}
 

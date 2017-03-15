@@ -102,7 +102,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				else
 					match.arg( coreLibrary.enum_.xxctor.opAssign );
 
-				match.arg( value.buildSemanticTree_single( entity.dataType, scope_ ) );
+				match.arg( value.buildSemanticTree_single( entity.dataType, match.scope_ ) );
 			}
 
 			match.finish( ).buildCode( cb, scope_ );

@@ -2,8 +2,10 @@ module beast.testsuite.test;
 
 import beast.testsuite.directive.directive;
 import beast.testsuite.main;
+import core.thread;
 import std.algorithm;
 import std.conv;
+import std.datetime;
 import std.exception;
 import std.file;
 import std.json;
@@ -119,7 +121,34 @@ final class Test {
 			// Run process
 			{
 				scope ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
-				const int exitCode = process.pid.wait( );
+
+				StopWatch sw;
+				sw.start( );
+
+				int exitCode;
+				while( true ) {
+					const auto result = process.pid.tryWait( );
+
+					if( result.terminated ) {
+						exitCode = result.status;
+						break;
+					}
+
+					if( sw.peek.seconds > timeout ) {
+						process.pid.kill();
+						fail( "Process timeout" );
+					}
+					Thread.sleep( dur!"msecs"( sw.peek.msecs / 2 ) );
+				}
+
+				// Process exit code
+				{
+					bool exitCodeHandled = exitCode == 0;
+					foreach ( d; directives )
+						exitCodeHandled |= d.onExitCode( exitCode );
+
+					enforce( exitCodeHandled, "Unexpected exit code: %s".format( exitCode ) );
+				}
 
 				stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
 				stdoutContent = process.stdout.byLine.joiner( "\n" ).to!string;
@@ -168,6 +197,8 @@ final class Test {
 		File log;
 		/// Args to run the compiler with
 		string[ ] args;
+		/// Timeout in seconds
+		int timeout = 5;
 
 	private:
 		void enforce( bool condition, lazy string message ) {

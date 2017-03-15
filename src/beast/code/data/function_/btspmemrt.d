@@ -20,7 +20,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 			parameters_ = parameters;
 			codeFunction_ = codeFunction;
 
-			staticData_ = new StaticData( );
+			staticData_ = new StaticData( this );
 		}
 
 		override Identifier identifier( ) {
@@ -44,7 +44,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 			if ( !parentInstance )
 				return staticData_;
 			else
-				return new Data( parentInstance );
+				return new Data( this, parentInstance );
 		}
 
 		override void buildDefinitionsCode( CodeBuilder cb ) {
@@ -86,13 +86,15 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		CodeFunction codeFunction_;
 
 	protected:
-		final class Data : super.Data {
+		final static class Data : super.Data {
 
 			public:
-				this( DataEntity parentInstance ) {
-					assert( parentInstance.dataType is parent_ );
+				this( Symbol_BootstrapMemberRuntimeFunction sym, DataEntity parentInstance ) {
+					super( sym );
+					assert( parentInstance.dataType is sym.parent_ );
 
 					parentInstance_ = parentInstance;
+					sym_ = sym;
 				}
 
 			public:
@@ -101,61 +103,75 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-					return new Match( scope_, this, ast );
+					return new Match( sym_, scope_, this, ast );
 				}
 
 			private:
 				DataEntity parentInstance_;
+				Symbol_BootstrapMemberRuntimeFunction sym_;
 
 		}
 
-		final class StaticData : super.Data {
+		final static class StaticData : super.Data {
+
+			public:
+				this( Symbol_BootstrapMemberRuntimeFunction sym ) {
+					super( sym );
+					sym_ = sym;
+				}
 
 			public:
 				override DataEntity parent( ) {
-					return parent_.dataEntity;
+					return sym_.parent_.dataEntity;
 				}
 
 				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
 					return new InvalidCallableMatch( this, "need this" );
 				}
 
+			private:
+				Symbol_BootstrapMemberRuntimeFunction sym_;
+
 		}
 
-		final class Match : super.Match {
+		final static class Match : super.Match {
 
 			public:
-				this( DataScope scope_, Data sourceEntity, AST_Node ast ) {
-					super( scope_, sourceEntity, ast );
+				this( Symbol_BootstrapMemberRuntimeFunction sym, DataScope scope_, Data sourceEntity, AST_Node ast ) {
+					super( sym, scope_, sourceEntity, ast );
 
+					sym_ = sym;
 					parentInstance_ = sourceEntity.parentInstance_;
 				}
 
 			protected:
 				override DataEntity _toDataEntity( ) {
-					return new MatchData( this );
+					return new MatchData( sym_, this );
 				}
 
 			private:
 				DataEntity parentInstance_;
+				Symbol_BootstrapMemberRuntimeFunction sym_;
 
 		}
 
-		final class MatchData : super.MatchData {
+		final static class MatchData : super.MatchData {
 
 			public:
-				this( Match match ) {
-					super( match );
+				this( Symbol_BootstrapMemberRuntimeFunction sym, Match match ) {
+					super( sym, match );
+					sym_ = sym;
 					parentInstance_ = match.parentInstance_;
 				}
 
 			public:
 				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_functionCall( scope_, this.outer, parentInstance_, arguments_ );
+					cb.build_functionCall( scope_, sym_, parentInstance_, arguments_ );
 				}
 
 			private:
 				DataEntity parentInstance_;
+				Symbol_BootstrapMemberRuntimeFunction sym_;
 
 		}
 

@@ -166,7 +166,8 @@ void mainImpl( string[ ] args ) {
 int main( string[ ] args ) {
 	try {
 		mainImpl( args );
-		return EXIT_SUCCESS;
+
+		return wereErrors ? EXIT_FAILURE : EXIT_SUCCESS;
 	}
 	catch ( BeastErrorException err ) {
 		return EXIT_FAILURE;

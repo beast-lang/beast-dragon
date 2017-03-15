@@ -36,6 +36,10 @@ final class TestDirective_Error : TestDirective {
 			enforce( satisfied, errorMsg );
 		}
 
+		override bool onExitCode( int code ) {
+			return code != 0 && severity == "error";
+		}
+
 	public:
 		string errorType, severity;
 		bool watchLine;
