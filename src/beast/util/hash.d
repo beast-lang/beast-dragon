@@ -1,6 +1,7 @@
 module beast.util.hash;
 
 import std.digest.murmurhash : MurmurHash3;
+//import beast.code.memory.ptr;
 
 struct Hash {
 
@@ -14,6 +15,13 @@ struct Hash {
 			hash.finalize( );
 			data = hash.get;
 		}
+
+		/*this( MemoryPtr ptr, size_t bytes ) {
+			MurmurHash3!( Data.sizeof * 8 ) hash;
+			hash.put( cast( const( ubyte )[ ] ) ptr.read( bytes )[ 0 .. bytes ] );
+			hash.finalize( );
+			data = hash.get;
+		}*/
 
 		this( Data data ) {
 			this.data = data;

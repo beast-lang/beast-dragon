@@ -8,6 +8,7 @@ import beast.code.data.var.static_;
 
 /// Expanded function parameter
 final class ExpandedFunctionParameter : Identifiable {
+	mixin TaskGuard!"outerHashObtaining";
 
 	public:
 		/// Tries to expand expression into a function parameter.
@@ -92,7 +93,8 @@ final class ExpandedFunctionParameter : Identifiable {
 
 	public:
 		Hash outerHash( ) {
-			return dataType.outerHash + Hash( index );
+			enforceDone_outerHashObtaining( );
+			return outerHashWIP_;
 		}
 
 		override string identificationString( ) {
@@ -109,6 +111,15 @@ final class ExpandedFunctionParameter : Identifiable {
 				result ~= " = CONST";
 
 			return result;
+		}
+
+	private:
+		Hash outerHashWIP_;
+		void execute_outerHashObtaining( ) {
+			/*outerHashWIP_ = dataType.outerHash + Hash( index );
+
+			if( isConstValue )
+				outerHashWIP_ += Hash( constValue, dataType.instanceSize );*/
 		}
 
 }
