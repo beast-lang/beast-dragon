@@ -105,7 +105,7 @@ final class MemoryManager {
 
 	public:
 		/// Tries to write data at a given pointer. Might fail.
-		void write( MemoryPtr ptr, const void* data, size_t bytes ) {
+		void write( MemoryPtr ptr, const(ubyte)[ ] data ) {
 			import core.stdc.string : memcpy;
 
 			debug assert( !finished_ );
@@ -114,7 +114,7 @@ final class MemoryManager {
 
 			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 			benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session" );
-			benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
+			benforce( block.endPtr <= ptr + data.length, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
 			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot write to runtime memory" );
 
 			debug assert( block.session in activeSessions );
@@ -122,11 +122,11 @@ final class MemoryManager {
 			debug assert( context.jobId == activeSessions[ block.session ] );
 
 			// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
-			memcpy( block.data + ( ptr - block.startPtr ).val, data, bytes );
+			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
 		}
 
 		/// "Reads" given amount of bytes from memory and returns pointer to them (it doesn't actually read, just does some checks)
-		void* read( MemoryPtr ptr, size_t bytes ) {
+		const( ubyte )[ ] read( const MemoryPtr ptr, size_t bytes ) {
 			MemoryBlock block = findMemoryBlock( ptr );
 
 			// Either the session the block was created in is no longer active (-> the block cannot be changed anymore), or the session belongs to the same task context as current session (meaning it is the same session or a derived one)
@@ -136,12 +136,12 @@ final class MemoryManager {
 
 			benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
 			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot read from runtime memory" );
-			return block.data + ( ptr - block.startPtr ).val;
+			return cast( const ubyte[ ] )( block.data + ( ptr - block.startPtr ).val )[ 0 .. bytes ];
 		}
 
 	public:
 		/// Finds memory block containing ptr or throws segmentation fault
-		MemoryBlock findMemoryBlock( MemoryPtr ptr ) {
+		MemoryBlock findMemoryBlock( const MemoryPtr ptr ) {
 			checkNullptr( ptr );
 
 			synchronized ( blockListMutex.reader ) {
@@ -206,7 +206,7 @@ final class MemoryManager {
 				}
 
 				debug size_t prevSession, newSession;
-				
+
 			}
 
 			debug auto prevSession = context.session;

@@ -45,36 +45,18 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		override void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.ctime.primitiveop;
 
-			MemoryPtr[ ] args;
-			MemoryPtr inst, result;
-
 			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, scope_, true );
 				build_localVariableDefinition( resultVar );
-				result = resultVar.memoryPtr;
+				result_ = resultVar.memoryPtr;
 			}
 
 			auto subScope = scoped!LocalDataScope( scope_ );
 			pushScope( );
 
-			if ( parentInstance ) {
-				parentInstance.buildCode( this, subScope );
-				inst = result_;
-			}
-
-			foreach ( i, ExpandedFunctionParameter param; wrapperFunction.parameters ) {
-				if ( param.isConstValue )
-					continue;
-
-				arguments[ i ].buildCode( this, subScope );
-				args ~= result_;
-			}
-
-			result_ = result;
-
-			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( CodeBuilder_Ctime cb, MemoryPtr inst, MemoryPtr[ ] args ) {
+			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( DataScope scope_, CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
 				static if ( __traits( hasMember, beast.backend.ctime.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-					mixin( "beast.backend.ctime.primitiveop.primitiveOp_%s( cb, inst, args );".format( opStr ) );
+					mixin( "beast.backend.ctime.primitiveop.primitiveOp_%s( scope_, cb, inst, args );".format( opStr ) );
 				else
 					assert( 0, "primitiveOp %s is not implemented for %s".format( opStr, cb.identificationString ) );
 			}
@@ -82,7 +64,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			mixin(  //
 					"final switch( op ) {\n%s\n}".format(  //
 					[ __traits( derivedMembers, BackendPrimitiveOperation ) ].map!(  //
-					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( this, inst, args ); break;\n".format( x, x, x ) //
+					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( scope_, this, parentInstance, arguments ); break;\n".format( x, x, x ) //
 					 ).joiner ) );
 
 			popScope( );

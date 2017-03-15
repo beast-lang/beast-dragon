@@ -153,8 +153,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.cpp.primitiveop;
 
-			string[ ] argumentNames;
-			string instName;
 			debug resultVarName_ = null;
 
 			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
@@ -162,29 +160,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 				build_localVariableDefinition( resultVar );
 				resultVarName_ = cppIdentifier( resultVar );
 			}
-			else
-				debug resultVarName_ = null;
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
 			auto subScope = scoped!LocalDataScope( scope_ );
 			pushScope( );
 
-			if ( wrapperFunction.declarationType == Symbol.DeclType.memberFunction ) {
-				parentInstance.buildCode( this, subScope );
-				instName = resultVarName_;
-			}
-
-			foreach ( i, ExpandedFunctionParameter param; wrapperFunction.parameters ) {
-				if ( param.isConstValue )
-					continue;
-
-				arguments[ i ].buildCode( this, subScope );
-				argumentNames ~= resultVarName_;
-			}
-
-			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( CodeBuilder_Cpp cb, string instName, string[ ] argumentNames ) {
+			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( DataScope scope_, CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
 				static if ( __traits( hasMember, beast.backend.cpp.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-					mixin( "beast.backend.cpp.primitiveop.primitiveOp_%s( cb, instName, argumentNames );".format( opStr ) );
+					mixin( "beast.backend.cpp.primitiveop.primitiveOp_%s( scope_, cb, inst, args );".format( opStr ) );
 				else
 					assert( 0, "primitiveOp %s is not implemented for %s".format( opStr, cb.identificationString ) );
 			}
@@ -192,7 +175,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			mixin(  //
 					"final switch( op ) {\n%s\n}".format(  //
 					[ __traits( derivedMembers, BackendPrimitiveOperation ) ].map!(  //
-					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( this, instName, argumentNames ); break;\n".format( x, x, x ) //
+					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( subScope, this, parentInstance, arguments ); break;\n".format( x, x, x ) //
 					 ).joiner ) );
 
 			popScope( );
@@ -306,17 +289,18 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 	package:
-		final string tabs( ) {
-			while ( tabsString_.length < tabOffset_ * tab.length )
+		final string tabs( int inc = 0 ) {
+			while ( tabsString_.length < ( tabOffset_ + inc ) * tab.length )
 				tabsString_ ~= tabsString_;
-			return tabsString_[ 0 .. tabOffset_ * tab.length ];
+
+			return tabsString_[ 0 .. ( tabOffset_ + inc ) * tab.length ];
 		}
 
 		final string getHash( ) {
 			return ( hash_ + Hash( hashCounter_++ ) ).str;
 		}
 
-	protected:
+	public:
 		override void pushScope( ) {
 			tabOffset_++;
 			super.pushScope( );

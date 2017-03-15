@@ -116,10 +116,10 @@ final class ExpandedFunctionParameter : Identifiable {
 	private:
 		Hash outerHashWIP_;
 		void execute_outerHashObtaining( ) {
-			/*outerHashWIP_ = dataType.outerHash + Hash( index );
+			outerHashWIP_ = dataType.outerHash + Hash( index );
 
 			if( isConstValue )
-				outerHashWIP_ += Hash( constValue, dataType.instanceSize );*/
+				outerHashWIP_ += Hash( constValue.read( dataType.instanceSize ) );
 		}
 
 }

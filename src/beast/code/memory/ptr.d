@@ -22,17 +22,20 @@ struct MemoryPtr {
 	public:
 		/// Writes a "primitive" (direct data copy - usually you should use hwenv) into given pointer
 		MemoryPtr writePrimitive( T )( const auto ref T data ) const {
-			memoryManager.write( this, cast( const void* )&data, data.sizeof );
-			return this;
+			return write( &data, data.sizeof );
 		}
 
 		MemoryPtr write( const void* data, size_t bytes ) const {
-			memoryManager.write( this, data, bytes );
+			return write( cast( const( ubyte )[ ] ) data[ 0 .. bytes ] );
+		}
+
+		MemoryPtr write( const( ubyte )[ ] data ) const {
+			memoryManager.write( this, data );
 			return this;
 		}
 
 		MemoryPtr write( MemoryPtr data, size_t bytes ) const {
-			memoryManager.write( this, memoryManager.read( data, bytes ), bytes );
+			memoryManager.write( this, memoryManager.read( data, bytes ) );
 			return this;
 		}
 
@@ -41,7 +44,7 @@ struct MemoryPtr {
 			return *( cast( T* ) memoryManager.read( this, T.sizeof ) );
 		}
 
-		void* read( size_t bytes ) const {
+		const( ubyte )[ ] read( size_t bytes ) const {
 			return memoryManager.read( this, bytes );
 		}
 
@@ -57,11 +60,11 @@ struct MemoryPtr {
 		bool dataEquals( MemoryPtr other, size_t comparedLength ) const {
 			import core.stdc.string : memcmp;
 
-			return memcmp( memoryManager.read( this, comparedLength ), memoryManager.read( other, comparedLength ), comparedLength ) == 0;
+			return memcmp( memoryManager.read( this, comparedLength ).ptr, memoryManager.read( other, comparedLength ).ptr, comparedLength ) == 0;
 		}
 
 	public:
-		int opCmp( MemoryPtr other ) const {
+		int opCmp( const MemoryPtr other ) const {
 			if ( val > other.val )
 				return 1;
 			else if ( val < other.val )
@@ -75,11 +78,11 @@ struct MemoryPtr {
 		}
 
 	public:
-		MemoryPtr opBinary( string op )( MemoryPtr other ) if ( op == "+" || op == "-" ) {
+		MemoryPtr opBinary( string op )( const MemoryPtr other ) const if ( op == "+" || op == "-" ) {
 			return mixin( "MemoryPtr( val " ~ op ~ " other.val )" );
 		}
 
-		MemoryPtr opBinary( string op )( size_t other ) if ( op == "+" || op == "-" ) {
+		MemoryPtr opBinary( string op )( size_t other ) const if ( op == "+" || op == "-" ) {
 			return mixin( "MemoryPtr( val " ~ op ~ " other )" );
 		}
 
