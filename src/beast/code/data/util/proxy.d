@@ -9,6 +9,7 @@ abstract class ProxyDataEntity : DataEntity {
 
 	public:
 		this( DataEntity sourceEntity ) {
+			assert( sourceEntity );
 			sourceEntity_ = sourceEntity;
 		}
 
@@ -59,6 +60,11 @@ abstract class ProxyDataEntity : DataEntity {
 
 		override Hash outerHash( ) {
 			return sourceEntity_.outerHash;
+		}
+
+	protected:
+		final override Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+			return sourceEntity_.resolveIdentifier( id, scope_ );
 		}
 
 	protected:

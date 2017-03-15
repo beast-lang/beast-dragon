@@ -16,14 +16,17 @@ final class Backend_Cpp : Backend {
 		override void build( ) {
 			scope cb = new CodeBuilder_CppProxy( null );
 
-			coreLibrary.module_.buildDefinitionsCode( cb );
+			taskManager.issueJob( {
+				coreLibrary.module_.buildDefinitionsCode( cb );
 
-			foreach ( m; project.moduleManager.initialModuleList ) {
-				// Do not get scared when one symbol code building fails
-				m.symbol.buildDefinitionsCode( cb );
-			}
+				foreach ( m; project.moduleManager.initialModuleList ) {
+					// Do not get scared when one symbol code building fails
+					m.symbol.buildDefinitionsCode( cb );
+				}
+			} );
 
 			// Process memory
+			taskManager.waitForEverythingDone( );
 			memoryManager.finish( );
 
 			auto code_memory = appender!string;
@@ -68,6 +71,10 @@ final class Backend_Cpp : Backend {
 
 			if ( project.configuration.testStdout )
 				writeln( result.data );
+		}
+
+		override CodeBuilder spawnFunctionCodebuilder() {
+			return new CodeBuilder_Cpp( null );
 		}
 
 }

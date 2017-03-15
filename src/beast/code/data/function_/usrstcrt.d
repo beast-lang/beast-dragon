@@ -12,9 +12,10 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
+			staticData_ = new Data( this );
+
 			ast_ = ast;
 			decorationList_ = decorationList;
-			staticData_ = new Data( this );
 			parent_ = data.env.staticMembersParent;
 
 			taskManager.issueJob( { enforceDone_returnTypeDeduction( ); enforceDone_parameterExpanding( ); } );
@@ -48,7 +49,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			return staticData_;
 		}
 
-		override void buildDefinitionsCode( CodeBuilder cb ) {
+	protected:
+		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
 					auto scope_ = scoped!RootDataScope( staticData_ );
@@ -58,9 +60,10 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 							scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
 					}
 
-					scope env = DeclarationEnvironment.newFunctionBody( );
+					scope env = DeclarationEnvironment.newFunctionBody();
 					env.scope_ = scope_;
-					env.staticMembersParent = dataEntity;
+					env.staticMembersParent = parent_;
+					env.staticMemberMerger = staticMemberMerger;
 
 					ast_.body_.buildStatementCode( env, cb, scope_ );
 

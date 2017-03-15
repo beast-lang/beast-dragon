@@ -10,4 +10,5 @@ public {
 	import beast.code.data.toolkit;
 	import beast.code.data.var.contextptr : DataEntity_ContextPointer;
 	import beast.code.data.var.functionparameter : DataEntity_FunctionParameter;
+	import beast.code.data.stcmemmerger.d : StaticMemberMerger;
 }

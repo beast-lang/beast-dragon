@@ -1,7 +1,5 @@
 module beast.main;
 
-import beast.backend.common.backend;
-import beast.backend.cpp.backend;
 import beast.code.hwenv.hwenv;
 import beast.code.hwenv.native;
 import beast.code.memory.memorymgr;
@@ -155,9 +153,9 @@ void mainImpl( string[ ] args ) {
 	// Finish phase 1
 	taskManager.waitForEverythingDone( );
 
-	if ( /*!wereErrors &&*/ project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
+	if (  /*!wereErrors &&*/ project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
 		// Start building code using backend
-		taskManager.issueJob( { Backend backend = new Backend_Cpp; backend.build( ); } );
+		project.backend.build( );
 	}
 
 	taskManager.waitForEverythingDone( );

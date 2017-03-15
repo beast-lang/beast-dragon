@@ -14,13 +14,13 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
+			staticData_ = new StaticData( this );
+			
 			identifier_ = Identifier( identifier );
 			parent_ = parent;
 			returnType_ = returnType;
 			parameters_ = parameters;
 			codeFunction_ = codeFunction;
-
-			staticData_ = new StaticData( this );
 		}
 
 		override Identifier identifier( ) {
@@ -47,7 +47,8 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 				return new Data( this, parentInstance );
 		}
 
-		override void buildDefinitionsCode( CodeBuilder cb ) {
+	protected:
+		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
 				cb.build_functionDefinition( this, ( cb ) { //
 					auto scope_ = scoped!RootDataScope( staticData_ );
@@ -68,7 +69,8 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 					scope env = DeclarationEnvironment.newFunctionBody( );
 					env.scope_ = scope_;
-					env.staticMembersParent = dataEntity;
+					env.staticMembersParent = staticData_;
+					env.staticMemberMerger = staticMemberMerger;
 
 					codeFunction_( cb, scope_, paramEntities );
 

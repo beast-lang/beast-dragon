@@ -2,7 +2,8 @@ module beast.code.ast.decl.env;
 
 import beast.code.ast.decl.toolkit;
 import beast.code.data.type.type;
-import beast.code.data.entity;
+import beast.code.data.codenamespace.namespace;
+import beast.code.data.stcmemmerger.d;
 
 /// Implicit declaration arguments
 final class DeclarationEnvironment {
@@ -31,5 +32,7 @@ final class DeclarationEnvironment {
 
 		/// 'Parent' for local variables
 		DataScope scope_;
+
+		StaticMemberMerger staticMemberMerger;
 
 }

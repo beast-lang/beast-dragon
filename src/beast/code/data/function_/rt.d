@@ -4,20 +4,29 @@ module beast.code.data.function_.rt;
 import beast.code.data.function_.toolkit;
 import beast.backend.interpreter.codeblock;
 import beast.backend.interpreter.codebuilder;
+import beast.code.data.codenamespace.bootstrap;
+import beast.code.data.codenamespace.namespace;
+import beast.code.data.util.proxy;
+import beast.code.ast.decl.env;
 
 /// Runtime function = function without @ctime arguments (or expanded ones)
 abstract class Symbol_RuntimeFunction : Symbol_Function {
+	/// Handles generating 
 	mixin TaskGuard!"codeProcessing";
-
-	protected:
-		this( ) {
-
-		}
 
 	public:
 		abstract Symbol_Type returnType( );
 
 		abstract ExpandedFunctionParameter[ ] parameters( );
+
+	public:
+		final override void buildDefinitionsCode( CodeBuilder cb ) {
+			enforceDone_codeProcessing( );
+			buildDefinitionsCode( cb, staticMembersMergerWIP_ );
+		}
+
+	protected:
+		abstract void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger );
 
 	protected:
 		override void execute_outerHashObtaining( ) {
@@ -28,9 +37,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		}
 
 		final void execute_codeProcessing( ) {
-			auto cb = scoped!CodeBuilder_Interpreter( );
-			buildDefinitionsCode( cb );
-			interpreterCodeWIP_ = cb.result;
+			codeProcessingCodeBuilderWIP_ = project.backend.spawnFunctionCodebuilder( );
+			staticMembersMergerWIP_ = new StaticMemberMerger;
+			buildDefinitionsCode( codeProcessingCodeBuilderWIP_, staticMembersMergerWIP_ );
+			staticMembersMergerWIP_.finish( );
 		}
 
 		final string baseIdentifier( ) {
@@ -38,7 +48,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		}
 
 	private:
-		InterpreterCodeBlock interpreterCodeWIP_;
+		CodeBuilder codeProcessingCodeBuilderWIP_;
+		/// Used for merging static members
+		StaticMemberMerger staticMembersMergerWIP_;
+		/// Namespace storing static members
+		BootstrapNamespace internalNamespaceWIP_;
 
 	protected:
 		abstract static class Data : SymbolRelatedDataEntity {

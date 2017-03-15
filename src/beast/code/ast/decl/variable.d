@@ -65,9 +65,15 @@ final class AST_VariableDeclaration : AST_Declaration {
 			decorations.apply_variableDeclarationModifier( declData, null );
 
 			if ( declData.isStatic ) {
-				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
-				Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
-				scope_.addEntity( var );
+				if ( env.staticMemberMerger.isFinished( ) ) {
+					scope_.addEntity( env.staticMemberMerger.getRecord( this ) );
+				}
+				else {
+					// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
+					Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
+					scope_.addEntity( var );
+					env.staticMemberMerger.addRecord( this, var );
+				}
 			}
 			else {
 				DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorations, declData );

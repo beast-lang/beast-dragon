@@ -64,7 +64,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			mixin(  //
 					"final switch( op ) {\n%s\n}".format(  //
 					[ __traits( derivedMembers, BackendPrimitiveOperation ) ].map!(  //
-					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( scope_, this, parentInstance, arguments ); break;\n".format( x, x, x ) //
+					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( subScope, this, parentInstance, arguments ); break;\n".format( x, x, x ) //
 					 ).joiner ) );
 
 			popScope( );

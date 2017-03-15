@@ -11,12 +11,13 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		this( Identifier identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, BackendPrimitiveOperation op ) {
+			staticData_ = new StaticData( this );
+
 			identifier_ = identifier;
 			parent_ = parent;
 			returnType_ = returnType;
 			parameters_ = parameters;
 			op_ = op;
-			staticData_ = new StaticData( this );
 		}
 
 		override Identifier identifier( ) {
@@ -43,7 +44,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				return new Data( this, parentInstance );
 		}
 
-		override void buildDefinitionsCode( CodeBuilder cb ) {
+	protected:
+		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			// Do nothing
 		}
 

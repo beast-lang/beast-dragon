@@ -6,6 +6,7 @@ import beast.core.project.configuration;
 import beast.core.error.msgfmtr.msgfmtr;
 import beast.core.project.modulemgr;
 import beast.core.error.msgfmtr.gnu;
+import beast.backend.common.backend;
 
 /// Project wrapping class
 final class Project : Identifiable {
@@ -18,6 +19,9 @@ final class Project : Identifiable {
 			messageFormatter = new MessageFormatter_GNU( );
 			moduleManager = new ModuleManager;
 
+			import beast.backend.cpp.backend : Backend_Cpp;
+			backend = new Backend_Cpp;
+
 			configuration.initialize( );
 		}
 
@@ -25,6 +29,7 @@ final class Project : Identifiable {
 		ProjectConfiguration configuration;
 		ModuleManager moduleManager;
 		MessageFormatter messageFormatter;
+		Backend backend;
 
 	public:
 		/// Path to project root directory

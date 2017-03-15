@@ -6,6 +6,8 @@ import beast.toolkit;
 import core.sync.condition : Condition;
 import core.sync.mutex : Mutex;
 
+//debug = tasks;
+
 final class TaskManager {
 
 	public:
@@ -39,13 +41,25 @@ final class TaskManager {
 
 		/// Waits till all jobs and tasks are done
 		void waitForEverythingDone( ) {
+			debug ( tasks ) {
+				import std.stdio : writefln;
+
+				writefln( "waitForEverythingDone" );
+			}
+
 			synchronized ( workerSyncMutex_ ) {
 				while ( true ) {
+					debug ( tasks )
+						writefln( "waitForEverythingDone\tplannedTasks %s\tplannedJobs %s\tidleWorkerCount %s\tworkersTotal %s", plannedTasks_.length, plannedJobs_.length, idleWorkerCount_, workers_.length );
+
 					if ( workers_.length == 0 )
 						return;
 
 					if ( !plannedTasks_.length && !plannedJobs_.length && idleWorkerCount_ == workers_.length )
 						return;
+
+					debug ( tasks )
+						writefln( "waitForEverythingDone\twait" );
 
 					everythingDoneCondition_.wait( );
 				}
@@ -71,9 +85,22 @@ final class TaskManager {
 		TaskContext askForAJob( ) {
 			import std.range.primitives : front, popFront;
 
+			debug ( tasks ) {
+				import std.stdio : writefln;
+
+				writefln( "thread %s\taskForAJob", Worker.current.id );
+			}
+
 			// Wait for a job
 			synchronized ( workerSyncMutex_ ) {
 				while ( true ) {
+					debug ( tasks ) {
+						writefln( "thread %s\taskForAJob\tisQuitting %s\tplannedTasks %s\tplannedJobs %s\tidleWorkerCount %s\tworkersTotal %s", Worker.current.id, isQuitting_, plannedTasks_.length, plannedJobs_.length, idleWorkerCount_, workers_.length );
+
+						scope ( exit )
+							writefln( "thread %s\taskForAJob out\tisQuitting %s\tplannedTasks %s\tplannedJobs %s\tidleWorkerCount %s\tworkersTotal %s", Worker.current.id, isQuitting_, plannedTasks_.length, plannedJobs_.length, idleWorkerCount_, workers_.length );
+					}
+
 					if ( isQuitting_ )
 						return null;
 

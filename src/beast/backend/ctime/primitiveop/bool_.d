@@ -24,8 +24,25 @@ void primitiveOp_boolOr( DataScope scope_, CodeBuilder_Ctime cb, DataEntity inst
 		const MemoryPtr result = result_;
 
 		inst.buildCode( cb, scope_ );
-		if ( result_.readPrimitive!bool ) {
+		if ( result_.readPrimitive!bool() ) {
 			result.writePrimitive( true );
+			result_ = result;
+			return;
+		}
+
+		args[ 1 ].buildCode( cb, scope_ );
+		result.write( result_, 1 );
+		result_ = result;
+	}
+}
+
+void primitiveOp_boolAnd( DataScope scope_, CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
+	with ( cb ) {
+		const MemoryPtr result = result_;
+
+		inst.buildCode( cb, scope_ );
+		if ( !result_.readPrimitive!bool() ) {
+			result.writePrimitive( false );
 			result_ = result;
 			return;
 		}
