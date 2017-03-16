@@ -95,7 +95,7 @@ struct CallMatchSet {
 			if ( bestMatch.matchLevel == CallableMatch.MatchFlags.noMatch ) {
 				// TODO: error messages when matchLevel is noMatch
 				benforce( !reportErrors, E.noMatchingOverload, //
-						"None of the overloads matches arguments %s: %s".format(  //
+						"None of the overloads match arguments %s: %s".format(  //
 							argumentListIdentificationString, //
 							matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner( ", " ) ) //
 						 );

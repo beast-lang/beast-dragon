@@ -2,6 +2,7 @@ module beast.code.data.module_.module_;
 
 import beast.code.data.toolkit;
 import beast.code.data.codenamespace.namespace;
+import beast.core.error.error;
 
 /// Module as a symbol
 /// See also Module from beast.core.project.module_ with module as project file
@@ -25,8 +26,19 @@ abstract class Symbol_Module : Symbol {
 
 		final override void buildDefinitionsCode( CodeBuilder cb ) {
 			cb.build_moduleDefinition( this, ( cb ) {
-				foreach ( sym; namespace.members )
-					sym.buildDefinitionsCode( cb );
+				bool error = false;
+
+				foreach ( sym; namespace.members ) {
+					try {
+						sym.buildDefinitionsCode( cb );
+					}
+					catch ( BeastErrorException exc ) {
+						error = true;
+					}
+				}
+
+				if ( error )
+					throw new BeastErrorException( "#moduleBuildError" );
 			} );
 		}
 

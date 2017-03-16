@@ -9,6 +9,7 @@ import std.array : appender, Appender;
 import std.file : write;
 import std.format : formattedWrite;
 import std.stdio : writeln;
+import std.path : absolutePath;
 
 final class Backend_Cpp : Backend {
 
@@ -73,7 +74,7 @@ final class Backend_Cpp : Backend {
 				writeln( result.data );
 		}
 
-		override CodeBuilder spawnFunctionCodebuilder() {
+		override CodeBuilder spawnFunctionCodebuilder( ) {
 			return new CodeBuilder_Cpp( null );
 		}
 

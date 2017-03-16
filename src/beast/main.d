@@ -15,7 +15,7 @@ import std.array : replace;
 import std.file : exists;
 import std.getopt : getopt, GetoptResult, GetOptException;
 import std.json;
-import std.path : absolutePath, dirName;
+import std.path : absolutePath, dirName, pathSplitter;
 import std.stdio : stdin, writeln, writef, stderr;
 import std.string : strip;
 
@@ -52,6 +52,12 @@ void mainImpl( string[ ] args ) {
 				"source|s", "Adds specified source file to the project.", ( string opt, string val ) { //
 					sourceFileCount++;
 					optConfigs[ "sourceFiles@opt-origin" ~ sourceFileCount.to!string ] = [ val.absolutePath.to!string ];
+				}, //
+				"output-directory", "Location where the output files are generated to", ( string opt, string val ) { //
+					optConfigs[ "outputDirectory" ] = val.absolutePath;
+				}, //
+				"target-filename", "Filename of the output file", ( string opt, string val ) { //
+					optConfigs[ "targetFilename" ] = val;
 				}, //
 				"root", "Root directory of the project.", &root, //
 				"run|r", "Run the target application after a successfull build.", { //
@@ -102,6 +108,8 @@ void mainImpl( string[ ] args ) {
 		project.basePath = root;
 	else if ( projectFile )
 		project.basePath = projectFile.dirName;
+
+	project.configuration.targetFilename = project.basePath.pathSplitter.back;
 
 	// If no project is set (and the mode is not fast), load implicit configuration file (if it exists)
 	if ( "originSourceFile" !in optConfigs && !projectFile && absolutePath( "beast.json", project.basePath ).exists )

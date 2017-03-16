@@ -4,6 +4,8 @@ import core.sync.mutex : Mutex;
 import beast.core.task.context;
 import beast.toolkit;
 
+//debug = taskGuards;
+
 alias TaskGuardId = shared ubyte*;
 
 // TODO: Check for unfinished task guards
@@ -52,14 +54,26 @@ mixin template TaskGuard( string guardName ) {
 			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
 			debug assert( Worker.current, "All task guards must be processed in worker threads" );
 
+			debug ( taskGuards ) {
+				import std.stdio : writefln;
+			}
+
 			const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
 
-			if ( initialFlags & Flags.error )
+			if ( initialFlags & Flags.error ) {
+				debug ( taskGuards )
+					writefln( "%s.%s posioned", typeof( this ).stringof, guardName );
+
 				throw new BeastErrorException( "#poison" );
+			}
 
 			// Task is already done, no problem
-			if ( initialFlags & Flags.done )
+			if ( initialFlags & Flags.done ) {
+				debug ( taskGuards )
+					writefln( "%s.%s already done", typeof( this ).stringof, guardName );
+
 				return;
+			}
 
 			// If not, we have to check if it is work in progress
 			if ( initialFlags & Flags.workInProgress ) {
@@ -69,8 +83,12 @@ mixin template TaskGuard( string guardName ) {
 					const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
 
 					// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
-					if ( wipFlags & Flags.error )
+					if ( wipFlags & Flags.error ) {
+						debug ( taskGuards )
+							writefln( "%s.%s poisoned", typeof( this ).stringof, guardName );
+
 						throw new BeastErrorException( "#poison" );
+					}
 
 					if ( wipFlags & Flags.done )
 						return;
@@ -149,9 +167,18 @@ mixin template TaskGuard( string guardName ) {
 			atomicOp!( "|=" )( _taskGuard_flags, Flags.contextSet );
 
 			try {
+				debug ( taskGuards )
+					writefln( "%s.%s exec", typeof( this ).stringof, guardName );
+
 				__traits( getMember, this, _taskGuard_executeFunctionName )( );
+
+				debug ( taskGuards )
+					writefln( "%s.%s finish", typeof( this ).stringof, guardName );
 			}
 			catch ( BeastErrorException exc ) {
+				debug ( taskGuards )
+					writefln( "%s.%s error", typeof( this ).stringof, guardName );
+
 				// Mark this task as erroreous
 				const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
 

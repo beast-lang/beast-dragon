@@ -18,7 +18,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			decorationList_ = decorationList;
 			parent_ = data.env.staticMembersParent;
 
-			taskManager.issueJob( { enforceDone_returnTypeDeduction( ); enforceDone_parameterExpanding( ); } );
+			taskManager.issueJob( { enforceDone_returnTypeDeduction( ); } );
+			taskManager.issueJob( { enforceDone_parameterExpanding( ); } );
 		}
 
 		override Identifier identifier( ) {
@@ -60,7 +61,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 							scope_.addLocalVariable( new DataEntity_FunctionParameter( scope_, param ) );
 					}
 
-					scope env = DeclarationEnvironment.newFunctionBody();
+					scope env = DeclarationEnvironment.newFunctionBody( );
 					env.scope_ = scope_;
 					env.staticMembersParent = parent_;
 					env.staticMemberMerger = staticMemberMerger;

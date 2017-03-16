@@ -48,6 +48,10 @@ struct ProjectConfiguration {
 			@help( "Explicit source files included in the project." )
 			string[ ] sourceFiles;
 
+			/// Directory where the output files are generated to (exe, ...)
+			@help( "Directory where the output files are generated to" )
+			string outputDirectory = ".";
+
 			/// Output message format
 			@help( "Format of compiler messages" )
 			MessageFormat messageFormat = MessageFormat.gnu;

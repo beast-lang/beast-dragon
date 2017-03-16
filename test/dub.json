@@ -5,7 +5,7 @@
 		"Daniel 'Danol' Čejchan"
 	],
 	"license": "GPL-3.0",
-	"targetName": "beast_testsuite",
+	"targetName": "testsuite",
 	"targetPath": "../bin",
 	"targetType": "executable",
 	"workingDirectory": "../bin",

@@ -4,4 +4,4 @@ cd test
 dub build
 
 cd ../bin
-./beast_testsuite
+./testsuite

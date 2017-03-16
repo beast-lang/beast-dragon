@@ -20,6 +20,7 @@ final class Project : Identifiable {
 			moduleManager = new ModuleManager;
 
 			import beast.backend.cpp.backend : Backend_Cpp;
+
 			backend = new Backend_Cpp;
 
 			configuration.initialize( );
@@ -65,7 +66,8 @@ final class Project : Identifiable {
 					benforce( file.exists && file.isFile, E.fileError, "Source file '" ~ file ~ "' does not exist" );
 				}
 
-				configuration.targetFilename = configuration.targetFilename.absolutePath( basePath );
+				configuration.outputDirectory = configuration.outputDirectory.absolutePath( basePath );
+				configuration.targetFilename = configuration.targetFilename.absolutePath( configuration.outputDirectory );
 			}
 
 			moduleManager.initialize( );

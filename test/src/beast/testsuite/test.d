@@ -54,6 +54,8 @@ final class Test {
 			string projectFile;
 			string projectRoot;
 
+			const string outputDirectory = "../test/output".absolutePath;
+
 			// If the test is just one file, add it to the file list
 			if ( location.isFile ) {
 				enforce( location.extension == ".be", "Test file '" ~ location ~ "' does not have extension .be" );
@@ -100,6 +102,8 @@ final class Test {
 				args = [ beastApp, // Compiler name
 					"--json-messages", // Compiler messages in JSON format
 					"--root", projectRoot, //
+					"--output-directory", outputDirectory, //
+					"--target-filename", identifier, //
 					 ];
 
 				// Add explicit source files
@@ -126,16 +130,16 @@ final class Test {
 				sw.start( );
 
 				int exitCode;
-				while( true ) {
+				while ( true ) {
 					const auto result = process.pid.tryWait( );
 
-					if( result.terminated ) {
+					if ( result.terminated ) {
 						exitCode = result.status;
 						break;
 					}
 
-					if( sw.peek.seconds > timeout ) {
-						process.pid.kill();
+					if ( sw.peek.seconds > timeout ) {
+						process.pid.kill( );
 						fail( "Process timeout" );
 					}
 					Thread.sleep( dur!"msecs"( sw.peek.msecs / 2 ) );

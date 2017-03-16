@@ -30,7 +30,10 @@ abstract class Symbol_Enum : Symbol_Type {
 
 	protected:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataScope scope_, DataEntity instance ) {
-			return baseClass_.resolveIdentifier( id, scope_, new DataEntity_ReinterpretCast( instance, baseClass_ ) );
+			if( instance )
+				return baseClass_.resolveIdentifier( id, scope_, new DataEntity_ReinterpretCast( instance, baseClass_ ) );
+
+			return baseClass_.resolveIdentifier( id, scope_, null );
 		}
 
 	protected:
