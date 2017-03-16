@@ -32,7 +32,7 @@ final class Worker {
 
 	private:
 		void run( ) {
-			import core.stdc.stdlib : exit, EXIT_FAILURE;
+			import core.stdc.stdlib : exit;
 			import std.stdio : stderr, writeln;
 
 			current = this;
@@ -51,7 +51,7 @@ final class Worker {
 			catch ( Throwable t ) {
 				stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
 				// Disgracefully shutdown the application
-				exit( EXIT_FAILURE );
+				exit( 5 );
 			}
 		}
 }
