@@ -192,7 +192,16 @@ struct ProjectConfiguration {
 			import std.format : formattedRead;
 
 			int val;
-			benforce( key.formattedRead( "%s", &val ) == 1, E.invalidOpts, "Key '%s' (='%s') is not a number".format( key, value ) );
+			int result;
+
+			try {
+				result = value.formattedRead( "%s", &val );
+			}
+			catch( Throwable t ) {
+				berror( E.invalidOpts, "Could not parse key %s (='%s') into a number".format( key, value ) );
+			}
+
+			benforce( result == 1, E.invalidOpts, "Key '%s' (='%s') is not a number".format( key, value ) );
 			return JSONValue( val );
 		}
 

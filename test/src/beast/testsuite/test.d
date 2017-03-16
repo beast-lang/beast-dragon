@@ -27,15 +27,16 @@ final class TestFailException : Exception {
 final class Test {
 
 	public:
-		this( string location, string identifier ) {
+		this( string location, string identifier, bool isSingleThreaded ) {
 			this.location = location;
 			this.identifier = identifier;
+			this.isSingleThreaded = isSingleThreaded;
 		}
 
 	public:
-		bool run( ) {
+		bool run() {
 			try {
-				_run( );
+				_run();
 				return true;
 			}
 			catch ( TestFailException exc ) {
@@ -44,7 +45,7 @@ final class Test {
 		}
 
 	public:
-		void _run( ) {
+		void _run() {
 			log = File( "../test/log/" ~ identifier ~ ".txt", "w" );
 			log.writeln( "Test '", identifier, "' log\n" );
 
@@ -105,6 +106,9 @@ final class Test {
 					"--output-directory", outputDirectory, //
 					"--target-filename", identifier, //
 					 ];
+
+				if ( isSingleThreaded )
+					args ~= [ "--config", "workerCount=1" ];
 
 				// Add explicit source files
 				foreach ( file; sourceFiles )
@@ -203,6 +207,7 @@ final class Test {
 		string[ ] args;
 		/// Timeout in seconds
 		int timeout = 5;
+		bool isSingleThreaded = false;
 
 	private:
 		void enforce( bool condition, lazy string message ) {

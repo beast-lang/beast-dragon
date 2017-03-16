@@ -21,8 +21,12 @@ int main( string[ ] args ) {
 
 	Test[ ] tests, activeTests, failedTests;
 
-	foreach ( location; testsDir.dirEntries( "t_*", SpanMode.depth ) )
-		tests ~= new Test( location.asNormalizedPath.to!string, location.asRelativePath( testsDir ).to!string.pathSplitter.map!( x => x.chompPrefix( "t_" ).stripExtension ).joiner( "." ).to!string );
+	foreach ( location; testsDir.dirEntries( "t_*", SpanMode.depth ) ) {
+		const string loc = location.asNormalizedPath.to!string;
+		const string id = location.asRelativePath( testsDir ).to!string.pathSplitter.map!( x => x.chompPrefix( "t_" ).stripExtension ).joiner( "." ).to!string;
+		tests ~= new Test( loc, id ~ "_singleThread", true );
+		tests ~= new Test( loc, id, false );
+	}
 
 	activeTests = tests;
 
