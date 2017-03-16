@@ -132,6 +132,24 @@ final class Test {
 			{
 				ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
 
+				scope ( exit ) {
+					stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
+					stdoutContent = process.stdout.byLine.joiner( "\n" ).to!string;
+
+					{
+						log.writeln( "-- BEGIN OF STDOUT" );
+						foreach ( str; stdoutContent )
+							log.write( str );
+						log.writeln( "-- END OF STDOUT\n" );
+					}
+					{
+						log.writeln( "-- BEGIN OF STDERR" );
+						foreach ( str; stderrContent )
+							log.write( str );
+						log.writeln( "-- END OF STDERR\n" );
+					}
+				}
+
 				StopWatch sw;
 				sw.start( );
 
@@ -159,18 +177,6 @@ final class Test {
 
 					enforce( exitCodeHandled, "Unexpected exit code: %s".format( exitCode ) );
 				}
-
-				stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
-				stdoutContent = process.stdout.byLine.joiner( "\n" ).to!string;
-			}
-			// Log STDERR
-			{
-				log.writeln( "-- BEGIN OF STDERR" );
-
-				foreach ( str; stderrContent )
-					log.write( str );
-
-				log.writeln( "-- END OF STDERR\n" );
 			}
 
 			// Process results
