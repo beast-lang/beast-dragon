@@ -34,9 +34,9 @@ final class Test {
 		}
 
 	public:
-		bool run() {
+		bool run( ) {
 			try {
-				_run();
+				_run( );
 				return true;
 			}
 			catch ( TestFailException exc ) {
@@ -45,8 +45,10 @@ final class Test {
 		}
 
 	public:
-		void _run() {
-			log = File( "../test/log/" ~ identifier ~ ".txt", "w" );
+		void _run( ) {
+			logFilename = "../test/log/%s.txt".format( identifier ).absolutePath;
+
+			File log = File( logFilename, "w" );
 			log.writeln( "Test '", identifier, "' log\n" );
 
 			string[ ] sourceFiles;
@@ -128,7 +130,7 @@ final class Test {
 			string stdoutContent;
 			// Run process
 			{
-				scope ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
+				ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
 
 				StopWatch sw;
 				sw.start( );
@@ -202,9 +204,9 @@ final class Test {
 		const string location;
 		/// Identifier of the test
 		const string identifier;
-		File log;
 		/// Args to run the compiler with
 		string[ ] args;
+		string logFilename;
 		/// Timeout in seconds
 		int timeout = 5;
 		bool isSingleThreaded = false;

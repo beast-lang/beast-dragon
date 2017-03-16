@@ -10,11 +10,24 @@ import std.stdio;
 import std.algorithm;
 import std.parallelism;
 import core.sync.mutex;
+import std.getopt;
 
 __gshared Mutex testsMutex;
 __gshared string testsDir, testRootDir;
 
 int main( string[ ] args ) {
+	bool showLogs;
+
+	auto getoptResult = getopt( args, //
+			std.getopt.config.bundling, //
+			"show-logs", "Show logs of failed tests in the stdout", &showLogs //
+			 );
+
+	if ( getoptResult.helpWanted ) {
+		defaultGetoptPrinter( "Beast testsuite.", getoptResult.options );
+		return 0;
+	}
+
 	testsMutex = new Mutex;
 	testsDir = "../test/tests".absolutePath;
 	"../test/log/".mkdirRecurse( );
@@ -40,6 +53,9 @@ int main( string[ ] args ) {
 			else {
 				writeln( "[ # ] ", test.identifier, ": FAILED" );
 				failedTests ~= test;
+
+				if ( showLogs )
+					test.logFilename.readText.writeln;
 			}
 		}
 	}
