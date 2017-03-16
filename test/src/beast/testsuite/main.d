@@ -31,6 +31,7 @@ int main( string[ ] args ) {
 	testsMutex = new Mutex;
 	testsDir = "../test/tests".absolutePath;
 	"../test/log/".mkdirRecurse( );
+	"../test/output/".mkdirRecurse( );
 
 	Test[ ] tests, activeTests, failedTests;
 
