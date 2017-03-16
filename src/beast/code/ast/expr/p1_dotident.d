@@ -28,9 +28,9 @@ final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
 		AST_Identifier identifier;
 
 	public:
-		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ ) {
+		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide ) {
 			const auto _gd = ErrorGuard( this );
-			return leftSide.single.expectResolveIdentifier( identifier, scope_ );
+			return leftSide.single.expectResolveIdentifier( identifier );
 		}
 
 	protected:

@@ -4,6 +4,7 @@ import beast.backend.toolkit;
 import std.array : Appender, appender;
 import std.format : formattedWrite;
 import beast.code.data.scope_.local;
+import beast.code.data.var.result;
 
 // TODO: Asynchronous proxy definition handler
 
@@ -67,11 +68,16 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			pushScope( );
 
+			auto prevFunc = currentFunction;
+			currentFunction = func;
+
 			body_( this );
 
 			popScope( );
 
 			codeResult_.formattedWrite( "%s}\n\n", tabs );
+
+			currentFunction = prevFunc;
 
 			debug resultVarName_ = null;
 		}
@@ -98,25 +104,26 @@ class CodeBuilder_Cpp : CodeBuilder {
 				resultVarName_ = "( %s + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
 		}
 
-		override void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
-			data.buildCode( this, scope_ );
+		override void build_memoryWrite( MemoryPtr target, DataEntity data ) {
+			data.buildCode( this );
 			const string rightOp = resultVarName_;
 
 			build_memoryAccess( target );
 			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, resultVarName_, rightOp, data.dataType.instanceSize );
 		}
 
-		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			string resultVarName;
 			if ( function_.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, scope_, false );
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
 				build_localVariableDefinition( resultVar );
-				resultVarName = cppIdentifier( resultVar );
+				resultVarName = resultVarName_;
 			}
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
 
-			auto subScope = scoped!LocalDataScope( scope_ );
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard;
 			pushScope( );
 
 			string[ ] argumentNames;
@@ -126,7 +133,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
 				assert( parentInstance );
 
-				parentInstance.buildCode( this, subScope );
+				parentInstance.buildCode( this );
 				argumentNames ~= "&" ~ resultVarName_;
 			}
 
@@ -134,9 +141,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, subScope, false );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false );
 				build_localVariableDefinition( argVar );
-				build_copyCtor( argVar, arguments[ i ], subScope );
+				build_copyCtor( argVar, arguments[ i ] );
 
 				argumentNames ~= "&" ~ cppIdentifier( argVar );
 			}
@@ -144,52 +151,61 @@ class CodeBuilder_Cpp : CodeBuilder {
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
 			popScope( );
-			subScope.finish( );
+			_s.finish( );
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
 			resultVarName_ = resultVarName;
 		}
 
-		override void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.cpp.primitiveop;
 
 			debug resultVarName_ = null;
 
 			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, scope_, false );
+				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false );
 				build_localVariableDefinition( resultVar );
-				resultVarName_ = cppIdentifier( resultVar );
 			}
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
-			auto subScope = scoped!LocalDataScope( scope_ );
+
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard;
 			pushScope( );
 
-			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( DataScope scope_, CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
-				static if ( __traits( hasMember, beast.backend.cpp.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-					mixin( "beast.backend.cpp.primitiveop.primitiveOp_%s( scope_, cb, inst, args );".format( opStr ) );
-				else
-					assert( 0, "primitiveOp %s is not implemented for %s".format( opStr, cb.identificationString ) );
-			}
+			mixin( ( ) { //
+				auto result = appender!string;
+				result ~= "final switch( op ) {\n";
 
-			mixin(  //
-					"final switch( op ) {\n%s\n}".format(  //
-					[ __traits( derivedMembers, BackendPrimitiveOperation ) ].map!(  //
-					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( subScope, this, parentInstance, arguments ); break;\n".format( x, x, x ) //
-					 ).joiner ) );
+				foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
+					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
+
+					static if ( __traits( hasMember, beast.backend.cpp.primitiveop, "primitiveOp_%s".format( opStr ) ) )
+						result ~= "beast.backend.cpp.primitiveop.primitiveOp_%s( this, parentInstance, arguments );\nbreak;\n".format( opStr );
+					else
+						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.cpp\" );\n".format( opStr );
+				}
+
+				result ~= "}\n";
+				return result.data;
+			}( ) );
 
 			popScope( );
-			subScope.finish( );
+			_s.finish( );
+
 			codeResult_.formattedWrite( "%s}\n", tabs );
 		}
 
 	public: // Statement related build commands
-		override void build_if( DataScope scope_, DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+		override void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			codeResult_.formattedWrite( "%s{\n", tabs );
 			pushScope( );
-			auto subScope = scoped!LocalDataScope( scope_ ); // Build the condition
+
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard; // Build the condition
+
 			{
-				condition.buildCode( this, subScope );
+				condition.buildCode( this );
 				codeResult_.formattedWrite( "%sif( %s ) {\n", tabs, resultVarName_ );
 			}
 
@@ -211,8 +227,22 @@ class CodeBuilder_Cpp : CodeBuilder {
 			}
 
 			popScope( );
-			subScope.finish( );
+			_s.finish( );
+
 			codeResult_.formattedWrite( "%s}\n", tabs );
+
+			debug resultVarName_ = null;
+		}
+
+		override void build_return( DataEntity returnValue ) {
+			assert( currentFunction );
+
+			if ( returnValue )
+				build_copyCtor( new DataEntity_Result( currentFunction, returnValue.dataType ), returnValue );
+
+			generateScopesExit( );
+			codeResult_.formattedWrite( "%sreturn;\n", tabs );
+
 			debug resultVarName_ = null;
 		}
 
@@ -264,15 +294,20 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		static string cppIdentifier( MemoryBlock block, bool addrOf = false ) {
 			string addrOfStr = addrOf ? "&" : "";
-			if ( block.isFunctionParameter ) {
+			if ( block.isFunctionParameter )
 				return cppIdentifier( block.functionParameter );
-			}
+
+			else if ( block.flags & MemoryBlock.Flag.result )
+				return "result";
+
 			else if ( block.isLocal ) {
 				assert( block.localVariable );
 				return addrOfStr ~ cppIdentifier( block.localVariable );
 			}
+
 			else if ( block.identifier )
 				return "%s__s%s_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
+
 			else
 				return "%s__s%s".format( addrOfStr, block.startPtr.val );
 		}
@@ -307,8 +342,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		override void popScope( ) {
-			foreach ( var; scopeItems )
-				codeResult_.formattedWrite( "%s// #dtor %s\n", tabs, cppIdentifier( var ) );
 			super.popScope( );
 			tabOffset_--;
 		}
@@ -321,4 +354,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 		string resultVarName_;
 		size_t tabOffset_; /// Accumulator for optimized tabs output
 		string tabsString_;
+
+	private:
+		Symbol_RuntimeFunction currentFunction;
+
 }

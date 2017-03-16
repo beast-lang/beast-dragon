@@ -18,7 +18,7 @@ abstract class AST_AtomicExpression : AST_Expression {
 			else if ( AST_ParentCommaExpression.canParse )
 				return AST_ParentCommaExpression.parse( );
 
-			currentToken.reportsyntaxError( "expression (atomic)" );
+			currentToken.reportSyntaxError( "expression (atomic)" );
 			assert( 0 );
 		}
 

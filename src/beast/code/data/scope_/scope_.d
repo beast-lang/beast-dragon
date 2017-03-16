@@ -14,7 +14,8 @@ abstract class DataScope : Identifiable {
 			parentEntity_ = parentEntity;
 			debug jobId_ = context.jobId;
 		}
-		~this() {
+
+		~this( ) {
 			//debug assert( isFinished_, "Scope destroyed but not finished" );
 		}
 
@@ -25,9 +26,6 @@ abstract class DataScope : Identifiable {
 		}
 
 		final override string identificationString( ) {
-			if ( this is null )
-				return "#error#";
-
 			return parentEntity.identificationString;
 		}
 
@@ -69,7 +67,7 @@ abstract class DataScope : Identifiable {
 		}
 
 	public:
-		Overloadset resolveIdentifier( Identifier id, DataScope scope_ ) {
+		Overloadset resolveIdentifier( Identifier id ) {
 			debug assert( context.jobId == jobId_ );
 
 			if ( auto result = id in groupedNamedVariables_ )
@@ -78,7 +76,7 @@ abstract class DataScope : Identifiable {
 			return Overloadset( );
 		}
 
-		abstract Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ );
+		abstract Overloadset recursivelyResolveIdentifier( Identifier id );
 
 	public:
 		debug final size_t jobId( ) {
@@ -97,5 +95,38 @@ abstract class DataScope : Identifiable {
 	package:
 		/// Currently open subscope (used for checking there's maximally one at a time)
 		debug DataScope openSubscope_;
+
+}
+
+/// Returns current scope for the current context
+DataScope currentScope( ) {
+	assert( context.currentScope );
+	return context.currentScope;
+}
+
+ScopeGuard scopeGuard( DataScope scope_ ) {
+	return ScopeGuard( scope_ );
+}
+
+private struct ScopeGuard {
+
+	public:
+		this( DataScope scope_ ) {
+			context.scopeStack ~= context.currentScope;
+			context.currentScope = scope_;
+
+			debug this.scope_ = scope_;
+		}
+
+		~this( ) {
+			debug assert( context.currentScope is scope_ );
+			assert( context.scopeStack.length );
+
+			context.currentScope = context.scopeStack[ $ - 1 ];
+			context.scopeStack.length--;
+		}
+
+	private:
+		debug DataScope scope_;
 
 }

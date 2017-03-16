@@ -36,7 +36,8 @@ final class Token {
 			if_,
 			else_,
 
-			auto_
+			auto_,
+			return_
 		}
 
 		static immutable string[ ] keywordStr = {
@@ -171,7 +172,7 @@ final class Token {
 		void expect( Type type, const Data data, lazy string whatExpected = null ) {
 			if ( this.type != type ) {
 				string we = whatExpected;
-				reportsyntaxError( we ? we : descStr( type, data ) );
+				reportSyntaxError( we ? we : descStr( type, data ) );
 			}
 
 			bool result;
@@ -197,7 +198,7 @@ final class Token {
 			}
 
 			if ( !result )
-				reportsyntaxError( whatExpected ? whatExpected : descStr( type, data ) );
+				reportSyntaxError( whatExpected ? whatExpected : descStr( type, data ) );
 		}
 
 		/// Equivalent of expect( xxx ); getNextToken();
@@ -215,7 +216,7 @@ final class Token {
 			return result;
 		}
 
-		void reportsyntaxError( string whatExpected ) {
+		void reportSyntaxError( string whatExpected ) {
 			berror( E.syntaxError, "Expected %s but got %s".format( whatExpected, descStr ), codeLocation.errGuardFunction );
 		}
 

@@ -39,13 +39,7 @@ abstract class TestDirective {
 		}
 
 		/// This is called right before test end, so the directive can do more checks
-		void onBeforeTestEnd( ) {
-
-		}
-
-		/// This is called when the compiler process exists with given return code
-		/// If the code was not 0 and no directive returns true, it is an error (unexpected exit code)
-		bool onExitCode( int code ) {
+		bool onBeforeTestEnd( int exitCode ) {
 			return false;
 		}
 

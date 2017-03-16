@@ -11,6 +11,7 @@ import std.algorithm;
 import std.parallelism;
 import core.sync.mutex;
 import std.getopt;
+import core.thread;
 
 __gshared Mutex testsMutex;
 __gshared string testsDir, testRootDir;
@@ -44,7 +45,13 @@ int main( string[ ] args ) {
 
 	activeTests = tests;
 
-	foreach ( test; tests.parallel ) {
+	// Parallel version bugs a lot on Windows
+	version( Windows )
+		auto it = tests;
+	else
+		auto it = tests.parallel;
+
+	foreach ( test; it ) {
 		const bool result = test.run( );
 
 		synchronized ( testsMutex ) {
@@ -64,6 +71,8 @@ int main( string[ ] args ) {
 	writeln;
 	writeln( "[   ] PASSED: ", activeTests.length - failedTests.length );
 	writeln( "[ ", failedTests.length ? "#" : " ", " ] FAILED: ", failedTests.length );
+
+	thread_joinAll();
 
 	return failedTests.length ? 1 : 0;
 }

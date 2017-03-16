@@ -5,6 +5,7 @@ import beast.code.ast.expr.p1;
 import beast.code.ast.identifier;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
+import beast.code.ast.expr.auto_;
 
 abstract class AST_Declaration : AST_Statement {
 
@@ -47,7 +48,8 @@ abstract class AST_Declaration : AST_Statement {
 			else if ( currentToken == Token.Special.lParent )
 				return AST_FunctionDeclaration.parse( _gd, decorationList, type, identifier );
 
-			assert( 0, "Not implemented: " ~ currentToken.descStr );
+			currentToken.reportSyntaxError( "';', '=' or ':=' for variable declaration or parameter list for function declaration" );
+			assert( 0 );
 		}
 
 	public:

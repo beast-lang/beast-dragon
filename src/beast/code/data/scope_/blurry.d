@@ -14,11 +14,11 @@ final class BlurryDataScope : DataScope {
 		}
 
 	public:
-		final override Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
-			if ( auto result = resolveIdentifier( id, scope_ ) )
+		final override Overloadset recursivelyResolveIdentifier( Identifier id ) {
+			if ( auto result = resolveIdentifier( id ) )
 				return result;
 
-			if ( auto result = parentScope_.recursivelyResolveIdentifier( id, scope_ ) )
+			if ( auto result = parentScope_.recursivelyResolveIdentifier( id ) )
 				return result;
 
 			return Overloadset( );

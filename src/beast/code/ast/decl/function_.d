@@ -33,13 +33,8 @@ final class AST_FunctionDeclaration : AST_Declaration {
 			FunctionDeclarationData declData = new FunctionDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 
-			auto scope_ = scoped!RootDataScope( env.staticMembersParent );
-
 			// Apply possible decorators in the variableDeclarationModifier context
-			decorations.apply_functionDeclarationModifier( declData, scope_ );
-
-			scope_.finish( );
-			assert( scope_.itemCount == 0 );
+			decorations.apply_functionDeclarationModifier( declData );
 
 			immutable isRuntime = parameterList.isRuntimeParameterList;
 
@@ -49,7 +44,7 @@ final class AST_FunctionDeclaration : AST_Declaration {
 				berror( E.notImplemented, "Not implemented" );
 		}
 
-		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
+		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			berror( E.notImplemented, "Nested functions are not implemented yet" );
 		}
 

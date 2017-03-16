@@ -30,8 +30,8 @@ abstract class ProxyDataEntity : DataEntity {
 			return sourceEntity_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-			return sourceEntity_.startCallMatch( scope_, ast );
+		override CallableMatch startCallMatch( AST_Node ast ) {
+			return sourceEntity_.startCallMatch( ast );
 		}
 
 		override Symbol_Decorator isDecorator( ) {
@@ -47,13 +47,6 @@ abstract class ProxyDataEntity : DataEntity {
 			return sourceEntity_.identification;
 		}
 
-		override string identificationString( ) {
-			if ( this is null )
-				return "#error#";
-
-			return sourceEntity_.identificationString;
-		}
-
 		override AST_Node ast( ) {
 			return sourceEntity_.ast;
 		}
@@ -63,8 +56,8 @@ abstract class ProxyDataEntity : DataEntity {
 		}
 
 	protected:
-		final override Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
-			return sourceEntity_.resolveIdentifier( id, scope_ );
+		final override Overloadset _resolveIdentifier_main( Identifier id ) {
+			return sourceEntity_.resolveIdentifier( id );
 		}
 
 	protected:

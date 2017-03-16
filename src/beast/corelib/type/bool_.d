@@ -23,6 +23,12 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			BackendPrimitiveOperation.boolCopyCtor //
 			 );
 
+	// Destructor
+	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", tp.Bool, tp.Void, //
+			ExpandedFunctionParameter.bootstrap(), //
+			BackendPrimitiveOperation.noopDtor //
+			 );
+
 	// Operator overloads
 
 	// ||

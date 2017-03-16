@@ -30,12 +30,15 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
 			// Deduce data type
 			{
-				DataScope localScope_ = new LocalDataScope( data.env.scope_ );
-				dataType = typeExpression.buildSemanticTree_single( coreLibrary.type.Type, localScope_ ).ctExec_asType( localScope_ );
-				localScope_.finish( );
+				auto _s = scoped!LocalDataScope();
+				auto _sgd = _s.scopeGuard;
+
+				dataType = typeExpression.buildSemanticTree_single( coreLibrary.type.Type ).ctExec_asType();
+
+				_s.finish( );
 			}
 
-			super( dataType, data.env.scope_, data.isCtime );
+			super( dataType, data.isCtime );
 
 			decorationList.enforceAllResolved( );
 		}

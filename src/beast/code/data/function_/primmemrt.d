@@ -74,8 +74,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return parentInstance_;
 				}
 
-				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-					return new Match( sym_, scope_, this, ast );
+				override CallableMatch startCallMatch( AST_Node ast ) {
+					return new Match( sym_, this, ast );
 				}
 
 			private:
@@ -96,7 +96,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return parent_.dataEntity;
 				}
 
-				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
+				override CallableMatch startCallMatch( AST_Node ast ) {
 					return new InvalidCallableMatch( this, "need this" );
 				}
 
@@ -105,8 +105,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( Symbol_PrimitiveMemberRuntimeFunction sym, DataScope scope_, Data sourceEntity, AST_Node ast ) {
-					super( sym, scope_, sourceEntity, ast );
+				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast ) {
+					super( sym, sourceEntity, ast );
 
 					parentInstance_ = sourceEntity.parentInstance_;
 					sym_ = sym;
@@ -134,8 +134,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 			public:
-				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_primitiveOperation( scope_, sym_, op_, parentInstance_, arguments_ );
+				override void buildCode( CodeBuilder cb ) {
+					cb.build_primitiveOperation( sym_, op_, parentInstance_, arguments_ );
 				}
 
 			private:

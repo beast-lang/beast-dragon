@@ -71,7 +71,9 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
 			with ( memoryManager.session ) {
-				auto scope_ = scoped!RootDataScope( parent );
+				auto _s = scoped!RootDataScope( parent );
+				auto _sgd = _s.scopeGuard;
+
 				auto cb = scoped!CodeBuilder_Ctime( );
 
 				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
@@ -80,13 +82,13 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 				// We can't use this.dataEntity because that would cause a dependency loop (as we would require memoryPtr for this in it)
 				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataType );
-				ast_.buildConstructor( substEntity, scope_, cb );
+				ast_.buildConstructor( substEntity, cb );
 
 				// We have to mark the variable as runtime after calling its constructor (which is done at ctime)
 				if ( !isCtime_ )
 					block.flags |= MemoryBlock.Flag.runtime;
 
-				scope_.finish( );
+				_s.finish( );
 			}
 		}
 

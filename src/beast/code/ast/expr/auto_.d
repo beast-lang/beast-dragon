@@ -13,7 +13,7 @@ final class AST_AutoExpression : AST_Expression {
 			auto _gd = codeLocationGuard( );
 			AST_AutoExpression result = new AST_AutoExpression;
 
-			currentToken.expect( Token.Keyword.auto_ );
+			currentToken.expectAndNext( Token.Keyword.auto_ );
 
 			// TODO: auto mut etc.
 
@@ -36,7 +36,7 @@ final class AST_AutoExpression : AST_Expression {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			berror( E.syntaxError, "'auto' is not allowed here" );
 			assert( 0 );
 		}

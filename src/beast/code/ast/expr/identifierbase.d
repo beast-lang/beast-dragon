@@ -27,9 +27,9 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
-			assert( scope_ );
+			assert( currentScope );
 
 			Overloadset result;
 
@@ -42,19 +42,19 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 					return Overloadset( );
 				}
 
-				result = inferredType.dataEntity.resolveIdentifier( identifier, scope_ );
+				result = inferredType.dataEntity.resolveIdentifier( identifier );
 
 				if ( result.isEmpty ) {
 					if ( errorOnInferrationFailure )
-						berror( E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : scope_.identificationString ) );
+						berror( E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : currentScope.identificationString ) );
 
 					return Overloadset( );
 				}
 			}
 			else {
-				result = scope_.recursivelyResolveIdentifier( identifier, scope_ );
+				result = currentScope.recursivelyResolveIdentifier( identifier );
 
-				benforce( !result.isEmpty, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : scope_.identificationString ) );
+				benforce( !result.isEmpty, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : currentScope.identificationString ) );
 			}
 
 			return result;

@@ -18,11 +18,8 @@ final class DataEntity_ReinterpretCast : ProxyDataEntity {
 		}
 
 	public:
-		override string identificationString( ) {
-			if ( this is null )
-				return "#error#";
-
-			return "%s.##reinterpretCast( %s )".format( super.identificationString, newType_.identificationString );
+		override string identification( ) {
+			return "##reinterpretCast( %s )".format( newType_.identificationString );
 		}
 
 		override Hash outerHash( ) {

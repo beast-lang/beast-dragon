@@ -11,7 +11,6 @@ import beast.code.ast.decl.env;
 
 /// Runtime function = function without @ctime arguments (or expanded ones)
 abstract class Symbol_RuntimeFunction : Symbol_Function {
-	/// Handles generating 
 	mixin TaskGuard!"codeProcessing";
 
 	public:
@@ -21,7 +20,9 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 	public:
 		final override void buildDefinitionsCode( CodeBuilder cb ) {
-			enforceDone_codeProcessing( );
+			// Enforce return type deduction
+			returnType();
+
 			buildDefinitionsCode( cb, staticMembersMergerWIP_ );
 		}
 
@@ -37,7 +38,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		}
 
 		final void execute_codeProcessing( ) {
-			codeProcessingCodeBuilderWIP_ = project.backend.spawnFunctionCodebuilder( );
+			codeProcessingCodeBuilderWIP_ = new CodeBuilder_Interpreter();
 			staticMembersMergerWIP_ = new StaticMemberMerger;
 			buildDefinitionsCode( codeProcessingCodeBuilderWIP_, staticMembersMergerWIP_ );
 			staticMembersMergerWIP_.finish( );
@@ -78,16 +79,21 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return true;
 				}
 
-				override string identificationString( ) {
-					if ( this is null )
-						return "#error#";
-
-					return "%s %s.%s( %s )".format( sym_.returnType ? sym_.returnType.identificationString : "#error", parent.identificationString, sym_.baseIdentifier, sym_.parameters.map!( x => x.identificationString ).joiner( ", " ) );
+				override string identification( ) {
+					return "%s( %s )".format( sym_.baseIdentifier, sym_.parameters.map!( x => x.identificationString ).joiner( ", " ) );
 				}
 
 			public:
-				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-					return new Match( sym_, scope_, this, ast );
+				override CallableMatch startCallMatch( AST_Node ast ) {
+					return new Match( sym_, this, ast );
+				}
+
+			protected:
+				override Overloadset _resolveIdentifier_pre( Identifier id ) {
+					if ( id == ID!"#returnType" )
+						return sym_.returnType.dataEntity.Overloadset;
+
+					return Overloadset( );
 				}
 
 			private:
@@ -98,13 +104,15 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		static class Match : SeriousCallableMatch {
 
 			public:
-				this( Symbol_RuntimeFunction sym, DataScope scope_, DataEntity sourceEntity, AST_Node ast ) {
-					super( scope_, sourceEntity, ast );
+				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, AST_Node ast ) {
+					super( sourceEntity, ast );
 					sym_ = sym;
 				}
 
 			protected:
 				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+					auto _sgd = scope_.scopeGuard;
+
 					if ( argumentIndex_ >= sym_.parameters.length ) {
 						errorStr = "parameter count mismatch";
 						return MatchFlags.noMatch;
@@ -115,7 +123,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 					if ( !entity ) {
 						with ( memoryManager.session ) {
-							entity = expression.buildSemanticTree_single( param.dataType, scope_ );
+							entity = expression.buildSemanticTree_single( param.dataType );
 							dataType = entity.dataType;
 						}
 					}
@@ -132,7 +140,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 							return MatchFlags.noMatch;
 						}
 
-						MemoryPtr entityData = entity.ctExec( scope_ );
+						MemoryPtr entityData = entity.ctExec();
 						if ( !entityData.dataEquals( param.constValue, dataType.instanceSize ) ) {
 							errorStr = "argument %s value mismatch".format( argumentIndex_ );
 							return MatchFlags.noMatch;
@@ -185,11 +193,12 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return false;
 				}
 
-				override string identificationString( ) {
-					if ( this is null )
-						return "#error#";
+				override string identification( ) {
+					return "%s( ... )( %s )".format( sym_.baseIdentifier, arguments_.map!( x => x.tryGetIdentificationString ).joiner( ", " ).to!string );
+				}
 
-					return "%s %s.%s( ... )( %s )".format( sym_.returnType.identificationString, parent.identificationString, sym_.baseIdentifier, arguments_.map!( x => x.identificationString ).joiner( ", " ).to!string );
+				override string identificationString() {
+					return "%s %s".format( sym_.returnType.tryGetIdentificationString, super.identificationString );
 				}
 
 				override DataEntity parent( ) {
@@ -201,9 +210,9 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 			public:
-				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+				override void buildCode( CodeBuilder cb ) {
 					const auto _gd = ErrorGuard( ast_ );
-					cb.build_functionCall( scope_, sym_, null, arguments_ );
+					cb.build_functionCall( sym_, null, arguments_ );
 				}
 
 			protected:

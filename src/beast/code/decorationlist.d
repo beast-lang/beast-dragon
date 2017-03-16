@@ -38,18 +38,18 @@ final class DecorationList {
 
 	public:
 		/// Applies all possible decorations in the variableDeclarationModifier context and removes them from the list
-		void apply_variableDeclarationModifier( VariableDeclarationData var, DataScope scope_ ) {
-			standardDecoratorProcedure!"variableDeclarationModifier"( coreLibrary.module_.dataEntity, scope_, var );
+		void apply_variableDeclarationModifier( VariableDeclarationData var ) {
+			standardDecoratorProcedure!"variableDeclarationModifier"( coreLibrary.module_.dataEntity, var );
 		}
 
 		/// Applies all possible decorations in the functionDeclarationModifier context and removes them from the list
-		void apply_functionDeclarationModifier( FunctionDeclarationData var, DataScope scope_ ) {
-			standardDecoratorProcedure!"functionDeclarationModifier"( coreLibrary.module_.dataEntity, scope_, var );
+		void apply_functionDeclarationModifier( FunctionDeclarationData var ) {
+			standardDecoratorProcedure!"functionDeclarationModifier"( coreLibrary.module_.dataEntity, var );
 		}
 
-		Symbol_Type apply_typeWrapper( Symbol_Type originalType, DataScope scope_ ) {
+		Symbol_Type apply_typeWrapper( Symbol_Type originalType ) {
 			// originalType is passed by reference
-			standardDecoratorProcedure!"typeWrapper"( context_, scope_, originalType );
+			standardDecoratorProcedure!"typeWrapper"( context_, originalType );
 			return originalType;
 		}
 
@@ -61,7 +61,7 @@ final class DecorationList {
 		}
 
 	private:
-		void standardDecoratorProcedure( string applyFunctionName, Args... )( DataEntity context, DataScope scope_, auto ref Args args ) {
+		void standardDecoratorProcedure( string applyFunctionName, Args... )( DataEntity context, auto ref Args args ) {
 			// Right decorators have higher priority
 			foreach_reverse ( ref Record rec; list_ ) {
 				// If the record has already resolved decorator, just try applying the decorator in the context
@@ -71,7 +71,7 @@ final class DecorationList {
 				}
 
 				// Otherwise try resolving the decorator
-				foreach ( decorator; context.recursivelyResolveIdentifier( rec.decoration.decoratorIdentifier, scope_ ).filter_decoratorsOnly ) {
+				foreach ( decorator; context.recursivelyResolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
 					// If the decorator is appliable in given context, mark the given decorator as resolved
 					if ( __traits( getMember, decorator, "apply_" ~ applyFunctionName )( args ) ) {
 						rec.decorator = decorator;

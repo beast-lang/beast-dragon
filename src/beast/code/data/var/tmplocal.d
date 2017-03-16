@@ -7,8 +7,8 @@ import beast.code.data.var.local;
 final class DataEntity_TmpLocalVariable : DataEntity_LocalVariable {
 
 	public:
-		this( Symbol_Type dataType, DataScope scope_, bool isCtime ) {
-			super( dataType, scope_, isCtime );
+		this( Symbol_Type dataType, bool isCtime ) {
+			super( dataType, isCtime );
 		}
 
 	public:

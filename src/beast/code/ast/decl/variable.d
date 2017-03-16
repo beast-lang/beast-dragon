@@ -44,7 +44,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 			DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
 
 			// Apply possible decorators in the variableDeclarationModifier context
-			decorationList.apply_variableDeclarationModifier( declData, null );
+			decorationList.apply_variableDeclarationModifier( declData );
 
 			if ( declData.isStatic ) {
 				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
@@ -54,32 +54,38 @@ final class AST_VariableDeclaration : AST_Declaration {
 				berror( E.notImplemented, "Not implemented" );
 		}
 
-		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
+		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			const auto __gd = ErrorGuard( this );
-			assert( scope_ );
+			assert( currentScope );
 
 			VariableDeclarationData declData = new VariableDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 
 			// Apply possible decorators in the variableDeclarationModifier context
-			decorations.apply_variableDeclarationModifier( declData, null );
+			decorations.apply_variableDeclarationModifier( declData );
 
 			if ( declData.isStatic ) {
-				if ( env.staticMemberMerger.isFinished( ) ) {
-					scope_.addEntity( env.staticMemberMerger.getRecord( this ) );
+				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
+
+				if ( !env.staticMemberMerger ) {
+					Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
+					currentScope.addEntity( var );
+				}
+				else if ( env.staticMemberMerger.isFinished( ) ) {
+					currentScope.addEntity( env.staticMemberMerger.getRecord( this ) );
 				}
 				else {
-					// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
 					Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
-					scope_.addEntity( var );
+					currentScope.addEntity( var );
+
 					env.staticMemberMerger.addRecord( this, var );
 				}
 			}
 			else {
 				DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorations, declData );
 				cb.build_localVariableDefinition( var );
-				buildConstructor( var, scope_, cb );
-				scope_.addLocalVariable( var );
+				buildConstructor( var, cb );
+				currentScope.addLocalVariable( var );
 			}
 		}
 
@@ -98,8 +104,8 @@ final class AST_VariableDeclaration : AST_Declaration {
 		}
 
 	public:
-		void buildConstructor( DataEntity entity, DataScope scope_, CodeBuilder cb ) {
-			auto match = entity.expectResolveIdentifier( ID!"#ctor", scope_ ).CallMatchSet( scope_, this, true );
+		void buildConstructor( DataEntity entity, CodeBuilder cb ) {
+			auto match = entity.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( this, true );
 
 			if ( value ) {
 				// colonAssign calls #ctor( #Ctor.opRefAssign, value );
@@ -108,10 +114,10 @@ final class AST_VariableDeclaration : AST_Declaration {
 				else
 					match.arg( coreLibrary.enum_.xxctor.opAssign );
 
-				match.arg( value.buildSemanticTree_single( entity.dataType, match.scope_ ) );
+				match.arg( value.buildSemanticTree_single( entity.dataType ) );
 			}
 
-			match.finish( ).buildCode( cb, scope_ );
+			match.finish( ).buildCode( cb );
 		}
 
 }

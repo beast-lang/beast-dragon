@@ -4,6 +4,7 @@ import beast.code.ast.decl.toolkit;
 import beast.code.data.type.type;
 import beast.code.data.codenamespace.namespace;
 import beast.code.data.stcmemmerger.d;
+import beast.code.data.function_.rt;
 
 /// Implicit declaration arguments
 final class DeclarationEnvironment {
@@ -30,9 +31,10 @@ final class DeclarationEnvironment {
 		/// Parent for static members
 		DataEntity staticMembersParent;
 
-		/// 'Parent' for local variables
-		DataScope scope_;
-
 		StaticMemberMerger staticMemberMerger;
+
+		/// When in function, this varaible is used for inferring expected types for return statements
+		/// Can be null (when function return type is auto) -> then the first return in the code sets it
+		Symbol_Type functionReturnType;
 
 }

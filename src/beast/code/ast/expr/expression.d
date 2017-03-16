@@ -48,23 +48,23 @@ abstract class AST_Expression : AST_Statement {
 		/// The scope is used only for identifier lookup
 		/// Can result in executing ctime code
 		/// If errorOnInferrationFailure is false, returns null data entity if the expression cannot be built with given inferredType
-		abstract Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true );
+		abstract Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true );
 
-		final DataEntity buildSemanticTree_single( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
-			Overloadset result = buildSemanticTree( inferredType, scope_, errorOnInferrationFailure );
+		final DataEntity buildSemanticTree_single( Symbol_Type expectedType, bool errorOnInferrationFailure = true ) {
+			Overloadset result = buildSemanticTree( expectedType, errorOnInferrationFailure );
 
-			if( !result.length && !errorOnInferrationFailure )
+			if ( !result.length && !errorOnInferrationFailure )
 				return null;
 
-			return result.single_expectType( inferredType );
+			return result.single_expectType( expectedType );
 		}
 
-		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb, DataScope scope_ ) {
-			buildSemanticTree_single( null, scope_ ).buildCode( cb, scope_ );
+		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
+			buildSemanticTree_single( null ).buildCode( cb );
 		}
 
-		final MemoryPtr ctExec( Symbol_Type expectedType, DataScope scope_ ) {
-			return buildSemanticTree_single( expectedType, scope_ ).enforceCast( expectedType) .ctExec( scope_ );
+		final MemoryPtr ctExec( Symbol_Type expectedType ) {
+			return buildSemanticTree_single( expectedType ).enforceCast( expectedType ).ctExec( );
 		}
 
 		/// Executes the expression in standalone scope and session, returing its value
@@ -73,11 +73,13 @@ abstract class AST_Expression : AST_Statement {
 			const auto _gd = ErrorGuard( this );
 
 			with ( memoryManager.session ) {
-				auto scope_ = scoped!RootDataScope( parent );
-				MemoryPtr result = ctExec( expectedType, scope_ );
+				auto _s = scoped!RootDataScope( parent );
+				auto _sgd = _s.scopeGuard;
 
-				scope_.finish( );
-				assert( scope_.itemCount <= 1, "StandaloneCtExec scope has %s items".format( scope_.itemCount ) );
+				MemoryPtr result = ctExec( expectedType );
+
+				_s.finish( );
+				assert( _s.itemCount <= 1, "StandaloneCtExec scope has %s items".format( _s.itemCount ) );
 
 				// No cleanup build - bulit variables remain (should be only one)
 				return result;

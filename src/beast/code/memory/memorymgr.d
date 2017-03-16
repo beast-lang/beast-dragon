@@ -31,6 +31,7 @@ final class MemoryManager {
 
 			synchronized ( blockListMutex.writer ) {
 				debug assert( context.session in activeSessions, "Invalid session" );
+				debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
 
 				// First, we try inserting the new block between currently existing memory blocks
 				foreach ( i, block; mmap ) {
@@ -83,6 +84,7 @@ final class MemoryManager {
 
 			synchronized ( blockListMutex.writer ) {
 				debug assert( context.session in activeSessions, "Invalid session" );
+				debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
 
 				foreach ( i, block; mmap ) {
 					if ( block.startPtr == ptr ) {
@@ -181,7 +183,9 @@ final class MemoryManager {
 			context.sessionMemoryBlocks = null;
 
 			debug synchronized ( memoryManager ) {
-				assert( context.session in activeSessions, "Invalid session" );
+				debug assert( context.session in activeSessions, "Invalid session" );
+				debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
+
 				activeSessions.remove( context.session );
 			}
 

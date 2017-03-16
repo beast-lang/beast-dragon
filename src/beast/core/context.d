@@ -7,6 +7,7 @@ import beast.code.memory.block;
 import beast.core.task.context;
 import beast.core.error.guard;
 import beast.core.task.worker;
+import beast.code.data.scope_.scope_;
 
 /// General project-related data
 __gshared Project project;
@@ -28,14 +29,19 @@ struct ContextData {
 		/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
 		size_t session;
 
-		/// List of all memory blocks allocated in the current session
-		MemoryBlock[ ] sessionMemoryBlocks;
-
 		/// Sessions can be nested (they're absolutely independent though); last session in the stack is saved in the session variable for speed up
 		size_t[ ] sessionStack;
 
+		/// List of all memory blocks allocated in the current session
+		MemoryBlock[ ] sessionMemoryBlocks;
+
 		/// Memory blocks allocated by the sessions in the stack
 		MemoryBlock[ ][ ] sessionMemoryBlockStack;
+
+		/// This is to prevent passing scopes aroung all the time
+		DataScope currentScope;
+
+		DataScope[] scopeStack;
 
 	public:
 		/// TaskContext of the current running task

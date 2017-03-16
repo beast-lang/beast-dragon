@@ -51,15 +51,15 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
 			// Maybe replace with void?
 			benforce( items.length > 0, E.syntaxError, "Empty parentheses" );
 
 			// We're passing null as inferredType because inferredType only applies to the rightmost part of the expression
-			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single( null, scope_ ) ).array;
-			DataEntity base = items[ $ - 1 ].buildSemanticTree_single( inferredType, scope_, errorOnInferrationFailure );
+			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single( null ) ).array;
+			DataEntity base = items[ $ - 1 ].buildSemanticTree_single( inferredType, errorOnInferrationFailure );
 
 			if ( payload.length == 0 )
 				return base.Overloadset;
@@ -67,9 +67,9 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 			return new DataEntity_ParentComma( payload, base, this ).Overloadset;
 		}
 
-		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ ) {
+		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide ) {
 			const auto _gd = ErrorGuard( this );
-			return leftSide.resolveCall( scope_, this, true, items ).Overloadset;
+			return leftSide.resolveCall( this, true, items ).Overloadset;
 		}
 
 	protected:
@@ -107,8 +107,8 @@ final class DataEntity_ParentComma : DataEntity {
 			return base_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-			return base_.startCallMatch( scope_, ast );
+		override CallableMatch startCallMatch( AST_Node ast ) {
+			return base_.startCallMatch( ast );
 		}
 
 	public:
@@ -121,11 +121,11 @@ final class DataEntity_ParentComma : DataEntity {
 		}
 
 	public:
-		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+		override void buildCode( CodeBuilder cb ) {
 			foreach ( pl; payload_ )
-				pl.buildCode( cb, scope_ );
+				pl.buildCode( cb );
 
-			base_.buildCode( cb, scope_ );
+			base_.buildCode( cb );
 		}
 
 	private:

@@ -6,15 +6,15 @@ abstract class DataEntity_LocalVariable : DataEntity {
 	mixin TaskGuard!"outerHashObtaining";
 
 	public:
-		this( Symbol_Type dataType, DataScope scope_, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag ) {
+		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag ) {
 			dataType_ = dataType;
 			isCtime_ = isCtime;
-			scope__ = scope_;
+			scope__ = currentScope;
 
 			assert( parent );
 			assert( dataType );
 
-			debug assert( context.jobId == scope_.jobId );
+			debug assert( context.jobId == scope__.jobId );
 
 			memoryBlock_ = memoryManager.allocBlock( dataType_.instanceSize, MemoryBlock.Flag.local | additionalMemoryBlockFlags );
 			memoryBlock_.localVariable = this;
@@ -47,8 +47,12 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			return outerHashWIP_;
 		}
 
+		override string identificationString() {
+			return "%s %s".format( dataType.tryGetIdentificationString, super.identificationString );
+		}
+
 	public:
-		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+		override void buildCode( CodeBuilder cb ) {
 			cb.build_memoryAccess( memoryPtr );
 		}
 

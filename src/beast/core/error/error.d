@@ -31,7 +31,7 @@ enum E {
 	invalidOpCombination, /// Invalid operator combination
 
 	// MODULES:
-	moduleImportFail, /// Module 
+	moduleImportFail,
 	invalidModuleIdentifier, /// Invalid module identifier - contains unsupported characters
 	moduleNameConflict, /// Two modules with same name
 	moduleNameMismatch, /// Expected module name does not match with the actual one (in module statement in the beginning of the file)
@@ -41,6 +41,7 @@ enum E {
 	decoratorConflict, /// Two decorators are incompatible with each other
 	duplicitModification, /// For example when using @static twice or when using @static where static is implicit; this is a hint
 	unresolvedDecorators, /// There are some unresolved decorators
+	invalidDecoration, /// For example when trying to decorate return
 
 	// MEMORY (interpreter related, not the compiler memory):
 	outOfMemory, /// Interpreter has run out of memory (target machine pointer size can be smaller)
@@ -62,6 +63,9 @@ enum E {
 
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
+
+	// STATEMENTS:
+	missingReturnExpression,
 }
 
 enum ErrorSeverity {

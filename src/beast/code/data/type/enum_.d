@@ -29,11 +29,11 @@ abstract class Symbol_Enum : Symbol_Type {
 		}
 
 	protected:
-		override Overloadset _resolveIdentifier_mid( Identifier id, DataScope scope_, DataEntity instance ) {
+		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance ) {
 			if( instance )
-				return baseClass_.resolveIdentifier( id, scope_, new DataEntity_ReinterpretCast( instance, baseClass_ ) );
+				return baseClass_.resolveIdentifier( id, new DataEntity_ReinterpretCast( instance, baseClass_ ) );
 
-			return baseClass_.resolveIdentifier( id, scope_, null );
+			return baseClass_.resolveIdentifier( id, null );
 		}
 
 	protected:

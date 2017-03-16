@@ -51,6 +51,13 @@ final class Test {
 			File log = File( logFilename, "w" );
 			log.writeln( "Test '", identifier, "' log\n" );
 
+			scope( exit ) {
+				log.flush();
+
+				if( log.isOpen )
+					log.close();
+			}
+
 			string[ ] sourceFiles;
 			/// List of files the test suite will be scanning for directives
 			string[ ] scanFiles;
@@ -128,6 +135,8 @@ final class Test {
 
 			string[ ] stderrContent;
 			string stdoutContent;
+			int exitCode;
+			
 			// Run process
 			{
 				ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
@@ -153,7 +162,6 @@ final class Test {
 				StopWatch sw;
 				sw.start( );
 
-				int exitCode;
 				while ( true ) {
 					const auto result = process.pid.tryWait( );
 
@@ -169,14 +177,7 @@ final class Test {
 					Thread.sleep( dur!"msecs"( sw.peek.msecs / 2 ) );
 				}
 
-				// Process exit code
-				{
-					bool exitCodeHandled = exitCode == 0;
-					foreach ( d; directives )
-						exitCodeHandled |= d.onExitCode( exitCode );
-
-					enforce( exitCodeHandled, "Unexpected exit code: %s".format( exitCode ) );
-				}
+				log.writeln( "Exit code: \n", exitCode );
 			}
 
 			// Process results
@@ -201,8 +202,11 @@ final class Test {
 
 			}
 
+			bool exitCodeHandled = exitCode == 0;
 			foreach ( d; directives )
-				d.onBeforeTestEnd( );
+				exitCodeHandled |= d.onBeforeTestEnd( exitCode );
+
+			enforce( exitCodeHandled, "Unexpected exit code: %s".format( exitCode ) );
 		}
 
 	public:
@@ -225,7 +229,7 @@ final class Test {
 
 		void fail( string message ) {
 			synchronized ( testsMutex )
-				stderr.writefln( "\n      %s: %s\n", identifier, message.replace( "\n", "\n        " ) );
+				stderr.writefln( "\n ###  %s: %s\n", identifier, message.replace( "\n", "\n        " ) );
 
 			throw new TestFailException;
 		}

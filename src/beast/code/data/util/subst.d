@@ -30,7 +30,7 @@ final class SubstitutiveDataEntity : DataEntity {
 		}
 
 	public:
-		override void buildCode( CodeBuilder cb, DataScope scope_ ) {
+		override void buildCode( CodeBuilder cb ) {
 			cb.build_memoryAccess( ptr_ );
 		}
 

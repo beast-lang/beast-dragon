@@ -9,7 +9,7 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 	protected:
 		this( DataEntity parent ) {
 			parent_ = parent;
-			staticData_ = new Data;
+			staticData_ = new Data( this );
 		}
 
 	public:
@@ -38,31 +38,39 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 		DataEntity parent_;
 
 	private:
-		final class Data : SymbolRelatedDataEntity {
+		final static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( ) {
+				this( Symbol_StaticVariable sym ) {
 					// Static variables are in global scope
-					super( this.outer );
+					super( sym );
+					sym_ = sym;
 				}
 
 			public:
 				override Symbol_Type dataType( ) {
-					return this.outer.dataType;
+					return sym_.dataType;
 				}
 
 				override bool isCtime( ) {
-					return this.outer.isCtime;
+					return sym_.isCtime;
 				}
 
 				override DataEntity parent( ) {
-					return this.outer.parent_;
+					return sym_.parent_;
+				}
+
+				override string identificationString( ) {
+					return "%s %s".format( sym_.dataType.tryGetIdentificationString, super.identificationString );
 				}
 
 			public:
-				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_memoryAccess( this.outer.memoryPtr );
+				override void buildCode( CodeBuilder cb ) {
+					cb.build_memoryAccess( sym_.memoryPtr );
 				}
+
+			private:
+				Symbol_StaticVariable sym_;
 
 		}
 

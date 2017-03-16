@@ -21,7 +21,8 @@ Expects error/warning/hint on the file and line of the directive.
 
 **Arguments** \
 `noLine` - error is not related to the line (it does not have line attribute) \
-`noFile` - error is not related to the file (it does not have file attribute)
+`noFile` - error is not related to the file (it does not have file attribute) \
+`lineSpan` - indicates that the error can occur anywhere in next N lines
 
 ## onlyLexing, onlyParsing
 Compiler performs only lexing/parsing phase

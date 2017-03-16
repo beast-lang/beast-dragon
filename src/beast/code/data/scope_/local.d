@@ -5,10 +5,11 @@ import beast.code.data.toolkit;
 final class LocalDataScope : DataScope {
 
 	public:
-		this( DataScope parentScope ) {
-			super( parentScope.parentEntity );
+		this( ) {
+			assert( currentScope );
+			super( currentScope.parentEntity );
 
-			parentScope_ = parentScope;
+			parentScope_ = currentScope;
 
 			debug {
 				assert( parentScope_.openSubscope_ is null );
@@ -27,11 +28,11 @@ final class LocalDataScope : DataScope {
 		}
 
 	public:
-		final override Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
-			if ( auto result = resolveIdentifier( id, scope_ ) )
+		final override Overloadset recursivelyResolveIdentifier( Identifier id ) {
+			if ( auto result = resolveIdentifier( id ) )
 				return result;
 
-			if ( auto result = parentScope_.recursivelyResolveIdentifier( id, scope_ ) )
+			if ( auto result = parentScope_.recursivelyResolveIdentifier( id ) )
 				return result;
 
 			return Overloadset( );

@@ -2,10 +2,19 @@ module beast.backend.cpp.primitiveop.int_;
 
 import beast.backend.cpp.primitiveop.toolkit;
 
-void primitiveOp_intCtor( DataScope scope_, CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
-	cb.codeResult_.formattedWrite( "%s*( (int32_t*) %s ) = 0;\n", cb.tabs, inst );
+void primitiveOp_intCtor( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
+	with ( cb ) {
+		inst.buildCode( cb );
+		cb.codeResult_.formattedWrite( "%sVAL( %s, int32_t ) = 0;\n", cb.tabs, resultVarName_ );
+	}
 }
 
-void primitiveOp_intCopyCtor( DataScope scope_, CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
-	cb.codeResult_.formattedWrite( "%s*( (int32_t*) %s ) = *( (int32_t*) %s );\n", cb.tabs, inst, args[ 0 ] );
+void primitiveOp_intCopyCtor( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
+	with ( cb ) {
+		args[ 1 ].buildCode( cb );
+		string arg1 = resultVarName_;
+
+		inst.buildCode( cb );
+		cb.codeResult_.formattedWrite( "%sVAL( %s, int32_t ) = VAL( %s, int32_t );\n", cb.tabs, resultVarName_, arg1 );
+	}
 }

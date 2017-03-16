@@ -46,9 +46,6 @@ final class Module : CodeSource, Identifiable {
 
 	public:
 		override string identificationString( ) {
-			if ( this is null )
-				return "#error#";
-
 			return identifier.str;
 		}
 

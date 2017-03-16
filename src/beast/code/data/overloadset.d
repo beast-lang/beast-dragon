@@ -78,8 +78,8 @@ struct Overloadset {
 
 	public:
 		/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
-		DataEntity resolveCall( Args... )( DataScope parentScope, AST_Node ast, bool reportErrors, Args args ) {
-			CallMatchSet match = CallMatchSet( this, parentScope, ast, reportErrors );
+		DataEntity resolveCall( Args... )( AST_Node ast, bool reportErrors, Args args ) {
+			CallMatchSet match = CallMatchSet( this, ast, reportErrors );
 
 			foreach ( arg; args )
 				match.arg( arg );

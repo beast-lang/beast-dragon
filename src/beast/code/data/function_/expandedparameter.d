@@ -12,7 +12,7 @@ final class ExpandedFunctionParameter : Identifiable {
 
 	public:
 		/// Tries to expand expression into a function parameter.
-		static ExpandedFunctionParameter process( AST_Expression expr, DataScope scope_ ) {
+		static ExpandedFunctionParameter process( AST_Expression expr ) {
 			ExpandedFunctionParameter result = new ExpandedFunctionParameter( );
 			result.ast = expr;
 
@@ -23,14 +23,14 @@ final class ExpandedFunctionParameter : Identifiable {
 					assert( 0, "Cannot expand auto parameter" );
 
 				result.identifier = decl.identifier.identifier;
-				result.dataType = decl.dataType.ctExec( coreLibrary.type.Type, scope_ ).readType( );
+				result.dataType = decl.dataType.ctExec( coreLibrary.type.Type ).readType( );
 			}
 			// Constant value parameter
 			else {
-				DataEntity constVal = expr.buildSemanticTree_single( null, scope_ );
+				DataEntity constVal = expr.buildSemanticTree_single( null );
 
 				result.dataType = constVal.dataType;
-				result.constValue = constVal.ctExec( scope_ );
+				result.constValue = constVal.ctExec();
 			}
 
 			assert( result.dataType );
@@ -52,10 +52,13 @@ final class ExpandedFunctionParameter : Identifiable {
 					param.dataType = arg.dataType;
 
 					with ( memoryManager.session ) {
-						auto scope_ = scoped!RootDataScope( null );
-						param.constValue = arg.ctExec( scope_ );
-						scope_.finish( );
-						assert( scope_.itemCount <= 1 );
+						auto _s = scoped!RootDataScope( null );
+						auto _sgd = _s.scopeGuard;
+
+						param.constValue = arg.ctExec();
+
+						_s.finish( );
+						assert( _s.itemCount <= 1 );
 					}
 				}
 				else static if ( is( Arg : Symbol_StaticVariable ) ) {
@@ -98,9 +101,6 @@ final class ExpandedFunctionParameter : Identifiable {
 		}
 
 		override string identificationString( ) {
-			if ( this is null )
-				return "#error#";
-
 			string result;
 			result ~= dataType.identificationString;
 

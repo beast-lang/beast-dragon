@@ -30,7 +30,7 @@ abstract class DataEntity : Identifiable {
 		}
 
 		/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
-		CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
+		CallableMatch startCallMatch( AST_Node ast ) {
 			assert( 0, identificationString ~ " is not callable" );
 		}
 
@@ -49,17 +49,28 @@ abstract class DataEntity : Identifiable {
 			if ( auto id = identifier )
 				return id.str;
 
-			return "(expression)";
+			return "#tmp#";
 		}
 
 		string identificationString( ) {
-			if ( this is null )
-				return "#error#";
+			import std.array : appender;
+			import std.format : formattedWrite;
+			import std.algorithm.mutation : reverse;
 
-			if ( auto parent = parent )
-				return parent.identificationString ~ "." ~ identification;
+			auto addr = appender!( string[ ] );
+			addr ~= identification;
 
-			return identification;
+			DataEntity p = parent;
+			while ( p ) {
+				if( auto id = p.identification )
+					addr ~= id;
+
+				p = p.parent;
+			}
+
+			reverse( addr.data );
+
+			return addr.data.joiner( "." ).to!string;
 		}
 
 		/// AST node related with the entity, can be null
@@ -78,37 +89,37 @@ abstract class DataEntity : Identifiable {
 	public:
 		/// Resolves identifier (drill-down)
 		/// The scope can be used for creating temporary variables
-		final Overloadset resolveIdentifier( Identifier id, DataScope scope_ ) {
+		final Overloadset resolveIdentifier( Identifier id ) {
 			if ( id == ID!"#type" )
 				return Overloadset( dataType.dataEntity );
 
-			if ( auto result = _resolveIdentifier_pre( id, scope_ ) )
+			if ( auto result = _resolveIdentifier_pre( id ) )
 				return result;
 
-			if ( auto result = _resolveIdentifier_main( id, scope_ ) )
+			if ( auto result = _resolveIdentifier_main( id ) )
 				return result;
 
-			if ( auto result = dataType.resolveIdentifier( id, scope_, this ) )
+			if ( auto result = dataType.resolveIdentifier( id, this ) )
 				return result;
 
 			return Overloadset( );
 		}
 
 		/// Resolves the identifier, throws an error if the overloadset is empty
-		final Overloadset expectResolveIdentifier( Identifier id, DataScope scope_ ) {
-			auto result = resolveIdentifier( id, scope_ );
+		final Overloadset expectResolveIdentifier( Identifier id ) {
+			auto result = resolveIdentifier( id );
 			benforce( !result.isEmpty, E.unknownIdentifier, "Could not resolve identifier '%s' for %s".format( id.str, identificationString ) );
 			return result;
 		}
 
 		/// Resolves identifier recursively (looking into parent entities)
 		/// The scope can be used for creating temporary variables
-		final Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
-			if ( auto result = resolveIdentifier( id, scope_ ) )
+		final Overloadset recursivelyResolveIdentifier( Identifier id ) {
+			if ( auto result = resolveIdentifier( id ) )
 				return result;
 
 			if ( auto parent = parent ) {
-				if ( auto result = parent.recursivelyResolveIdentifier( id, scope_ ) )
+				if ( auto result = parent.recursivelyResolveIdentifier( id ) )
 					return result;
 			}
 
@@ -138,36 +149,36 @@ abstract class DataEntity : Identifiable {
 
 	public:
 		/// Builds code that matches the semantic tree (scope is used for variable allocations)
-		void buildCode( CodeBuilder cb, DataScope scope_ ) {
+		void buildCode( CodeBuilder cb ) {
 			assert( 0, "buildCode not implemented for " ~ identificationString );
 		}
 
 	public:
 		/// Executes the expression in standalone scope and session, returing its value
-		final MemoryPtr ctExec( DataScope scope_ ) {
+		final MemoryPtr ctExec( ) {
 			with ( memoryManager.session ) {
 				scope cb = new CodeBuilder_Ctime;
-				buildCode( cb, scope_ );
+				buildCode( cb );
 				return cb.result;
 			}
 		}
 
 		/// Expects the data to point at Type instance
-		final Symbol_Type ctExec_asType( DataScope scope_ ) {
+		final Symbol_Type ctExec_asType( ) {
 			assert( dataType is coreLibrary.type.Type );
-			Symbol_Type type = typeUIDKeeper[ ctExec( scope_ ).readPrimitive!size_t ];
+			Symbol_Type type = typeUIDKeeper[ ctExec( ).readPrimitive!size_t ];
 			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
 			return type;
 		}
 
 	protected:
 		/// These are only meant to be shortcut, identifier resolution should be also available "the second way" for example Class -> x and Class -> Type -> Class -> x
-		Overloadset _resolveIdentifier_pre( Identifier id, DataScope scope_ ) {
+		Overloadset _resolveIdentifier_pre( Identifier id ) {
 			return Overloadset( );
 		}
 
 		/// These are only meant to be shortcut, identifier resolution should be also available "the second way" for example Class -> x and Class -> Type -> Class -> x
-		Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+		Overloadset _resolveIdentifier_main( Identifier id ) {
 			return Overloadset( );
 		}
 

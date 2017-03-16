@@ -51,7 +51,7 @@ final class Backend_Cpp : Backend {
 				return;
 
 			auto result = appender!string;
-			result ~= "#define PRIMITIVE_VAL( var, type ) ( *( ( type* )( var ) ) )\n";
+			result ~= "#define VAL( var, type ) ( *( ( type* )( var ) ) )\n";
 			result ~= "#include <stdint.h>\n";
 			result ~= "\n";
 

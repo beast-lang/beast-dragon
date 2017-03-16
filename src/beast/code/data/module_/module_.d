@@ -10,8 +10,8 @@ abstract class Symbol_Module : Symbol {
 
 	public:
 		this( ) {
-			staticData_ = new Data;
-			importSpaceData_ = new ImportSpaceData;
+			staticData_ = new Data( this );
+			importSpaceData_ = new ImportSpaceData( this );
 		}
 
 	public:
@@ -50,11 +50,13 @@ abstract class Symbol_Module : Symbol {
 		ImportSpaceData importSpaceData_;
 
 	private:
-		final class Data : SymbolRelatedDataEntity {
+		final static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( ) {
-					super( this.outer );
+				this( Symbol_Module sym ) {
+					super( sym );
+
+					sym_ = sym;
 				}
 
 			public:
@@ -68,26 +70,29 @@ abstract class Symbol_Module : Symbol {
 				}
 
 				override DataEntity parent( ) {
-					return importSpaceData_;
-				}
-
-			public:
-				override string identificationString( ) {
-					return identification;
+					return sym_.importSpaceData_;
 				}
 
 			protected:
-				protected override Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+				protected override Overloadset _resolveIdentifier_main( Identifier id ) {
 					// TODO: Copy this to Module core type
-					if ( auto result = namespace.resolveIdentifier( id, null ) )
+					if ( auto result = sym_.namespace.resolveIdentifier( id, null ) )
 						return result;
 
 					return Overloadset( );
 				}
 
+			private:
+				Symbol_Module sym_;
+
 		}
 
-		final class ImportSpaceData : DataEntity {
+		final static class ImportSpaceData : DataEntity {
+
+			public:
+				this( Symbol_Module sym ) {
+					sym_ = sym;
+				}
 
 			public:
 				override Symbol_Type dataType( ) {
@@ -112,17 +117,24 @@ abstract class Symbol_Module : Symbol {
 					return Hash( );
 				}
 
+				override string identification( ) {
+					return null;
+				}
+
 			protected:
-				override Overloadset _resolveIdentifier_main( Identifier id, DataScope scope_ ) {
+				override Overloadset _resolveIdentifier_main( Identifier id ) {
 					// TODO: imports and public imports
 
-					if ( this.outer !is coreLibrary.module_ ) {
-						if ( auto result = coreLibrary.module_.dataEntity.resolveIdentifier( id, scope_ ) )
+					if ( sym_ !is coreLibrary.module_ ) {
+						if ( auto result = coreLibrary.module_.dataEntity.resolveIdentifier( id ) )
 							return result;
 					}
 
 					return Overloadset( );
 				}
+
+			private:
+				Symbol_Module sym_;
 
 		}
 

@@ -38,19 +38,19 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		/// Builds write to a memory
-		void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
+		void build_memoryWrite( MemoryPtr target, DataEntity data ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
-		final void build_memoryWrite( DataScope scope_, MemoryPtr target, Symbol sym ) {
-			build_memoryWrite( scope_, target, sym.dataEntity );
+		final void build_memoryWrite( MemoryPtr target, Symbol sym ) {
+			build_memoryWrite( target, sym.dataEntity );
 		}
 
-		void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
-		void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
@@ -58,13 +58,17 @@ abstract class CodeBuilder : Identifiable {
 		/// Builds the "if" construction
 		/// Condition has to be of type bool
 		/// elseBranch can be null
-		void build_if( DataScope scope_, DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+		void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
+		void build_return( DataEntity returnValue ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
 	public:
-		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue, DataScope scope_ ) {
-			var.expectResolveIdentifier( ID!"#ctor", scope_ ).resolveCall( scope_, var.ast, true, coreLibrary.enum_.xxctor.copy, initValue ).buildCode( this, scope_ );
+		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue ) {
+			var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( var.ast, true, coreLibrary.enum_.xxctor.copy, initValue ).buildCode( this );
 		}
 
 	protected:
@@ -72,13 +76,13 @@ abstract class CodeBuilder : Identifiable {
 		/// CodeBuilder scopes are used for destructor generating
 		void pushScope( ) {
 			scopeStack_ ~= topScope_;
-			topScope_ = null;
+			topScope_ = Scope( );
 		}
 
 		/// Destroys the last scope
 		/// CodeBuilder scopes are used for destructor generating
 		void popScope( ) {
-			// TODO: generate destructors
+			generateScopeExit( topScope_ );
 
 			assert( scopeStack_.length );
 
@@ -86,17 +90,35 @@ abstract class CodeBuilder : Identifiable {
 			scopeStack_.length--;
 		}
 
+		/// Generates destructors for all the scope
+		final void generateScopesExit( ) {
+			generateScopeExit( topScope_ );
+
+			foreach_reverse ( scope_; scopeStack_ )
+				generateScopeExit( scope_ );
+		}
+
 		final void addToScope( DataEntity_LocalVariable var ) {
-			topScope_ ~= var;
+			topScope_.variables ~= var;
 		}
 
 		final DataEntity_LocalVariable[ ] scopeItems( ) {
-			return topScope_;
+			return topScope_.variables;
 		}
 
 	private:
-		DataEntity_LocalVariable[ ] topScope_;
-		// There should always be one empty scope - for optimizations
-		DataEntity_LocalVariable[ ][ ] scopeStack_ = [ [ ] ];
+		final void generateScopeExit( ref Scope scope_ ) {
+			foreach_reverse ( var; scope_.variables )
+				var.expectResolveIdentifier( ID!"#dtor" ).resolveCall( null, true ).buildCode( this );
+		}
+
+	private:
+		Scope topScope_;
+		Scope[ ] scopeStack_;
+
+	private:
+		struct Scope {
+			DataEntity_LocalVariable[ ] variables;
+		}
 
 }

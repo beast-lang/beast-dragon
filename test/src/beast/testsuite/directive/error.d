@@ -12,6 +12,9 @@ final class TestDirective_Error : TestDirective {
 
 			watchFile = "noFile" !in args;
 			watchLine = watchFile && ( "noLine" !in args );
+
+			if ( auto val = "lineSpan" in args )
+				lineSpan = (*val).to!size_t;
 		}
 
 	public:
@@ -22,7 +25,10 @@ final class TestDirective_Error : TestDirective {
 			if ( watchFile == ( "file" !in errorData ) || ( watchFile && errorData[ "file" ].str != declSourceFile ) )
 				return false;
 
-			if ( watchLine == ( "line" !in errorData ) || ( watchLine && errorData[ "line" ].integer != declLine ) )
+			if ( watchLine == ( "line" !in errorData ) )
+				return false;
+
+			if ( watchLine && ( errorData[ "line" ].integer < declLine || errorData[ "line" ].integer >= declLine + lineSpan ) )
 				return false;
 
 			if ( "error" !in errorData || errorData[ "error" ].str != errorType )
@@ -32,16 +38,15 @@ final class TestDirective_Error : TestDirective {
 			return true;
 		}
 
-		override void onBeforeTestEnd( ) {
+		override bool onBeforeTestEnd( int exitCode ) {
 			enforce( satisfied, errorMsg );
-		}
 
-		override bool onExitCode( int code ) {
-			return code != 0 && severity == "error";
+			return exitCode != 0 && severity == "error";
 		}
 
 	public:
 		string errorType, severity;
+		size_t lineSpan = 1;
 		bool watchLine;
 		bool watchFile;
 		bool satisfied;

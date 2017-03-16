@@ -6,8 +6,8 @@ import beast.code.data.var.local;
 final class DataEntity_ContextPointer : DataEntity_LocalVariable {
 
 	public:
-		this( DataScope scope_, Identifier identifier, Symbol_Type parentType, MemoryPtr ctimeValue = MemoryPtr( 0 ) ) {
-			super( parentType, scope_, !ctimeValue.isNull, MemoryBlock.Flag.contextPtr );
+		this( Identifier identifier, Symbol_Type parentType, MemoryPtr ctimeValue = MemoryPtr( 0 ) ) {
+			super( parentType, !ctimeValue.isNull, MemoryBlock.Flag.contextPtr );
 
 			if( !ctimeValue.isNull )
 				memoryPtr.write( ctimeValue, parentType.instanceSize );

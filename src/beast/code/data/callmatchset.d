@@ -10,19 +10,21 @@ import std.range.primitives : isInputRange, ElementType;
 struct CallMatchSet {
 
 	public:
-		this( Overloadset overloadset, DataScope parentScope, AST_Node ast, bool reportErrors = true ) {
-			scope_ = new LocalDataScope( parentScope );
+		this( Overloadset overloadset, AST_Node ast, bool reportErrors = true ) {
+			scope_ = new LocalDataScope();
+			auto _sgd = scope_.scopeGuard;
+
 			this.reportErrors = reportErrors;
 
 			foreach ( overload; overloadset ) {
 				if ( overload.isCallable )
-					matches ~= overload.startCallMatch( scope_, ast );
+					matches ~= overload.startCallMatch( ast );
 
 				// If the overload is not callable, we try to overload against overload.#operator( Operator.call, XXX )
 				else {
-					foreach ( suboverload; overload.resolveIdentifier( Identifier.preobtained!"#operator", scope_ ) ) {
+					foreach ( suboverload; overload.resolveIdentifier( Identifier.preobtained!"#operator" ) ) {
 						if ( overload.isCallable )
-							matches ~= suboverload.startCallMatch( scope_, ast ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
+							matches ~= suboverload.startCallMatch( ast ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
 					}
 				}
 			}
@@ -32,6 +34,8 @@ struct CallMatchSet {
 
 	public:
 		ref CallMatchSet arg( T : DataEntity )( T entity ) {
+			auto _sgd = scope_.scopeGuard;
+
 			Symbol_Type dataType = entity.dataType;
 			argumentTypes ~= dataType;
 
@@ -48,7 +52,9 @@ struct CallMatchSet {
 		}
 
 		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
-			DataEntity entity = expr.buildSemanticTree_single( null, scope_, false );
+			auto _sgd = scope_.scopeGuard;
+			
+			DataEntity entity = expr.buildSemanticTree_single( null, false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
 			argumentTypes ~= dataType;
 

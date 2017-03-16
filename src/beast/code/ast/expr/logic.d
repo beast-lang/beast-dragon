@@ -40,10 +40,10 @@ final class AST_LogicExpression : AST_Expression {
 		Token.Operator op;
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
-			DataEntity result = base.buildSemanticTree_single( inferredType, scope_, true );
+			DataEntity result = base.buildSemanticTree_single( inferredType, true );
 			if ( !result )
 				return Overloadset( );
 
@@ -52,13 +52,13 @@ final class AST_LogicExpression : AST_Expression {
 			DataEntity opRightArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOrR.dataEntity : coreLibrary.enum_.operator.binAndR.dataEntity;
 
 			foreach ( item; items ) {
-				if ( auto op = result.resolveIdentifier( ID!"#operator", scope_ ).resolveCall( scope_, this, false, opArg, item ) ) {
+				if ( auto op = result.resolveIdentifier( ID!"#operator" ).resolveCall( this, false, opArg, item ) ) {
 					result = op;
 					continue;
 				}
 
-				DataEntity entity = item.buildSemanticTree( null, scope_, false ).single;
-				if ( auto op = entity.resolveIdentifier( ID!"#operator", scope_ ).resolveCall( scope_, this, false, opRightArg, item ) ) {
+				DataEntity entity = item.buildSemanticTree( null, false ).single;
+				if ( auto op = entity.resolveIdentifier( ID!"#operator" ).resolveCall( this, false, opRightArg, item ) ) {
 					result = op;
 					continue;
 				}

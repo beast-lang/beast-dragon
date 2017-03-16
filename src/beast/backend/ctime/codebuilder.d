@@ -42,33 +42,41 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		}
 
 	public:
-		override void build_primitiveOperation( DataScope scope_, Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.ctime.primitiveop;
 
+			debug result_ = MemoryPtr( );
+
 			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, scope_, true );
+				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false );
 				build_localVariableDefinition( resultVar );
-				result_ = resultVar.memoryPtr;
 			}
 
-			auto subScope = scoped!LocalDataScope( scope_ );
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard;
 			pushScope( );
 
-			pragma( inline ) static opFunc( string opStr, BackendPrimitiveOperation op )( DataScope scope_, CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
-				static if ( __traits( hasMember, beast.backend.ctime.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-					mixin( "beast.backend.ctime.primitiveop.primitiveOp_%s( scope_, cb, inst, args );".format( opStr ) );
-				else
-					assert( 0, "primitiveOp %s is not implemented for %s".format( opStr, cb.identificationString ) );
-			}
+			mixin( ( ) { //
+				import std.array : appender;
 
-			mixin(  //
-					"final switch( op ) {\n%s\n}".format(  //
-					[ __traits( derivedMembers, BackendPrimitiveOperation ) ].map!(  //
-					x => "case BackendPrimitiveOperation.%s: opFunc!( \"%s\", BackendPrimitiveOperation.%s )( subScope, this, parentInstance, arguments ); break;\n".format( x, x, x ) //
-					 ).joiner ) );
+				auto result = appender!string;
+				result ~= "final switch( op ) {\n";
+
+				foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
+					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
+
+					static if ( __traits( hasMember, beast.backend.ctime.primitiveop, "primitiveOp_%s".format( opStr ) ) )
+						result ~= "beast.backend.ctime.primitiveop.primitiveOp_%s( this, parentInstance, arguments );\nbreak;\n".format( opStr );
+					else
+						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.ctime\" );\n".format( opStr );
+				}
+
+				result ~= "}\n";
+				return result.data;
+			}( ) );
 
 			popScope( );
-			subScope.finish( );
+			_s.finish( );
 		}
 
 	public:

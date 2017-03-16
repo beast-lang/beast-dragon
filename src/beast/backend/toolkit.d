@@ -20,4 +20,5 @@ public {
 	import beast.corelib.corelib : coreLibrary;
 	import beast.toolkit;
 	import beast.util.hash : Hash;
+	import beast.code.data.scope_.scope_ : currentScope, scopeGuard;
 }

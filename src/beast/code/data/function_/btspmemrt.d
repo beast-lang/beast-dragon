@@ -10,12 +10,12 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		// 0th param is this pointer
-		alias CodeFunction = void delegate( CodeBuilder cb, DataScope scope_, DataEntity_LocalVariable[ ] parameters );
+		alias CodeFunction = void delegate( CodeBuilder cb, DataEntity_LocalVariable[ ] parameters );
 
 	public:
 		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
 			staticData_ = new StaticData( this );
-			
+
 			identifier_ = Identifier( identifier );
 			parent_ = parent;
 			returnType_ = returnType;
@@ -50,32 +50,32 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
-				cb.build_functionDefinition( this, ( cb ) { //
-					auto scope_ = scoped!RootDataScope( staticData_ );
+				auto _s = scoped!RootDataScope( staticData_ );
+				auto _sgd = _s.scopeGuard;
 
+				cb.build_functionDefinition( this, ( cb ) { //
 					DataEntity_LocalVariable[ ] paramEntities;
 
 					{
-						auto thisPtr = new DataEntity_ContextPointer( scope_, ID!"this", parent_ );
-						scope_.addLocalVariable( thisPtr );
+						auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_ );
+						_s.addLocalVariable( thisPtr );
 						paramEntities ~= thisPtr;
 					}
 
 					foreach ( param; parameters ) {
-						auto ent = new DataEntity_FunctionParameter( scope_, param );
-						scope_.addLocalVariable( ent );
+						auto ent = new DataEntity_FunctionParameter( param );
+						_s.addLocalVariable( ent );
 						paramEntities ~= ent;
 					}
 
 					scope env = DeclarationEnvironment.newFunctionBody( );
-					env.scope_ = scope_;
 					env.staticMembersParent = staticData_;
 					env.staticMemberMerger = staticMemberMerger;
 
-					codeFunction_( cb, scope_, paramEntities );
-
-					scope_.finish( );
+					codeFunction_( cb, paramEntities );
 				} );
+
+				_s.finish( );
 			}
 		}
 
@@ -104,8 +104,8 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return parentInstance_;
 				}
 
-				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
-					return new Match( sym_, scope_, this, ast );
+				override CallableMatch startCallMatch( AST_Node ast ) {
+					return new Match( sym_, this, ast );
 				}
 
 			private:
@@ -127,7 +127,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return sym_.parent_.dataEntity;
 				}
 
-				override CallableMatch startCallMatch( DataScope scope_, AST_Node ast ) {
+				override CallableMatch startCallMatch( AST_Node ast ) {
 					return new InvalidCallableMatch( this, "need this" );
 				}
 
@@ -139,8 +139,8 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final static class Match : super.Match {
 
 			public:
-				this( Symbol_BootstrapMemberRuntimeFunction sym, DataScope scope_, Data sourceEntity, AST_Node ast ) {
-					super( sym, scope_, sourceEntity, ast );
+				this( Symbol_BootstrapMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast ) {
+					super( sym, sourceEntity, ast );
 
 					sym_ = sym;
 					parentInstance_ = sourceEntity.parentInstance_;
@@ -167,8 +167,8 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 			public:
-				override void buildCode( CodeBuilder cb, DataScope scope_ ) {
-					cb.build_functionCall( scope_, sym_, parentInstance_, arguments_ );
+				override void buildCode( CodeBuilder cb ) {
+					cb.build_functionCall( sym_, parentInstance_, arguments_ );
 				}
 
 			private:

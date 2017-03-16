@@ -35,9 +35,6 @@ abstract class Symbol : Identifiable {
 		}
 
 		override string identificationString( ) {
-			if ( this is null )
-				return "#error#";
-
 			return dataEntity.identificationString;
 		}
 

@@ -46,7 +46,7 @@ final class AST_DeclarationScope : AST_Node {
 					}
 
 					else
-						currentToken.reportsyntaxError( "':', '{' or declaration" );
+						currentToken.reportSyntaxError( "':', '{' or declaration" );
 				}
 
 				// Declaration

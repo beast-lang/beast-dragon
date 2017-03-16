@@ -4,6 +4,8 @@ import beast.backend.toolkit;
 import std.array : Appender, appender;
 import beast.backend.interpreter.instruction;
 import beast.backend.interpreter.codeblock;
+import beast.code.data.var.result;
+import beast.code.data.scope_.local;
 
 /// "CodeBuilder" that builds code for the internal interpret
 final class CodeBuilder_Interpreter : CodeBuilder {
@@ -32,9 +34,14 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
 			assert( currentBPOffset_ == 0 );
 
+			auto prevFunc = currentFunction;
+			currentFunction = func;
+
 			pushScope( );
 			body_( this );
 			popScope( );
+
+			currentFunction = prevFunc;
 		}
 
 	public:
@@ -43,22 +50,22 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			operandResult_ = block.isLocal ? block.localVariable.interpreterBpOffset.iopBpOffset : pointer.iopPtr;
 		}
 
-		override void build_memoryWrite( DataScope scope_, MemoryPtr target, DataEntity data ) {
-			data.buildCode( this, scope_ );
+		override void build_memoryWrite( MemoryPtr target, DataEntity data ) {
+			data.buildCode( this );
 			InstructionOperand assignedValue = operandResult_;
 
 			build_memoryAccess( target );
 			addInstruction( I.mov, operandResult_, assignedValue, data.dataType.instanceSize.iopLiteral );
 		}
 
-		override void build_functionCall( DataScope scope_, Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			InstructionOperand operandResult;
+
 			if ( function_.returnType !is coreLibrary.type.Void ) {
-				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType, scope_, false );
+				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
 				build_localVariableDefinition( returnVar );
-				operandResult_ = returnVar.interpreterBpOffset.iopBpOffset;
+				operandResult = operandResult_;
 			}
-			else
-				debug operandResult_ = InstructionOperand( );
 
 			pushScope( );
 
@@ -66,22 +73,69 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
-				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, scope_, false );
+				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
 				build_localVariableDefinition( argVar );
-				build_copyCtor( argVar, arguments[ i ], scope_ );
+				build_copyCtor( argVar, arguments[ i ] );
 			}
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
-				parentInstance.buildCode( this, scope_ );
-				
+				parentInstance.buildCode( this );
+
 			}
 
 			addInstruction( I.call, function_.iopFuncPtr );
 
 			popScope( );
+			operandResult_ = operandResult;
 		}
 
-	protected:
+		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			static import beast.backend.interpreter.primitiveop;
+
+			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false );
+				build_localVariableDefinition( resultVar );
+			}
+
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard;
+			pushScope( );
+
+			mixin( ( ) { //
+				import std.array : appender;
+
+				auto result = appender!string;
+				result ~= "final switch( op ) {\n";
+
+				foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
+					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
+
+					static if ( __traits( hasMember, beast.backend.interpreter.primitiveop, "primitiveOp_%s".format( opStr ) ) )
+						result ~= "beast.backend.interpreter.primitiveop.primitiveOp_%s( this, parentInstance, arguments );\nbreak;\n".format( opStr );
+					else
+						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.interpreter\" );\n".format( opStr );
+				}
+
+				result ~= "}\n";
+				return result.data;
+			}( ) );
+
+			popScope( );
+			_s.finish( );
+		}
+
+	public:
+		override void build_return( DataEntity returnValue ) {
+			assert( currentFunction );
+
+			if ( returnValue )
+				build_copyCtor( new DataEntity_Result( currentFunction, returnValue.dataType ), returnValue );
+
+			generateScopesExit( );
+			addInstruction( I.ret );
+		}
+
+	package:
 		pragma( inline ) void addInstruction( I i, InstructionOperand op1 = InstructionOperand( ), InstructionOperand op2 = InstructionOperand( ), InstructionOperand op3 = InstructionOperand( ) ) {
 			result_ ~= Instruction( i, op1, op2, op3 );
 		}
@@ -102,10 +156,13 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			bpOffsetStack_.length--;
 		}
 
-	private:
+	package:
 		Appender!( Instruction[ ] ) result_;
 		InstructionOperand operandResult_;
 		size_t[ ] bpOffsetStack_;
 		size_t currentBPOffset_;
+
+	private:
+		Symbol_RuntimeFunction currentFunction;
 
 }

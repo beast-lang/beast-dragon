@@ -26,12 +26,16 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 		void initialize( Symbol[ ] members ) {
 			// TODO: pass to baseClass
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
-					ExpandedFunctionParameter.bootstrap(), //
+					ExpandedFunctionParameter.bootstrap( ), //
 					BackendPrimitiveOperation.intCtor );
 
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.copy, this ), //
 					BackendPrimitiveOperation.intCopyCtor );
+
+			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
+					ExpandedFunctionParameter.bootstrap( ), //
+					BackendPrimitiveOperation.noopDtor );
 
 			namespace_.initialize( members );
 		}

@@ -11,13 +11,13 @@ class RootDataScope : DataScope {
 		}
 
 	public:
-		final override Overloadset recursivelyResolveIdentifier( Identifier id, DataScope scope_ ) {
+		final override Overloadset recursivelyResolveIdentifier( Identifier id ) {
 			// First look into the scope
-			if ( auto result = resolveIdentifier( id, scope_ ) )
+			if ( auto result = resolveIdentifier( id ) )
 				return result;
 
 			// Then look into parent
-			if ( auto result = parentEntity.recursivelyResolveIdentifier( id, scope_ ) )
+			if ( auto result = parentEntity.recursivelyResolveIdentifier( id ) )
 				return result;
 
 			return Overloadset( );

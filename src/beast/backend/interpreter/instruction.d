@@ -11,8 +11,10 @@ struct Instruction {
 
 			allocLocal, /// (bpOffset : dd, bytes : dd) Allocates memory for a local variable
 			call, /// (function : func) Function call (arguments are passed on the stack in order [RETURN VALUE] [OP3] [OP2] [OP1] [CONTEXT PTR - always (even if null)])
+			ret, /// () returns from a function call
 
 			mov, /// (target : ptr, source : ptr, bytes : dd) Copies memory from one place to another
+			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
 		}
 
 	public:

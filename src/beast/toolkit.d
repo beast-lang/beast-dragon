@@ -3,6 +3,7 @@ module beast.toolkit;
 public {
 	import beast.core.context : context, project, taskManager;
 	import beast.core.error.error : benforce, berror, breport, benforceHint, E, ErrorSeverity;
+	import beast.util.util : tryGetIdentificationString;
 	import std.algorithm.iteration : map, filter, joiner;
 	import std.array : array;
 	import std.conv : to;

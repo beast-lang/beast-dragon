@@ -10,7 +10,7 @@ final class AST_P1Expression : AST_Expression {
 
 	public:
 		static bool canParse( ) {
-			return AST_AtomicExpression.canParse;
+			return AST_AtomicExpression.canParse || AST_AutoExpression.canParse;
 		}
 
 		static AST_Expression parse( ) {
@@ -22,7 +22,7 @@ final class AST_P1Expression : AST_Expression {
 			else if ( AST_AutoExpression.canParse )
 				base = AST_AutoExpression.parse( );
 			else
-				currentToken.reportsyntaxError( "expression (atomic)" );
+				currentToken.reportSyntaxError( "expression (atomic)" );
 
 			while ( true ) {
 				if ( AST_ParentCommaExpression.canParse )
@@ -54,18 +54,18 @@ final class AST_P1Expression : AST_Expression {
 		}
 
 	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, DataScope scope_, bool errorOnInferrationFailure = true ) {
+		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
 			assert( items.length );
 
 			// We're passing null as expected type because expected type applies only to the rightmost part of the expression
-			Overloadset result = base.buildSemanticTree( inferredType, scope_, errorOnInferrationFailure );
+			Overloadset result = base.buildSemanticTree( inferredType, errorOnInferrationFailure );
 			if ( !result )
 				return result;
 
 			foreach ( item; items )
-				result = item.p1expressionItem_buildSemanticTree( result, scope_ );
+				result = item.p1expressionItem_buildSemanticTree( result );
 
 			return result;
 		}
@@ -80,6 +80,6 @@ final class AST_P1Expression : AST_Expression {
 interface AST_P1ExpressionItem {
 
 	public:
-		Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide, DataScope scope_ );
+		Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide );
 
 }

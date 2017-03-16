@@ -50,6 +50,7 @@ mixin template TaskGuard( string guardName ) {
 			import beast.core.task.guard : Flags = TaskGuardFlags;
 			import beast.util.identifiable : Identifiable;
 			import beast.core.error.error : BeastErrorException;
+			import beast.util.util : tryGetIdentificationString;
 
 			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
 			debug assert( Worker.current, "All task guards must be processed in worker threads" );
@@ -77,6 +78,8 @@ mixin template TaskGuard( string guardName ) {
 
 			// If not, we have to check if it is work in progress
 			if ( initialFlags & Flags.workInProgress ) {
+				TaskContext thisContext = context.taskContext;
+				
 				synchronized ( taskGuardResolvingMutex ) {
 
 					// Mark that there are tasks waiting for it
@@ -93,28 +96,26 @@ mixin template TaskGuard( string guardName ) {
 					if ( wipFlags & Flags.done )
 						return;
 
+					// Wait for the worker context to mark itself to this guard (this is not done atomically)
+					while ( !( _taskGuard_flags & Flags.contextSet ) ) {
+						// TODO: Benchmark this
+					}
+
 					// Mark current context as waiting on this task	(for circular dependency checks)
-					context.taskContext.blockingContext_ = _taskGuard_context;
-					context.taskContext.blockingTaskGuardIdentificationString_ = { //
-						try
-							return "%s.(%s)".format( identificationString, guardName );
-						catch ( BeastErrorException e )
-							return "#error#";
-					};
+					thisContext.blockingContext_ = _taskGuard_context;
+					thisContext.blockingTaskGuardIdentificationString_ = ( ) => "%s.(%s)".format( this.tryGetIdentificationString, guardName );
 
 					// Check for circular dependencies
 					{
-						// Wait for the worker context to mark itself to this guard (this is not done atomically)
-						while ( !( _taskGuard_flags & Flags.contextSet ) ) {
-							// TODO: Benchmark this
-						}
-
 						TaskContext ctx = _taskGuard_context;
-						const TaskContext thisContext = context.taskContext;
 						while ( ctx ) {
+
 							if ( ctx is thisContext ) {
 								// Mark error to prevent dependency loop while resolving identificationStrings for dependency loop
 								_taskGuard_flags.atomicOp!"|="( Flags.error );
+
+								// Unmark this context to be waiting for anything (the context would get reused with blockingContext_ being set which would lead to unfunny behavior)
+								thisContext.blockingContext_ = null;
 
 								// Walk the dependencies again, this time record contexts we were walking
 								TaskContext ctx2 = _taskGuard_context;
@@ -135,24 +136,30 @@ mixin template TaskGuard( string guardName ) {
 								berror( E.dependencyLoop, "Circular dependency loop: %s".format( loopList.joiner( " - " ).to!string ) );
 							}
 
+							assert( ctx !is ctx.blockingContext_ );
+
 							ctx = ctx.blockingContext_;
 						}
 					}
+					
+					assert( thisContext.blockingContext_ !is thisContext );
 
 					// Mark current context to be woken when the task is finished, the _taskGuard_issueWaitingTasks is called anyway - we have to ensure it has a record to work with
 					assert( cast( bool )( _taskGuard_id in taskGuardDependentsList ) == cast( bool )( wipFlags & Flags.dependentTasksWaiting ) );
 
 					if ( wipFlags & Flags.dependentTasksWaiting )
-						taskGuardDependentsList[ _taskGuard_id ] ~= context.taskContext;
+						taskGuardDependentsList[ _taskGuard_id ] ~= thisContext;
 					else
-						taskGuardDependentsList[ _taskGuard_id ] = [ context.taskContext ];
+						taskGuardDependentsList[ _taskGuard_id ] = [ thisContext ];
 				}
 
 				// Yield the current context
-				context.taskContext.yield( );
+				thisContext.yield( );
+
+				assert( context.taskContext is thisContext );
 
 				synchronized ( taskGuardResolvingMutex )
-					context.taskContext.blockingContext_ = null;
+					thisContext.blockingContext_ = null;
 
 				assert( _taskGuard_flags & Flags.done );
 
