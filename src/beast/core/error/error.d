@@ -63,6 +63,7 @@ enum E {
 
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
+	missingInitValue, /// When auto x;
 
 	// STATEMENTS:
 	missingReturnExpression,

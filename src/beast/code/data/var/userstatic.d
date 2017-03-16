@@ -59,8 +59,11 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 		void execute_typeDeduction( ) {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
-			// TODO: if type auto
-			dataTypeWIP_ = ast_.dataType.standaloneCtExec( coreLibrary.type.Type, parent ).readType( );
+			// When the type is auto (deduced), the type deduction actually takes place in memoryAllocation
+			if ( ast_.dataType.isAutoExpression )
+				enforceDone_memoryAllocation( );
+			else
+				dataTypeWIP_ = ast_.dataType.standaloneCtExec( coreLibrary.type.Type, parent ).readType( );
 
 			benforce( dataTypeWIP_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataTypeWIP_.identificationString ) );
 
@@ -76,13 +79,30 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 				auto cb = scoped!CodeBuilder_Ctime( );
 
-				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
-				block.identifier = identifier.str;
-				memoryPtrWIP_ = block.startPtr;
+				MemoryBlock block;
 
 				// We can't use this.dataEntity because that would cause a dependency loop (as we would require memoryPtr for this in it)
-				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataType );
-				ast_.buildConstructor( substEntity, cb );
+				if ( ast_.dataType.isAutoExpression ) {
+					benforce( ast_.value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( parent.identificationString, identifier.str ) );
+
+					DataEntity valueEntity = ast_.value.buildSemanticTree_single( null );
+					dataTypeWIP_ = valueEntity.dataType;
+
+					block = memoryManager.allocBlock( dataTypeWIP_.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
+					memoryPtrWIP_ = block.startPtr;
+
+					DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataTypeWIP_ );
+					ast_.buildConstructor( substEntity, valueEntity, cb );
+				}
+				else {
+					block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
+					memoryPtrWIP_ = block.startPtr;
+					
+					DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataType );
+					ast_.buildConstructor( substEntity, cb );
+				}
+
+				block.identifier = identifier.str;
 
 				// We have to mark the variable as runtime after calling its constructor (which is done at ctime)
 				if ( !isCtime_ )

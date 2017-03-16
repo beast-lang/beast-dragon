@@ -53,7 +53,8 @@ mixin template TaskGuard( string guardName ) {
 			import beast.util.util : tryGetIdentificationString;
 
 			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
-			debug assert( Worker.current, "All task guards must be processed in worker threads" );
+			assert( Worker.current, "All task guards must be processed in worker threads" );
+			assert( !context.taskContext.blockingContext_ );
 
 			debug ( taskGuards ) {
 				import std.stdio : writefln;
@@ -79,8 +80,9 @@ mixin template TaskGuard( string guardName ) {
 			// If not, we have to check if it is work in progress
 			if ( initialFlags & Flags.workInProgress ) {
 				TaskContext thisContext = context.taskContext;
-				
+
 				synchronized ( taskGuardResolvingMutex ) {
+					assert( !context.taskContext.blockingContext_ );
 
 					// Mark that there are tasks waiting for it
 					const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
@@ -141,7 +143,7 @@ mixin template TaskGuard( string guardName ) {
 							ctx = ctx.blockingContext_;
 						}
 					}
-					
+
 					assert( thisContext.blockingContext_ !is thisContext );
 
 					// Mark current context to be woken when the task is finished, the _taskGuard_issueWaitingTasks is called anyway - we have to ensure it has a record to work with

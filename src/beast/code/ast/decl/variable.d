@@ -65,27 +65,34 @@ final class AST_VariableDeclaration : AST_Declaration {
 			decorations.apply_variableDeclarationModifier( declData );
 
 			if ( declData.isStatic ) {
-				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
-
-				if ( !env.staticMemberMerger ) {
-					Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
-					currentScope.addEntity( var );
-				}
-				else if ( env.staticMemberMerger.isFinished( ) ) {
+				// No buildConstructor for static variables - that is handled in the Symbol_UserStaticVariable.memoryAllocation
+				if ( env.staticMemberMerger && env.staticMemberMerger.isFinished( ) )
 					currentScope.addEntity( env.staticMemberMerger.getRecord( this ) );
-				}
+
 				else {
 					Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
 					currentScope.addEntity( var );
 
-					env.staticMemberMerger.addRecord( this, var );
+					if ( env.staticMemberMerger )
+						env.staticMemberMerger.addRecord( this, var );
 				}
 			}
 			else {
-				DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorations, declData );
-				cb.build_localVariableDefinition( var );
-				buildConstructor( var, cb );
-				currentScope.addLocalVariable( var );
+				if ( dataType.isAutoExpression ) {
+					benforce( value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( currentScope.identificationString, identifier.str ) );
+
+					DataEntity valueEntity = value.buildSemanticTree_single( null );
+					DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( identifier, valueEntity.dataType, decorations, declData );
+					cb.build_localVariableDefinition( var );
+					buildConstructor( var, valueEntity, cb );
+					currentScope.addLocalVariable( var );
+				}
+				else {
+					DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorations, declData );
+					cb.build_localVariableDefinition( var );
+					buildConstructor( var, cb );
+					currentScope.addLocalVariable( var );
+				}
 			}
 		}
 
@@ -104,20 +111,24 @@ final class AST_VariableDeclaration : AST_Declaration {
 		}
 
 	public:
-		void buildConstructor( DataEntity entity, CodeBuilder cb ) {
+		void buildConstructor( DataEntity entity, DataEntity valueEntity, CodeBuilder cb ) {
 			auto match = entity.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( this, true );
 
-			if ( value ) {
+			if ( valueEntity ) {
 				// colonAssign calls #ctor( #Ctor.opRefAssign, value );
 				if ( valueColonAssign )
 					match.arg( coreLibrary.enum_.xxctor.opRefAssign );
 				else
 					match.arg( coreLibrary.enum_.xxctor.opAssign );
 
-				match.arg( value.buildSemanticTree_single( entity.dataType ) );
+				match.arg( valueEntity );
 			}
 
 			match.finish( ).buildCode( cb );
+		}
+
+		void buildConstructor( DataEntity entity, CodeBuilder cb ) {
+			buildConstructor( entity, value ? value.buildSemanticTree_single( entity.dataType ) : null, cb );
 		}
 
 }

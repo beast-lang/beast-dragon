@@ -39,7 +39,7 @@ abstract class AST_Statement : AST_Node {
 				benforce( decorationList is null, E.invalidDecoration, "Decorating expressions is not allowed" );
 
 				// Otherwise just expression statement
-				currentToken.expectAndNext( Token.Special.semicolon );
+				currentToken.expectAndNext( Token.Special.semicolon, "semicolon after expression" );
 				return expr;
 			}
 
