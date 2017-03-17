@@ -209,7 +209,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		Appender!( Instruction[ ] ) result_;
 		InstructionOperand operandResult_;
 		size_t[ ] bpOffsetStack_;
-		int currentBPOffset_;
+		size_t currentBPOffset_;
 
 	private:
 		Symbol_RuntimeFunction currentFunction;

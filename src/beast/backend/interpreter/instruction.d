@@ -83,7 +83,7 @@ struct InstructionOperand {
 			MemoryPtr heapLocation;
 
 			/// When type == stackRef
-			int basePointerOffset;
+			size_t basePointerOffset;
 
 			/// When type == directData
 			size_t directData;
@@ -105,8 +105,10 @@ struct InstructionOperand {
 			case Type.heapRef:
 				return "%#x".format( heapLocation.val );
 
-			case Type.stackRef:
-				return basePointerOffset >= 0 ? "BP+%s".format( basePointerOffset ) : "BP-%s".format( -basePointerOffset );
+			case Type.stackRef: {
+				int bpo = cast( int ) basePointerOffset;
+				return bpo >= 0 ? "BP+%s".format( bpo ) : "BP-%s".format( -bpo );
+			}
 
 			case Type.directData:
 				return "%s".format( directData );
@@ -125,7 +127,7 @@ struct InstructionOperand {
 
 }
 
-InstructionOperand iopBpOffset( int offset ) {
+InstructionOperand iopBpOffset( size_t offset ) {
 	auto result = InstructionOperand( InstructionOperand.Type.stackRef );
 	result.basePointerOffset = offset;
 	return result;
