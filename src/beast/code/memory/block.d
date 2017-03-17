@@ -103,12 +103,10 @@ final class MemoryBlock {
 		string identifier;
 
 	public:
-		union {
-			/// Used when the block is related to a local variables
-			DataEntity_LocalVariable localVariable;
+		/// Used when the block is related to a local variables
+		DataEntity_LocalVariable localVariable;
 
-			/// Used when the block is related to a function parameter
-			ExpandedFunctionParameter functionParameter;
-		}
+		/// Used when the block is related to a function parameter
+		ExpandedFunctionParameter functionParameter;
 
 }

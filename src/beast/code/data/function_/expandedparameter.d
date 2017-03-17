@@ -12,8 +12,9 @@ final class ExpandedFunctionParameter : Identifiable {
 
 	public:
 		/// Tries to expand expression into a function parameter.
-		static ExpandedFunctionParameter process( AST_Expression expr ) {
+		static ExpandedFunctionParameter process( AST_Expression expr, size_t index ) {
 			ExpandedFunctionParameter result = new ExpandedFunctionParameter( );
+			result.index = index;
 			result.ast = expr;
 
 			// Declaration -> standard parameter

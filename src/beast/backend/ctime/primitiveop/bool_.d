@@ -2,14 +2,14 @@ module beast.backend.ctime.primitiveop.bool_;
 
 import beast.backend.ctime.primitiveop.toolkit;
 
-void primitiveOp_boolCtor( CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		inst.buildCode( cb );
 		result_.writePrimitive( false );
 	}
 }
 
-void primitiveOp_boolCopyCtor( CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolCopyCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		args[ 1 ].buildCode( cb );
 		const MemoryPtr arg1 = result_;
@@ -19,7 +19,7 @@ void primitiveOp_boolCopyCtor( CodeBuilder_Ctime cb, DataEntity inst, DataEntity
 	}
 }
 
-void primitiveOp_boolOr( CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolOr( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		const MemoryPtr result = result_;
 
@@ -36,7 +36,7 @@ void primitiveOp_boolOr( CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] ar
 	}
 }
 
-void primitiveOp_boolAnd( CodeBuilder_Ctime cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolAnd( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		const MemoryPtr result = result_;
 

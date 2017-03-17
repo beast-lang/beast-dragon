@@ -21,7 +21,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 	public:
 		final override void buildDefinitionsCode( CodeBuilder cb ) {
 			// Enforce return type deduction
-			returnType();
+			returnType( );
 
 			buildDefinitionsCode( cb, staticMembersMergerWIP_ );
 		}
@@ -38,10 +38,14 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		}
 
 		final void execute_codeProcessing( ) {
-			codeProcessingCodeBuilderWIP_ = new CodeBuilder_Interpreter();
+			codeProcessingCodeBuilderWIP_ = new CodeBuilder_Interpreter( );
 			staticMembersMergerWIP_ = new StaticMemberMerger;
+
 			buildDefinitionsCode( codeProcessingCodeBuilderWIP_, staticMembersMergerWIP_ );
+
 			staticMembersMergerWIP_.finish( );
+
+			// codeProcessingCodeBuilderWIP_.debugPrintResult( identificationString );
 		}
 
 		final string baseIdentifier( ) {
@@ -49,7 +53,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		}
 
 	private:
-		CodeBuilder codeProcessingCodeBuilderWIP_;
+		CodeBuilder_Interpreter codeProcessingCodeBuilderWIP_;
 		/// Used for merging static members
 		StaticMemberMerger staticMembersMergerWIP_;
 		/// Namespace storing static members
@@ -140,7 +144,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 							return MatchFlags.noMatch;
 						}
 
-						MemoryPtr entityData = entity.ctExec();
+						MemoryPtr entityData = entity.ctExec( );
 						if ( !entityData.dataEquals( param.constValue, dataType.instanceSize ) ) {
 							errorStr = "argument %s value mismatch".format( argumentIndex_ );
 							return MatchFlags.noMatch;
@@ -193,12 +197,13 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return false;
 				}
 
-				override string identification( ) {
+				/*override string identification( ) {
 					return "%s( ... )( %s )".format( sym_.baseIdentifier, arguments_.map!( x => x.tryGetIdentificationString ).joiner( ", " ).to!string );
-				}
+				}*/
 
-				override string identificationString() {
-					return "%s %s".format( sym_.returnType.tryGetIdentificationString, super.identificationString );
+				override string identificationString( ) {
+					//return "%s %s".format( sym_.returnType.tryGetIdentificationString, super.identificationString );
+					return "%s (expression)".format( sym_.returnType.tryGetIdentificationString );
 				}
 
 				override DataEntity parent( ) {

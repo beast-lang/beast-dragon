@@ -2,14 +2,14 @@ module beast.backend.cpp.primitiveop.bool_;
 
 import beast.backend.cpp.primitiveop.toolkit;
 
-void primitiveOp_boolCtor( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		inst.buildCode( cb );
 		codeResult_.formattedWrite( "%sVAL( %s, bool ) = false;\n", tabs, codeResult_ );
 	}
 }
 
-void primitiveOp_boolCopyCtor( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolCopyCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		args[ 1 ].buildCode( cb );
 		string arg1 = resultVarName_;
@@ -19,7 +19,7 @@ void primitiveOp_boolCopyCtor( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ 
 	}
 }
 
-void primitiveOp_boolOr( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) { 
+void primitiveOp_boolOr( CB cb, DataEntity inst, DataEntity[ ] args ) { 
 	with ( cb ) {
 		const string result = resultVarName_;
 
@@ -37,7 +37,7 @@ void primitiveOp_boolOr( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args
 	}
 }
 
-void primitiveOp_boolAnd( CodeBuilder_Cpp cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_boolAnd( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		const string result = resultVarName_;
 

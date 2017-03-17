@@ -23,7 +23,7 @@ Source file extension: `.be`
 * Compile-time language reflection
 
 ## Progress
-* Compiler: No working prototype yet
+* Compiler: No working prototype yet, currently under intensive development
 * Std library: Nothing at all
 * Language reference: Nothing much
 

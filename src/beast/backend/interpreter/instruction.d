@@ -1,7 +1,8 @@
 module beast.backend.interpreter.instruction;
 
-import beast.code.memory.ptr;
+import beast.backend.toolkit;
 import beast.code.data.function_.rt;
+import beast.util.enumassoc;
 
 struct Instruction {
 
@@ -15,6 +16,10 @@ struct Instruction {
 
 			mov, /// (target : ptr, source : ptr, bytes : dd) Copies memory from one place to another
 			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
+
+			jmpTrue, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is true
+			jmpFalse, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is false
+			jmp, /// (target: jt) Jumps to given instruction (ID/index)
 		}
 
 	public:
@@ -29,6 +34,33 @@ struct Instruction {
 		I i;
 		InstructionOperand[ 3 ] op;
 
+	public:
+		string identificationString( ) {
+			assert( i in enumAssocInvert!I );
+
+			string ops;
+
+			if ( op[ 0 ].type != InstructionOperand.Type.unused ) {
+				ops ~= " %-10s".format( op[ 0 ].identificationString );
+
+				if ( op[ 1 ].type != InstructionOperand.Type.unused ) {
+					ops ~= " %-10s".format( op[ 1 ].identificationString );
+
+					if ( op[ 2 ].type != InstructionOperand.Type.unused )
+						ops ~= " %-10s".format( op[ 2 ].identificationString );
+				}
+				else {
+					assert( op[ 2 ].type == InstructionOperand.Type.unused );
+				}
+			}
+			else {
+				assert( op[ 1 ].type == InstructionOperand.Type.unused );
+				assert( op[ 2 ].type == InstructionOperand.Type.unused );
+			}
+
+			return "%-15s%s".format( enumAssocInvert!I[ i ], ops );
+		}
+
 }
 
 struct InstructionOperand {
@@ -40,6 +72,8 @@ struct InstructionOperand {
 			stackRef,
 			directData,
 			functionPtr,
+			jumpTarget,
+			placeholder, /// This should not appear in the resulting code
 		}
 
 	public:
@@ -49,18 +83,49 @@ struct InstructionOperand {
 			MemoryPtr heapLocation;
 
 			/// When type == stackRef
-			size_t basePointerOffset;
+			int basePointerOffset;
 
 			/// When type == directData
 			size_t directData;
 
 			/// When type == functionPtr
 			Symbol_RuntimeFunction functionPtr;
+
+			/// When type == jumpTarget
+			size_t jumpTarget;
+		}
+
+	public:
+		string identificationString( ) {
+			final switch ( type ) {
+
+			case Type.unused:
+				return "(unused)";
+
+			case Type.heapRef:
+				return "%#x".format( heapLocation.val );
+
+			case Type.stackRef:
+				return basePointerOffset >= 0 ? "BP+%s".format( basePointerOffset ) : "BP-%s".format( -basePointerOffset );
+
+			case Type.directData:
+				return "%s".format( directData );
+
+			case Type.functionPtr:
+				return "@%s".format( functionPtr.identificationString );
+
+			case Type.jumpTarget:
+				return "@%s".format( jumpTarget );
+
+			case Type.placeholder:
+				return "(placeholder)";
+
+			}
 		}
 
 }
 
-InstructionOperand iopBpOffset( size_t offset ) {
+InstructionOperand iopBpOffset( int offset ) {
 	auto result = InstructionOperand( InstructionOperand.Type.stackRef );
 	result.basePointerOffset = offset;
 	return result;
@@ -82,4 +147,8 @@ InstructionOperand iopFuncPtr( Symbol_RuntimeFunction func ) {
 	auto result = InstructionOperand( InstructionOperand.Type.functionPtr );
 	result.functionPtr = func;
 	return result;
+}
+
+InstructionOperand iopPlaceholder( ) {
+	return InstructionOperand( InstructionOperand.Type.placeholder );
 }

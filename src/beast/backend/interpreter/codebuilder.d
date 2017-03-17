@@ -59,6 +59,13 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			/*
+				Call convention:
+				RETURN ARG3 ARG2 ARG1 CONTEXT
+				context is always present
+				constnant value args also get their BPoffset (it is unused though, even unallocated)
+			*/
+
 			InstructionOperand operandResult;
 
 			if ( function_.returnType !is coreLibrary.type.Void ) {
@@ -69,18 +76,31 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			pushScope( );
 
+			DataEntity_TmpLocalVariable[ ] argVars;
+			argVars.length = function_.parameters.length;
+
+			// Because of call convention (where the argument order is RET ARG3 ARG2 ARG1 CTX), we need to initialize this rather strangely
+			foreach_reverse ( i, ExpandedFunctionParameter param; function_.parameters ) {
+				if ( param.isConstValue ) {
+					currentBPOffset_++;
+					continue;
+				}
+
+				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
+				build_localVariableDefinition( argVar );
+
+				argVars[ i ] = argVar;
+			}
+
 			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
 				if ( param.isConstValue )
 					continue;
 
-				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
-				build_localVariableDefinition( argVar );
-				build_copyCtor( argVar, arguments[ i ] );
+				build_copyCtor( argVars[ i ], arguments[ i ] );
 			}
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
 				parentInstance.buildCode( this );
-
 			}
 
 			addInstruction( I.call, function_.iopFuncPtr );
@@ -135,16 +155,45 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			addInstruction( I.ret );
 		}
 
-	package:
-		pragma( inline ) void addInstruction( I i, InstructionOperand op1 = InstructionOperand( ), InstructionOperand op2 = InstructionOperand( ), InstructionOperand op3 = InstructionOperand( ) ) {
-			result_ ~= Instruction( i, op1, op2, op3 );
+	public:
+		void debugPrintResult( string desc ) {
+			if ( !result_.data.length )
+				return;
+
+			import std.stdio : writefln;
+			import beast.core.error.error : stderrMutex;
+
+			synchronized ( stderrMutex ) {
+				writefln( "\n== BEGIN CODE %s\n", desc );
+
+				foreach ( i, instr; result_.data )
+					writefln( "@%3s   %s", i, instr.identificationString );
+
+				writefln( "\n== END\n" );
+			}
 		}
 
+	package:
+		/// Adds instruction, returns it's ID (index)
+		pragma( inline ) size_t addInstruction( I i, InstructionOperand op1 = InstructionOperand( ), InstructionOperand op2 = InstructionOperand( ), InstructionOperand op3 = InstructionOperand( ) ) {
+			result_ ~= Instruction( i, op1, op2, op3 );
+			return result_.data.length - 1;
+		}
+
+		/// Updates instruction operand via it's ID (index)
 		pragma( inline ) void setInstructionOperand( size_t instruction, size_t operandId, InstructionOperand set ) {
+			assert( result_.data[ instruction ].op[ operandId ].type == InstructionOperand.Type.placeholder, "You can only update placeholder operands" );
 			result_.data[ instruction ].op[ operandId ] = set;
 		}
 
-	protected:
+		/// Returns operand representing a next instruction jump target
+		pragma( inline ) InstructionOperand jumpTarget( ) {
+			InstructionOperand result = InstructionOperand( InstructionOperand.Type.jumpTarget );
+			result.jumpTarget = result_.data.length;
+			return result;
+		}
+
+	public:
 		override void pushScope( ) {
 			bpOffsetStack_ ~= currentBPOffset_;
 			super.pushScope( );
@@ -160,7 +209,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		Appender!( Instruction[ ] ) result_;
 		InstructionOperand operandResult_;
 		size_t[ ] bpOffsetStack_;
-		size_t currentBPOffset_;
+		int currentBPOffset_;
 
 	private:
 		Symbol_RuntimeFunction currentFunction;

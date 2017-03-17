@@ -59,7 +59,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 	public:
 		/// Base pointer offset of the local variable in embedded interpreter
 		/// Please note that the poitner does not count as offset in bytes, it is an index of the variable in an array (stack is not a linear address space)
-		size_t interpreterBpOffset;
+		int interpreterBpOffset;
 
 	protected:
 		Symbol_Type dataType_;

@@ -70,7 +70,7 @@ struct Overloadset {
 			benforce( result !is null, E.noMatchingOverload, //
 					data.length == 1 //
 					 ? "Cannot convert '%s' to '%s'".format( data[ 0 ].identificationString, expectedType.identificationString ) //
-					 : "None of the overloads are convertible to '%s'".format( expectedType.identificationString ) //
+					 : "None of overloads is convertible to '%s'".format( expectedType.identificationString ) //
 					 );
 
 			assert( result.dataType is expectedType );

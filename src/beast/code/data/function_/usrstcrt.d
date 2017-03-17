@@ -109,8 +109,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 				auto _s = scoped!RootDataScope( parent_ );
 				auto _sgd = _s.scopeGuard;
 
-				foreach ( expr; ast_.parameterList.items )
-					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr );
+				foreach ( i, expr; ast_.parameterList.items )
+					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr, i );
 
 				_s.finish( );
 				// Do not cleanup the scope - it can and will be used

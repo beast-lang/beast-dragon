@@ -306,10 +306,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 			}
 
 			else if ( block.identifier )
-				return "%s__s%s_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
+				return "%s__%#x_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
 
 			else
-				return "%s__s%s".format( addrOfStr, block.startPtr.val );
+				return "%s__%#x".format( addrOfStr, block.startPtr.val );
 		}
 
 		static string safeIdentifier( string id ) {

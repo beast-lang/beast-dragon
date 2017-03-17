@@ -5,3 +5,5 @@ public {
 	import beast.backend.cpp.codebuilder : CodeBuilder_Cpp;
 	import std.format : formattedWrite;
 }
+
+alias CB = CodeBuilder_Cpp;

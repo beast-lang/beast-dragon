@@ -4,3 +4,5 @@ public {
 	import beast.backend.toolkit;
 	import beast.backend.ctime.codebuilder : CodeBuilder_Ctime;
 }
+
+alias CB = CodeBuilder_Ctime;
