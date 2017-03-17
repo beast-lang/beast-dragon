@@ -32,10 +32,13 @@ final class AST_ReturnStatement : AST_Statement {
 			DataEntity result;
 
 			if ( expression ) {
-				result = expression.buildSemanticTree_single( env.functionReturnType );
+				if( env.functionReturnType )
+					result = expression.buildSemanticTree_singleExpect( env.functionReturnType );
 
-				if ( !env.functionReturnType )
+				else {
+					result = expression.buildSemanticTree_single();
 					env.functionReturnType = result.dataType;
+				}
 			}
 			else if ( !env.functionReturnType )
 				env.functionReturnType = coreLibrary.type.Void;

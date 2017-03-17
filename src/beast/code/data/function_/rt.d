@@ -123,7 +123,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 					if ( !entity ) {
 						with ( memoryManager.session ) {
-							entity = expression.buildSemanticTree_single( param.dataType );
+							entity = expression.buildSemanticTree_singleExpect( param.dataType );
 							dataType = entity.dataType;
 						}
 					}

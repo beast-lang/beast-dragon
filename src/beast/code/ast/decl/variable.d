@@ -81,7 +81,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				if ( dataType.isAutoExpression ) {
 					benforce( value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( currentScope.identificationString, identifier.str ) );
 
-					DataEntity valueEntity = value.buildSemanticTree_single( null );
+					DataEntity valueEntity = value.buildSemanticTree_single;
 					DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( identifier, valueEntity.dataType, decorations, declData );
 					cb.build_localVariableDefinition( var );
 					buildConstructor( var, valueEntity, cb );
@@ -128,7 +128,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 		}
 
 		void buildConstructor( DataEntity entity, CodeBuilder cb ) {
-			buildConstructor( entity, value ? value.buildSemanticTree_single( entity.dataType ) : null, cb );
+			buildConstructor( entity, value ? value.buildSemanticTree_singleInfer( entity.dataType ) : null, cb );
 		}
 
 }

@@ -43,7 +43,7 @@ final class AST_LogicExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
-			DataEntity result = base.buildSemanticTree_single( inferredType, true );
+			DataEntity result = base.buildSemanticTree_singleInfer( inferredType, true );
 			if ( !result )
 				return Overloadset( );
 

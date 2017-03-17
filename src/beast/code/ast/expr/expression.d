@@ -50,21 +50,46 @@ abstract class AST_Expression : AST_Statement {
 		/// If errorOnInferrationFailure is false, returns null data entity if the expression cannot be built with given inferredType
 		abstract Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true );
 
-		final DataEntity buildSemanticTree_single( Symbol_Type expectedType, bool errorOnInferrationFailure = true ) {
+		/// Builds semantic tree (with inferration of iniferredType), checks if the overloadset returns anything
+		/// The result DataEntity dataType can differ from infferedType!
+		final DataEntity buildSemanticTree_singleInfer( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
+			Overloadset result = buildSemanticTree( inferredType, errorOnInferrationFailure );
+
+			if ( !result.length && !errorOnInferrationFailure )
+				return null;
+
+			return result.single;
+		}
+
+		/// Builds semantic tree (with inferration of expectedType), checks if the overloadset returns anything and enforces the result to be of type expectedType
+		final DataEntity buildSemanticTree_singleExpect( Symbol_Type expectedType, bool errorOnInferrationFailure = true ) {
 			Overloadset result = buildSemanticTree( expectedType, errorOnInferrationFailure );
 
 			if ( !result.length && !errorOnInferrationFailure )
 				return null;
 
-			return result.single_expectType( expectedType );
+			DataEntity resultEntity = result.single_expectType( expectedType );
+			
+			assert( resultEntity.dataType is expectedType );
+			return resultEntity;
+		}
+
+		/// Builds semantic tree, andchecks if the overloadset returns anything
+		final DataEntity buildSemanticTree_single( bool errorOnInferrationFailure = true ) {
+			Overloadset result = buildSemanticTree( null, errorOnInferrationFailure );
+
+			if ( !result.length && !errorOnInferrationFailure )
+				return null;
+
+			return result.single;
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
-			buildSemanticTree_single( null ).buildCode( cb );
+			buildSemanticTree_single( ).buildCode( cb );
 		}
 
 		final MemoryPtr ctExec( Symbol_Type expectedType ) {
-			return buildSemanticTree_single( expectedType ).enforceCast( expectedType ).ctExec( );
+			return buildSemanticTree_singleExpect( expectedType ).ctExec( );
 		}
 
 		/// Executes the expression in standalone scope and session, returing its value

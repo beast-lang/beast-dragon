@@ -27,7 +27,7 @@ final class ExpandedFunctionParameter : Identifiable {
 			}
 			// Constant value parameter
 			else {
-				DataEntity constVal = expr.buildSemanticTree_single( null );
+				DataEntity constVal = expr.buildSemanticTree_single();
 
 				result.dataType = constVal.dataType;
 				result.constValue = constVal.ctExec();

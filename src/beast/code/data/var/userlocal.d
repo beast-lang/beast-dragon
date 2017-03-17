@@ -33,7 +33,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 				auto _s = scoped!LocalDataScope( );
 				auto _sgd = _s.scopeGuard;
 
-				dataType = typeExpression.buildSemanticTree_single( coreLibrary.type.Type ).ctExec_asType( );
+				dataType = typeExpression.buildSemanticTree_singleExpect( coreLibrary.type.Type ).ctExec_asType( );
 
 				_s.finish( );
 			}

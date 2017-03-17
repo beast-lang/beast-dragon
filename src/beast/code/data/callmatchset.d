@@ -54,7 +54,7 @@ struct CallMatchSet {
 		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
 			auto _sgd = scope_.scopeGuard;
 			
-			DataEntity entity = expr.buildSemanticTree_single( null, false );
+			DataEntity entity = expr.buildSemanticTree_single( false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
 			argumentTypes ~= dataType;
 
@@ -103,7 +103,7 @@ struct CallMatchSet {
 				benforce( !reportErrors, E.noMatchingOverload, //
 						"None of the overloads match arguments %s: %s".format(  //
 							argumentListIdentificationString, //
-							matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner( ", " ) ) //
+							matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner ) //
 						 );
 
 				return null;

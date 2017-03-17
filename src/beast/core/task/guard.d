@@ -33,12 +33,10 @@ mixin template TaskGuard( string guardName ) {
 		mixin( "void execute_" ~ guardName ~ "() { assert( 0, \"execute_\" ~ guardName ~ \" not implemented for \" ~ typeof(this).stringof ~ \" \" ~ identificationString ); }" );
 
 	private:
-		shared ubyte _taskGuard_flags;
+		mixin( "shared ubyte _taskGuard_flags_%s;".format( guardName ) );
 
 		/// Context this task is being processed in
-		TaskContext _taskGuard_context;
-
-		enum _taskGuard_executeFunctionName = "execute_" ~ guardName;
+		mixin( "TaskContext _taskGuard_context_%s;".format( guardName ) );
 
 	private:
 		/// All-in-one function. If the task is done, returns its result. If not, either starts working on it or waits till it's done (and eventually throws poisoning error). Checks for circular dependencies
@@ -54,13 +52,20 @@ mixin template TaskGuard( string guardName ) {
 
 			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
 			assert( Worker.current, "All task guards must be processed in worker threads" );
-			assert( !context.taskContext.blockingContext_ );
+
+			enum executeFunctionName = "execute_" ~ guardName;
+			mixin( "alias tgdFlags = _taskGuard_flags_%s;".format( guardName ) );
+			mixin( "alias tgdContext = _taskGuard_context_%s;".format( guardName ) );
+
+			TaskContext thisContext = context.taskContext;
+
+			assert( thisContext.blockingContext_ is null );
 
 			debug ( taskGuards ) {
 				import std.stdio : writefln;
 			}
 
-			const ubyte initialFlags = atomicFetchThenOr( _taskGuard_flags, Flags.workInProgress );
+			const ubyte initialFlags = atomicFetchThenOr( tgdFlags, Flags.workInProgress );
 
 			if ( initialFlags & Flags.error ) {
 				debug ( taskGuards )
@@ -79,13 +84,11 @@ mixin template TaskGuard( string guardName ) {
 
 			// If not, we have to check if it is work in progress
 			if ( initialFlags & Flags.workInProgress ) {
-				TaskContext thisContext = context.taskContext;
-
 				synchronized ( taskGuardResolvingMutex ) {
 					assert( !context.taskContext.blockingContext_ );
 
 					// Mark that there are tasks waiting for it
-					const ubyte wipFlags = atomicFetchThenOr( _taskGuard_flags, Flags.dependentTasksWaiting );
+					const ubyte wipFlags = atomicFetchThenOr( tgdFlags, Flags.dependentTasksWaiting );
 
 					// It is possible that the task finished/failed between initialFlags and wipFlags fetches, we need to check for that
 					if ( wipFlags & Flags.error ) {
@@ -99,28 +102,30 @@ mixin template TaskGuard( string guardName ) {
 						return;
 
 					// Wait for the worker context to mark itself to this guard (this is not done atomically)
-					while ( !( _taskGuard_flags & Flags.contextSet ) ) {
+					while ( !( tgdFlags & Flags.contextSet ) ) {
 						// TODO: Benchmark this
 					}
 
+					assert( context.taskContext.blockingContext_ is null );
+
 					// Mark current context as waiting on this task	(for circular dependency checks)
-					thisContext.blockingContext_ = _taskGuard_context;
+					thisContext.blockingContext_ = tgdContext;
 					thisContext.blockingTaskGuardIdentificationString_ = ( ) => "%s.(%s)".format( this.tryGetIdentificationString, guardName );
 
 					// Check for circular dependencies
 					{
-						TaskContext ctx = _taskGuard_context;
+						TaskContext ctx = tgdContext;
 						while ( ctx ) {
 
 							if ( ctx is thisContext ) {
 								// Mark error to prevent dependency loop while resolving identificationStrings for dependency loop
-								_taskGuard_flags.atomicOp!"|="( Flags.error );
+								tgdFlags.atomicOp!"|="( Flags.error );
 
 								// Unmark this context to be waiting for anything (the context would get reused with blockingContext_ being set which would lead to unfunny behavior)
 								thisContext.blockingContext_ = null;
 
 								// Walk the dependencies again, this time record contexts we were walking
-								TaskContext ctx2 = _taskGuard_context;
+								TaskContext ctx2 = tgdContext;
 								string[ ] loopList = [ ctx2.blockingTaskGuardIdentificationString_( ) ];
 								while ( ctx2 !is thisContext ) {
 									assert( ctx2.blockingTaskGuardIdentificationString_ );
@@ -158,28 +163,32 @@ mixin template TaskGuard( string guardName ) {
 				// Yield the current context
 				thisContext.yield( );
 
-				assert( context.taskContext is thisContext );
-
-				synchronized ( taskGuardResolvingMutex )
+				/* This is now done in the thread that is unblocking this (in _taskGuard_issueWaitingTasks)
+				synchronized( taskGuardResolvingMutex )
 					thisContext.blockingContext_ = null;
+					*/
 
-				assert( _taskGuard_flags & Flags.done );
+				assert( context.taskContext is thisContext );
+				assert( tgdFlags & Flags.done );
 
-				if ( _taskGuard_flags & Flags.error )
+				if ( tgdFlags & Flags.error )
 					throw new BeastErrorException( "#posion" );
 
 				// After this context is resumed, the task should be done
 				return;
 			}
 
-			_taskGuard_context = context.taskContext;
-			atomicOp!( "|=" )( _taskGuard_flags, Flags.contextSet );
+			assert( !( tgdFlags & Flags.contextSet ) );
+			assert( tgdContext is null );
+
+			tgdContext = thisContext;
+			atomicOp!( "|=" )( tgdFlags, Flags.contextSet );
 
 			try {
 				debug ( taskGuards )
 					writefln( "%s.%s exec", typeof( this ).stringof, guardName );
 
-				__traits( getMember, this, _taskGuard_executeFunctionName )( );
+				__traits( getMember, this, executeFunctionName )( );
 
 				debug ( taskGuards )
 					writefln( "%s.%s finish", typeof( this ).stringof, guardName );
@@ -189,7 +198,7 @@ mixin template TaskGuard( string guardName ) {
 					writefln( "%s.%s error", typeof( this ).stringof, guardName );
 
 				// Mark this task as erroreous
-				const ubyte data = atomicFetchThenOr( _taskGuard_flags, Flags.done | Flags.error );
+				const ubyte data = atomicFetchThenOr( tgdFlags, Flags.done | Flags.error );
 
 				// If there were tasks waiting for this guard, issue them (they should be poisoned)
 				if ( data & Flags.dependentTasksWaiting )
@@ -199,10 +208,12 @@ mixin template TaskGuard( string guardName ) {
 				throw exc;
 			}
 
-			assert( _taskGuard_flags & Flags.workInProgress && !( _taskGuard_flags & Flags.done ) );
+			assert( thisContext.blockingContext_ is null );
+			assert( tgdContext is thisContext );
+			assert( tgdFlags & Flags.workInProgress && !( tgdFlags & Flags.done ) );
 
 			// Finish
-			const ubyte endData = atomicFetchThenOr( _taskGuard_flags, Flags.done );
+			const ubyte endData = atomicFetchThenOr( tgdFlags, Flags.done );
 
 			// If there were tasks waiting for this guard, issue them
 			if ( endData & Flags.dependentTasksWaiting )
@@ -211,7 +222,7 @@ mixin template TaskGuard( string guardName ) {
 
 	private:
 		pragma( inline ) final TaskGuardId _taskGuard_id( ) {
-			return &_taskGuard_flags;
+			mixin( "return &_taskGuard_flags_%s;".format( guardName ) );
 		}
 
 		/// Issue tasks that were waiting for this task to finish
@@ -220,8 +231,10 @@ mixin template TaskGuard( string guardName ) {
 			synchronized ( taskGuardResolvingMutex ) {
 				assert( _taskGuard_id in taskGuardDependentsList );
 
-				foreach ( ctx; taskGuardDependentsList[ _taskGuard_id ] )
+				foreach ( ctx; taskGuardDependentsList[ _taskGuard_id ] ) {
+					ctx.blockingContext_ = null;
 					taskManager.issueTask( ctx );
+				}
 
 				taskGuardDependentsList.remove( _taskGuard_id );
 			}

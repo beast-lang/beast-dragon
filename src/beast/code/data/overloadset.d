@@ -73,6 +73,7 @@ struct Overloadset {
 					 : "None of the overloads are convertible to '%s'".format( expectedType.identificationString ) //
 					 );
 
+			assert( result.dataType is expectedType );
 			return result;
 		}
 

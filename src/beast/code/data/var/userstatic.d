@@ -85,7 +85,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 				if ( ast_.dataType.isAutoExpression ) {
 					benforce( ast_.value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( parent.identificationString, identifier.str ) );
 
-					DataEntity valueEntity = ast_.value.buildSemanticTree_single( null );
+					DataEntity valueEntity = ast_.value.buildSemanticTree_single();
 					dataTypeWIP_ = valueEntity.dataType;
 
 					block = memoryManager.allocBlock( dataTypeWIP_.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
@@ -95,6 +95,8 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 					ast_.buildConstructor( substEntity, valueEntity, cb );
 				}
 				else {
+					auto dataType = dataType;
+
 					block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
 					memoryPtrWIP_ = block.startPtr;
 					

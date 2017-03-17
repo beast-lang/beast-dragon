@@ -58,8 +58,8 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 			benforce( items.length > 0, E.syntaxError, "Empty parentheses" );
 
 			// We're passing null as inferredType because inferredType only applies to the rightmost part of the expression
-			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single( null ) ).array;
-			DataEntity base = items[ $ - 1 ].buildSemanticTree_single( inferredType, errorOnInferrationFailure );
+			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single() ).array;
+			DataEntity base = items[ $ - 1 ].buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
 
 			if ( payload.length == 0 )
 				return base.Overloadset;
