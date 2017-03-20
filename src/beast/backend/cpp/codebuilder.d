@@ -115,7 +115,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			string resultVarName;
 			if ( function_.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
 				resultVarName = resultVarName_;
 			}
@@ -141,7 +141,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false, "arg%s".format( i + 1 ) );
 				build_localVariableDefinition( argVar );
 				build_copyCtor( argVar, arguments[ i ] );
 
@@ -163,7 +163,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			debug resultVarName_ = null;
 
 			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false );
+				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
 			}
 
@@ -281,7 +281,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	public:
 		static string cppIdentifier( DataEntity_LocalVariable var ) {
-			return "_%s__%s".format( var.outerHash.str, var.identifier ? safeIdentifier( var.identifier.str ) : "tmp" );
+			return "_%s__%s".format( var.outerHash.str, var.identifier ? safeIdentifier( var.identifier.str ) : var.memoryBlock.identifier ? safeIdentifier( var.memoryBlock.identifier ) : "tmp" );
 		}
 
 		static string cppIdentifier( Symbol sym ) {

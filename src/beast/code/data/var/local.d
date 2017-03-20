@@ -6,7 +6,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 	mixin TaskGuard!"outerHashObtaining";
 
 	public:
-		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag ) {
+		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag, string memBlockId = null ) {
 			dataType_ = dataType;
 			isCtime_ = isCtime;
 			scope__ = currentScope;
@@ -18,6 +18,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 			memoryBlock_ = memoryManager.allocBlock( dataType_.instanceSize, MemoryBlock.Flag.local | additionalMemoryBlockFlags );
 			memoryBlock_.localVariable = this;
+			memoryBlock_.identifier = memBlockId;
 
 			if ( !isCtime_ )
 				memoryBlock_.flags |= MemoryBlock.Flag.runtime;
@@ -36,6 +37,10 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 		final MemoryPtr memoryPtr( ) {
 			return memoryBlock_.startPtr;
+		}
+
+		final MemoryBlock memoryBlock( ) {
+			return memoryBlock_;
 		}
 
 		final override DataEntity parent( ) {

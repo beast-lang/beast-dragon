@@ -9,6 +9,8 @@ import beast.code.data.codenamespace.namespace;
 import beast.code.data.util.proxy;
 import beast.code.ast.decl.env;
 
+// debug = interpreter;
+
 /// Runtime function = function without @ctime arguments (or expanded ones)
 abstract class Symbol_RuntimeFunction : Symbol_Function {
 	mixin TaskGuard!"codeProcessing";
@@ -17,6 +19,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		abstract Symbol_Type returnType( );
 
 		abstract ExpandedFunctionParameter[ ] parameters( );
+
+		final InterpreterCodeBlock interpreterCode( ) {
+			enforceDone_codeProcessing( );
+			return codeProcessingCodeBuilderWIP_.result;
+		}
 
 	public:
 		final override void buildDefinitionsCode( CodeBuilder cb ) {
@@ -45,7 +52,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			staticMembersMergerWIP_.finish( );
 
-			// codeProcessingCodeBuilderWIP_.debugPrintResult( identificationString );
+			debug ( intepreter )
+				codeProcessingCodeBuilderWIP_.debugPrintResult( identificationString );
 		}
 
 		final string baseIdentifier( ) {

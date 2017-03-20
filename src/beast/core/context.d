@@ -32,11 +32,11 @@ struct ContextData {
 		/// Sessions can be nested (they're absolutely independent though); last session in the stack is saved in the session variable for speed up
 		size_t[ ] sessionStack;
 
-		/// List of all memory blocks allocated in the current session
-		MemoryBlock[ ] sessionMemoryBlocks;
+		/// List of all memory blocks allocated in the current session (mapped by src ptr)
+		MemoryBlock[ size_t ] sessionMemoryBlocks;
 
 		/// Memory blocks allocated by the sessions in the stack
-		MemoryBlock[ ][ ] sessionMemoryBlockStack;
+		MemoryBlock[ size_t ][ ] sessionMemoryBlockStack;
 
 		/// This is to prevent passing scopes aroung all the time
 		DataScope currentScope;

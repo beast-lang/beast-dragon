@@ -11,6 +11,7 @@ struct Instruction {
 			noOp, /// Does basically nothing
 
 			allocLocal, /// (bpOffset : dd, bytes : dd) Allocates memory for a local variable
+			skipAlloc, /// (bpOffset: dd) Do not allocate memory for local variable (but increase stack offset)
 			call, /// (function : func) Function call (arguments are passed on the stack in order [RETURN VALUE] [OP3] [OP2] [OP1] [CONTEXT PTR - always (even if null)])
 			ret, /// () returns from a function call
 
@@ -33,6 +34,19 @@ struct Instruction {
 	public:
 		I i;
 		InstructionOperand[ 3 ] op;
+
+	public:
+		ref InstructionOperand op1( ) {
+			return op[ 0 ];
+		}
+
+		ref InstructionOperand op2( ) {
+			return op[ 1 ];
+		}
+
+		ref InstructionOperand op3( ) {
+			return op[ 2 ];
+		}
 
 	public:
 		string identificationString( ) {
@@ -106,9 +120,9 @@ struct InstructionOperand {
 				return "%#x".format( heapLocation.val );
 
 			case Type.stackRef: {
-				int bpo = cast( int ) basePointerOffset;
-				return bpo >= 0 ? "BP+%s".format( bpo ) : "BP-%s".format( -bpo );
-			}
+					int bpo = cast( int ) basePointerOffset;
+					return bpo >= 0 ? "BP+%s".format( bpo ) : "BP-%s".format( -bpo );
+				}
 
 			case Type.directData:
 				return "%s".format( directData );

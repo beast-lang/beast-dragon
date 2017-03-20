@@ -2,6 +2,7 @@ module beast.backend.ctime.codebuilder;
 
 import beast.backend.toolkit;
 import beast.code.data.scope_.local;
+import beast.backend.interpreter.interpreter;
 
 /// "CodeBuilder" that executes data at compile time
 /// Because of its result caching, always use each instance of this codebuilder in one task context only!
@@ -42,20 +43,58 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		}
 
 	public:
-		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
-			static import beast.backend.ctime.primitiveop;
+		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			// We execute the runtime function using the interpreter
 
-			debug result_ = MemoryPtr( );
-
-			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false );
+			MemoryPtr result;
+			if ( function_.returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, true );
 				build_localVariableDefinition( resultVar );
+
+				result = resultVar.memoryPtr;
 			}
 
 			auto _s = scoped!LocalDataScope( );
 			auto _sgd = _s.scopeGuard;
 			pushScope( );
 
+			MemoryPtr ctx;
+			if( parentInstance ) {
+				parentInstance.buildCode( this );
+				ctx = result_;
+			}
+
+			MemoryPtr[] args;
+			foreach( i, param; function_.parameters ) {
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, true );
+				build_localVariableDefinition( argVar );
+				build_copyCtor( argVar, arguments[ i ] );
+
+				args ~= argVar.memoryPtr;
+			}
+
+			Interpreter.executeFunction( function_, result, ctx, args );
+
+			popScope( );
+			_s.finish( );
+
+			result_ = result;
+		}
+
+		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			static import beast.backend.ctime.primitiveop;
+
+			debug result_ = MemoryPtr( );
+
+			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, true );
+				build_localVariableDefinition( resultVar );
+			}
+
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard;
+			pushScope( );
+			
 			mixin( ( ) { //
 				import std.array : appender;
 

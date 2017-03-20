@@ -7,8 +7,8 @@ import beast.code.data.var.local;
 final class DataEntity_TmpLocalVariable : DataEntity_LocalVariable {
 
 	public:
-		this( Symbol_Type dataType, bool isCtime ) {
-			super( dataType, isCtime );
+		this( Symbol_Type dataType, bool isCtime, string memBlockId = null ) {
+			super( dataType, isCtime, MemoryBlock.Flag.noFlag, memBlockId );
 		}
 
 	public:

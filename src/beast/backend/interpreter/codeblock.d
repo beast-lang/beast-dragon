@@ -6,11 +6,16 @@ import beast.backend.interpreter.instruction;
 final class InterpreterCodeBlock {
 
 	package:
-		this( Instruction[ ] instructions ) {
-			instructions_ = instructions;
+		this( Instruction[ ] bytecode ) {
+			bytecode_ = bytecode;
+		}
+
+	public:
+		Instruction[ ] bytecode( ) {
+			return bytecode_;
 		}
 
 	private:
-		Instruction[ ] instructions_;
+		Instruction[ ] bytecode_;
 
 }

@@ -102,6 +102,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
 				parentInstance.buildCode( this );
 			}
+			else {
+				addInstruction( I.skipAlloc, currentBPOffset_.iopLiteral );
+				currentBPOffset_++;
+			}
 
 			addInstruction( I.call, function_.iopFuncPtr );
 

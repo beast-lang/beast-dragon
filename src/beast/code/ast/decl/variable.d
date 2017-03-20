@@ -127,7 +127,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 			match.finish( ).buildCode( cb );
 		}
 
-		void buildConstructor( DataEntity entity, CodeBuilder cb ) {
+		pragma( inline ) void buildConstructor( DataEntity entity, CodeBuilder cb ) {
 			buildConstructor( entity, value ? value.buildSemanticTree_singleInfer( entity.dataType ) : null, cb );
 		}
 

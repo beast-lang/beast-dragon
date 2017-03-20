@@ -53,7 +53,7 @@ final class MemoryManager {
 				}
 			}
 
-			context.sessionMemoryBlocks ~= result;
+			context.sessionMemoryBlocks[ result.startPtr.val ] = result;
 			assert( findMemoryBlock( result.startPtr ) is result );
 			return result;
 		}
@@ -90,6 +90,7 @@ final class MemoryManager {
 					if ( block.startPtr == ptr ) {
 						benforce( block.session == context.session, E.protectedMemory, "Cannot free memory block owned by a different session" );
 						mmap.remove( i );
+						context.sessionMemoryBlocks.remove( block.startPtr.val );
 						return;
 
 					}
