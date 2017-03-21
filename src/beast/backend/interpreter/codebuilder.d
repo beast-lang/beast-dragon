@@ -39,7 +39,13 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			pushScope( );
 			body_( this );
-			popScope( );
+
+			if ( func.returnType is coreLibrary.type.Void ) {
+				addInstruction( I.noReturnError, func.iopFuncPtr );
+				popScope( false );
+			}
+			else
+				popScope( );
 
 			currentFunction = prevFunc;
 		}
@@ -203,8 +209,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			super.pushScope( );
 		}
 
-		override void popScope( ) {
-			super.popScope( );
+		override void popScope( bool generateDestructors = true ) {
+			super.popScope( generateDestructors );
 			currentBPOffset_ = bpOffsetStack_[ $ - 1 ];
 			bpOffsetStack_.length--;
 		}

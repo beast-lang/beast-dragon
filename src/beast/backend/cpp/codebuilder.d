@@ -73,7 +73,13 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			body_( this );
 
-			popScope( );
+			if ( func.returnType is coreLibrary.type.Void ) {
+				codeResult_.formattedWrite( "%sfprintf( stderr, \"ERROR: Function %s did not exit via return statement\\n\";\n", tabs, func.identificationString );
+				codeResult_.formattedWrite( "%sexit( -1 );\n", tabs, func.identificationString );
+				popScope( false );
+			}
+			else
+				popScope( );
 
 			codeResult_.formattedWrite( "%s}\n\n", tabs );
 
@@ -341,8 +347,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 			super.pushScope( );
 		}
 
-		override void popScope( ) {
-			super.popScope( );
+		override void popScope( bool generateDestructors = true ) {
+			super.popScope( generateDestructors );
 			tabOffset_--;
 		}
 

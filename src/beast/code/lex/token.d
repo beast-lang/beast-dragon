@@ -67,10 +67,13 @@ final class Token {
 
 			dollar, /// '$'
 
+			questionMark, /// '?'
+			exclamationMark, /// '!'
+
 			_length
 		}
 
-		static immutable string[ Operator._length ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "&", "|", "&&", "||", "$" ];
+		static immutable string[ Operator._length ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "&", "|", "&&", "||", "$", "?", "!" ];
 
 		enum Special {
 			_noSpecial,

@@ -124,51 +124,31 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 			protected:
 				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 					auto _sgd = scope_.scopeGuard;
+					MatchFlags result = MatchFlags.fullMatch;
 
 					if ( argumentIndex_ >= sym_.parameters.length ) {
-						errorStr = "parameter count mismatch";
+						errorStr = "too many arguments";
 						return MatchFlags.noMatch;
 					}
 
 					ExpandedFunctionParameter param = sym_.parameters[ argumentIndex_ ];
 
-					/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
-					if ( !entity ) {
-						with ( memoryManager.session ) {
-							entity = expression.buildSemanticTree_singleExpect( param.dataType );
-							dataType = entity.dataType;
-						}
-					}
+					if ( param.constValue )
+						result |= matchConstValue( expression, entity, dataType, param.dataType, param.constValue );
+					else
+						result |= matchStandardArgument( expression, entity, dataType, param.dataType );
 
-					if ( dataType !is param.dataType ) {
-						errorStr = "argument %s type mismatch (got %s, expected %s)".format( argumentIndex_, dataType.identificationString, param.dataType.identificationString );
+					if ( result == MatchFlags.noMatch )
 						return MatchFlags.noMatch;
-					}
-
-					if ( param.constValue ) {
-						// TODO: This will have to be solved better -- or not?
-						if ( !entity.isCtime ) {
-							errorStr = "argument %s not ctime, cannot compare".format( argumentIndex_ );
-							return MatchFlags.noMatch;
-						}
-
-						MemoryPtr entityData = entity.ctExec( );
-						if ( !entityData.dataEquals( param.constValue, dataType.instanceSize ) ) {
-							errorStr = "argument %s value mismatch".format( argumentIndex_ );
-							return MatchFlags.noMatch;
-						}
-
-					}
 
 					arguments_ ~= entity;
-					argumentIndex_++;
 
-					return MatchFlags.fullMatch;
+					return result;
 				}
 
 				override MatchFlags _finish( ) {
 					if ( argumentIndex_ != sym_.parameters.length ) {
-						errorStr = "parameter count mismatch";
+						errorStr = "not enough arguments";
 						return MatchFlags.noMatch;
 					}
 
@@ -182,7 +162,6 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 			private:
 				Symbol_RuntimeFunction sym_;
 				DataEntity[ ] arguments_;
-				size_t argumentIndex_;
 
 		}
 

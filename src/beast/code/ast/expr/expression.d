@@ -20,7 +20,7 @@ abstract class AST_Expression : AST_Statement {
 			auto _gd = codeLocationGuard( );
 			auto result = LowerLevelExpression.parse( );
 
-			if ( parseDeclarations && result.isP1Expression && currentToken == Token.Type.identifier )
+			if ( parseDeclarations && result.isUnaryExpression && currentToken == Token.Type.identifier )
 				return AST_VariableDeclarationExpression.parse( _gd, null, result );
 
 			return result;
@@ -28,7 +28,7 @@ abstract class AST_Expression : AST_Statement {
 
 	public:
 		/// Returns if the expression is P1 or lower
-		bool isP1Expression( ) {
+		bool isUnaryExpression( ) {
 			return false;
 		}
 

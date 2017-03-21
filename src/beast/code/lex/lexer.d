@@ -12,6 +12,7 @@ pragma( inline ) {
 
 	/// Current token of the current context lexer
 	Token currentToken( ) {
+		assert( lexer.currentToken );
 		return lexer.currentToken;
 	}
 
@@ -142,6 +143,16 @@ final class Lexer {
 						case '@': {
 								pos_++;
 								return new Token( Token.Special.at );
+							}
+
+						case '?': {
+								pos_++;
+								return new Token( Token.Operator.questionMark );
+							}
+
+						case '!': {
+								pos_++;
+								return new Token( Token.Operator.exclamationMark );
 							}
 
 						case '(': {

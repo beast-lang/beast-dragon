@@ -23,7 +23,7 @@ abstract class AST_AtomicExpression : AST_Expression {
 		}
 
 	public:
-		final override bool isP1Expression( ) {
+		final override bool isUnaryExpression( ) {
 			return true;
 		}
 

@@ -49,7 +49,7 @@ final class AST_P1Expression : AST_Expression {
 		AST_P1ExpressionItem[ ] items;
 
 	public:
-		final override bool isP1Expression( ) {
+		final override bool isUnaryExpression( ) {
 			return true;
 		}
 

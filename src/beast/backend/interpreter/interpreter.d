@@ -83,7 +83,7 @@ final class Interpreter {
 
 			Args args;
 
-			foreach ( i; aliasSeqOf!( iota( 0, args.length ) ) )
+			foreach ( i; aliasSeqOf!( iota( args.length ) ) )
 				args[ i ] = convertOperand!( Args[ i ] )( instr.op[ i ] );
 
 			ifunc( this, args );
@@ -99,6 +99,13 @@ final class Interpreter {
 			case InstructionOperand.Type.stackRef:
 				assert( currentFrame.basePointer + op.basePointerOffset < stack.length, "Variable not on stack" );
 				return stack[ currentFrame.basePointer + op.basePointerOffset ];
+
+			case InstructionOperand.Type.refHeapRef:
+				return op.heapLocation.readMemoryPtr;
+
+			case InstructionOperand.Type.refStackRef:
+				assert( currentFrame.basePointer + op.basePointerOffset < stack.length, "Variable not on stack" );
+				return stack[ currentFrame.basePointer + op.basePointerOffset ].readMemoryPtr;
 
 			default:
 				assert( 0, "Invalid operand type '%s', expected memoryPtr".format( op.type ) );

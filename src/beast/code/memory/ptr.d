@@ -4,6 +4,7 @@ import beast.code.toolkit;
 import beast.code.memory.block;
 import beast.code.memory.memorymgr;
 import beast.code.data.type.type;
+import beast.code.hwenv.hwenv;
 
 enum nullMemoryPtr = MemoryPtr( 0 );
 
@@ -54,6 +55,12 @@ struct MemoryPtr {
 			Symbol_Type type = typeUIDKeeper[ readPrimitive!size_t ];
 			benforce( type !is null, E.invalidPointer, "Variable does not point to a valid type" );
 			return type;
+		}
+
+		MemoryPtr readMemoryPtr( ) const {
+			MemoryPtr result;
+			result.val = *( cast( size_t* ) read( hardwareEnvironment.pointerSize ) );
+			return result;
 		}
 
 	public:

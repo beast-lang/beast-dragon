@@ -3,6 +3,8 @@ module beast.corelib.type.types;
 import beast.corelib.type.toolkit;
 import beast.corelib.type.type;
 import beast.util.decorator;
+import beast.corelib.type.reference;
+import beast.code.data.function_.bstpstcnonrt;
 
 struct CoreLibrary_Types {
 	/// ( instanceSize, defaultValue )
@@ -19,6 +21,8 @@ struct CoreLibrary_Types {
 		@bootstrapType( 4 )
 		Symbol_BootstrapStaticClass Int;
 
+		Symbol_BootstrapStaticNonRuntimeFunction Reference;
+
 		Symbol_Type_Type Type;
 
 	public:
@@ -32,23 +36,33 @@ struct CoreLibrary_Types {
 				foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
 					foreach ( attr; __traits( getAttributes, __traits( getMember, this, memName ) ) ) {
 						static if ( is( typeof( attr ) == bootstrapType ) ) {
-							sink(  //
-									__traits( getMember, this, memName ) = new Symbol_BootstrapStaticClass(  //
+							auto mem = new Symbol_BootstrapStaticClass(  //
 									parent, //
 									memName.chomp( "_" ).Identifier, //
 									attr[ 0 ] //
-									 ) );
+							 );
 
+							__traits( getMember, this, memName ) = mem;
+
+							sink( mem );
 							break;
 						}
 					}
 				}
 			}
+
+			//sink( Reference = new Symbol_Template_Reference( parent ) );
+			sink( Reference = symbol_Template_Reference( parent ) );
 		}
 
 		/// Second phase of initialization
 		void initialize2( ) {
 			import beast.corelib.type.bool_ : initialize_Bool;
+
+			Void.initialize( null );
+			Int.initialize( null );
+			Type.initialize( );
+
 			initialize_Bool( this );
 		}
 

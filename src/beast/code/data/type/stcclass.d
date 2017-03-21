@@ -7,7 +7,7 @@ abstract class Symbol_StaticClass : Symbol_Class {
 
 	public:
 		this( DataEntity parent ) {
-			staticData_ = new Data;
+			staticData_ = new Data( this );
 			parent_ = parent;
 		}
 
@@ -26,12 +26,22 @@ abstract class Symbol_StaticClass : Symbol_Class {
 		DataEntity parent_;
 
 	private:
-		final class Data : super.Data {
+		final static class Data : super.Data {
+
+			public:
+				this( Symbol_StaticClass sym ) {
+					super( sym );
+
+					sym_ = sym;
+				}
 
 			public:
 				override DataEntity parent( ) {
-					return parent_;
+					return sym_.parent_;
 				}
+
+			private:
+				Symbol_StaticClass sym_;
 
 		}
 

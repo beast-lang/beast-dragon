@@ -20,6 +20,7 @@ struct CoreLibrary_Enums {
 			Symbol_BoostrapConstant binOr, binOrR;
 			Symbol_BoostrapConstant binAnd, binAndR;
 			Symbol_BoostrapConstant funcCall;
+			Symbol_BoostrapConstant suffRef, suffNot;
 		}
 
 		@standardEnumItems( "Operator" )

@@ -13,10 +13,10 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		alias CodeFunction = void delegate( CodeBuilder cb, DataEntity_LocalVariable[ ] parameters );
 
 	public:
-		this( string identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
+		this( Identifier identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
 			staticData_ = new StaticData( this );
 
-			identifier_ = Identifier( identifier );
+			identifier_ = identifier;
 			parent_ = parent;
 			returnType_ = returnType;
 			parameters_ = parameters;

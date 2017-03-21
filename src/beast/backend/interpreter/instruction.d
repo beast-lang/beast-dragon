@@ -9,6 +9,7 @@ struct Instruction {
 	public:
 		enum I {
 			noOp, /// Does basically nothing
+			noReturnError, /// Throws an error - function did not exit using return statement
 
 			allocLocal, /// (bpOffset : dd, bytes : dd) Allocates memory for a local variable
 			skipAlloc, /// (bpOffset: dd) Do not allocate memory for local variable (but increase stack offset)
@@ -82,11 +83,17 @@ struct InstructionOperand {
 	public:
 		enum Type {
 			unused,
-			heapRef,
-			stackRef,
+
+			heapRef, /// Direct pointer to a memory
+			stackRef, /// Offset from base pointer
+
+			refHeapRef, /// Reference in a static memory
+			refStackRef, /// Reference on a stack
+
 			directData,
 			functionPtr,
 			jumpTarget,
+
 			placeholder, /// This should not appear in the resulting code
 		}
 
@@ -122,6 +129,14 @@ struct InstructionOperand {
 			case Type.stackRef: {
 					int bpo = cast( int ) basePointerOffset;
 					return bpo >= 0 ? "BP+%s".format( bpo ) : "BP-%s".format( -bpo );
+				}
+
+			case Type.refHeapRef:
+				return "#%#x".format( heapLocation.val );
+
+			case Type.refStackRef: {
+					int bpo = cast( int ) basePointerOffset;
+					return bpo >= 0 ? "#BP+%s".format( bpo ) : "#BP-%s".format( -bpo );
 				}
 
 			case Type.directData:

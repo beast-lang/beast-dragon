@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 import beast.util.uidgen;
 import beast.toolkit;
 import beast.code.data.codenamespace.namespace;
+import beast.code.data.codenamespace.bootstrap;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -17,6 +18,18 @@ abstract class Symbol_Type : Symbol {
 
 			with ( memoryManager.session )
 				ctimeValue_ = memoryManager.alloc( size_t.sizeof, MemoryBlock.Flag.doNotGCAtSessionEnd, "%s_typeid".format( identifier.str ) ).writePrimitive( typeUID_ );
+
+			baseNamespace_ = new BootstrapNamespace( this );
+		}
+
+		void initialize( ) {
+			baseNamespace_.initialize( [ // TODO:
+					/*new BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#operator", //
+				paramsBuilder().constArg( coreLibrary.enum_.operator.suffRef ).finish( () { return  } ) //
+				 )*/
+					 ] );
+
+			debug initialized_ = true;
 		}
 
 		/// Each type has uniquie UID in the project (differs each compiler run)
@@ -29,6 +42,7 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		final Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
+			debug assert( initialized_, "Class not initialized" );
 			/*import std.stdio;
 
 			writefln( "Resolve %s for %s ( entity %s of type %s )", id.str, identificationString, instance ? instance.identificationString : "#", instance ? instance.dataType.identificationString : "#" );*/
@@ -37,6 +51,9 @@ abstract class Symbol_Type : Symbol {
 
 			{
 				auto result = appender!( DataEntity[ ] );
+
+				// baseNamespace_ contains auto-generated members like operator T?, #instanceSize etc
+				result ~= baseNamespace_.resolveIdentifier( id, instance );
 
 				// Add direct members to the overloadset
 				result ~= namespace.resolveIdentifier( id, instance );
@@ -61,6 +78,9 @@ abstract class Symbol_Type : Symbol {
 	public:
 		override void buildDefinitionsCode( CodeBuilder cb ) {
 			cb.build_typeDefinition( this, ( cb ) {
+				foreach ( sym; baseNamespace_.members )
+					sym.buildDefinitionsCode( cb );
+
 				foreach ( sym; namespace.members )
 					sym.buildDefinitionsCode( cb );
 			} );
@@ -77,14 +97,19 @@ abstract class Symbol_Type : Symbol {
 
 	private:
 		MemoryPtr ctimeValue_;
+		/// Namespace containing implicit/default types for a type (implicit operators, reflection functions etc)
+		BootstrapNamespace baseNamespace_;
 		size_t typeUID_;
+		debug bool initialized_;
 
 	protected:
-		abstract class Data : SymbolRelatedDataEntity {
+		abstract static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( ) {
-					super( this.outer );
+				this( Symbol_Type sym ) {
+					super( sym );
+
+					sym_ = sym;
 				}
 
 			public:
@@ -98,8 +123,11 @@ abstract class Symbol_Type : Symbol {
 
 			public:
 				final override void buildCode( CodeBuilder cb ) {
-					cb.build_memoryAccess( this.outer.ctimeValue_ );
+					cb.build_memoryAccess( sym_.ctimeValue_ );
 				}
+
+			private:
+				Symbol_Type sym_;
 
 		}
 

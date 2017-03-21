@@ -1,4 +1,4 @@
-module beast.backend.interpreter.op.basic;
+module beast.backend.interpreter.op.control;
 
 import beast.backend.interpreter.op.toolkit;
 
@@ -12,6 +12,10 @@ pragma( inline ):
 
 	void op_noOp( Interpreter ir ) {
 		// Do nothing
+	}
+
+	void op_noReturnError( Interpreter ir, Symbol_RuntimeFunction func ) {
+		berror( E.noReturnExit, "Function %s did not exit via return statement".format( func.identificationString ) );
 	}
 
 	// ALLOCATION/DEALLOCATION
@@ -73,20 +77,4 @@ pragma( inline ):
 
 		if ( !condition.readPrimitive!bool )
 			ir.currentFrame.instructionPointer = cast( size_t ) jt;
-	}
-
-	// MEMORY OPERATIONS
-	void op_mov( Interpreter ir, MemoryPtr op1, MemoryPtr op2, size_t bytes ) {
-		op1.write( op2, bytes );
-
-		debug ( instructions )
-			writefln( "\t\t  %#x => %#x\t%s", op2.val, op1.val, op1.read( bytes ) );
-	}
-
-	void op_movConst( Interpreter ir, MemoryPtr op1, size_t data, size_t bytes ) {
-		version ( BigEndian ) static assert( 0 );
-		op1.write( &data, bytes );
-
-		debug ( instructions )
-			writefln( "\t\t  => %#x\t%s", op1.val, cast( const( ubyte )[ ] )( cast( void* )&data )[ 0 .. bytes ] );
 	}

@@ -20,18 +20,19 @@ final class ExpandedFunctionParameter : Identifiable {
 			// Declaration -> standard parameter
 			if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
 				// Auto expressions cannot be expanded
-				if ( decl.dataType.isAutoExpression )
-					assert( 0, "Cannot expand auto parameter" );
+				assert( !decl.dataType.isAutoExpression, "Cannot expand auto parameter" );
 
 				result.identifier = decl.identifier.identifier;
 				result.dataType = decl.dataType.ctExec( coreLibrary.type.Type ).readType( );
+
+				// TODO: add to scope (to make param definitions like ( Bool x, x.#type y ) work)
 			}
 			// Constant value parameter
 			else {
-				DataEntity constVal = expr.buildSemanticTree_single();
+				DataEntity constVal = expr.buildSemanticTree_single( );
 
 				result.dataType = constVal.dataType;
-				result.constValue = constVal.ctExec();
+				result.constValue = constVal.ctExec( );
 			}
 
 			assert( result.dataType );
@@ -56,7 +57,7 @@ final class ExpandedFunctionParameter : Identifiable {
 						auto _s = scoped!RootDataScope( null );
 						auto _sgd = _s.scopeGuard;
 
-						param.constValue = arg.ctExec();
+						param.constValue = arg.ctExec( );
 
 						_s.finish( );
 						assert( _s.itemCount <= 1 );
@@ -119,7 +120,7 @@ final class ExpandedFunctionParameter : Identifiable {
 		void execute_outerHashObtaining( ) {
 			outerHashWIP_ = dataType.outerHash + Hash( index );
 
-			if( isConstValue )
+			if ( isConstValue )
 				outerHashWIP_ += Hash( constValue.read( dataType.instanceSize ) );
 		}
 

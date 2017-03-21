@@ -1,10 +1,10 @@
 module beast.code.ast.expr.logic;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.p1;
+import beast.code.ast.expr.unary;
 
 final class AST_LogicExpression : AST_Expression {
-	alias LowerLevelExpression = AST_P1Expression;
+	alias LowerLevelExpression = AST_UnaryExpression;
 
 	public:
 		static bool canParse( ) {

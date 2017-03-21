@@ -34,10 +34,9 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 
 	public:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance ) {
-			//import std.stdio;
 			if ( instance ) {
-				Symbol_Type type = instance.ctExec_asType();
-				//writefln("Subtest for %s",type.identificationString);
+				Symbol_Type type = instance.ctExec_asType( );
+
 				if ( auto result = type.resolveIdentifier( id, null ) )
 					return result;
 			}

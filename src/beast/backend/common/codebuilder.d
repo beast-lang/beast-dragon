@@ -81,8 +81,9 @@ abstract class CodeBuilder : Identifiable {
 
 		/// Destroys the last scope
 		/// CodeBuilder scopes are used for destructor generating
-		void popScope( ) {
-			generateScopeExit( topScope_ );
+		void popScope( bool generateDestructors = true ) {
+			if ( generateDestructors )
+				generateScopeExit( topScope_ );
 
 			assert( scopeStack_.length );
 

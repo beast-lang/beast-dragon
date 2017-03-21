@@ -39,7 +39,7 @@ abstract class CallableMatch {
 	public:
 		/// Tries to match next argument with the given function.
 		/// If the expression could have been processed into data entity without inferredType, passes the entity and dataType as arguments (use these instead of building the semantic tree again).
-		final CallableMatch matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+		pragma( inline ) final CallableMatch matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 			// No need for further matching
 			if ( matchLevel_ == MatchFlags.noMatch )
 				return this;
@@ -48,11 +48,13 @@ abstract class CallableMatch {
 			return this;
 		}
 
-		final CallableMatch matchNextArgument( DataEntity entity ) {
-			return matchNextArgument( null, entity, entity.dataType );
+		pragma( inline ) final CallableMatch matchNextArgument( DataEntity entity ) {
+			auto result = matchNextArgument( null, entity, entity.dataType );
+			argumentIndex_++;
+			return result;
 		}
 
-		final void finish( ) {
+		pragma( inline ) final void finish( ) {
 			debug finished_ = true;
 
 			// No need for further matching
@@ -63,7 +65,7 @@ abstract class CallableMatch {
 		}
 
 		/// Constructs a data entity that represents the function call expression
-		final DataEntity toDataEntity( ) {
+		pragma( inline ) final DataEntity toDataEntity( ) {
 			debug assert( finished_ );
 			assert( matchLevel_ != MatchFlags.noMatch );
 
@@ -90,6 +92,9 @@ abstract class CallableMatch {
 		final void errorStr( string set ) {
 			errorStr_ = set;
 		}
+
+	protected:
+		size_t argumentIndex_;
 
 	private:
 		MatchFlags matchLevel_ = MatchFlags.fullMatch;
@@ -122,6 +127,73 @@ abstract class SeriousCallableMatch : CallableMatch {
 		override MatchFlags _finish( ) {
 			scope__.finish( );
 			return MatchFlags.fullMatch;
+		}
+
+	public:
+		final MatchFlags matchStandardArgument( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType ) {
+			MatchFlags result = MatchFlags.fullMatch;
+
+			/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
+			if ( !entity ) {
+				with ( memoryManager.session ) {
+					entity = expression.buildSemanticTree_singleInfer( expectedType, false );
+
+					if ( !entity ) {
+						errorStr = "cannot process argument %s (expected type %s)".format( argumentIndex_, expectedType );
+						return MatchFlags.noMatch;
+					}
+
+					dataType = entity.dataType;
+					result |= MatchFlags.inferrationsNeeded;
+				}
+			}
+
+			if ( dataType !is expectedType ) {
+				entity = entity.tryCast( expectedType );
+
+				if ( !entity ) {
+					errorStr = "cannot cast parameter %s of type %s to %s".format( argumentIndex_, dataType.identificationString, expectedType.identificationString );
+					return MatchFlags.noMatch;
+				}
+
+				dataType = expectedType;
+				result |= MatchFlags.implicitCastsNeeded;
+			}
+
+			return result;
+		}
+
+		final MatchFlags matchCtimeArgument( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType, ref MemoryPtr value ) {
+			MatchFlags result = MatchFlags.fullMatch;
+
+			result |= matchStandardArgument( expression, entity, dataType, expectedType );
+			if ( result == MatchFlags.noMatch )
+				return MatchFlags.noMatch;
+
+			if ( !entity.isCtime ) {
+				errorStr = "argument %s not ctime, cannot compare".format( argumentIndex_ );
+				return MatchFlags.noMatch;
+			}
+
+			value = entity.ctExec( );
+
+			return result;
+		}
+
+		final MatchFlags matchConstValue( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType, MemoryPtr requiredValue ) {
+			MatchFlags result = MatchFlags.fullMatch;
+			MemoryPtr value;
+
+			result |= matchCtimeArgument( expression, entity, dataType, expectedType, value );
+			if ( result == MatchFlags.noMatch )
+				return MatchFlags.noMatch;
+
+			if ( !value.dataEquals( requiredValue, expectedType.instanceSize ) ) {
+				errorStr = "argument %s value mismatch".format( argumentIndex_ );
+				return MatchFlags.noMatch;
+			}
+
+			return result;
 		}
 
 	private:

@@ -8,7 +8,7 @@ abstract class Symbol_Enum : Symbol_Type {
 
 	public:
 		this( DataEntity parent, Symbol_StaticClass baseClass ) {
-			staticData_ = new Data;
+			staticData_ = new Data( this );
 			parent_ = parent;
 			baseClass_ = baseClass;
 		}
@@ -30,7 +30,7 @@ abstract class Symbol_Enum : Symbol_Type {
 
 	protected:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance ) {
-			if( instance )
+			if ( instance )
 				return baseClass_.resolveIdentifier( id, new DataEntity_ReinterpretCast( instance, baseClass_ ) );
 
 			return baseClass_.resolveIdentifier( id, null );
@@ -44,12 +44,22 @@ abstract class Symbol_Enum : Symbol_Type {
 		DataEntity parent_;
 
 	private:
-		final class Data : super.Data {
+		final static class Data : super.Data {
+
+			public:
+				this( Symbol_Enum sym ) {
+					super( sym );
+
+					sym_ = sym;
+				}
 
 			public:
 				override DataEntity parent( ) {
-					return parent_;
+					return sym_.parent_;
 				}
+
+			private:
+				Symbol_Enum sym_;
 
 		}
 

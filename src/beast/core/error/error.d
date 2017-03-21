@@ -53,6 +53,7 @@ enum E {
 
 	// CTIME:
 	valueNotCtime, /// Value is not known at compile time
+	noReturnExit, /// Function did not exit via return statement
 
 	// OVERLOADSETS:
 	noMatchingOverload, /// No overload matches given parameters

@@ -31,7 +31,7 @@ final class AST_AutoExpression : AST_Expression {
 			return this;
 		}
 
-		override bool isP1Expression( ) {
+		override bool isUnaryExpression( ) {
 			return true;
 		}
 

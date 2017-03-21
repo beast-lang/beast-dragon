@@ -41,7 +41,7 @@ abstract class AST_Declaration : AST_Statement {
 			// And now we decide, if it is a function or not
 
 			// ";" || "=" => variable
-			if ( currentToken == Token.Special.semicolon || currentToken == Token.Operator.assign )
+			if ( currentToken == Token.Special.semicolon || currentToken == Token.Operator.assign || currentToken == Token.Operator.colonAssign )
 				return AST_VariableDeclaration.parse( _gd, decorationList, type, identifier );
 
 			// "(" => function

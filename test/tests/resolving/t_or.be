@@ -21,3 +21,7 @@ Void main() {
 Void err1() {
 	true || poo( false ); //! error: cannotResolve
 }
+
+Void err2() {
+	Bool.#operator( :binOr, false ); //! error: noMatchingOverload
+}

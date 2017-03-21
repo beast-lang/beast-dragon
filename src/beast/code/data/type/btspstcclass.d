@@ -20,6 +20,7 @@ final class Symbol_BootstrapStaticClass : Symbol_StaticClass {
 		}
 
 		void initialize( Symbol[ ] members ) {
+			super.initialize( );
 			namespace_.initialize( members );
 		}
 

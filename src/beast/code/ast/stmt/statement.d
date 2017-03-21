@@ -32,11 +32,12 @@ abstract class AST_Statement : AST_Node {
 
 				// expr identifier => declaration
 				if ( currentToken == Token.Type.identifier ) {
-					benforce( expr.isP1Expression, E.syntaxError, "Syntax error - either unexpected identifier or type expression uses forbidden operators" );
+					benforce( expr.isUnaryExpression, E.syntaxError, "Syntax error - either unexpected identifier or type expression uses forbidden operators", ( msg ) { msg.codeLocation = currentToken.codeLocation; } );
+
 					return AST_Declaration.parse( _gd, decorationList, expr );
 				}
 
-				benforce( decorationList is null, E.invalidDecoration, "Decorating expressions is not allowed" );
+				benforce( decorationList is null, E.invalidDecoration, "Decorating expressions is not allowed", ( msg ) { msg.codeLocation = currentToken.codeLocation; } );
 
 				// Otherwise just expression statement
 				currentToken.expectAndNext( Token.Special.semicolon, "semicolon after expression" );
