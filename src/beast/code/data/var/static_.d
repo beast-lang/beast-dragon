@@ -66,6 +66,8 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
+					auto _gd = ErrorGuard( this );
+					
 					cb.build_memoryAccess( sym_.memoryPtr );
 				}
 

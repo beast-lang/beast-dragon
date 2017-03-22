@@ -8,40 +8,29 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 	// Implicit constructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp.Bool, tp.Void, //
 			ExpandedFunctionParameter.bootstrap( ), //
-			BackendPrimitiveOperation.boolCtor //
-			 );
+			BackendPrimitiveOperation.zeroInitCtor );
 
-	// Copy constructor
-	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp.Bool, tp.Void, //
-			ExpandedFunctionParameter.bootstrap( enm.xxctor.copy, tp.Bool ), //
-			BackendPrimitiveOperation.boolCopyCtor //
-			 );
-
-	// Assign constructor
+	// Copy/assign constructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp.Bool, tp.Void, //
 			ExpandedFunctionParameter.bootstrap( enm.xxctor.opAssign, tp.Bool ), //
-			BackendPrimitiveOperation.boolCopyCtor //
-			 );
+			BackendPrimitiveOperation.primitiveCopyCtor );
 
 	// Destructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", tp.Bool, tp.Void, //
 			ExpandedFunctionParameter.bootstrap( ), //
-			BackendPrimitiveOperation.noopDtor //
-			 );
+			BackendPrimitiveOperation.noopDtor );
 
 	// Operator overloads
 
 	// ||
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binOr, tp.Bool ), //
-			BackendPrimitiveOperation.boolOr //
-			 );
+			BackendPrimitiveOperation.boolOr );
 
 	// &&
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binAnd, tp.Bool ), //
-			BackendPrimitiveOperation.boolAnd //
-			 );
+			BackendPrimitiveOperation.boolAnd );
 
 	tp.Bool.valueIdentificationStringFunc = ( ptr ) { return ptr.readPrimitive!bool ? "true" : "false"; };
 	tp.Bool.initialize( sym );

@@ -31,6 +31,8 @@ final class SubstitutiveDataEntity : DataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
+			auto _gd = ErrorGuard( this );
+			
 			cb.build_memoryAccess( ptr_ );
 		}
 

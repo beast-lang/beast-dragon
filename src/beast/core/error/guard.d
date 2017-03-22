@@ -26,7 +26,10 @@ struct ErrorGuard {
 		}
 
 		this( T )( auto ref T t ) if ( __traits( hasMember, T, "codeLocation" ) ) {
-			this( ( err ) { err.codeLocation = t.codeLocation; } );
+			static if ( is( T == class ) || is( T == interface ) )
+				this( t ? ( err ) { err.codeLocation = t.codeLocation; } : ( err ) {  } );
+			else
+				this( ( err ) { err.codeLocation = t.codeLocation; } );
 		}
 
 		~this( ) {

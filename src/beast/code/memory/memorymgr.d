@@ -30,8 +30,10 @@ final class MemoryManager {
 			MemoryBlock result;
 
 			synchronized ( blockListMutex.writer ) {
-				debug assert( context.session in activeSessions, "Invalid session" );
-				debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
+				debug synchronized ( this ) {
+					debug assert( context.session in activeSessions, "Invalid session" );
+					debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
+				}
 
 				// First, we try inserting the new block between currently existing memory blocks
 				foreach ( i, block; mmap ) {
@@ -83,8 +85,10 @@ final class MemoryManager {
 			checkNullptr( ptr );
 
 			synchronized ( blockListMutex.writer ) {
-				debug assert( context.session in activeSessions, "Invalid session" );
-				debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
+				debug synchronized ( this ) {
+					debug assert( context.session in activeSessions, "Invalid session" );
+					debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
+				}
 
 				foreach ( i, block; mmap ) {
 					if ( block.startPtr == ptr ) {
@@ -108,7 +112,7 @@ final class MemoryManager {
 
 	public:
 		/// Tries to write data at a given pointer. Might fail.
-		void write( MemoryPtr ptr, const(ubyte)[ ] data ) {
+		void write( MemoryPtr ptr, const( ubyte )[ ] data ) {
 			import core.stdc.string : memcpy;
 
 			debug assert( !finished_ );
@@ -120,9 +124,11 @@ final class MemoryManager {
 			benforce( block.endPtr <= ptr + data.length, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
 			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot write to runtime memory" );
 
-			debug assert( block.session in activeSessions );
-			assert( context.session == block.session );
-			debug assert( context.jobId == activeSessions[ block.session ] );
+			debug synchronized ( this ) {
+				debug assert( block.session in activeSessions );
+				assert( context.session == block.session );
+				debug assert( context.jobId == activeSessions[ block.session ] );
+			}
 
 			// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
@@ -134,8 +140,10 @@ final class MemoryManager {
 
 			// Either the session the block was created in is no longer active (-> the block cannot be changed anymore), or the session belongs to the same task context as current session (meaning it is the same session or a derived one)
 			// Other cases should not happen
-			debug assert( block.session !in activeSessions || activeSessions[ block.session ] == context.jobId );
-			assert( !( block.flags & MemoryBlock.Flag.local ) || block.session == context.session, "Local memory block is accessed from a different session" );
+			debug synchronized ( this ) {
+				debug assert( block.session !in activeSessions || activeSessions[ block.session ] == context.jobId );
+				assert( !( block.flags & MemoryBlock.Flag.local ) || block.session == context.session, "Local memory block is accessed from a different session" );
+			}
 
 			benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
 			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot read from runtime memory" );
@@ -170,7 +178,7 @@ final class MemoryManager {
 			context.sessionStack ~= context.session;
 			context.session = session;
 
-			debug synchronized ( memoryManager ) {
+			debug synchronized ( this ) {
 				activeSessions[ session ] = context.jobId;
 			}
 		}
@@ -183,7 +191,7 @@ final class MemoryManager {
 
 			context.sessionMemoryBlocks = null;
 
-			debug synchronized ( memoryManager ) {
+			debug synchronized ( this ) {
 				debug assert( context.session in activeSessions, "Invalid session" );
 				debug assert( context.jobId == activeSessions[ context.session ], "Session does not match with the jobId" );
 

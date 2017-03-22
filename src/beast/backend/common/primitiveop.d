@@ -4,16 +4,17 @@ module beast.backend.common.primitiveop;
 enum BackendPrimitiveOperation {
 
 	// General
+	zeroInitCtor, /// Initializes to zeros
+	primitiveCopyCtor, /// Performs a bit copy
 	noopDtor, /// Destructor that does nothing (has separate primitive op for debugging purposes)
 
 	// BOOL ops
-	boolCtor, /// initalizes to false
-	boolCopyCtor,
 	boolOr,
 	boolAnd,
 
 	// INT ops
-	intCtor, /// initializes to 0
-	intCopyCtor,
+
+	// REREFERENCE/POINTER ops
+	refRefCtor, /// Initializes to reference of value
 
 }

@@ -5,6 +5,7 @@ import beast.corelib.type.type;
 import beast.util.decorator;
 import beast.corelib.type.reference;
 import beast.code.data.function_.bstpstcnonrt;
+import beast.corelib.type.int_;
 
 struct CoreLibrary_Types {
 	/// ( instanceSize, defaultValue )
@@ -60,11 +61,9 @@ struct CoreLibrary_Types {
 			import beast.corelib.type.bool_ : initialize_Bool;
 
 			Void.initialize( null );
-
-			Int.valueIdentificationStringFunc = ( ptr ) { return ptr.readPrimitive!int.to!string; };
-			Int.initialize( null );
 			Type.initialize( );
 
+			initialize_Int( this );
 			initialize_Bool( this );
 		}
 

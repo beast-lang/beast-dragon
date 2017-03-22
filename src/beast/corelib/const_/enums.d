@@ -31,7 +31,6 @@ struct CoreLibrary_Enums {
 		Symbol_BootstrapEnum XXCtor;
 
 		struct XXCtorItems {
-			Symbol_BoostrapConstant copy; /// Copy constructor: #ctor( #Ctor.copy, other )
 			Symbol_BoostrapConstant opAssign; /// Assign constructor: #ctor( #Ctor.opAssign, val ) -> Var x = y
 			Symbol_BoostrapConstant opRefAssign; /// Ref assign constructor: #ctor( #Ctor.opRefAssign, val ) -> Var x := y
 		}

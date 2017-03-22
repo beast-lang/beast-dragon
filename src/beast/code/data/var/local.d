@@ -58,6 +58,8 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
+			auto _gd = ErrorGuard( this );
+			
 			cb.build_memoryAccess( memoryPtr );
 		}
 

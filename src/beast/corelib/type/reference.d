@@ -11,6 +11,7 @@ import beast.code.data.type.type;
 import beast.code.hwenv.hwenv;
 import beast.code.memory.ptr;
 import beast.corelib.type.toolkit;
+import beast.code.data.function_.primmemrt;
 import core.sync.rwmutex;
 
 final class Symbol_Type_Reference : Symbol_Class {
@@ -28,9 +29,34 @@ final class Symbol_Type_Reference : Symbol_Class {
 			staticData_ = new Data( this );
 
 			namespace_ = new BootstrapNamespace( this );
-			namespace_.initialize( [ //
-				
-			] );
+
+			// Initialize members
+			{
+				Symbol[ ] mem;
+				auto tp = &coreLibrary.type;
+
+				// Implicit ctor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
+						ExpandedFunctionParameter.bootstrap( ), //
+						BackendPrimitiveOperation.zeroInitCtor );
+
+				// Copy/assign ctor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
+						ExpandedFunctionParameter.bootstrap( enm.xxctor.opAssign, this ), //
+						BackendPrimitiveOperation.primitiveCopyCtor );
+
+				// Ref ctor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
+						ExpandedFunctionParameter.bootstrap( enm.xxctor.opRefAssign, baseType ), //
+						BackendPrimitiveOperation.refRefCtor );
+
+				// Dtor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, tp.Void, //
+						ExpandedFunctionParameter.bootstrap(), //
+						BackendPrimitiveOperation.noopDtor );
+
+				namespace_.initialize( mem );
+			}
 		}
 
 	public:

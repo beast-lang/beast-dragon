@@ -18,6 +18,8 @@ struct Instruction {
 
 			mov, /// (target : ptr, source : ptr, bytes : dd) Copies memory from one place to another
 			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
+			zero, /// (target: ptr, bytes: dd) Zeroes given memory
+			stAddr, /// (target: ptr, source: ptr) Stores address of source into the target
 
 			jmpTrue, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is true
 			jmpFalse, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is false

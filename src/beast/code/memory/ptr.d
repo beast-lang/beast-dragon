@@ -59,7 +59,7 @@ struct MemoryPtr {
 
 		MemoryPtr readMemoryPtr( ) const {
 			MemoryPtr result;
-			result.val = *( cast( size_t* ) read( hardwareEnvironment.pointerSize ) );
+			result.val = *( cast( size_t* ) read( hardwareEnvironment.effectivePointerSize ) );
 			return result;
 		}
 

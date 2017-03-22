@@ -40,15 +40,20 @@ int main( string[ ] args ) {
 	foreach ( location; testsDir.dirEntries( "t_*", SpanMode.depth ) ) {
 		const string loc = location.asNormalizedPath.to!string;
 		const string id = location.asRelativePath( testsDir ).to!string.pathSplitter.map!( x => x.chompPrefix( "t_" ).stripExtension ).joiner( "." ).to!string;
-		tests ~= new Test( loc, id ~ "_singleThread", 1 );
-		tests ~= new Test( loc, id ~ "_twoThreads", 2 );
+
+		version ( Windows ) {
+		}
+		else {
+			tests ~= new Test( loc, id ~ "_singleThread", 1 );
+			tests ~= new Test( loc, id ~ "_twoThreads", 2 );
+		}
 		tests ~= new Test( loc, id, 0 );
 	}
 
 	activeTests = tests;
 
 	// Parallel version bugs a lot on Windows
-	version( Windows )
+	version ( Windows )
 		auto it = tests;
 	else
 		auto it = tests.parallel;
@@ -74,7 +79,7 @@ int main( string[ ] args ) {
 	writeln( "[   ] PASSED: ", activeTests.length - failedTests.length );
 	writeln( "[ ", failedTests.length ? "#" : " ", " ] FAILED: ", failedTests.length );
 
-	thread_joinAll();
+	thread_joinAll( );
 
 	return failedTests.length ? 1 : 0;
 }
