@@ -42,7 +42,7 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		final Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
-			debug assert( initialized_, "Class not initialized" );
+			debug assert( initialized_, "Class '%s' not initialized".format( this.tryGetIdentificationString ) );
 			/*import std.stdio;
 
 			writefln( "Resolve %s for %s ( entity %s of type %s )", id.str, identificationString, instance ? instance.identificationString : "#", instance ? instance.dataType.identificationString : "#" );*/
@@ -75,6 +75,11 @@ abstract class Symbol_Type : Symbol {
 			return Overloadset( );
 		}
 
+		/// Returns string representing given value of given type (for example bool -> true/false)
+		string valueIdentificationString( MemoryPtr value ) {
+			return "%s( ... )".format( identification );
+		}
+
 	public:
 		override void buildDefinitionsCode( CodeBuilder cb ) {
 			cb.build_typeDefinition( this, ( cb ) {
@@ -95,12 +100,14 @@ abstract class Symbol_Type : Symbol {
 			return Overloadset( );
 		}
 
+protected:
+		debug bool initialized_;
+
 	private:
 		MemoryPtr ctimeValue_;
 		/// Namespace containing implicit/default types for a type (implicit operators, reflection functions etc)
 		BootstrapNamespace baseNamespace_;
 		size_t typeUID_;
-		debug bool initialized_;
 
 	protected:
 		abstract static class Data : SymbolRelatedDataEntity {

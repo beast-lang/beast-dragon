@@ -24,6 +24,8 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 		}
 
 		void initialize( Symbol[ ] members ) {
+			super.initialize( );
+
 			// TODO: pass to baseClass
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //

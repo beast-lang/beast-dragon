@@ -49,13 +49,14 @@ struct CoreLibrary_Enums {
 			foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
 				foreach ( attr; __traits( getAttributes, __traits( getMember, this, memName ) ) ) {
 					static if ( is( typeof( attr ) == enum_ ) ) {
-						sink(  //
-								__traits( getMember, this, memName ) = new Symbol_BootstrapEnum(  //
+						auto enum_ = new Symbol_BootstrapEnum(  //
 								parent, //
 								memName.chomp( "_" ).replaceAll( ctRegex!"XX", "#" ).Identifier, //
 								__traits( getMember, types, attr[ 0 ] ), //
-								 ) //
-						 );
+								 );
+						__traits( getMember, this, memName ) = enum_;
+
+						sink( enum_ );
 
 						break;
 					}

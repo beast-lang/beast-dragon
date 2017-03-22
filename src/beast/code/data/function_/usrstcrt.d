@@ -79,6 +79,10 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 					if ( ast_.returnType.isAutoExpression && !staticMemberMerger.isFinished )
 						returnTypeWIP_ = env.functionReturnType ? env.functionReturnType : coreLibrary.type.Void;
 
+					// returnTypeWIP_ is definitely accessible now (we called returnType before in this function or eventually set the value ourselves)
+					if ( returnTypeWIP_ is coreLibrary.type.Void )
+						cb.build_return( null );
+
 				} );
 
 				_s.finish( );

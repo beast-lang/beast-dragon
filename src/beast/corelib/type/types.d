@@ -60,6 +60,8 @@ struct CoreLibrary_Types {
 			import beast.corelib.type.bool_ : initialize_Bool;
 
 			Void.initialize( null );
+
+			Int.valueIdentificationStringFunc = ( ptr ) { return ptr.readPrimitive!int.to!string; };
 			Int.initialize( null );
 			Type.initialize( );
 

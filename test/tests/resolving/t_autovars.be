@@ -25,7 +25,7 @@ Void err1() {
 }
 
 Void err2() {
-	foo( :x ); //! error: unknownIdentifier
+	foo( :x ); //! error: noMatchingOverload
 }
 
 Void err3() {

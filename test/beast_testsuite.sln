@@ -1,14 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{63BBFE83-6363-4084-8324-CD61E54325B5}") = "beast_testsuite", ".dub/beast_testsuite.visualdproj", "{74D050F5-90BA-428F-88F6-EB1E776791B0}"
+Project("{4236F91A-519D-4E6B-8362-C890B16F80D5}") = "beast_testsuite", ".dub/beast_testsuite.visualdproj", "{AA03505E-F0A1-4367-BCC1-3F13EBA11E3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		debug|Win32 = debug|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{74D050F5-90BA-428F-88F6-EB1E776791B0}.debug|Win32.ActiveCfg = debug|Win32
-		{74D050F5-90BA-428F-88F6-EB1E776791B0}.debug|Win32.Build.0 = debug|Win32
+		{AA03505E-F0A1-4367-BCC1-3F13EBA11E3B}.debug|Win32.ActiveCfg = debug|Win32
+		{AA03505E-F0A1-4367-BCC1-3F13EBA11E3B}.debug|Win32.Build.0 = debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

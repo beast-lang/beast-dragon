@@ -33,14 +33,16 @@ int main( string[ ] args ) {
 	testsDir = "../test/tests".absolutePath;
 	"../test/log/".mkdirRecurse( );
 	"../test/output/".mkdirRecurse( );
+	"../test/tmp/".mkdirRecurse( );
 
 	Test[ ] tests, activeTests, failedTests;
 
 	foreach ( location; testsDir.dirEntries( "t_*", SpanMode.depth ) ) {
 		const string loc = location.asNormalizedPath.to!string;
 		const string id = location.asRelativePath( testsDir ).to!string.pathSplitter.map!( x => x.chompPrefix( "t_" ).stripExtension ).joiner( "." ).to!string;
-		tests ~= new Test( loc, id ~ "_singleThread", true );
-		tests ~= new Test( loc, id, false );
+		tests ~= new Test( loc, id ~ "_singleThread", 1 );
+		tests ~= new Test( loc, id ~ "_twoThreads", 2 );
+		tests ~= new Test( loc, id, 0 );
 	}
 
 	activeTests = tests;

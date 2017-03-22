@@ -58,11 +58,11 @@ abstract class DataEntity : Identifiable {
 			import std.algorithm.mutation : reverse;
 
 			auto addr = appender!( string[ ] );
-			addr ~= identification;
+			addr ~= this.tryGetIdentification;
 
 			DataEntity p = parent;
 			while ( p ) {
-				if( auto id = p.identification )
+				if( auto id = p.tryGetIdentification )
 					addr ~= id;
 
 				p = p.parent;

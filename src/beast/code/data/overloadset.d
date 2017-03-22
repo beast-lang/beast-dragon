@@ -40,7 +40,7 @@ struct Overloadset {
 		/// Returns single entry from the overloadset
 		/// If the overloadset is empty, throws noMatchingOverload error, if it contains multiple items, throws ambiguousResolution error
 		DataEntity single( ) {
-			benforce( data.length < 2, E.ambiguousResolution, "Expression is ambigous: can be '%s' or '%s' (or possibly more)".format( data[ 0 ], data[ 1 ] ) );
+			benforce( data.length < 2, E.ambiguousResolution, "Expression is ambigous; can be:\n%s".format( data.map!( x => "\t%s".format( x.tryGetIdentificationString ) ).joiner( "\n\t\tor\n" ) ) );
 			benforce( data.length > 0, E.noMatchingOverload, "Empty overloadset (more explaining message should have been shown, this would probably deserve a bug report)" );
 			return data[ 0 ];
 		}
@@ -90,7 +90,7 @@ struct Overloadset {
 
 	public:
 		string identificationString( ) {
-			return "[ %s ]".format( data.map!( x => x.dataType.identificationString ).joiner( ", " ).array );
+			return "[ %s ]".format( data.map!( x => x.dataType.tryGetIdentificationString ).joiner( ", " ).array );
 		}
 
 	public:

@@ -76,7 +76,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 				}
 
 				override string identificationString( ) {
-					return "%s?".format( sym_.baseType_.identificationString );
+					return "%s?".format( sym_.baseType_.tryGetIdentificationString );
 				}
 
 			private:

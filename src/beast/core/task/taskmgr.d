@@ -7,6 +7,7 @@ import core.sync.condition : Condition;
 import core.sync.mutex : Mutex;
 
 //debug = tasks;
+//debug = randomizeAskForAJob;
 
 final class TaskManager {
 
@@ -105,16 +106,30 @@ final class TaskManager {
 						return null;
 
 					if ( plannedTasks_.length ) {
+						debug ( randomizeAskForAJob ) {
+							import std.random : randomShuffle;
+
+							randomShuffle( plannedTasks_ );
+						}
+
 						TaskContext task = plannedTasks_.front( );
 						plannedTasks_.popFront( );
+
 						return task;
 					}
 					else if ( plannedJobs_.length ) {
+						debug ( randomizeAskForAJob ) {
+							import std.random : randomShuffle;
+
+							randomShuffle( plannedJobs_ );
+						}
+
 						TaskContext.Job job = plannedJobs_.front;
 						plannedJobs_.popFront( );
 
 						TaskContext ctx = obtainContext( );
 						ctx.setJob( job );
+
 						return ctx;
 					}
 

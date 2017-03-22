@@ -14,50 +14,51 @@ import std.process;
 import std.regex;
 import std.stdio;
 import std.string;
+import std.range;
 
 final class TestFailException : Exception {
 
 	public:
-		this( ) {
-			super( "Test failed" );
+		this( string msg ) {
+			super( msg );
+
+			message = msg;
 		}
+
+	public:
+		string message;
 
 }
 
 final class Test {
 
 	public:
-		this( string location, string identifier, bool isSingleThreaded ) {
+		this( string location, string identifier, int maxThreads ) {
 			this.location = location;
 			this.identifier = identifier;
-			this.isSingleThreaded = isSingleThreaded;
+			this.maxThreads = maxThreads;
 		}
 
 	public:
 		bool run( ) {
-			try {
-				_run( );
-				return true;
-			}
-			catch ( TestFailException exc ) {
-				return false;
-			}
-		}
-
-	public:
-		void _run( ) {
 			logFilename = "../test/log/%s.txt".format( identifier ).absolutePath;
 
 			File log = File( logFilename, "w" );
 			log.writeln( "Test '", identifier, "' log\n" );
 
-			scope( exit ) {
-				log.flush();
-
-				if( log.isOpen )
-					log.close();
+			try {
+				_run( log );
+				return true;
+			}
+			catch ( TestFailException exc ) {
+				log.writefln( "-- FAILED: %s", exc.message );
+				return false;
 			}
 
+		}
+
+	public:
+		void _run( ref File log ) {
 			string[ ] sourceFiles;
 			/// List of files the test suite will be scanning for directives
 			string[ ] scanFiles;
@@ -116,8 +117,8 @@ final class Test {
 					"--target-filename", identifier, //
 					 ];
 
-				if ( isSingleThreaded )
-					args ~= [ "--config", "workerCount=1" ];
+				if ( maxThreads )
+					args ~= [ "--config", "workerCount=%s".format( maxThreads ) ];
 
 				// Add explicit source files
 				foreach ( file; sourceFiles )
@@ -136,25 +137,28 @@ final class Test {
 			string[ ] stderrContent;
 			string stdoutContent;
 			int exitCode;
-			
+
 			// Run process
 			{
-				ProcessPipes process = pipeProcess( args, Redirect.stdout | Redirect.stderr );
+				File fout = File( "../test/tmp/%s.stdout.txt".format( identifier ).absolutePath, "w" );
+				File ferr = File( "../test/tmp/%s.stderr.txt".format( identifier ).absolutePath, "w" );
+
+				//ProcessPipes process = pipeProcess( args/*, Redirect.stdout | Redirect.stderr*/ );
+				auto pid = spawnProcess( args, stdin, fout, ferr );
 
 				scope ( exit ) {
-					stderrContent = process.stderr.byLine.map!( x => x.to!string ).array;
-					stdoutContent = process.stdout.byLine.joiner( "\n" ).to!string;
+					stderrContent = ferr.name.readText.replace( "\r", "" ).splitter( "\n" ).filter!( x => !x.empty ).array;
+					stdoutContent = fout.name.readText.replace( "\r", "" );
 
 					{
 						log.writeln( "-- BEGIN OF STDOUT" );
-						foreach ( str; stdoutContent )
-							log.write( str );
+						log.writeln( stdoutContent );
 						log.writeln( "-- END OF STDOUT\n" );
 					}
 					{
 						log.writeln( "-- BEGIN OF STDERR" );
 						foreach ( str; stderrContent )
-							log.write( str );
+							log.writeln( str );
 						log.writeln( "-- END OF STDERR\n" );
 					}
 				}
@@ -163,7 +167,7 @@ final class Test {
 				sw.start( );
 
 				while ( true ) {
-					const auto result = process.pid.tryWait( );
+					const auto result = pid.tryWait( );
 
 					if ( result.terminated ) {
 						exitCode = result.status;
@@ -171,13 +175,14 @@ final class Test {
 					}
 
 					if ( sw.peek.seconds > timeout ) {
-						process.pid.kill( );
+						pid.kill( );
 						fail( "Process timeout" );
 					}
-					Thread.sleep( dur!"msecs"( sw.peek.msecs / 2 ) );
+					Thread.sleep( dur!"msecs"( sw.peek.msecs / 4 ) );
 				}
 
-				log.writeln( "Exit code: \n", exitCode );
+				log.writefln( "Execution took: %s ms", sw.peek.msecs );
+				log.writefln( "Exit code: %s\n", exitCode );
 			}
 
 			// Process results
@@ -218,8 +223,8 @@ final class Test {
 		string[ ] args;
 		string logFilename;
 		/// Timeout in seconds
-		int timeout = 5;
-		bool isSingleThreaded = false;
+		int timeout = 3;
+		int maxThreads = 0;
 
 	private:
 		void enforce( bool condition, lazy string message ) {
@@ -231,7 +236,7 @@ final class Test {
 			synchronized ( testsMutex )
 				stderr.writefln( "\n ###  %s: %s\n", identifier, message.replace( "\n", "\n        " ) );
 
-			throw new TestFailException;
+			throw new TestFailException( message );
 		}
 
 }

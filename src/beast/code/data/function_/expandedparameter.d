@@ -104,13 +104,13 @@ final class ExpandedFunctionParameter : Identifiable {
 
 		override string identificationString( ) {
 			string result;
-			result ~= dataType.identificationString;
+			result ~= dataType.tryGetIdentificationString;
 
 			if ( identifier )
 				result ~= " " ~ identifier.str;
 
 			if ( isConstValue )
-				result ~= " = CONST";
+				result ~= " = %s".format( dataType.valueIdentificationString( constValue ) );
 
 			return result;
 		}

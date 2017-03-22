@@ -21,7 +21,12 @@ import std.string : strip;
 
 static import std.getopt;
 
+//debug = phases;
+
 void mainImpl( string[ ] args ) {
+	debug ( phases )
+		writeln( "start" );
+
 	HookAppInit.call( );
 
 	project = new Project;
@@ -156,25 +161,44 @@ void mainImpl( string[ ] args ) {
 	foreach ( m; project.moduleManager.initialModuleList )
 		taskManager.issueJob( { m.enforceDone_parsing( ); } );
 
+	debug ( phases )
+		writeln( "spawn workers" );
+
 	taskManager.spawnWorkers( );
 
 	// Finish phase 1
 	taskManager.waitForEverythingDone( );
+
+	debug ( phases )
+		writeln( "first phase done" );
 
 	if (  /*!wereErrors &&*/ project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
 		// Start building code using backend
 		project.backend.build( );
 	}
 
+	debug ( phases )
+		writeln( "backend built" );
+
 	taskManager.waitForEverythingDone( );
+
+	debug ( phases )
+		writeln( "second phase done" );
 }
 
 int main( string[ ] args ) {
 	try {
 		mainImpl( args );
+
+		debug ( phases )
+			writeln( "main ok exit" );
+
 		return wereErrors ? 2 : 0;
 	}
 	catch ( BeastErrorException err ) {
+		debug ( phases )
+			writeln( "main err exit" );
+
 		return 3;
 	}
 	catch ( Throwable t ) {

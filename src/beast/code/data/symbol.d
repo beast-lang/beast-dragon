@@ -38,6 +38,10 @@ abstract class Symbol : Identifiable {
 			return dataEntity.identificationString;
 		}
 
+		final string identification() {
+			return dataEntity.identification;
+		}
+
 		/// Location of where in the code the symbol was declared (or code that +- matches it)
 		final CodeLocation codeLocation( ) {
 			return ast ? ast.codeLocation : cast( CodeLocation ) null;

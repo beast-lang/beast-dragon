@@ -36,7 +36,7 @@ Void err1() {
 }
 
 Void err2() {
-	foo2( :xx ); //! error: unknownIdentifier
+	foo2( :xx ); //! error: noMatchingOverload
 }
 
 Void err3( Operatora op ) { //! error: unknownIdentifier
@@ -57,5 +57,5 @@ Void err6() {
 }
 
 Void err7() {
-	foo1( :xx ); //! error: unknownIdentifier
+	foo1( :xx ); //! error: noMatchingOverload
 }

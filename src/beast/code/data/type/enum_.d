@@ -23,6 +23,10 @@ abstract class Symbol_Enum : Symbol_Type {
 			return baseClass_;
 		}
 
+		override string valueIdentificationString( MemoryPtr value ) {
+			return baseClass_.valueIdentificationString( value );
+		}
+
 	public:
 		final override DataEntity dataEntity( DataEntity parentInstance = null ) {
 			return staticData_;

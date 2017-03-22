@@ -73,13 +73,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			body_( this );
 
-			if ( func.returnType is coreLibrary.type.Void ) {
-				codeResult_.formattedWrite( "%sfprintf( stderr, \"ERROR: Function %s did not exit via return statement\\n\";\n", tabs, func.identificationString );
-				codeResult_.formattedWrite( "%sexit( -1 );\n", tabs, func.identificationString );
-				popScope( false );
-			}
-			else
-				popScope( );
+			// Function MUST have a return instruction (for user functions, they're added automatically when return type is void)
+			codeResult_.formattedWrite( "%sfprintf( stderr, \"ERROR: Function %s did not exit via return statement\\n\" );\n", tabs, func.identificationString );
+			codeResult_.formattedWrite( "%sexit( -1 );\n", tabs, func.identificationString );
+			popScope( false );
 
 			codeResult_.formattedWrite( "%s}\n\n", tabs );
 

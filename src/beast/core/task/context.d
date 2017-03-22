@@ -5,6 +5,8 @@ import core.thread;
 import beast.util.uidgen;
 import beast.core.error.error;
 
+//debug = jobs;
+
 final class TaskContextQuittingException : Exception {
 	public this( ) {
 		super( "Context quitting" );
@@ -38,7 +40,7 @@ final class TaskContext {
 		/// Identifiaction string of the task guard blocking this context (that is waiting for another task to finish)
 		string delegate( ) blockingTaskGuardIdentificationString_;
 
-		ContextData contextData() {
+		ContextData contextData( ) {
 			return contextData_;
 		}
 
@@ -58,9 +60,19 @@ final class TaskContext {
 		/// Starts/continues executing assigned job
 		void execute( ) {
 			synchronized ( this ) {
+				debug ( jobs ) {
+					import std.stdio : stderr;
+
+					auto id = contextData.jobId;
+					stderr.writefln( "start %s", id );
+				}
+
 				assert( job_ );
 
 				fiber_.call( );
+
+				debug ( jobs )
+					stderr.writefln( "stop %s", id );
 			}
 		}
 

@@ -13,7 +13,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	public:
 		final string identificationString( ) {
-			return "interpret";
+			return "interpreter";
 		}
 
 		final InterpreterCodeBlock result( ) {
@@ -40,12 +40,9 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			pushScope( );
 			body_( this );
 
-			if ( func.returnType is coreLibrary.type.Void ) {
-				addInstruction( I.noReturnError, func.iopFuncPtr );
-				popScope( false );
-			}
-			else
-				popScope( );
+			// Function MUST have a return instruction (for user functions, they're added automatically when return type is void)
+			addInstruction( I.noReturnError, func.iopFuncPtr );
+			popScope( false );
 
 			currentFunction = prevFunc;
 		}

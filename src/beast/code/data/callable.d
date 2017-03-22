@@ -45,12 +45,13 @@ abstract class CallableMatch {
 				return this;
 
 			matchLevel_ |= _matchNextArgument( expression, entity, dataType );
+			argumentIndex_++;
+			
 			return this;
 		}
 
 		pragma( inline ) final CallableMatch matchNextArgument( DataEntity entity ) {
 			auto result = matchNextArgument( null, entity, entity.dataType );
-			argumentIndex_++;
 			return result;
 		}
 
@@ -139,7 +140,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 					entity = expression.buildSemanticTree_singleInfer( expectedType, false );
 
 					if ( !entity ) {
-						errorStr = "cannot process argument %s (expected type %s)".format( argumentIndex_, expectedType );
+						errorStr = "cannot process argument %s (expected type %s)".format( argumentIndex_ + 1, expectedType.identificationString );
 						return MatchFlags.noMatch;
 					}
 
@@ -152,7 +153,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 				entity = entity.tryCast( expectedType );
 
 				if ( !entity ) {
-					errorStr = "cannot cast parameter %s of type %s to %s".format( argumentIndex_, dataType.identificationString, expectedType.identificationString );
+					errorStr = "cannot cast argument %s of type %s to %s".format( argumentIndex_ + 1, dataType.identificationString, expectedType.identificationString );
 					return MatchFlags.noMatch;
 				}
 
@@ -171,7 +172,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 				return MatchFlags.noMatch;
 
 			if ( !entity.isCtime ) {
-				errorStr = "argument %s not ctime, cannot compare".format( argumentIndex_ );
+				errorStr = "argument %s not ctime, cannot compare".format( argumentIndex_ + 1 );
 				return MatchFlags.noMatch;
 			}
 
@@ -189,7 +190,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 				return MatchFlags.noMatch;
 
 			if ( !value.dataEquals( requiredValue, expectedType.instanceSize ) ) {
-				errorStr = "argument %s value mismatch".format( argumentIndex_ );
+				errorStr = "argument %s value mismatch".format( argumentIndex_ + 1 );
 				return MatchFlags.noMatch;
 			}
 

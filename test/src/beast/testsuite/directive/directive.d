@@ -53,7 +53,7 @@ abstract class TestDirective {
 			synchronized ( testsMutex )
 				stderr.writefln( "\n      %s:%s:%s: %s\n", test.identifier, declSourceFile, declLine, message.replace( "\n", "\n        " ) );
 
-			throw new TestFailException;
+			throw new TestFailException( message );
 		}
 
 }

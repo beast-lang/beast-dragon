@@ -110,7 +110,7 @@ mixin template TaskGuard( string guardName ) {
 
 					// Mark current context as waiting on this task	(for circular dependency checks)
 					thisContext.blockingContext_ = tgdContext;
-					thisContext.blockingTaskGuardIdentificationString_ = ( ) => "%s.(%s)".format( this.tryGetIdentificationString, guardName );
+					thisContext.blockingTaskGuardIdentificationString_ = ( ) => "%s.#%s#".format( this.tryGetIdentificationString, guardName );
 
 					// Check for circular dependencies
 					{

@@ -10,6 +10,7 @@ doc/**/*.ptc
 doc/**/*.bbl
 doc/**/*.blg
 test/log/
+test/tmp/
 test/output/
 lib/
 bin/

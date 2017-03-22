@@ -25,7 +25,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 
 	// Destructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", tp.Bool, tp.Void, //
-			ExpandedFunctionParameter.bootstrap(), //
+			ExpandedFunctionParameter.bootstrap( ), //
 			BackendPrimitiveOperation.noopDtor //
 			 );
 
@@ -43,5 +43,6 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			BackendPrimitiveOperation.boolAnd //
 			 );
 
+	tp.Bool.valueIdentificationStringFunc = ( ptr ) { return ptr.readPrimitive!bool ? "true" : "false"; };
 	tp.Bool.initialize( sym );
 }

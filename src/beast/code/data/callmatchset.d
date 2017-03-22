@@ -11,7 +11,7 @@ struct CallMatchSet {
 
 	public:
 		this( Overloadset overloadset, AST_Node ast, bool reportErrors = true ) {
-			scope_ = new LocalDataScope();
+			scope_ = new LocalDataScope( );
 			auto _sgd = scope_.scopeGuard;
 
 			this.reportErrors = reportErrors;
@@ -53,7 +53,7 @@ struct CallMatchSet {
 
 		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
 			auto _sgd = scope_.scopeGuard;
-			
+
 			DataEntity entity = expr.buildSemanticTree_single( false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
 			argumentTypes ~= dataType;
@@ -100,20 +100,26 @@ struct CallMatchSet {
 
 			if ( bestMatch.matchLevel == CallableMatch.MatchFlags.noMatch ) {
 				// TODO: error messages when matchLevel is noMatch
-				benforce( !reportErrors, E.noMatchingOverload, //
-						"None of the overloads match arguments %s: %s".format(  //
-							argumentListIdentificationString, //
-							matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner ) //
-						 );
+				if ( !reportErrors ) {
+					// Do nothing
+				}
+				else if ( matches.length == 1 )
+					berror( E.noMatchingOverload, "'%s' does not match arguments %s: %s".format( matches[ 0 ].sourceDataEntity.identificationString, argumentListIdentificationString, matches[ 0 ].errorStr ) );
+				else
+					berror( E.noMatchingOverload, //
+							"None of the overloads match arguments %s: %s".format(  //
+								argumentListIdentificationString, //
+								matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner ) //
+							 );
 
 				return null;
 			}
 
 			if ( bestMatchCount != 1 ) {
 				benforce( !reportErrors, E.ambiguousResolution, //
-						"Ambiguous overload resolution: %s for %s".format(  //
-							matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => x.sourceDataEntity ).array.Overloadset.identificationString, //
-							argumentListIdentificationString //
+						"Ambiguous overload resolution for arguments %s:\n%s".format(  //
+							argumentListIdentificationString, //
+							matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => x.sourceDataEntity ).map!( x => "\t%s".format( x.tryGetIdentificationString ) ).joiner( "\n\t\tor\n" ), //
 							 ) );
 
 				return null;
