@@ -21,12 +21,7 @@ import std.string : strip;
 
 static import std.getopt;
 
-//debug = phases;
-
 void mainImpl( string[ ] args ) {
-	debug ( phases )
-		writeln( "start" );
-
 	HookAppInit.call( );
 
 	project = new Project;
@@ -159,31 +154,29 @@ void mainImpl( string[ ] args ) {
 
 	// Give the compiler a job
 	foreach ( m; project.moduleManager.initialModuleList )
-		taskManager.issueJob( { m.enforceDone_parsing( ); } );
-
-	debug ( phases )
-		writeln( "spawn workers" );
+		taskManager.imminentIssueJob( { m.enforceDone_parsing( ); } );
 
 	taskManager.spawnWorkers( );
 
+	{
+		// There will be some delayedIssuedJobs in the main thread (minimally because core library is created in the main thread)
+		foreach ( job; context.delayedIssuedJobs )
+			taskManager.imminentIssueJob( job );
+
+		context.delayedIssuedJobs = null;
+	}
+
 	// Finish phase 1
 	taskManager.waitForEverythingDone( );
-
-	debug ( phases )
-		writeln( "first phase done" );
 
 	if (  /*!wereErrors &&*/ project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
 		// Start building code using backend
 		project.backend.build( );
 	}
 
-	debug ( phases )
-		writeln( "backend built" );
-
 	taskManager.waitForEverythingDone( );
 
-	debug ( phases )
-		writeln( "second phase done" );
+	assert( !context.delayedIssuedJobs.length );
 }
 
 int main( string[ ] args ) {

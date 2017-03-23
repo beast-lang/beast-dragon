@@ -28,11 +28,6 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 			return parent_;
 		}
 
-	public:
-		final override void buildDefinitionsCode( CodeBuilder cb ) {
-			// No static variable definition - that information should be obtained from the memory manager
-		}
-
 	private:
 		Data staticData_;
 		DataEntity parent_;

@@ -22,7 +22,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			decorationList_ = decorationList;
 			isCtime_ = data.isCtime;
 
-			taskManager.issueJob( { enforceDone_memoryAllocation( ); } );
+			taskManager.delayedIssueJob( { enforceDone_memoryAllocation( ); } );
 		}
 
 	public:

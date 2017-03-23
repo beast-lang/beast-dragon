@@ -16,7 +16,7 @@ final class UserNamespace : Namespace {
 			super( parent );
 
 			obtainFunction_ = obtainFunction;
-			taskManager.issueJob( { enforceDone_membersObtaining( ); } );
+			taskManager.delayedIssueJob( { enforceDone_membersObtaining( ); } );
 		}
 
 	public:

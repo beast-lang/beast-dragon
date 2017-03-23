@@ -33,7 +33,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 		}
 
 	public:
-		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance ) {
+		override Overloadset _resolveIdentifier_pre( Identifier id, DataEntity instance ) {
 			if ( instance ) {
 				Symbol_Type type = instance.ctExec_asType( );
 

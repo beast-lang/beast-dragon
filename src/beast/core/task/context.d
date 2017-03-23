@@ -23,15 +23,15 @@ final class TaskContext {
 			fiber_ = new Fiber( &run );
 		}
 
-		~this( ) {
-			if ( fiber_.state == Fiber.State.HOLD ) {
-				synchronized ( this ) {
+		void uninitialize( ) {
+			synchronized ( this ) {
+				if ( fiber_.state == Fiber.State.HOLD ) {
 					isQuitting_ = true;
 					fiber_.call( );
 				}
-			}
 
-			assert( fiber_.state == Fiber.State.TERM );
+				assert( fiber_.state == Fiber.State.TERM );
+			}
 		}
 
 	public:
@@ -76,7 +76,7 @@ final class TaskContext {
 			}
 		}
 
-		/// Pauses execution of this context
+		/// Pauses execution of the current context context
 		void yield( ) {
 			assert( context.taskContext is this );
 
@@ -116,6 +116,11 @@ final class TaskContext {
 				try {
 					job_( );
 
+					// Issue delayed jobs
+					assert( !context.delayedIssuedJobsStack.length, "delayedIssuedJobsStack is not empty (should be popped by taskGuards)" );
+					foreach ( job; context.delayedIssuedJobs )
+						taskManager.imminentIssueJob( job );
+
 					assert( !context.session, "Unfinished session" );
 				}
 				catch ( BeastErrorException exc ) {
@@ -133,6 +138,7 @@ final class TaskContext {
 		}
 
 	private:
+		debug ubyte status_;
 		static __gshared UIDGenerator jobIdGen;
 
 }

@@ -24,24 +24,6 @@ abstract class Symbol_Module : Symbol {
 			return staticData_;
 		}
 
-		final override void buildDefinitionsCode( CodeBuilder cb ) {
-			cb.build_moduleDefinition( this, ( cb ) {
-				bool error = false;
-
-				foreach ( sym; namespace.members ) {
-					try {
-						sym.buildDefinitionsCode( cb );
-					}
-					catch ( BeastErrorException exc ) {
-						error = true;
-					}
-				}
-
-				if ( error )
-					throw new BeastErrorException( "#moduleBuildError" );
-			} );
-		}
-
 	protected:
 		abstract Namespace namespace( );
 

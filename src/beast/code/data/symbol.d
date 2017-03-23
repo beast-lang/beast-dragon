@@ -57,12 +57,6 @@ abstract class Symbol : Identifiable {
 		/// Data entity representing the symbol, either with static static access or via instance of parent type
 		abstract DataEntity dataEntity( DataEntity parentInstance = null );
 
-	public:
-		/// Builds code for declarations/definitions of current symbol and all children symbols
-		void buildDefinitionsCode( CodeBuilder cb ) {
-			assert( 0, "buildDefinitionsCode not implemented for " ~ identificationString );
-		}
-
 	protected:
 		Hash outerHashWIP_;
 

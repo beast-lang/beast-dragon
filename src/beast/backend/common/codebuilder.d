@@ -10,14 +10,7 @@ abstract class CodeBuilder : Identifiable {
 		/// When called, StmtFunction should build given part of the statement using provided codebuilder
 		alias StmtFunction = void delegate( CodeBuilder cb );
 
-		/// When called, DeclFunction should build relevant declarations using provided codebuilder
-		alias DeclFunction = void delegate( CodeBuilder cb );
-
 	public: // Declaration related build commands
-		void build_moduleDefinition( Symbol_Module module_, DeclFunction content ) {
-			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
-		}
-
 		void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
@@ -26,7 +19,7 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
-		void build_typeDefinition( Symbol_Type type, DeclFunction content ) {
+		void build_typeDefinition( Symbol_Type type ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 

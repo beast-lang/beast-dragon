@@ -64,7 +64,7 @@ final class AST_UnaryExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto _gd = ErrorGuard( this );
 
-			DataEntity result = base.buildSemanticTree_singleInfer( inferredType, true );
+			DataEntity result = base.buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
 			if ( !result )
 				return Overloadset( );
 

@@ -18,8 +18,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			decorationList_ = decorationList;
 			parent_ = data.env.staticMembersParent;
 
-			taskManager.issueJob( { enforceDone_returnTypeDeduction( ); } );
-			taskManager.issueJob( { enforceDone_parameterExpanding( ); } );
+			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
+			taskManager.delayedIssueJob( { enforceDone_parameterExpanding( ); } );
 		}
 
 		override Identifier identifier( ) {

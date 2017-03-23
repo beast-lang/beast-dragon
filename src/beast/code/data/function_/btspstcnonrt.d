@@ -32,11 +32,6 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 			return staticData_;
 		}
 
-	public:
-		override void buildDefinitionsCode( CodeBuilder cb ) {
-			// Do nothing
-		}
-
 	private:
 		DataEntity parent_;
 		Identifier id_;
@@ -183,14 +178,30 @@ private {
 
 		alias ObtainFunc = DataEntity delegate( ParamsTuple );
 
-		/// Match single runtime parameter of type type
+		/// Match single runtime parameter of type type (adds DataEntity parameter to obtainFunc)
 		auto rtArg( )( Symbol_Type type ) {
 			return Builder_RuntimeParameter!( typeof( this ) )( this, type );
 		}
 
-		/// Match single ctime parameter of type type
+		/// Match single ctime parameter of type type (adds MemoryPtr parameter to obtainFunc)
 		auto ctArg( )( Symbol_Type type ) {
 			return Builder_CtimeParameter!( typeof( this ) )( this, type );
+		}
+
+		/// Match single const-value parameter of type type and value value (doesn't add any parameters to obtainFunc)
+		auto constArg( )( Symbol_Type type, MemoryPtr value ) {
+			return Builder_ConstParameter!( typeof( this ) )( this, type, value );
+		}
+
+		/// Match single const-value parameter of value data (doesn't add any parameters to obtainFunc)
+		auto constArg( )( DataEntity data ) {
+			return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec );
+		}
+
+		/// Match single const-value parameter of value data (doesn't add any parameters to obtainFunc)
+		auto constArg( )( Symbol sym ) {
+			auto data = sym.dataEntity;
+			return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec );
 		}
 
 		CallMatchFactory finish( )( ObtainFunc obtainFunc ) {
@@ -257,6 +268,24 @@ private {
 				return CallableMatch.MatchFlags.noMatch;
 
 			params[ 0 ] = value;
+			return result;
+		}
+
+	}
+
+	struct Builder_ConstParameter( Parent ) {
+		mixin BuilderCommon;
+
+		alias Params = TypeTuple!( );
+
+		Symbol_Type type;
+		MemoryPtr value;
+
+		CallableMatch.MatchFlags matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
+			auto result = match.matchConstValue( expression, entity, dataType, type, value );
+			if ( result == CallableMatch.MatchFlags.noMatch )
+				return CallableMatch.MatchFlags.noMatch;
+
 			return result;
 		}
 

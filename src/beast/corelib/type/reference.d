@@ -52,7 +52,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 				// Dtor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap(), //
+						ExpandedFunctionParameter.bootstrap( ), //
 						BackendPrimitiveOperation.noopDtor );
 
 				namespace_.initialize( mem );
@@ -112,151 +112,48 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 }
 
-Symbol_BootstrapStaticNonRuntimeFunction symbol_Template_Reference( DataEntity parent ) {
-	ReadWriteMutex mtx = new ReadWriteMutex( );
-	Symbol_Type_Reference[ Symbol_Type ] cache;
-
-	Symbol_Type_Reference referenceTypeOf( Symbol_Type originalType ) {
-		synchronized ( mtx.reader ) {
-			if ( auto result = originalType in cache )
-				return *result;
-		}
-
-		synchronized ( mtx.writer ) {
-			// Check again, the type might have got added when switching mutexes
-			if ( auto result = originalType in cache )
-				return *result;
-
-			auto result = new Symbol_Type_Reference( coreLibrary.type.Reference.dataEntity, originalType );
-			result.initialize( );
-
-			cache[ originalType ] = result;
-			return result;
-		}
-
-		assert( 0 );
-	}
-
-	return new Symbol_BootstrapStaticNonRuntimeFunction( parent, ID!"Reference", //
-			paramsBuilder.ctArg( coreLibrary.type.Type ).finish( ( MemoryPtr ptr ) { //
-				return referenceTypeOf( ptr.readType( ) ).dataEntity; //
-			} //
-			 ) //
-	 );
-}
-/*
-final class Symbol_Template_Reference : Symbol_BootstrapStaticNonRuntimeFunction {
+final class ReferenceTypeManager {
 
 	public:
-		this( DataEntity parent ) {
-			super( parent );
+		this( void delegate( Symbol ) sink, DataEntity parent ) {
+		mutex_ = new ReadWriteMutex();
 
-			staticData_ = new Data( this );
-			referencesMutex_ = new ReadWriteMutex( );
+			symbol = new Symbol_BootstrapStaticNonRuntimeFunction( parent, ID!"Reference", //
+					paramsBuilder.ctArg( coreLibrary.type.Type ).finish( ( MemoryPtr ptr ) { //
+						return referenceTypeOf( ptr.readType( ) ).dataEntity; //
+					} //
+					 ) );
+
+			sink( symbol );
 		}
 
 	public:
-		override Identifier identifier( ) {
-			return ID!"Reference";
-		}
-
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
-		}
-
-	public:
-		final override void buildDefinitionsCode( CodeBuilder cb ) {
-			// TODO: this
-		}
-
-	public:
-		final Symbol_Type_Reference referenceType( Symbol_Type originalType ) {
-			synchronized ( referencesMutex_.reader ) {
-				if ( auto result = originalType in referenceTypes_ )
+		Symbol_Type_Reference referenceTypeOf( Symbol_Type originalType ) {
+			synchronized ( mutex_.reader ) {
+				if ( auto result = originalType in cache_ )
 					return *result;
 			}
 
-			synchronized ( referencesMutex_.writer ) {
+			synchronized ( mutex_.writer ) {
 				// Check again, the type might have got added when switching mutexes
-				if ( auto result = originalType in referenceTypes_ )
+				if ( auto result = originalType in cache_ )
 					return *result;
 
-				auto result = new Symbol_Type_Reference( dataEntity, originalType );
-				referenceTypes_[ originalType ] = result;
+				auto result = new Symbol_Type_Reference( symbol.dataEntity, originalType );
+				result.initialize( );
+
+				cache_[ originalType ] = result;
 				return result;
 			}
 
 			assert( 0 );
 		}
 
-	private:
-		Data staticData_;
-		ReadWriteMutex referencesMutex_;
-		Symbol_Type_Reference[ Symbol_Type ] referenceTypes_;
+	public:
+		Symbol_BootstrapStaticNonRuntimeFunction symbol;
 
 	private:
-		final static class Data : super.Data {
-
-			public:
-				this( Symbol_Template_Reference sym ) {
-					super( sym );
-					sym_ = sym;
-				}
-
-			public:
-				override CallableMatch startCallMatch( AST_Node ast ) {
-					return new Match( this, ast );
-				}
-
-			private:
-				Symbol_Template_Reference sym_;
-
-		}
-
-		final static class Match : super.Match {
-
-			public:
-				this( Data sourceEntity, AST_Node ast ) {
-					super( sourceEntity, ast );
-					sym_ = sourceEntity.sym_;
-				}
-
-			protected:
-				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
-					switch ( argumentIndex_ ) {
-
-					case 0: {
-							MemoryPtr data;
-							auto result = matchCtimeParameter( expression, entity, dataType, coreLibrary.type.Type, data );
-							referencedType_ = data.readType( );
-							return result;
-						}
-
-					default:
-						errorStr = "parameter count mismatch";
-						return MatchFlags.noMatch;
-
-					}
-				}
-
-				override MatchFlags _finish( ) {
-					if ( argumentIndex_ != 1 ) {
-						errorStr = "parameter count mismatch";
-						return MatchFlags.noMatch;
-					}
-
-					return MatchFlags.fullMatch;
-				}
-
-				override DataEntity _toDataEntity( ) {
-					return sym_.referenceType( referencedType_ ).dataEntity;
-				}
-
-			private:
-				Symbol_Type referencedType_;
-				Symbol_Template_Reference sym_;
-
-		}
+		ReadWriteMutex mutex_;
+		Symbol_Type_Reference[ Symbol_Type ] cache_;
 
 }
-*/

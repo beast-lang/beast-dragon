@@ -16,6 +16,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 	mixin TaskGuard!"codeProcessing";
 
 	public:
+		this( ) {
+			taskManager.delayedIssueJob( { project.backend.buildRuntimeFunction( this ); } );
+		}
+
+	public:
 		abstract Symbol_Type returnType( );
 
 		abstract ExpandedFunctionParameter[ ] parameters( );
@@ -26,7 +31,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		}
 
 	public:
-		final override void buildDefinitionsCode( CodeBuilder cb ) {
+		final void buildCode( CodeBuilder cb ) {
 			// Enforce return type deduction
 			returnType( );
 

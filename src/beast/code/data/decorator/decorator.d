@@ -40,11 +40,6 @@ abstract class Symbol_Decorator : Symbol {
 			return false;
 		}
 
-	public:
-		override void buildDefinitionsCode( CodeBuilder cb ) {
-			// Do nothing
-		}
-
 	private:
 		DataEntity parent_;
 		DataEntity staticData_;

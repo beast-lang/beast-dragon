@@ -5,6 +5,7 @@ import std.array : Appender, appender;
 import std.format : formattedWrite;
 import beast.code.data.scope_.local;
 import beast.code.data.var.result;
+import beast.core.error.error;
 
 // TODO: Asynchronous proxy definition handler
 
@@ -12,17 +13,12 @@ class CodeBuilder_Cpp : CodeBuilder {
 	public enum tab = "\t";
 
 	public:
-		this( CodeBuilder_Cpp parent ) {
+		this( ) {
 			tabsString_ = tab ~ tab ~ tab ~ tab;
 
 			codeResult_ = appender!string;
 			declarationsResult_ = appender!string;
 			typesResult_ = appender!string;
-
-			if ( parent ) {
-				tabOffset_ = parent.tabOffset_ + 1;
-				hash_ = parent.hash_ + Hash( parent.childrenCounter_++ );
-			}
 		}
 
 	public:
@@ -44,16 +40,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 	public: // Declaration related build commands
-		override void build_moduleDefinition( Symbol_Module module_, DeclFunction content ) {
-			const string str = "\n%s// module %s\n".format( tabs, module_.identificationString );
-			declarationsResult_ ~= str;
-			typesResult_ ~= str;
-			codeResult_ ~= str;
-			content( this );
-
-			debug resultVarName_ = null;
-		}
-
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			addToScope( var );
 
@@ -62,38 +48,52 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
-			const string proto = functionPrototype( func );
-			declarationsResult_.formattedWrite( "%s%s;\n", tabs, proto );
-			codeResult_.formattedWrite( "%s%s {\n", tabs, proto );
+			try {
+				const string proto = functionPrototype( func );
+				declarationsResult_.formattedWrite( "%s%s;\n", tabs, proto );
+				codeResult_.formattedWrite( "%s%s {\n", tabs, proto );
 
-			pushScope( );
+				pushScope( );
 
-			auto prevFunc = currentFunction;
-			currentFunction = func;
+				auto prevFunc = currentFunction;
+				currentFunction = func;
 
-			body_( this );
+				body_( this );
 
-			// Function MUST have a return instruction (for user functions, they're added automatically when return type is void)
-			codeResult_.formattedWrite( "%sfprintf( stderr, \"ERROR: Function %s did not exit via return statement\\n\" );\n", tabs, func.identificationString );
-			codeResult_.formattedWrite( "%sexit( -1 );\n", tabs, func.identificationString );
-			popScope( false );
+				// Function MUST have a return instruction (for user functions, they're added automatically when return type is void)
+				codeResult_.formattedWrite( "%sfprintf( stderr, \"ERROR: Function %s did not exit via return statement\\n\" );\n", tabs, func.identificationString );
+				codeResult_.formattedWrite( "%sexit( -1 );\n", tabs, func.identificationString );
+				popScope( false );
 
-			codeResult_.formattedWrite( "%s}\n\n", tabs );
+				codeResult_.formattedWrite( "%s}\n\n", tabs );
 
-			currentFunction = prevFunc;
+				currentFunction = prevFunc;
 
-			debug resultVarName_ = null;
+				debug resultVarName_ = null;
+			}
+			catch ( BeastErrorException exc ) {
+				string errStr = "\n// ERROR BUILDING %s\n".format( func.tryGetIdentificationString );
+				codeResult_ ~= errStr;
+				typesResult_ ~= errStr;
+				declarationsResult_ ~= errStr;
+			}
 		}
 
-		override void build_typeDefinition( Symbol_Type type, DeclFunction content ) {
-			if ( auto instanceSize = type.instanceSize )
-				typesResult_.formattedWrite( "%stypedef unsigned char %s[ %s ];\n", tabs, cppIdentifier( type ), instanceSize );
-			else
-				typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
+		override void build_typeDefinition( Symbol_Type type ) {
+			try {
+				if ( auto instanceSize = type.instanceSize )
+					typesResult_.formattedWrite( "%stypedef unsigned char %s[ %s ];\n", tabs, cppIdentifier( type ), instanceSize );
+				else
+					typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
 
-			debug resultVarName_ = null;
-
-			content( this );
+				debug resultVarName_ = null;
+			}
+			catch ( BeastErrorException exc ) {
+				string errStr = "\n// ERROR BUILDING %s\n".format( type.tryGetIdentificationString );
+				codeResult_ ~= errStr;
+				typesResult_ ~= errStr;
+				declarationsResult_ ~= errStr;
+			}
 		}
 
 	public: // Expression related build commands

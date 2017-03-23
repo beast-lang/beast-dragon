@@ -5,6 +5,7 @@ import beast.util.uidgen;
 import beast.toolkit;
 import beast.code.data.codenamespace.namespace;
 import beast.code.data.codenamespace.bootstrap;
+import beast.code.data.function_.bstpstcnonrt;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -20,14 +21,16 @@ abstract class Symbol_Type : Symbol {
 				ctimeValue_ = memoryManager.alloc( size_t.sizeof, MemoryBlock.Flag.doNotGCAtSessionEnd, "%s_typeid".format( identifier.str ) ).writePrimitive( typeUID_ );
 
 			baseNamespace_ = new BootstrapNamespace( this );
+
+			taskManager.delayedIssueJob( { project.backend.buildType( this ); } );
 		}
 
 		void initialize( ) {
-			baseNamespace_.initialize( [ // TODO:
-					/*new BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#operator", //
-				paramsBuilder().constArg( coreLibrary.enum_.operator.suffRef ).finish( () { return  } ) //
-				 )*/
-					 ] );
+			baseNamespace_.initialize( [ new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#operator", //
+					paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ) { //
+						return coreLibrary.type.Reference.referenceTypeOf( this ).dataEntity; //
+					} ) //
+					 ) ] );
 
 			debug initialized_ = true;
 		}
@@ -46,6 +49,9 @@ abstract class Symbol_Type : Symbol {
 			/*import std.stdio;
 
 			writefln( "Resolve %s for %s ( entity %s of type %s )", id.str, identificationString, instance ? instance.identificationString : "#", instance ? instance.dataType.identificationString : "#" );*/
+
+			if ( auto result = _resolveIdentifier_pre( id, instance ) )
+				return result;
 
 			import std.array : appender;
 
@@ -80,27 +86,20 @@ abstract class Symbol_Type : Symbol {
 			return "%s( ... )".format( identification );
 		}
 
-	public:
-		override void buildDefinitionsCode( CodeBuilder cb ) {
-			cb.build_typeDefinition( this, ( cb ) {
-				foreach ( sym; baseNamespace_.members )
-					sym.buildDefinitionsCode( cb );
-
-				foreach ( sym; namespace.members )
-					sym.buildDefinitionsCode( cb );
-			} );
-		}
-
 	protected:
 		/// Namespace with members of this type (static and dynamic)
 		abstract Namespace namespace( );
 
 	protected:
+		Overloadset _resolveIdentifier_pre( Identifier id, DataEntity instance ) {
+			return Overloadset( );
+		}
+
 		Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance ) {
 			return Overloadset( );
 		}
 
-protected:
+	protected:
 		debug bool initialized_;
 
 	private:
@@ -131,7 +130,7 @@ protected:
 			public:
 				final override void buildCode( CodeBuilder cb ) {
 					auto _gd = ErrorGuard( this );
-					
+
 					cb.build_memoryAccess( sym_.ctimeValue_ );
 				}
 

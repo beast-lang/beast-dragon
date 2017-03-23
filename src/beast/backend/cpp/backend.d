@@ -2,7 +2,6 @@ module beast.backend.cpp.backend;
 
 import beast.backend.common.backend;
 import beast.backend.cpp.codebuilder;
-import beast.backend.cpp.proxycodebuilder;
 import beast.backend.toolkit;
 import beast.core.error.error;
 import std.array : appender, Appender;
@@ -15,20 +14,11 @@ final class Backend_Cpp : Backend {
 
 	public:
 		override void build( ) {
-			scope cb = new CodeBuilder_CppProxy( null );
-
-			taskManager.issueJob( {
-				coreLibrary.module_.buildDefinitionsCode( cb );
-
-				foreach ( m; project.moduleManager.initialModuleList ) {
-					// Do not get scared when one symbol code building fails
-					m.symbol.buildDefinitionsCode( cb );
-				}
-			} );
-
 			// Process memory
 			taskManager.waitForEverythingDone( );
 			memoryManager.finish( );
+
+			finished_ = true;
 
 			auto code_memory = appender!string;
 			foreach ( MemoryBlock block; memoryManager.memoryBlocks ) {
@@ -56,13 +46,16 @@ final class Backend_Cpp : Backend {
 			result ~= "\n";
 
 			result ~= "// TYPES\n";
-			result ~= cb.code_types;
+			foreach ( cb; codebuilders_ )
+				result ~= cb.code_types;
 			result ~= "\n// MEMORY BLOCKS\n\n";
 			result ~= code_memory.data;
 			result ~= "\n// DECLARATIONS\n";
-			result ~= cb.code_declarations;
+			foreach ( cb; codebuilders_ )
+				result ~= cb.code_declarations;
 			result ~= "\n//DEFINITIONS\n";
-			result ~= cb.code_implementations;
+			foreach ( cb; codebuilders_ )
+				result ~= cb.code_implementations;
 
 			result ~= "void main() {}";
 
@@ -75,7 +68,32 @@ final class Backend_Cpp : Backend {
 		}
 
 		override CodeBuilder spawnFunctionCodebuilder( ) {
-			return new CodeBuilder_Cpp( null );
+			return new CodeBuilder_Cpp( );
 		}
+
+	public:
+		/// Includes definition of given runtime function in the output code
+		override void buildRuntimeFunction( Symbol_RuntimeFunction func ) {
+			assert( !finished_ );
+
+			auto cb = new CodeBuilder_Cpp( );
+			func.buildCode( cb );
+			synchronized ( this )
+				codebuilders_ ~= cb;
+		}
+
+		/// Includes declaration of given type in the output code (no member functions, only the type itself)
+		override void buildType( Symbol_Type type ) {
+			assert( !finished_ );
+
+			auto cb = new CodeBuilder_Cpp( );
+			cb.build_typeDefinition( type );
+			synchronized ( this )
+				codebuilders_ ~= cb;
+		}
+
+	private:
+		CodeBuilder_Cpp[ ] codebuilders_;
+		debug bool finished_;
 
 }

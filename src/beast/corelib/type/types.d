@@ -22,7 +22,7 @@ struct CoreLibrary_Types {
 		@bootstrapType( 4 )
 		Symbol_BootstrapStaticClass Int;
 
-		Symbol_BootstrapStaticNonRuntimeFunction Reference;
+		ReferenceTypeManager Reference;
 
 		Symbol_Type_Type Type;
 
@@ -52,8 +52,7 @@ struct CoreLibrary_Types {
 				}
 			}
 
-			//sink( Reference = new Symbol_Template_Reference( parent ) );
-			sink( Reference = symbol_Template_Reference( parent ) );
+			Reference = new ReferenceTypeManager( sink, parent );
 		}
 
 		/// Second phase of initialization

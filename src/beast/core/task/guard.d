@@ -184,6 +184,12 @@ mixin template TaskGuard( string guardName ) {
 			tgdContext = thisContext;
 			atomicOp!( "|=" )( tgdFlags, Flags.contextSet );
 
+			// Push delayed issued jobs stuff
+			{
+				context.delayedIssuedJobsStack ~= context.delayedIssuedJobs;
+				context.delayedIssuedJobs = null;
+			}
+
 			try {
 				debug ( taskGuards )
 					writefln( "%s.%s exec", typeof( this ).stringof, guardName );
@@ -204,8 +210,20 @@ mixin template TaskGuard( string guardName ) {
 				if ( data & Flags.dependentTasksWaiting )
 					_taskGuard_issueWaitingTasks( );
 
+				// Just for consisency
+				context.delayedIssuedJobsStack.length--;
+
 				// Rethrow the exception
 				throw exc;
+			}
+
+			// Issue relevant delayed jobs
+			{
+				foreach ( job; context.delayedIssuedJobs )
+					taskManager.imminentIssueJob( job );
+
+				context.delayedIssuedJobs = context.delayedIssuedJobsStack[ $ - 1 ];
+				context.delayedIssuedJobsStack.length--;
 			}
 
 			assert( thisContext.blockingContext_ is null );

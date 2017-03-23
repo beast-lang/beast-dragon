@@ -38,6 +38,9 @@ final class TaskManager {
 
 			foreach ( worker; workers_ )
 				worker.waitForEnd( );
+
+			foreach ( ctx; contextList_ )
+				ctx.uninitialize( );
 		}
 
 		/// Waits till all jobs and tasks are done
@@ -74,11 +77,18 @@ final class TaskManager {
 			}
 		}
 
-		void issueJob( TaskContext.Job job ) {
+		/// Immidiately issues a job to be executed.
+		/// This can to be called in constructors - delayedIssueJob is recommended then
+		void imminentIssueJob( TaskContext.Job job ) {
 			synchronized ( workerSyncMutex_ ) {
 				plannedJobs_ ~= job;
 				idleWorkersCondition_.notify( );
 			}
+		}
+
+		/// Issues the job to be issued after the current context ends its job (or a currently processed taskGuard finishes)
+		static void delayedIssueJob( TaskContext.Job job ) {
+			context.delayedIssuedJobs ~= job;
 		}
 
 	package:
@@ -159,14 +169,16 @@ final class TaskManager {
 					idleContexts_.length--;
 					return ctx;
 				}
-			}
 
-			return new TaskContext;
+				auto ctx = new TaskContext;
+				contextList_ ~= ctx;
+				return ctx;
+			}
 		}
 
 	private:
 		// TODO: TaskContext priority based on how many other contexts are waiting for it
-		TaskContext[ ] plannedTasks_, idleContexts_;
+		TaskContext[ ] plannedTasks_, idleContexts_, contextList_;
 		/// List of planned jobs
 		TaskContext.Job[ ] plannedJobs_;
 		Mutex workerSyncMutex_, idleContextsMutex_;

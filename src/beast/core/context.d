@@ -43,6 +43,11 @@ struct ContextData {
 
 		DataScope[] scopeStack;
 
+		/// Jobs that are about to be issued as soon as the context finishes its current job (or current taskGuard)
+		TaskContext.Job[] delayedIssuedJobs;
+		
+		TaskContext.Job[][] delayedIssuedJobsStack;
+
 	public:
 		/// TaskContext of the current running task
 		TaskContext taskContext;
