@@ -53,9 +53,10 @@ final class MemoryManager {
 					result = new MemoryBlock( endPtr, bytes );
 					mmap ~= result;
 				}
+
+				context.sessionMemoryBlocks[ result.startPtr.val ] = result;
 			}
 
-			context.sessionMemoryBlocks[ result.startPtr.val ] = result;
 			assert( findMemoryBlock( result.startPtr ) is result );
 			return result;
 		}

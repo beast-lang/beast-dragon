@@ -10,9 +10,11 @@ struct Instruction {
 		enum I {
 			noOp, /// Does basically nothing
 			noReturnError, /// Throws an error - function did not exit using return statement
+			printError, /// Throws an error - cannot print to stdout at compile time
 
 			allocLocal, /// (bpOffset : dd, bytes : dd) Allocates memory for a local variable
 			skipAlloc, /// (bpOffset: dd) Do not allocate memory for local variable (but increase stack offset)
+			popScope, /// (targetBpOffset: dd) Deallocates all variables on the stack above targetBpOffset
 			call, /// (function : func) Function call (arguments are passed on the stack in order [RETURN VALUE] [OP3] [OP2] [OP1] [CONTEXT PTR - always (even if null)])
 			ret, /// () returns from a function call
 

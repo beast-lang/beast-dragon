@@ -1,6 +1,6 @@
 module beast.testsuite.directive.directive;
 
-import beast.testsuite.test;
+public import beast.testsuite.test;
 import beast.testsuite.main;
 import std.algorithm;
 import std.string;
@@ -87,6 +87,7 @@ class TestDirectiveArguments {
 			import beast.testsuite.directive.error : TestDirective_Error;
 			import beast.testsuite.directive.onlylexing : TestDirective_OnlyLexing;
 			import beast.testsuite.directive.onlyparsing : TestDirective_OnlyParsing;
+			import beast.testsuite.directive.stdout : TestDirective_Stdout;
 
 			switch ( name ) {
 
@@ -98,6 +99,9 @@ class TestDirectiveArguments {
 
 			case "onlyParsing":
 				return new TestDirective_OnlyParsing( this );
+
+			case "stdout":
+				return new TestDirective_Stdout( this );
 
 			default:
 				assert( 0, "%s:%s:%s: Unknown directive '%s'".format( test.identifier, file, line, name ) );

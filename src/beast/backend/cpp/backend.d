@@ -4,16 +4,29 @@ import beast.backend.common.backend;
 import beast.backend.cpp.codebuilder;
 import beast.backend.toolkit;
 import beast.core.error.error;
-import std.array : appender, Appender;
-import std.file : write;
+import std.array : appender, Appender, replace;
+static import std.file;
 import std.format : formattedWrite;
 import std.stdio : writeln;
 import std.path : absolutePath;
+import std.process : executeShell;
+import beast.core.project.configuration;
+import beast.code.data.scope_.root;
 
 final class Backend_Cpp : Backend {
 
 	public:
 		override void build( ) {
+			auto entryFunctionCallCB = scoped!CodeBuilder_Cpp( 1 );
+
+			// Must be done in a thread because of task guards
+			taskManager.imminentIssueJob( { //
+				auto entryModule = project.entryModule.symbol.dataEntity;
+				
+				auto _sgd = scopeGuard( new RootDataScope( entryModule ) );
+				entryModule.expectResolveIdentifier( ID!"main" ).resolveCall( null, true ).buildCode( entryFunctionCallCB );
+			} );
+
 			// Process memory
 			taskManager.waitForEverythingDone( );
 			memoryManager.finish( );
@@ -41,8 +54,11 @@ final class Backend_Cpp : Backend {
 				return;
 
 			auto result = appender!string;
-			result ~= "#define VAL( var, type ) ( *( ( type* )( var ) ) )\n";
+			result ~= "#define VAL( var, type ) ( *( ( type* )( var ) ) )\n\n";
 			result ~= "#include <stdint.h>\n";
+			result ~= "#include <stdio.h>\n";
+			result ~= "#include <string.h>\n";
+			result ~= "#include <stdlib.h>\n";
 			result ~= "\n";
 
 			result ~= "// TYPES\n";
@@ -57,14 +73,31 @@ final class Backend_Cpp : Backend {
 			foreach ( cb; codebuilders_ )
 				result ~= cb.code_implementations;
 
-			result ~= "void main() {}";
+			// Main function
+			{
+				result ~= "int main() {\n";
+				result ~= entryFunctionCallCB.code_implementations;
+				result ~= "\treturn 0;\n";
+				result ~= "}\n";
+			}
 
 			string filename = "%s.cpp".format( project.configuration.targetFilename );
 
-			filename.write( result.data );
-
-			if ( project.configuration.testStdout )
+			if ( project.configuration.outputCodeToStdout )
 				writeln( result.data );
+
+			std.file.write( filename, result.data );
+
+			if ( !wereErrors && project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.outputgen ) {
+				string command = project.configuration.compileCommand;
+				command = command.replace( "%COMPILER%", project.configuration.cppCompiler );
+				command = command.replace( "%SOURCE%", filename );
+				command = command.replace( "%TARGET%", project.configuration.targetFilename );
+
+				auto compileResult = command.executeShell( );
+
+				benforce( compileResult.status == 0, E.cppCompilationFailed, "Failed to compile the C++ code:\n\t%s".format( compileResult.output.replace( "\n", "\n\t" ) ) );
+			}
 		}
 
 		override CodeBuilder spawnFunctionCodebuilder( ) {

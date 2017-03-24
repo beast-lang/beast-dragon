@@ -53,6 +53,7 @@ enum E {
 
 	// CTIME:
 	valueNotCtime, /// Value is not known at compile time
+	functionNotCtime, /// Function is not callable at compile time
 	noReturnExit, /// Function did not exit via return statement
 
 	// OVERLOADSETS:
@@ -68,6 +69,10 @@ enum E {
 
 	// STATEMENTS:
 	missingReturnExpression,
+
+	// BUILDING:
+	entryFunctionProblem, /// Missing main or wrong arguments or so
+	cppCompilationFailed, /// Error in compiling the C++ code
 }
 
 enum ErrorSeverity {

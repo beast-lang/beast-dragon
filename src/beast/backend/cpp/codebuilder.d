@@ -13,8 +13,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 	public enum tab = "\t";
 
 	public:
-		this( ) {
+		this( size_t tabOffset = 0 ) {
 			tabsString_ = tab ~ tab ~ tab ~ tab;
+			tabOffset_ = tabOffset;
 
 			codeResult_ = appender!string;
 			declarationsResult_ = appender!string;
@@ -345,8 +346,13 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		override void popScope( bool generateDestructors = true ) {
+			// Result might be f-ked around because of destructors
+			auto result = resultVarName_;
+
 			super.popScope( generateDestructors );
 			tabOffset_--;
+
+			resultVarName_ = result;
 		}
 
 	package:

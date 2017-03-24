@@ -1,0 +1,23 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+	"files.exclude": {
+		"**/*.exe": true,
+		"**/*.bat": true,
+		"**/*.sh": true,
+		"**/*.sln": true,
+		"doc": true,
+		"_config.yml": true,
+		".editorconfig": true,
+		".gitignore": true,
+		".travis.yml": true,
+		"beast.sln": true,
+		"dscanner.ini": true,
+		"notes.txt": true,
+		"test/log": true,
+		"test/tmp": true,
+		"test/output": true,
+		"bin/beast" : true,
+		"bin/beast_testsuite" : true,
+		"bin/test.cpp": true
+	}
+}

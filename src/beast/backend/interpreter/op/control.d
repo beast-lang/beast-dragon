@@ -18,20 +18,36 @@ pragma( inline ):
 		berror( E.noReturnExit, "Function %s did not exit via return statement".format( func.identificationString ) );
 	}
 
+	void op_printError( Interpreter ir ) {
+		berror( E.functionNotCtime, "Cannot print to stdout at compile time" );
+	}
+
 	// ALLOCATION/DEALLOCATION
 	void op_allocLocal( Interpreter ir, size_t bpOffset, size_t bytes ) {
 		const size_t stackOffset = ir.currentFrame.basePointer + bpOffset;
 
-		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch" );
-
+		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
 		ir.stack ~= memoryManager.alloc( bytes );
 	}
 
 	void op_skipAlloc( Interpreter ir, size_t bpOffset ) {
 		const size_t stackOffset = ir.currentFrame.basePointer + bpOffset;
 
-		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch" );
+		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
 		ir.stack ~= MemoryPtr( );
+	}
+
+	void op_popScope( Interpreter ir, size_t targetBpOffset ) {
+		const size_t targetStackSize = ir.currentFrame.basePointer + targetBpOffset;
+
+		assert( targetStackSize < ir.stack.length, "popScope out of bounds (%s - %s)".format( ir.stack.length, targetStackSize ) );
+
+		foreach ( ptr; ir.stack[ targetStackSize .. $ ] ) {
+			if ( !ptr.isNull )
+				memoryManager.free( ptr );
+		}
+
+		ir.stack.length = targetStackSize;
 	}
 
 	// JUMPS/CALLS

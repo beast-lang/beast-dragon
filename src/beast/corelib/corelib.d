@@ -7,6 +7,7 @@ import beast.corelib.const_.constants;
 import beast.code.data.module_.bootstrap;
 import beast.code.lex.identifier;
 import beast.corelib.const_.enums;
+import beast.corelib.deco.functions;
 
 /// Constructs core libraries (if they already are not constructed)
 void constructCoreLibrary( ) {
@@ -32,6 +33,9 @@ class CoreLibrary {
 		/// Core enums (Operator, ...)
 		CoreLibrary_Enums enum_;
 
+		/// Functions (print, ...)
+		CoreLibrary_Functions function_;
+
 	public:
 		/// Module where all core stuff is in
 		/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.recursivelyResolveIdentifier
@@ -43,10 +47,13 @@ class CoreLibrary {
 			Symbol[ ] symbols;
 			void delegate( Symbol ) sink = ( s ) { symbols ~= s; };
 
-			type.initialize( sink, module_.dataEntity );
-			constant.initialize( sink, module_.dataEntity );
-			decorator.initialize( sink, module_.dataEntity );
-			enum_.initialize( sink, module_.dataEntity );
+			auto entity = module_.dataEntity;
+
+			type.initialize( sink, entity );
+			constant.initialize( sink, entity );
+			decorator.initialize( sink, entity );
+			enum_.initialize( sink, entity );
+			function_.initialize( sink, entity );
 
 			type.initialize2( );
 			enum_.initialize2( );

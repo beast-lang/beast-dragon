@@ -59,13 +59,13 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			pushScope( );
 
 			MemoryPtr ctx;
-			if( parentInstance ) {
+			if ( parentInstance ) {
 				parentInstance.buildCode( this );
 				ctx = result_;
 			}
 
-			MemoryPtr[] args;
-			foreach( i, param; function_.parameters ) {
+			MemoryPtr[ ] args;
+			foreach ( i, param; function_.parameters ) {
 				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, true );
 				build_localVariableDefinition( argVar );
 				build_copyCtor( argVar, arguments[ i ] );
@@ -94,7 +94,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			auto _s = scoped!LocalDataScope( );
 			auto _sgd = _s.scopeGuard;
 			pushScope( );
-			
+
 			mixin( ( ) { //
 				import std.array : appender;
 
@@ -116,6 +116,16 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 			popScope( );
 			_s.finish( );
+		}
+
+	public:
+		override void popScope( bool generateDestructors = true ) {
+			// Result might be f-ked around because of destructors
+			auto result = result_;
+
+			super.popScope( generateDestructors );
+
+			result_ = result_;
 		}
 
 	public:

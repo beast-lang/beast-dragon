@@ -66,10 +66,19 @@ struct ExtendedIdentifier {
 		template preobtained( string str ) {
 			static __gshared ExtendedIdentifier preobtained;
 			shared static this( ) {
-				import std.algorithm.iteration : splitter;
-
-				preobtained = str.splitter( "." ).map!( x => Identifier( x ) ).array.ExtendedIdentifier;
+				preobtained = str.ExtendedIdentifier;
 			}
+		}
+
+	public:
+		this( string str ) {
+			import std.algorithm.iteration : splitter;
+
+			data = str.splitter( "." ).map!( x => Identifier( x ) ).array;
+		}
+
+		this( Identifier[ ] data ) {
+			this.data = data;
 		}
 
 	public:

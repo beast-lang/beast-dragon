@@ -11,7 +11,8 @@ final class TestDirective_OnlyLexing : TestDirective {
 
 	public:
 		override void onBeforeTestStart( ) {
-			test.args ~= [ "--config", "stopOnPhase=lexing" ];
+			assert( test.stopOnPhase == StopOnPhase.doEverything, "%s %s".format( test.identifier, test.stopOnPhase ) );
+			test.stopOnPhase = StopOnPhase.lexing;
 		}
 
 }

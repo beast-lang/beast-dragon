@@ -5,11 +5,17 @@
 		"Daniel 'Danol' Čejchan"
 	],
 	"license": "GPL-3.0",
+
+	"sourcePaths": [
+		"src"
+	],
+
+	"versions": [
+		"cppBackend"
+	],
+
 	"targetName": "beast",
 	"targetPath": "bin",
 	"targetType": "executable",
-	"workingDirectory": "bin",
-	"sourcePaths": [
-		"src"
-	]
+	"workingDirectory": "bin"
 }

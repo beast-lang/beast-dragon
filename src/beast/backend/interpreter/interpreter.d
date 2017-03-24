@@ -22,8 +22,16 @@ final class Interpreter {
 			ir.stack ~= args;
 			ir.stack ~= ctxPtr;
 
+			import beast.core.error.error : stderrMutex;
+
+			debug ( interpreter )
+				stderrMutex.lock( );
+
 			ir.executeInstruction( Instruction.I.call, func.iopFuncPtr );
 			ir.run( );
+
+			debug ( interpreter )
+				stderrMutex.unlock( );
 		}
 
 	public:
@@ -41,7 +49,7 @@ final class Interpreter {
 			debug ( interpreter ) {
 				import std.stdio : writefln;
 
-				writefln( ":%4s\t@%4s\t%s", execId, currentFrame.instructionPointer - 1, instr.identificationString );
+				writefln( "exec :%4s\t@%4s\t%s", execId, currentFrame.instructionPointer - 1, instr.identificationString );
 				execId++;
 			}
 

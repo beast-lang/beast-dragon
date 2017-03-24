@@ -25,6 +25,7 @@ struct ProjectConfiguration {
 			lexing, /// Do only lexical analysis
 			parsing, /// Do lexical and syntax analysis
 			codegen,
+			outputgen,
 			doEverything,
 		}
 
@@ -32,47 +33,51 @@ struct ProjectConfiguration {
 
 	public:
 		@configurable {
-			/// File name of target application/library
 			@help( "File name of the target application/library." )
 			string targetFilename;
 
-			/// Array of source file root directories; in project.finishConfiguration, they're translated to absolute paths.
 			@help( "Root source file directories\nAll modules in these directories are included in the project." )
 			string[ ] sourceDirectories;
 
-			/// Root include directories; modules in include directories are not included in the project unless they're explicitly imported; in project.finishConfiguration, they're translated to absolute paths.
 			@help( "Root include directories\nModules in these directories are not included in the project unless they're explicitly imported." )
 			string[ ] includeDirectories;
 
-			/// Source files included in the project
 			@help( "Explicit source files included in the project." )
 			string[ ] sourceFiles;
 
-			/// Directory where the output files are generated to (exe, ...)
 			@help( "Directory where the output files are generated to" )
 			string outputDirectory = ".";
 
-			/// Output message format
 			@help( "Format of compiler messages" )
 			MessageFormat messageFormat = MessageFormat.gnu;
 
 			@help( "If set to true, target application will be run after succesful build." )
 			bool runAfterBuild;
 
-			/// Compiler can be configured to stop at certaing compilation phase
 			@help( "The compiler can be configured to stop at certain compilation phase." )
 			StopOnPhase stopOnPhase = StopOnPhase.doEverything;
 
-			/// Compiler can be configured to stop at certaing compilation phase
 			@help( "How many thread workers will spawn (implicit = number of cores)" )
 			IntGt0 workerCount; // = totalCPUs; in initialize
 
-			/// Test C++ output to stdout
-			@help( "TEST ITEM" )
-			bool testStdout;
+			@help( "Module that contains the Void main() function" )
+			string entryModule;
 		}
+
+	public:
+		version ( cppBackend ) @configurable {
+			@help( "When true, instead of creating a .cpp file, the code is written to stdout" )
+			bool outputCodeToStdout;
+
+			@help( "Program used to compile the C++ code" )
+			string cppCompiler = "gcc";
+
+			@help( "Command that is executed for compiling the C++ code (you can use %COMPILER%, %SOURCE% and %TARGET%)" )
+			string compileCommand = "%COMPILER% %SOURCE% -o %TARGET%";
+		}
+
+	public:
 		debug @configurable {
-			/// Show stack trace on error report
 			@help( "Show stack trace on error report" )
 			bool showStackTrace;
 		}
@@ -197,7 +202,7 @@ struct ProjectConfiguration {
 			try {
 				result = value.formattedRead( "%s", &val );
 			}
-			catch( Throwable t ) {
+			catch ( Throwable t ) {
 				berror( E.invalidOpts, "Could not parse key %s (='%s') into a number".format( key, value ) );
 			}
 

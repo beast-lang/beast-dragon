@@ -9,7 +9,7 @@ import beast.code.data.codenamespace.namespace;
 import beast.code.data.util.proxy;
 import beast.code.ast.decl.env;
 
-// debug = interpreter;
+//debug = interpreter;
 
 /// Runtime function = function without @ctime arguments (or expanded ones)
 abstract class Symbol_RuntimeFunction : Symbol_Function {
@@ -57,7 +57,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			staticMembersMergerWIP_.finish( );
 
-			debug ( intepreter )
+			debug ( interpreter )
 				codeProcessingCodeBuilderWIP_.debugPrintResult( identificationString );
 		}
 

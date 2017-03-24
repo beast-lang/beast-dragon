@@ -23,3 +23,7 @@ void primitiveOp_primitiveCopyCtor( CB cb, DataEntity inst, DataEntity[ ] args )
 void primitiveOp_noopDtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	// Do. absolutely. nothing
 }
+
+void primitiveOp_print( CB cb, DataEntity inst, DataEntity[ ] args ) {
+	berror( E.functionNotCtime, "Cannot print to stdout at compile time" );
+}

@@ -16,19 +16,15 @@ import std.stdio;
 import std.string;
 import std.range;
 
-final class TestFailException : Exception {
-
-	public:
-		this( string msg ) {
-			super( msg );
-
-			message = msg;
-		}
-
-	public:
-		string message;
-
+enum StopOnPhase {
+	lexing, /// Do only lexical analysis
+	parsing, /// Do lexical and syntax analysis
+	codegen,
+	outputgen,
+	doEverything,
 }
+
+enum StopOnPhaseStr = [ "lexing", "parsing", "codegen", "outputgen" ];
 
 final class Test {
 
@@ -131,6 +127,17 @@ final class Test {
 			foreach ( d; directives )
 				d.onBeforeTestStart( );
 
+			{
+				if ( !needsCompilation && stopOnPhase == StopOnPhase.doEverything )
+					stopOnPhase = StopOnPhase.codegen;
+
+				if ( stopOnPhase != StopOnPhase.doEverything )
+					args ~= [ "--config", "stopOnPhase=%s".format( StopOnPhaseStr[ stopOnPhase ] ) ];
+
+				if ( runAfterBuild )
+					args ~= "-r";
+			}
+
 			log.writeln( "Test command: \n", args.joiner( " " ), "\n" );
 			log.flush( );
 
@@ -186,7 +193,6 @@ final class Test {
 			}
 
 			// Process results
-			enforce( !stdoutContent.length, "Stdout not empty (stdout directives not yet implemented): " ~ stdoutContent );
 
 			// Test if errors were expected
 			{
@@ -207,6 +213,15 @@ final class Test {
 
 			}
 
+			// Check stdout
+			{
+				log.writeln( "-- begin of expected stdout" );
+				log.writeln( expectedStdout );
+				log.writeln( "-- end of expected stdout\n" );
+
+				enforce( stdoutContent == expectedStdout, "Stdout does not match expected stdout" );
+			}
+
 			bool exitCodeHandled = exitCode == 0;
 			foreach ( d; directives )
 				exitCodeHandled |= d.onBeforeTestEnd( exitCode );
@@ -222,9 +237,14 @@ final class Test {
 		/// Args to run the compiler with
 		string[ ] args;
 		string logFilename;
+		StopOnPhase stopOnPhase = StopOnPhase.doEverything;
+		/// If false, outputgen and run is not executed
+		bool needsCompilation;
+		bool runAfterBuild;
 		/// Timeout in seconds
 		int timeout = 3;
 		int maxThreads = 0;
+		string expectedStdout;
 
 	private:
 		void enforce( bool condition, lazy string message ) {
@@ -238,5 +258,19 @@ final class Test {
 
 			throw new TestFailException( message );
 		}
+
+}
+
+final class TestFailException : Exception {
+
+	public:
+		this( string msg ) {
+			super( msg );
+
+			message = msg;
+		}
+
+	public:
+		string message;
 
 }

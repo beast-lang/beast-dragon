@@ -7,5 +7,5 @@ public {
 	import std.format : formattedWrite;
 }
 
-alias I = Instruction;
+alias I = Instruction.I;
 alias CB = CodeBuilder_Interpreter;

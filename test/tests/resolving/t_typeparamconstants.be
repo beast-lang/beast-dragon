@@ -1,5 +1,9 @@
 module t_typeparamconstants;
 
+Void main() {
+	
+}
+
 Void foo1( Operator ) {
 
 }

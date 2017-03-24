@@ -7,6 +7,7 @@ enum BackendPrimitiveOperation {
 	zeroInitCtor, /// Initializes to zeros
 	primitiveCopyCtor, /// Performs a bit copy
 	noopDtor, /// Destructor that does nothing (has separate primitive op for debugging purposes)
+	print, /// Prints given variable to console
 
 	// BOOL ops
 	boolOr,

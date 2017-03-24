@@ -64,6 +64,10 @@ abstract class CodeBuilder : Identifiable {
 			var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( var.ast, true, coreLibrary.enum_.xxctor.opAssign, initValue ).buildCode( this );
 		}
 
+		final void build_dtor( DataEntity_LocalVariable var ) {
+			var.expectResolveIdentifier( ID!"#dtor" ).resolveCall( null, true ).buildCode( this );
+		}
+
 	protected:
 		/// Creates a new scope (scopes are stored on a stack)
 		/// CodeBuilder scopes are used for destructor generating
@@ -103,7 +107,7 @@ abstract class CodeBuilder : Identifiable {
 	private:
 		final void generateScopeExit( ref Scope scope_ ) {
 			foreach_reverse ( var; scope_.variables )
-				var.expectResolveIdentifier( ID!"#dtor" ).resolveCall( null, true ).buildCode( this );
+				build_dtor( var );
 		}
 
 	private:

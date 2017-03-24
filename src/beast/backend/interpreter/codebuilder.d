@@ -207,9 +207,18 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void popScope( bool generateDestructors = true ) {
+			// Result might be f-ked around because of destructors
+			auto result = operandResult_;
+
 			super.popScope( generateDestructors );
+
+			if ( currentBPOffset_ != bpOffsetStack_[ $ - 1 ] )
+				addInstruction( I.popScope, bpOffsetStack_[ $ - 1 ].iopLiteral );
+
 			currentBPOffset_ = bpOffsetStack_[ $ - 1 ];
 			bpOffsetStack_.length--;
+
+			operandResult_ = result;
 		}
 
 	package:

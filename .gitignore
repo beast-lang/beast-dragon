@@ -1,5 +1,4 @@
 .dub/
-.vscode/
 .vs/
 doc/**/*.aux
 doc/**/*.out

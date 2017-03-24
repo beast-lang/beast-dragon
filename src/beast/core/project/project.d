@@ -7,6 +7,10 @@ import beast.core.error.msgfmtr.msgfmtr;
 import beast.core.project.modulemgr;
 import beast.core.error.msgfmtr.gnu;
 import beast.backend.common.backend;
+import beast.code.data.function_.rt;
+import beast.core.project.module_;
+import beast.code.lex.identifier;
+import beast.code.data.symbol;
 
 /// Project wrapping class
 final class Project : Identifiable {
@@ -21,7 +25,8 @@ final class Project : Identifiable {
 
 			import beast.backend.cpp.backend : Backend_Cpp;
 
-			backend = new Backend_Cpp;
+			version ( cppBackend )
+				backend = new Backend_Cpp;
 
 			configuration.initialize( );
 		}
@@ -37,7 +42,17 @@ final class Project : Identifiable {
 		string basePath;
 
 	public:
-		override final string identificationString( ) const {
+		Module entryModule( ) {
+			if ( project.configuration.entryModule )
+				return moduleManager.getModule( project.configuration.entryModule.ExtendedIdentifier );
+			else if ( moduleManager.initialModuleList.length == 1 )
+				return moduleManager.initialModuleList[ 0 ];
+			else
+				return moduleManager.getModule( "main".ExtendedIdentifier );
+		}
+
+	public:
+		override string identificationString( ) const {
 			return "<project>";
 		}
 

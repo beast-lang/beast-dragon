@@ -17,7 +17,7 @@ code //! directive1Name: mainDirectiveValue, arg1: arg1Val, arg2 ; directive2Nam
 # Supported directives
 
 ## error, warning, hint
-Expects error/warning/hint on the file and line of the directive.
+Expects error/warning/hint on the file and line of the directive (error type is passed as main value).
 
 **Arguments** \
 `noLine` - error is not related to the line (it does not have line attribute) \
@@ -26,3 +26,10 @@ Expects error/warning/hint on the file and line of the directive.
 
 ## onlyLexing, onlyParsing
 Compiler performs only lexing/parsing phase
+
+## stdout
+Expects program to output given string to stdout (string is passed as main valued and parsed as JSON string - it must be in quotation marks).
+
+When there are more stdout directives, the resulting stdout is expected to be concatenation of all of them.
+
+Directives do not take execution or parsing order into consideration - they are parsed in the order they are mentioned in the source file.

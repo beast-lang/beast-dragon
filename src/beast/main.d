@@ -16,8 +16,9 @@ import std.file : exists;
 import std.getopt : getopt, GetoptResult, GetOptException;
 import std.json;
 import std.path : absolutePath, dirName, pathSplitter;
-import std.stdio : stdin, writeln, writef, stderr;
+import std.stdio : stdin, writeln, writef, stderr, write;
 import std.string : strip;
+import std.process : execute;
 
 static import std.getopt;
 
@@ -42,14 +43,14 @@ void mainImpl( string[ ] args ) {
 	try {
 		getoptResult = getopt( args, //
 				std.getopt.config.bundling, //
-				"project|p", "Location of project configuration file.", ( string opt, string val ) { //
+				"project|p", "Location of project configuration file", ( string opt, string val ) { //
 					benforce( !projectFile, E.invalidOpts, "Cannot set multiple project files" );
 					projectFile = val.absolutePath;
 				}, //
-				"project-stdin", "Loads the project configuration from stdin (until EOF).", ( ) { //
+				"project-stdin", "Loads the project configuration from stdin (until EOF)", ( ) { //
 					stdinProjectData = stdin.byLine.joiner( "\n" ).to!string;
 				}, //
-				"source|s", "Adds specified source file to the project.", ( string opt, string val ) { //
+				"source|s", "Adds specified source file to the project", ( string opt, string val ) { //
 					sourceFileCount++;
 					optConfigs[ "sourceFiles@opt-origin" ~ sourceFileCount.to!string ] = [ val.absolutePath.to!string ];
 				}, //
@@ -59,12 +60,12 @@ void mainImpl( string[ ] args ) {
 				"target-filename", "Filename of the output file", ( string opt, string val ) { //
 					optConfigs[ "targetFilename" ] = val;
 				}, //
-				"root", "Root directory of the project.", &root, //
-				"run|r", "Run the target application after a successfull build.", { //
+				"root", "Root directory of the project", &root, //
+				"run|r", "Run the target application after a successfull build", { //
 					optConfigs[ "runAfterBuild" ] = true;
 				}, //
 
-				"config", "Override project configuration option. See --help-config for possible options. \nUsage: --config <optName>=<value>, for example --config messageFormat=json (arrays are separated with comma)", ( string opt, string val ) { //
+				"config", "Override project configuration option; See --help-config for possible options. \nUsage: --config <optName>=<value>, for example --config messageFormat=json (arrays are separated with comma)", ( string opt, string val ) { //
 					// TODO: Smart config vals
 					const auto data = val.findSplit( "=" );
 					const string key = data[ 0 ].strip;
@@ -73,11 +74,11 @@ void mainImpl( string[ ] args ) {
 					optConfigs[ key ] = ProjectConfiguration.processSmartOpt( key, value );
 				}, //
 
-				"json-messages", "Print messages in JSON format.", { //
+				"json-messages", "Print messages in JSON format", { //
 					optConfigs[ "messageFormat" ] = "json";
 				}, //
 
-				"help-config", "Shows documentation of project configuration.", { //
+				"help-config", "Shows documentation of project configuration", { //
 					project.configuration.printHelp( );
 					doProject = false;
 				} //
@@ -166,15 +167,15 @@ void mainImpl( string[ ] args ) {
 		context.delayedIssuedJobs = null;
 	}
 
-	// Finish phase 1
-	taskManager.waitForEverythingDone( );
-
 	if (  /*!wereErrors &&*/ project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.codegen ) {
 		// Start building code using backend
 		project.backend.build( );
 	}
 
-	taskManager.waitForEverythingDone( );
+	if ( !wereErrors && project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.outputgen && project.configuration.runAfterBuild ) {
+		auto executeResult = project.configuration.targetFilename.execute( );
+		executeResult.output.write( );
+	}
 
 	assert( !context.delayedIssuedJobs.length );
 }

@@ -21,7 +21,7 @@ final class ModuleManager {
 
 	public:
 		/// Returns module based on identifier. The module can be added to the project by demand.
-		final Module getModule( ExtendedIdentifier id, CodeLocation codeLocation ) {
+		final Module getModule( ExtendedIdentifier id ) {
 			synchronized ( this ) {
 				// If the module is already in the project, return it
 				if ( auto result = id in moduleList_ )
