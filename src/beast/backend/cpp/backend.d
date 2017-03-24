@@ -34,7 +34,15 @@ final class Backend_Cpp : Backend {
 			finished_ = true;
 
 			auto code_memory = appender!string;
+
+			size_t prevPtr = 0;
+			debug MemoryBlock prevBlock;
 			foreach ( MemoryBlock block; memoryManager.memoryBlocks ) {
+				assert( block.startPtr.val > prevPtr );
+
+				prevPtr = block.startPtr.val;
+				debug prevBlock = block;
+
 				if ( !block.isReferenced )
 					continue;
 
@@ -64,7 +72,7 @@ final class Backend_Cpp : Backend {
 			result ~= "// TYPES\n";
 			foreach ( cb; codebuilders_ )
 				result ~= cb.code_types;
-			result ~= "\n// MEMORY BLOCKS\n\n";
+			result ~= "\n// MEMORY BLOCKS\n";
 			result ~= code_memory.data;
 			result ~= "\n// DECLARATIONS\n";
 			foreach ( cb; codebuilders_ )

@@ -39,7 +39,12 @@ final class MemoryManager {
 				foreach ( i, block; mmap ) {
 					if ( endPtr + bytes <= block.startPtr ) {
 						result = new MemoryBlock( endPtr, bytes );
+
 						mmap.insertInPlace( i, result );
+						//mmap = mmap[ 0 .. i ] ~ result ~ mmap[ i .. $ ];
+						assert( mmap[ i ] is result );
+						assert( mmap[ i + 1 ] is block );
+
 						break;
 					}
 
@@ -50,14 +55,23 @@ final class MemoryManager {
 					// If it fails, we add a new memory after all existing blocks
 					benforce( endPtr <= MemoryPtr( hardwareEnvironment.memorySize ), E.outOfMemory, "Failed to allocate %s bytes".format( bytes ) );
 
+					assert( mmap.length == 0 || mmap[ $ - 1 ].endPtr == endPtr );
+
 					result = new MemoryBlock( endPtr, bytes );
 					mmap ~= result;
 				}
 
-				context.sessionMemoryBlocks[ result.startPtr.val ] = result;
+				debug {
+					MemoryBlock prevBlock = mmap[ 0 ];
+					foreach ( i, block; mmap[ 1 .. $ ] ) {
+						assert( block.startPtr >= prevBlock.endPtr );
+						prevBlock = block;
+					}
+				}
 			}
 
-			assert( findMemoryBlock( result.startPtr ) is result );
+			context.sessionMemoryBlocks[ result.startPtr.val ] = result;
+
 			return result;
 		}
 
@@ -79,8 +93,6 @@ final class MemoryManager {
 		}
 
 		void free( MemoryPtr ptr ) {
-			import std.algorithm.mutation : remove;
-
 			debug assert( !finished_ );
 
 			checkNullptr( ptr );
@@ -94,10 +106,11 @@ final class MemoryManager {
 				foreach ( i, block; mmap ) {
 					if ( block.startPtr == ptr ) {
 						benforce( block.session == context.session, E.protectedMemory, "Cannot free memory block owned by a different session" );
-						mmap.remove( i );
-						context.sessionMemoryBlocks.remove( block.startPtr.val );
-						return;
 
+						mmap = mmap[ 0 .. i ] ~ mmap[ i + 1 .. $ ];
+						context.sessionMemoryBlocks.remove( block.startPtr.val );
+
+						return;
 					}
 					else
 						benforce( block.startPtr < ptr || block.endPtr >= ptr, E.invalidMemoryOperation, "You have to call free on memory block start pointer, not any pointer in the memory block" );
@@ -246,9 +259,31 @@ final class MemoryManager {
 
 	public:
 		/// Returns range for iterating memory blocks
-		MemoryIterator memoryBlocks( ) {
+		auto memoryBlocks( ) {
 			debug assert( finished_, "Cannot iterate blocks when not finished" );
-			return MemoryIterator( this );
+
+			struct Result {
+
+				public:
+					MemoryBlock front( ) {
+						return mgr_.mmap[ i_ ];
+					}
+
+					bool empty( ) {
+						return i_ >= mgr_.mmap.length;
+					}
+
+					void popFront( ) {
+						i_++;
+					}
+
+				private:
+					MemoryManager mgr_;
+					size_t i_;
+
+			}
+
+			return Result( this );
 		}
 
 	private:
@@ -258,27 +293,5 @@ final class MemoryManager {
 		/// Map of session id -> jobId
 		debug static __gshared size_t[ size_t ] activeSessions;
 		ReadWriteMutex blockListMutex;
-
-	public:
-		struct MemoryIterator {
-
-			public:
-				MemoryBlock front( ) {
-					return mgr_.mmap[ i_ ];
-				}
-
-				bool empty( ) {
-					return i_ >= mgr_.mmap.length;
-				}
-
-				void popFront( ) {
-					i_++;
-				}
-
-			private:
-				MemoryManager mgr_;
-				size_t i_;
-
-		}
 
 }
