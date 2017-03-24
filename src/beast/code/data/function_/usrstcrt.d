@@ -53,7 +53,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
-				auto _gd = ErrorGuard( ast );
+				auto _gd = ErrorGuard( codeLocation );
 				auto _s = scoped!RootDataScope( staticData_ );
 				auto _sgd = _s.scopeGuard;
 

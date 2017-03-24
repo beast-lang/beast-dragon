@@ -30,6 +30,8 @@ final class AST_FunctionDeclaration : AST_Declaration {
 
 	public:
 		override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
+			const auto __gd = ErrorGuard( codeLocation );
+			
 			FunctionDeclarationData declData = new FunctionDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 

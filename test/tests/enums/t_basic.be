@@ -57,5 +57,5 @@ Void err6() {
 }
 
 Void err7() {
-	foo1( :xx ); //! error: noMatchingOverload
+	foo1( :xx ); //! error: unknownIdentifier
 }

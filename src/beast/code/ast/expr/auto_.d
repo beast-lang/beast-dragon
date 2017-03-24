@@ -37,6 +37,8 @@ final class AST_AutoExpression : AST_Expression {
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
+			const auto __gd = ErrorGuard( codeLocation );
+			
 			berror( E.syntaxError, "'auto' is not allowed here" );
 			assert( 0 );
 		}

@@ -18,13 +18,14 @@ struct CallMatchSet {
 
 			foreach ( overload; overloadset ) {
 				if ( overload.isCallable )
-					matches ~= overload.startCallMatch( ast );
+					matches ~= overload.startCallMatch( ast, overloadset.length == 1 );
 
 				// If the overload is not callable, we try to overload against overload.#operator( Operator.call, XXX )
 				else {
-					foreach ( suboverload; overload.resolveIdentifier( Identifier.preobtained!"#operator" ) ) {
-						if ( overload.isCallable )
-							matches ~= suboverload.startCallMatch( ast ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
+					auto suboverloadset = overload.resolveIdentifier( Identifier.preobtained!"#operator" );
+					foreach ( suboverload; suboverloadset ) {
+						if ( suboverload.isCallable )
+							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1 ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
 					}
 				}
 			}

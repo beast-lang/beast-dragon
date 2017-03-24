@@ -12,6 +12,16 @@ Bool foo() {
 	return and( true, true ) && or( false, true && false );
 }
 
+Bool printTrue() {
+	print( true );
+	return true;
+}
+
+Bool printFalse() {
+	print( false );
+	return false;
+}
+
 // Static variable value should be executed at ctime (for now)
 Bool x = and( true, false );
 Bool z = foo();
@@ -26,4 +36,11 @@ Void main() {
 	print( a ); //! stdout: "1"
 
 	print( z ); //! stdout: "0"
+
+	// Now we test execution order
+	print( printTrue() && printFalse() ); //! stdout: "100"
+	print( printTrue() && printTrue() ); //! stdout: "111"
+	print( printTrue() || printTrue() ); //! stdout: "11"
+	print( printFalse() || printTrue() ); //! stdout: "011"
+	print( printFalse() && printTrue() ); //! stdout: "00"
 }

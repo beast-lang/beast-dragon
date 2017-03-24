@@ -174,7 +174,9 @@ void mainImpl( string[ ] args ) {
 
 	if ( !wereErrors && project.configuration.stopOnPhase >= ProjectConfiguration.StopOnPhase.outputgen && project.configuration.runAfterBuild ) {
 		auto executeResult = project.configuration.targetFilename.execute( );
+
 		executeResult.output.write( );
+		benforce( executeResult.status == 0, E.binaryExecutionFailed, "Built program resuled with exit code %s".format( executeResult.status ) );
 	}
 
 	assert( !context.delayedIssuedJobs.length );

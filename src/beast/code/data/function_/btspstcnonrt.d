@@ -66,8 +66,8 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast ) {
-					return sym_.matchFactory_.startCallMatch( this, ast );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
+					return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption );
 				}
 
 			protected:
@@ -85,7 +85,7 @@ private {
 	abstract class CallMatchFactory {
 
 		public:
-			abstract CallableMatch startCallMatch( DataEntity sourceEntity, AST_Node ast );
+			abstract CallableMatch startCallMatch( DataEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption );
 
 	}
 
@@ -101,8 +101,8 @@ private {
 			}
 
 		public:
-			override CallableMatch startCallMatch( DataEntity sourceEntity, AST_Node ast ) {
-				return new Match!( typeof( this ) )( this, sourceEntity, ast );
+			override CallableMatch startCallMatch( DataEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
+				return new Match!( typeof( this ) )( this, sourceEntity, ast, isOnlyOverloadOption );
 			}
 
 		private:
@@ -117,8 +117,8 @@ private {
 			alias Builder = Factory.Builder;
 
 		public:
-			this( Factory factory, DataEntity sourceEntity, AST_Node ast ) {
-				super( sourceEntity, ast );
+			this( Factory factory, DataEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
+				super( sourceEntity, ast, isOnlyOverloadOption );
 				factory_ = factory;
 			}
 

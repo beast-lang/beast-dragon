@@ -8,12 +8,12 @@ void initialize_Int( ref CoreLibrary_Types tp ) {
 	// Implicit constructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp.Int, tp.Void, //
 			ExpandedFunctionParameter.bootstrap( ), //
-			BackendPrimitiveOperation.zeroInitCtor );
+			BackendPrimitiveOperation.memZero );
 
 	// Copy/assign constructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp.Int, tp.Void, //
 			ExpandedFunctionParameter.bootstrap( enm.xxctor.opAssign, tp.Int ), //
-			BackendPrimitiveOperation.primitiveCopyCtor );
+			BackendPrimitiveOperation.memCpy );
 
 	// Destructor
 	sym ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", tp.Int, tp.Void, //

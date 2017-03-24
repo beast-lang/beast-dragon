@@ -3,14 +3,17 @@ module beast.backend.interpreter.instruction;
 import beast.backend.toolkit;
 import beast.code.data.function_.rt;
 import beast.util.enumassoc;
+import beast.core.project.codelocation;
+import beast.core.error.error;
 
 struct Instruction {
 
 	public:
 		enum I {
 			noOp, /// Does basically nothing
-			noReturnError, /// Throws an error - function did not exit using return statement
-			printError, /// Throws an error - cannot print to stdout at compile time
+			noReturnError, /// () Throws an error - function did not exit using return statement
+			printError, /// () Throws an error - cannot print to stdout at compile time
+			assert_, /// (condition: ptr) If condition is false (evaluated as bool), reports an error
 
 			allocLocal, /// (bpOffset : dd, bytes : dd) Allocates memory for a local variable
 			skipAlloc, /// (bpOffset: dd) Do not allocate memory for local variable (but increase stack offset)
@@ -34,11 +37,14 @@ struct Instruction {
 			op[ 0 ] = op1;
 			op[ 1 ] = op2;
 			op[ 2 ] = op3;
+
+			codeLocation = getCodeLocation();
 		}
 
 	public:
 		I i;
 		InstructionOperand[ 3 ] op;
+		CodeLocation codeLocation;
 
 	public:
 		ref InstructionOperand op1( ) {

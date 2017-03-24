@@ -30,8 +30,8 @@ abstract class ProxyDataEntity : DataEntity {
 			return sourceEntity_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( AST_Node ast ) {
-			return sourceEntity_.startCallMatch( ast );
+		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
+			return sourceEntity_.startCallMatch( ast, isOnlyOverloadOption );
 		}
 
 		override Symbol_Decorator isDecorator( ) {

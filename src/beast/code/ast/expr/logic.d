@@ -41,9 +41,11 @@ final class AST_LogicExpression : AST_Expression {
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-			const auto _gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 
 			DataEntity result = base.buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
+
+			// If errorOnInferrationFailure is false then result might be null (inferration failure)
 			if ( !result )
 				return Overloadset( );
 
@@ -57,7 +59,13 @@ final class AST_LogicExpression : AST_Expression {
 					continue;
 				}
 
+				// If looking for left.#operator( xx, right ) failed, we build right side and try right.#operator( xxR, left )
 				DataEntity entity = item.buildSemanticTree( null, false ).single;
+
+				// If errorOnInferrationFailure is false then entity might be null (inferration failure)
+				if ( !entity )
+					return Overloadset( );
+
 				if ( auto op = entity.resolveIdentifier( ID!"#operator" ).resolveCall( this, false, opRightArg, item ) ) {
 					result = op;
 					continue;

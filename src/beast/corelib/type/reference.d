@@ -38,12 +38,12 @@ final class Symbol_Type_Reference : Symbol_Class {
 				// Implicit ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( ), //
-						BackendPrimitiveOperation.zeroInitCtor );
+						BackendPrimitiveOperation.memZero );
 
 				// Copy/assign ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.opAssign, this ), //
-						BackendPrimitiveOperation.primitiveCopyCtor );
+						BackendPrimitiveOperation.memCpy );
 
 				// Ref ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //

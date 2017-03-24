@@ -74,8 +74,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return parentInstance_;
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast ) {
-					return new Match( sym_, this, ast );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
+					return new Match( sym_, this, ast, isOnlyOverloadOption );
 				}
 
 			private:
@@ -96,7 +96,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return parent_.dataEntity;
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast ) {
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
+					benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
 					return new InvalidCallableMatch( this, "need this" );
 				}
 
@@ -105,8 +106,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast ) {
-					super( sym, sourceEntity, ast );
+				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
+					super( sym, sourceEntity, ast, isOnlyOverloadOption );
 
 					parentInstance_ = sourceEntity.parentInstance_;
 					sym_ = sym;
@@ -135,6 +136,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
+					const auto _gd = ErrorGuard( codeLocation );
+					
 					cb.build_primitiveOperation( sym_, op_, parentInstance_, arguments_ );
 				}
 

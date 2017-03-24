@@ -6,10 +6,10 @@ import beast.code.ast.expr.vardecl;
 import beast.code.memory.ptr;
 import beast.code.memory.memorymgr;
 import beast.code.data.scope_.root;
-import beast.code.ast.expr.logic;
+import beast.code.ast.expr.assign;
 
 abstract class AST_Expression : AST_Statement {
-	alias LowerLevelExpression = AST_LogicExpression;
+	alias LowerLevelExpression = AST_AssignExpression;
 
 	public:
 		static bool canParse( ) {
@@ -95,7 +95,7 @@ abstract class AST_Expression : AST_Statement {
 		/// Executes the expression in standalone scope and session, returing its value
 		/// The scope the ctExec creates is never destroyed
 		final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
-			const auto _gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 
 			with ( memoryManager.session ) {
 				auto _s = scoped!RootDataScope( parent );

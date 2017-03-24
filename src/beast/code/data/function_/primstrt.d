@@ -69,8 +69,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 					return sym_.parent_;
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast ) {
-					return new Match( sym_, this, ast );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
+					return new Match( sym_, this, ast, isOnlyOverloadOption );
 				}
 
 			private:
@@ -81,8 +81,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast ) {
-					super( sym, sourceEntity, ast );
+				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
+					super( sym, sourceEntity, ast, isOnlyOverloadOption );
 
 					sym_ = sym;
 				}
@@ -108,6 +108,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
+					const auto _gd = ErrorGuard( codeLocation );
+
 					cb.build_primitiveOperation( sym_, op_, null, arguments_ );
 				}
 

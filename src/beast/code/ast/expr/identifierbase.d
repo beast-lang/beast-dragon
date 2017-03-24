@@ -28,7 +28,7 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-			const auto _gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 			assert( currentScope );
 
 			Overloadset result;

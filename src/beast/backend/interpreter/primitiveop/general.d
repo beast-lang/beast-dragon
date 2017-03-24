@@ -2,14 +2,14 @@ module beast.backend.interpreter.primitiveop.general;
 
 import beast.backend.interpreter.primitiveop.toolkit;
 
-void primitiveOp_zeroInitCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_memZero( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		inst.buildCode( cb );
 		addInstruction( I.zero, operandResult_, inst.dataType.instanceSize.iopLiteral );
 	}
 }
 
-void primitiveOp_primitiveCopyCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_memCpy( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		args[ 1 ].buildCode( cb );
 		InstructionOperand arg1 = operandResult_;
@@ -25,4 +25,9 @@ void primitiveOp_noopDtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 
 void primitiveOp_print( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	cb.addInstruction( I.printError );
+}
+
+void primitiveOp_assert_( CB cb, DataEntity inst, DataEntity[ ] args ) {
+	args[ 0 ].buildCode( cb );
+	cb.addInstruction( I.assert_, cb.operandResult_ );
 }

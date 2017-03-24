@@ -27,7 +27,7 @@ final class AST_ReturnStatement : AST_Statement {
 
 	public:
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
-			auto _gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 
 			DataEntity result;
 

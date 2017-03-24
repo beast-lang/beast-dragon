@@ -38,7 +38,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 
 	public:
 		override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
-			const auto __gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 
 			VariableDeclarationData declData = new VariableDeclarationData( env );
 			DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
@@ -55,7 +55,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
-			const auto __gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 			assert( currentScope );
 
 			VariableDeclarationData declData = new VariableDeclarationData( env );

@@ -2,7 +2,7 @@ module beast.backend.cpp.primitiveop.general;
 
 import beast.backend.cpp.primitiveop.toolkit;
 
-void primitiveOp_zeroInitCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_memZero( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		inst.buildCode( cb );
 
@@ -18,7 +18,7 @@ void primitiveOp_zeroInitCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	}
 }
 
-void primitiveOp_primitiveCopyCtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_memCpy( CB cb, DataEntity inst, DataEntity[ ] args ) {
 	with ( cb ) {
 		args[ 1 ].buildCode( cb );
 		string arg1 = resultVarName_;
@@ -53,5 +53,12 @@ void primitiveOp_print( CB cb, DataEntity inst, DataEntity[ ] args ) {
 			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, bool ) );\n", tabs, resultVarName_ );
 		else
 			assert( 0, "Print not implemented for " ~ arg1.identificationString );
+	}
+}
+
+void primitiveOp_assert_( CB cb, DataEntity inst, DataEntity[ ] args ) {
+	with ( cb ) {
+		args[ 0 ].buildCode( cb );
+		codeResult_.formattedWrite( "%sassert( VAR( %s, bool ) );\n", tabs, resultVarName_ );
 	}
 }

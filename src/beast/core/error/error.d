@@ -6,6 +6,7 @@ import beast.toolkit;
 import beast.core.error.errormsg;
 import std.stdio : stderr, writeln;
 import core.runtime : defaultTraceHandler;
+import beast.core.project.codelocation;
 
 static __gshared Mutex stderrMutex;
 
@@ -55,6 +56,7 @@ enum E {
 	valueNotCtime, /// Value is not known at compile time
 	functionNotCtime, /// Function is not callable at compile time
 	noReturnExit, /// Function did not exit via return statement
+	ctAssertFail, /// Assert failed at compile-time execution
 
 	// OVERLOADSETS:
 	noMatchingOverload, /// No overload matches given parameters
@@ -62,6 +64,7 @@ enum E {
 	unknownIdentifier, /// Identifier was not found (either recursively or not)
 	cannotInfer, /// No expected type was given where it was needed (mostly inferations)
 	cannotResolve, /// Something like noMatchingOverload, but this is reported when multiple approaches to resolution are possible - for example operator resolution (a && b => a.#operator( Operator.or, b ) or b.#operator( Operator.orRight, a ) )
+	needThis, /// Calling member function without context ptr
 
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
@@ -73,6 +76,7 @@ enum E {
 	// BUILDING:
 	entryFunctionProblem, /// Missing main or wrong arguments or so
 	cppCompilationFailed, /// Error in compiling the C++ code
+	binaryExecutionFailed, /// Run binary resulted with exit code != 0
 }
 
 enum ErrorSeverity {
@@ -83,6 +87,16 @@ enum ErrorSeverity {
 }
 
 enum string[ ErrorSeverity ] ErrorSeverityStrings = [ ErrorSeverity.error : "error", ErrorSeverity.error_nothrow : "error", ErrorSeverity.warning : "warning", ErrorSeverity.hint : "hint" ];
+
+/// Returns current location (what location would be reported in an error report)
+CodeLocation getCodeLocation( ) {
+	auto msg = scoped!ErrorMessage;
+
+	foreach ( func; context.errorGuardData.stack )
+		func( msg );
+
+	return msg.codeLocation;
+}
 
 /// If the condition is not true, calls berror
 void benforce( ErrorSeverity severity = ErrorSeverity.error )( bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {

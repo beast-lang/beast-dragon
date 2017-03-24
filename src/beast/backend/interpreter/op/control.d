@@ -22,6 +22,10 @@ pragma( inline ):
 		berror( E.functionNotCtime, "Cannot print to stdout at compile time" );
 	}
 
+	void op_assert_( Interpreter ir, MemoryPtr condition ) {
+		benforce( condition.readPrimitive!bool, E.ctAssertFail, "An assert has failed during compile-time execution" );
+	}
+
 	// ALLOCATION/DEALLOCATION
 	void op_allocLocal( Interpreter ir, size_t bpOffset, size_t bytes ) {
 		const size_t stackOffset = ir.currentFrame.basePointer + bpOffset;

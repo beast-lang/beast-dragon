@@ -55,12 +55,14 @@ final class AST_P1Expression : AST_Expression {
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-			const auto _gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 
 			assert( items.length );
 
 			// We're passing null as expected type because expected type applies only to the rightmost part of the expression
 			Overloadset result = base.buildSemanticTree( inferredType, errorOnInferrationFailure );
+
+			// If errorOnInferrationFailure is false then entity might be null (inferration failure)
 			if ( !result )
 				return result;
 

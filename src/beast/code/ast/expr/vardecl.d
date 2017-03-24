@@ -45,6 +45,8 @@ final class AST_VariableDeclarationExpression : AST_Expression {
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
+			const auto __gd = ErrorGuard( codeLocation );
+			
 			berror( E.notImplemented, "Inexpr variable definitions are not implemented" );
 			assert( 0 );
 		}

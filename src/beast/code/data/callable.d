@@ -107,12 +107,13 @@ abstract class CallableMatch {
 
 abstract class SeriousCallableMatch : CallableMatch {
 	public:
-		this( DataEntity sourceDataEntity, AST_Node ast ) {
+		this( DataEntity sourceDataEntity, AST_Node ast, bool isOnlyOverloadOption ) {
 			super( sourceDataEntity );
 			assert( currentScope );
 
 			scope__ = new BlurryDataScope( currentScope );
 			ast_ = ast;
+			isOnlyOverloadOption_ = isOnlyOverloadOption;
 		}
 
 	public:
@@ -137,7 +138,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 			/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 			if ( !entity ) {
 				with ( memoryManager.session ) {
-					entity = expression.buildSemanticTree_singleInfer( expectedType, false );
+					entity = expression.buildSemanticTree_singleInfer( expectedType, isOnlyOverloadOption_ );
 
 					if ( !entity ) {
 						errorStr = "cannot process argument %s (expected type %s)".format( argumentIndex_ + 1, expectedType.identificationString );
@@ -200,6 +201,9 @@ abstract class SeriousCallableMatch : CallableMatch {
 	private:
 		BlurryDataScope scope__;
 		AST_Node ast_;
+
+		/// When the match is only overload option, inferration errors are reported directly
+		bool isOnlyOverloadOption_;
 
 }
 

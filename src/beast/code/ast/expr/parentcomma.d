@@ -52,14 +52,19 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-			const auto _gd = ErrorGuard( this );
+			const auto __gd = ErrorGuard( codeLocation );
 
 			// Maybe replace with void?
 			benforce( items.length > 0, E.syntaxError, "Empty parentheses" );
 
 			// We're passing null as inferredType because inferredType only applies to the rightmost part of the expression
-			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single() ).array;
+			DataEntity[ ] payload = items[ 0 .. $ - 1 ].map!( x => buildSemanticTree_single( ) ).array;
+
 			DataEntity base = items[ $ - 1 ].buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
+
+			// If errorOnInferrationFailure is false then entity might be null (inferration failure)
+			if ( !base )
+				return Overloadset( );
 
 			if ( payload.length == 0 )
 				return base.Overloadset;
@@ -80,7 +85,7 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 }
 
 /// Data entity which executes additional code
-final class DataEntity_ParentComma : DataEntity {
+private final class DataEntity_ParentComma : DataEntity {
 
 	public:
 		this( DataEntity[ ] payload, DataEntity base, AST_ParentCommaExpression ast ) {
@@ -107,8 +112,8 @@ final class DataEntity_ParentComma : DataEntity {
 			return base_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( AST_Node ast ) {
-			return base_.startCallMatch( ast );
+		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
+			return base_.startCallMatch( ast, isOnlyOverloadOption );
 		}
 
 	public:

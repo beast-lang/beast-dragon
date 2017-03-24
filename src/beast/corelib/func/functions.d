@@ -12,6 +12,8 @@ struct CoreLibrary_Functions {
 	public:
 		Symbol_Function printBool;
 
+		Symbol_Function assert_;
+
 	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			auto tp = &coreLibrary.type;
@@ -19,5 +21,9 @@ struct CoreLibrary_Functions {
 			sink( printBool = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
 					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
 					BackendPrimitiveOperation.print ) );
+
+			sink( assert_ = new Symbol_PrimitiveStaticRuntimeFunction( ID!"assert", parent, //
+					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
+					BackendPrimitiveOperation.assert_ ) );
 		}
 }

@@ -31,6 +31,8 @@ final class AST_CodeBlockStatement : AST_Statement {
 
 	public:
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
+			const auto __gd = ErrorGuard( codeLocation );
+			
 			foreach ( stmt; subStatements )
 				stmt.buildStatementCode( env, cb );
 		}

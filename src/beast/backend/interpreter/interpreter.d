@@ -5,6 +5,7 @@ import beast.backend.interpreter.instruction;
 import std.typecons : Typedef;
 import std.meta : aliasSeqOf;
 import std.range : iota;
+import beast.core.error.guard;
 
 //debug = interpreter;
 
@@ -70,8 +71,12 @@ final class Interpreter {
 	public:
 		/// Starts executing instructions until it hits return to null function
 		void run( ) {
+			size_t ip;
+
+			auto _gd = ErrorGuard( ( err ) { err.codeLocation = currentFrame.sourceBytecode[ ip ].codeLocation; } );
+
 			while ( currentFrame.sourceBytecode ) {
-				auto ip = currentFrame.instructionPointer;
+				ip = currentFrame.instructionPointer;
 				currentFrame.instructionPointer++;
 
 				executeInstruction( currentFrame.sourceBytecode[ ip ] );

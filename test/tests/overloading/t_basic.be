@@ -41,5 +41,5 @@ Void fail4() {
 }
 
 Void fail5() {
-	foo3( :test ); //! error: noMatchingOverload
+	foo3( :test ); //! error: unknownIdentifier
 }
