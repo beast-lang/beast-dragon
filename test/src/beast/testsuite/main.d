@@ -45,7 +45,7 @@ int main( string[ ] args ) {
 		}
 		else {
 			tests ~= new Test( loc, id ~ "_singleThread", 1 );
-			tests ~= new Test( loc, id ~ "_twoThreads", 2 );
+			//tests ~= new Test( loc, id ~ "_twoThreads", 2 );
 		}
 		tests ~= new Test( loc, id, 0 );
 	}

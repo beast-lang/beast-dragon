@@ -110,10 +110,10 @@ struct InstructionOperand {
 	public:
 		Type type;
 		union {
-			/// When type == heapRef
+			/// When type == heapRef || refHeapRef
 			MemoryPtr heapLocation;
 
-			/// When type == stackRef
+			/// When type == stackRef || refStackRef
 			size_t basePointerOffset;
 
 			/// When type == directData

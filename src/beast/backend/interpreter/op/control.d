@@ -62,6 +62,9 @@ pragma( inline ):
 			currentFrame.basePointer = ir.stack.length;
 			currentFrame.sourceBytecode = func.interpreterCode.bytecode;
 			currentFrame.instructionPointer = 0;
+
+			context.currentRecursionLevel ++;
+			benforce( context.currentRecursionLevel <= project.configuration.maxRecursion, E.ctStackOverflow, "Recursion of compile time function execution exceeded the limit of %s".format( project.configuration.maxRecursion ) );
 		}
 	}
 
@@ -76,6 +79,7 @@ pragma( inline ):
 
 			currentFrame = callStack[ $ - 1 ];
 			callStack.length--;
+			context.currentRecursionLevel --;
 		}
 	}
 

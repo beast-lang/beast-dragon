@@ -4,19 +4,21 @@ module beast.backend.common.primitiveop;
 enum BackendPrimitiveOperation {
 
 	// General
-	memZero, /// Initializes given variable to zeros (considers var.dataType.instanceSize)
-	memCpy, /// Performs a bit copy (considers var.dataType.instanceSize)
-	noopDtor, /// Destructor that does nothing (has separate primitive op for debugging purposes)
-	print, /// Prints given variable to console
-	assert_, /// Operand must be true or throws an error
+	memZero, /// (inst) Set given variable to zeros (considers var.dataType.instanceSize)
+	memCpy, /// (arg[1] -> inst) Perform a bit copy (considers var.dataType.instanceSize)
+	noopDtor, /// () Destructor that does nothing (has separate primitive op for debugging purposes)
+	print, /// (arg[0]) Print given variable to console
+	assert_, /// (arg[0]) Operand must be true or throws an error
 
 	// BOOL ops
-	boolOr,
-	boolAnd,
+	boolOr, // (inst, arg[1])
+	boolAnd, // (inst, arg[1])
 
 	// INT ops
 
 	// REREFERENCE/POINTER ops
-	refRefCtor, /// Initializes to reference of value
+	storeAddr, /// (inst, arg1) Set variable to address of instance
+	loadAddr, /// (inst -> result) 'Dereferences' given address - returns reference to the addressed object
+
 
 }

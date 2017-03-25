@@ -116,11 +116,11 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			operandResult_ = operandResult;
 		}
 
-		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.interpreter.primitiveop;
 
-			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false );
+			if ( returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( returnType, false );
 				build_localVariableDefinition( resultVar );
 			}
 

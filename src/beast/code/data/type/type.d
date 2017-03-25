@@ -5,7 +5,7 @@ import beast.util.uidgen;
 import beast.toolkit;
 import beast.code.data.codenamespace.namespace;
 import beast.code.data.codenamespace.bootstrap;
-import beast.code.data.function_.bstpstcnonrt;
+import beast.code.data.function_.bstpstcnrt;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -26,8 +26,9 @@ abstract class Symbol_Type : Symbol {
 		}
 
 		void initialize( ) {
-			baseNamespace_.initialize( [ new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#operator", //
-					paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ) { //
+			baseNamespace_.initialize( [  //
+					new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#operator", //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ast ) { //
 						return coreLibrary.type.Reference.referenceTypeOf( this ).dataEntity; //
 					} ) //
 					 ) ] );
@@ -45,6 +46,21 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		final Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
+			if ( auto result = resolveIdentifier_noTypeFallback( id, instance ) )
+				return result;
+
+			// Look in the core.Type
+			if ( this !is coreLibrary.type.Type ) {
+				// We don't pass an instance to this because that would cause loop
+				if ( auto result = coreLibrary.type.Type.resolveIdentifier( id, null ) )
+					return result;
+			}
+
+			return Overloadset( );
+		}
+
+		/// Resolves the identifier, but does not look into Type type (useful for aliases)
+		final Overloadset resolveIdentifier_noTypeFallback( Identifier id, DataEntity instance ) {
 			debug assert( initialized_, "Class '%s' not initialized".format( this.tryGetIdentificationString ) );
 			/*import std.stdio;
 
@@ -71,19 +87,18 @@ abstract class Symbol_Type : Symbol {
 			if ( auto result = _resolveIdentifier_mid( id, instance ) )
 				return result;
 
-			// Look in the core.Type
-			if ( this !is coreLibrary.type.Type ) {
-				// We don't pass an instance to this because that would cause loop
-				if ( auto result = coreLibrary.type.Type.resolveIdentifier( id, null ) )
-					return result;
-			}
-
 			return Overloadset( );
 		}
 
 		/// Returns string representing given value of given type (for example bool -> true/false)
 		string valueIdentificationString( MemoryPtr value ) {
 			return "%s( ... )".format( identification );
+		}
+
+	public:
+		/// Returns if the type is reference type (X?)
+		bool isReference( ) {
+			return false;
 		}
 
 	protected:

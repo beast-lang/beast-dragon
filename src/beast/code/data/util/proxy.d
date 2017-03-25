@@ -56,7 +56,7 @@ abstract class ProxyDataEntity : DataEntity {
 		}
 
 	protected:
-		final override Overloadset _resolveIdentifier_main( Identifier id ) {
+		override Overloadset _resolveIdentifier_main( Identifier id ) {
 			return sourceEntity_.resolveIdentifier( id );
 		}
 

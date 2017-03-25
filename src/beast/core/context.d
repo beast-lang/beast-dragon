@@ -38,15 +38,21 @@ struct ContextData {
 		/// Memory blocks allocated by the sessions in the stack
 		MemoryBlock[ size_t ][ ] sessionMemoryBlockStack;
 
+	public:
 		/// This is to prevent passing scopes aroung all the time
 		DataScope currentScope;
 
-		DataScope[] scopeStack;
+		DataScope[ ] scopeStack;
 
+	public:
 		/// Jobs that are about to be issued as soon as the context finishes its current job (or current taskGuard)
-		TaskContext.Job[] delayedIssuedJobs;
-		
-		TaskContext.Job[][] delayedIssuedJobsStack;
+		TaskContext.Job[ ] delayedIssuedJobs;
+
+		TaskContext.Job[ ][ ] delayedIssuedJobsStack;
+
+	public:
+		/// This number is increased with every compile-time function call and decreased by every return
+		size_t currentRecursionLevel;
 
 	public:
 		/// TaskContext of the current running task

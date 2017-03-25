@@ -9,15 +9,17 @@ abstract class CallableMatch {
 	public:
 		enum MatchFlags {
 			fullMatch = 0, /// All types match
-			noMatch = -1, /// Function does not match the arguments at all
 			implicitCastsNeeded = 1 << 0, /// At least one implicit cast was needed
 			inferrationsNeeded = 1 << 1, /// At least one inferration was needed
 			staticCall = 1 << 2, /// Called static function via an object instance // TODO: this is not handled at all so far
+			fallback = 1 << 3, /// Function is fallback (is used only when no non-fallback function is possible)
+			noMatch = -1, /// Function does not match the arguments at all
 		}
 
 	public:
-		this( DataEntity sourceDataEntity ) {
+		this( DataEntity sourceDataEntity, MatchFlags initialMatchLevel = MatchFlags.fullMatch ) {
 			sourceDataEntity_ = sourceDataEntity;
+			matchLevel_ = initialMatchLevel;
 		}
 
 	public:
@@ -94,11 +96,15 @@ abstract class CallableMatch {
 			errorStr_ = set;
 		}
 
+		final DataEntity sourceEntity() {
+			return sourceDataEntity_;
+		}
+
 	protected:
 		size_t argumentIndex_;
 
 	private:
-		MatchFlags matchLevel_ = MatchFlags.fullMatch;
+		MatchFlags matchLevel_;
 		DataEntity sourceDataEntity_;
 		string errorStr_;
 		debug bool finished_ = false;
@@ -107,8 +113,8 @@ abstract class CallableMatch {
 
 abstract class SeriousCallableMatch : CallableMatch {
 	public:
-		this( DataEntity sourceDataEntity, AST_Node ast, bool isOnlyOverloadOption ) {
-			super( sourceDataEntity );
+		this( DataEntity sourceDataEntity, AST_Node ast, bool isOnlyOverloadOption, MatchFlags initialMatchLevel = MatchFlags.fullMatch ) {
+			super( sourceDataEntity, initialMatchLevel );
 			assert( currentScope );
 
 			scope__ = new BlurryDataScope( currentScope );

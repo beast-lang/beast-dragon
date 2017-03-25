@@ -138,7 +138,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				override void buildCode( CodeBuilder cb ) {
 					const auto _gd = ErrorGuard( codeLocation );
 					
-					cb.build_primitiveOperation( sym_, op_, parentInstance_, arguments_ );
+					cb.build_primitiveOperation( sym_.returnType_, op_, parentInstance_, arguments_ );
 				}
 
 			private:

@@ -110,7 +110,7 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 				override void buildCode( CodeBuilder cb ) {
 					const auto _gd = ErrorGuard( codeLocation );
 
-					cb.build_primitiveOperation( sym_, op_, null, arguments_ );
+					cb.build_primitiveOperation( sym_.returnType_, op_, null, arguments_ );
 				}
 
 			private:

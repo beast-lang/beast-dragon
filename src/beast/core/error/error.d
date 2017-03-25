@@ -57,6 +57,7 @@ enum E {
 	functionNotCtime, /// Function is not callable at compile time
 	noReturnExit, /// Function did not exit via return statement
 	ctAssertFail, /// Assert failed at compile-time execution
+	ctStackOverflow, /// Exceeded maximum call recursion in the interpreter
 
 	// OVERLOADSETS:
 	noMatchingOverload, /// No overload matches given parameters
@@ -69,6 +70,9 @@ enum E {
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
 	missingInitValue, /// When auto x;
+
+	// TYPES:
+	referenceOfReference, /// Tried to create reference of reference
 
 	// STATEMENTS:
 	missingReturnExpression,

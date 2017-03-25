@@ -112,11 +112,23 @@ class CodeBuilder_Cpp : CodeBuilder {
 			data.buildCode( this );
 			const string rightOp = resultVarName_;
 
-			build_memoryAccess( target );
-			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, resultVarName_, rightOp, data.dataType.instanceSize );
+			MemoryBlock block = target.block;
+			block.markReferenced( );
+
+			benforce( block.isRuntime, E.protectedMemory, "Cannot write to ctime variable at runtime" );
+
+			string var;
+			if ( block.startPtr == target )
+				var = cppIdentifier( block, true );
+			else
+				var = "( %s + %s )".format( cppIdentifier( block, true ), target - block.startPtr );
+
+			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, var, rightOp, data.dataType.instanceSize );
 		}
 
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			//codeResult_.formattedWrite( "%s// Function %s call\n", tabs, function_.tryGetIdentificationString );
+
 			string resultVarName;
 			if ( function_.returnType !is coreLibrary.type.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false, "result" );
@@ -161,13 +173,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 			resultVarName_ = resultVarName;
 		}
 
-		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.cpp.primitiveop;
 
 			debug resultVarName_ = null;
+			//codeResult_.formattedWrite( "%s// PrimitiveOp %s\n", tabs, op );
 
-			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, false, "result" );
+			if ( returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
 			}
 

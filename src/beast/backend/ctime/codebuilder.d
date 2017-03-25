@@ -81,13 +81,13 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			result_ = result;
 		}
 
-		override void build_primitiveOperation( Symbol_RuntimeFunction wrapperFunction, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			static import beast.backend.ctime.primitiveop;
 
 			debug result_ = MemoryPtr( );
 
-			if ( wrapperFunction.returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( wrapperFunction.returnType, true );
+			if ( returnType !is coreLibrary.type.Void ) {
+				auto resultVar = new DataEntity_TmpLocalVariable( returnType, true );
 				build_localVariableDefinition( resultVar );
 			}
 

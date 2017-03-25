@@ -100,17 +100,16 @@ struct CallMatchSet {
 			}
 
 			if ( bestMatch.matchLevel == CallableMatch.MatchFlags.noMatch ) {
-				// TODO: error messages when matchLevel is noMatch
 				if ( !reportErrors ) {
 					// Do nothing
 				}
 				else if ( matches.length == 1 )
-					berror( E.noMatchingOverload, "'%s' does not match arguments %s: %s".format( matches[ 0 ].sourceDataEntity.identificationString, argumentListIdentificationString, matches[ 0 ].errorStr ) );
+					berror( E.noMatchingOverload, "%s does not match arguments %s: %s".format( matches[ 0 ].sourceDataEntity.tryGetIdentificationString, argumentListIdentificationString, matches[ 0 ].errorStr ) );
 				else
 					berror( E.noMatchingOverload, //
 							"None of the overloads match arguments %s: %s".format(  //
 								argumentListIdentificationString, //
-								matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner ) //
+								matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.tryGetIdentificationString, x.errorStr ) ).joiner ) //
 							 );
 
 				return null;

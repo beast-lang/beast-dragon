@@ -4,7 +4,7 @@ import beast.corelib.type.toolkit;
 import beast.corelib.type.type;
 import beast.util.decorator;
 import beast.corelib.type.reference;
-import beast.code.data.function_.bstpstcnonrt;
+import beast.code.data.function_.bstpstcnrt;
 import beast.corelib.type.int_;
 
 struct CoreLibrary_Types {

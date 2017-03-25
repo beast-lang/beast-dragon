@@ -62,6 +62,9 @@ struct ProjectConfiguration {
 
 			@help( "Module that contains the Void main() function" )
 			string entryModule;
+
+			@help( "Maximum function call recursion in the interpreter" )
+			IntGt0 maxRecursion = 1024;
 		}
 
 	public:

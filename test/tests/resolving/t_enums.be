@@ -1,4 +1,4 @@
-module t_basic;
+module t_enums;
 
 Void foo1( Operator op ) {
 
