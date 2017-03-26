@@ -1,7 +1,7 @@
-module beast.code.data.callmatchset;
+module beast.code.data.callable.matchset;
 
 import beast.code.data.toolkit;
-import beast.code.data.callable;
+import beast.code.data.callable.match;
 import beast.code.data.scope_.local;
 import beast.code.ast.expr.expression;
 import std.range.primitives : isInputRange, ElementType;
@@ -10,7 +10,7 @@ import std.range.primitives : isInputRange, ElementType;
 struct CallMatchSet {
 
 	public:
-		this( Overloadset overloadset, AST_Node ast, bool reportErrors = true ) {
+		this( Overloadset overloadset, AST_Node ast, bool reportErrors = true, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			scope_ = new LocalDataScope( );
 			auto _sgd = scope_.scopeGuard;
 
@@ -18,14 +18,14 @@ struct CallMatchSet {
 
 			foreach ( overload; overloadset ) {
 				if ( overload.isCallable )
-					matches ~= overload.startCallMatch( ast, overloadset.length == 1 );
+					matches ~= overload.startCallMatch( ast, overloadset.length == 1, matchLevel );
 
 				// If the overload is not callable, we try to overload against overload.#operator( Operator.call, XXX )
 				else {
 					auto suboverloadset = overload.resolveIdentifier( Identifier.preobtained!"#operator" );
 					foreach ( suboverload; suboverloadset ) {
 						if ( suboverload.isCallable )
-							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1 ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
+							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
 					}
 				}
 			}
@@ -49,7 +49,7 @@ struct CallMatchSet {
 		}
 
 		ref CallMatchSet arg( T : Symbol )( T sym ) {
-			return arg( sym.dataEntity );
+			return arg( sym.dataEntity( MatchLevel.fullMatch ) );
 		}
 
 		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
@@ -91,7 +91,14 @@ struct CallMatchSet {
 			foreach ( match; matches[ 1 .. $ ] ) {
 				match.finish( );
 
-				if ( match.matchLevel > bestMatch.matchLevel ) {
+				/*
+					Let me write an example:
+					a: 0 1 0 1
+					b: 0 1 1 0
+
+					Now we want a to be the new best match, because it's match level is smaller (which is better)
+				*/
+				if ( match.matchLevel < bestMatch.matchLevel ) {
 					bestMatch = match;
 					bestMatchCount = 1;
 				}
@@ -99,7 +106,7 @@ struct CallMatchSet {
 					bestMatchCount++;
 			}
 
-			if ( bestMatch.matchLevel == CallableMatch.MatchFlags.noMatch ) {
+			if ( bestMatch.matchLevel == MatchLevel.noMatch ) {
 				if ( !reportErrors ) {
 					// Do nothing
 				}
@@ -119,7 +126,7 @@ struct CallMatchSet {
 				benforce( !reportErrors, E.ambiguousResolution, //
 						"Ambiguous overload resolution for arguments %s:\n%s".format(  //
 							argumentListIdentificationString, //
-							matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => x.sourceDataEntity ).map!( x => "\t%s".format( x.tryGetIdentificationString ) ).joiner( "\n\t\tor\n" ), //
+							matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, x.matchLevel ) ).joiner( "\n\t\tor\n" ), //
 							 ) );
 
 				return null;

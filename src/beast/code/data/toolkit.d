@@ -9,4 +9,5 @@ public {
 	import beast.code.memory.memorymgr : memoryManager;
 	import beast.code.ast.node : AST_Node;
 	import beast.backend.ctime.codebuilder : CodeBuilder_Ctime;
+	import beast.code.data.matchlevel : MatchLevel;
 }

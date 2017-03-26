@@ -150,7 +150,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				assert( parentInstance );
 
 				parentInstance.buildCode( this );
-				argumentNames ~= "&" ~ resultVarName_;
+				argumentNames ~= resultVarName_;
 			}
 
 			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
@@ -276,7 +276,12 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( func.declarationType == Symbol.DeclType.memberFunction ) {
 				if ( parameterCount )
 					result ~= ", ";
-				result.formattedWrite( "%s *context", cppIdentifier( func.dataEntity.parent.dataType ) );
+
+				auto de = func.dataEntity;
+				auto i = de.identificationString;
+				auto pa = de.parent;
+				auto dt = pa.dataType;
+				result.formattedWrite( "%s *context", cppIdentifier( func.dataEntity.parent.ctExec.readType ) );
 				parameterCount++;
 			}
 
@@ -316,6 +321,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			else if ( block.flags & MemoryBlock.Flag.result )
 				return "result";
+
+			else if ( block.flags & MemoryBlock.Flag.contextPtr )
+				return "context";
 
 			else if ( block.isLocal ) {
 				assert( block.localVariable );

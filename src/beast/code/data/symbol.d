@@ -19,6 +19,7 @@ abstract class Symbol : Identifiable {
 			memberClass,
 			enum_, // enum is always static
 			decorator,
+			alias_,
 			module_
 		}
 
@@ -35,7 +36,7 @@ abstract class Symbol : Identifiable {
 		}
 
 		override string identificationString( ) {
-			return dataEntity.identificationString;
+			return dataEntity.identificationString_noPrefix;
 		}
 
 		final string identification() {
@@ -55,7 +56,11 @@ abstract class Symbol : Identifiable {
 
 	public:
 		/// Data entity representing the symbol, either with static static access or via instance of parent type
-		abstract DataEntity dataEntity( DataEntity parentInstance = null );
+		abstract DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null );
+
+		Overloadset overloadset( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			return dataEntity( matchLevel, parentInstance ).Overloadset;
+		}
 
 	protected:
 		Hash outerHashWIP_;
@@ -73,8 +78,10 @@ abstract class Symbol : Identifiable {
 abstract class SymbolRelatedDataEntity : DataEntity {
 
 	public:
-		this( Symbol symbol ) {
+		this( Symbol symbol, MatchLevel matchLevel ) {
 			assert( symbol );
+
+			super( matchLevel );
 			symbol_ = symbol;
 		}
 

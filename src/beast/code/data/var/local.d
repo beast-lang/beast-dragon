@@ -7,6 +7,10 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 	public:
 		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag, string memBlockId = null ) {
+			super( MatchLevel.fullMatch );
+
+			assert( dataType.instanceSize != 0, "DataType %s instanceSize 0".format( dataType.identificationString ) );
+
 			dataType_ = dataType;
 			isCtime_ = isCtime;
 			scope__ = currentScope;
@@ -52,14 +56,14 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			return outerHashWIP_;
 		}
 
-		override string identificationString() {
-			return "%s %s".format( dataType.tryGetIdentificationString, super.identificationString );
+		override string identificationString( ) {
+			return "%s %s".format( dataType.tryGetIdentificationString, identificationString_noPrefix );
 		}
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
 			auto _gd = ErrorGuard( this );
-			
+
 			cb.build_memoryAccess( memoryPtr );
 		}
 

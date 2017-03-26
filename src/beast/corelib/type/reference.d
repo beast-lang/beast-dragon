@@ -1,23 +1,15 @@
 module beast.corelib.type.reference;
 
-import beast.backend.common.codebuilder;
-import beast.code.ast.expr.expression;
-import beast.code.ast.node;
-import beast.code.data.callable;
-import beast.code.data.function_.bstpmemnrt;
+import beast.code.data.alias_.btsp;
 import beast.code.data.function_.bstpstcnrt;
 import beast.code.data.function_.primmemrt;
-import beast.code.data.overloadset;
-import beast.code.data.symbol;
+import beast.code.data.toolkit;
 import beast.code.data.type.class_;
 import beast.code.data.type.type;
 import beast.code.data.util.proxy;
 import beast.code.hwenv.hwenv;
-import beast.code.memory.ptr;
 import beast.corelib.type.toolkit;
-import beast.util.hash;
 import core.sync.rwmutex;
-import beast.code.data.callmatchset;
 
 final class Symbol_Type_Reference : Symbol_Class {
 
@@ -31,7 +23,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 			parent_ = parent;
 			baseType_ = baseType;
 
-			staticData_ = new Data( this );
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 
 			namespace_ = new BootstrapNamespace( this );
 
@@ -60,29 +52,32 @@ final class Symbol_Type_Reference : Symbol_Class {
 						ExpandedFunctionParameter.bootstrap( ), //
 						BackendPrimitiveOperation.noopDtor );
 
-				// Fallback for #operator
-				mem ~= new Symbol_BootstrapMemberNonRuntimeFunction( dataEntity, ID!"#operator", //
-						Symbol_BootstrapMemberNonRuntimeFunction.paramsBuilder( ).markAsFallback( ).matchesAnything( ).finish( ( AST_Node ast, DataEntity instance, AST_Expression[ ] argAsts, DataEntity[ ] argEnts ) { //
-							assert( argAsts.length == argEnts.length );
+				// Reference assign :=
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", this, tp.Void, //
+						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, this ), //
+						BackendPrimitiveOperation.memCpy );
 
-							auto this_ = this;
-							auto base = baseType_;
-							auto proxy = new ProxyData( instance, base );
-							auto overloadset = proxy.resolveIdentifier( ID!"#operator" );
-							auto set = CallMatchSet( overloadset, ast, true );
-							//auto set = CallMatchSet( new ProxyData( instance, baseType_ ).resolveIdentifier( ID!"#operator" ), ast, true );
+				// Implicit cast to base type
+				mem ~= new Symbol_BootstrapMemberRuntimeFunction( ID!"#implicitCast", this, baseType_, //
+						ExpandedFunctionParameter.bootstrap( baseType_.dataEntity ), //
+						( cb, params ) { //
+							// Although loadAddr returns something, we pass Void as a return type,
+							// because build_primitiveOperation would allocate a variable for the return value (which we don't want to)
+							cb.build_primitiveOperation( coreLibrary.type.Void, BackendPrimitiveOperation.loadAddr, params[ 0 ], null );
+						} );
 
-							foreach ( i; 0 .. argAsts.length ) {
-								if ( auto ent = argEnts[ i ] )
-									set.arg( ent );
-								else if ( auto arg = argAsts[ i ] )
-									set.arg( arg );
-								else
-									assert( 0 );
-							}
+				// Alias for #operator
+				mem ~= new Symbol_BootstrapAlias( ID!"#operator", ( matchLevel, inst ) { //
+					if ( inst )
+						return new ProxyData( inst, baseType_ ).resolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
+					else
+						return baseType_.dataEntity( matchLevel ).resolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
+				} );
 
-							return set.finish( );
-						} ) ); //
+				// Alias #baseType
+				mem ~= new Symbol_BootstrapAlias( ID!"#baseType", ( matchLevel, parentInstance ) { //
+					return baseType_.dataEntity( matchLevel ).Overloadset;
+				} );
 
 				namespace_.initialize( mem );
 			}
@@ -105,21 +100,22 @@ final class Symbol_Type_Reference : Symbol_Class {
 			return namespace_;
 		}
 
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( matchLevel != MatchLevel.fullMatch )
+				return new Data( this, matchLevel );
+			else
+				return staticData_;
 		}
 
 	public:
-		override bool isReference( ) {
+		override bool isReferenceType( ) {
 			return true;
 		}
 
 	protected:
-		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance ) {
+		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			// We shadow referenced type namespace
-			auto proxyData = new ProxyData( instance, baseType_ );
-
-			return baseType_.resolveIdentifier_noTypeFallback( id, proxyData );
+			return baseType_.resolveIdentifier( id, new ProxyData( instance, baseType_ ), matchLevel );
 		}
 
 	private:
@@ -133,8 +129,8 @@ final class Symbol_Type_Reference : Symbol_Class {
 		final static class Data : super.Data {
 
 			public:
-				this( Symbol_Type_Reference sym ) {
-					super( sym );
+				this( Symbol_Type_Reference sym, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
 					sym_ = sym;
 				}
 
@@ -143,7 +139,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 					return sym_.parent_;
 				}
 
-				override string identificationString( ) {
+				override string identificationString_noPrefix( ) {
 					return "%s?".format( sym_.baseType_.tryGetIdentificationString );
 				}
 
@@ -156,7 +152,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 			public:
 				this( DataEntity sourceEntity, Symbol_Type baseType ) {
-					super( sourceEntity );
+					super( sourceEntity, MatchLevel.fullMatch );
 					baseType_ = baseType;
 				}
 
@@ -182,8 +178,9 @@ final class Symbol_Type_Reference : Symbol_Class {
 				}
 
 			protected:
-				override Overloadset _resolveIdentifier_main( Identifier id ) {
-					return Overloadset();
+				override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
+					// We're overriding this because ProxyDataEntity would redirect this into sourceEntity
+					return Overloadset( );
 				}
 
 			private:
@@ -210,7 +207,7 @@ final class ReferenceTypeManager {
 
 	public:
 		Symbol_Type_Reference referenceTypeOf( Symbol_Type originalType ) {
-			benforce( !originalType.isReference, E.referenceOfReference, "Cannot have reference of reference (%s)".format( originalType.identificationString ) );
+			benforce( !originalType.isReferenceType, E.referenceOfReference, "Cannot have reference of reference (%s)".format( originalType.identificationString ) );
 
 			synchronized ( mutex_.reader ) {
 				if ( auto result = originalType in cache_ )

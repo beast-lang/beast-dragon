@@ -16,11 +16,11 @@ abstract class Namespace : Identifiable {
 		}
 
 		/// If there are any symbols in this namespace with given identifier, returns them in an overloadset.
-		Overloadset resolveIdentifier( Identifier id, DataEntity instance ) {
+		Overloadset resolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			debug assert( initialized_ );
 
 			if ( auto result = id in groupedMembers_ )
-				return ( *result ).map!( x => x.dataEntity( instance ) ).array.Overloadset;
+				return ( *result ).map!( x => x.overloadset( matchLevel, instance ) ).joiner.array.Overloadset;
 
 			return Overloadset( );
 		}

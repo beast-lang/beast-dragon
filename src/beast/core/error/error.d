@@ -65,7 +65,6 @@ enum E {
 	unknownIdentifier, /// Identifier was not found (either recursively or not)
 	cannotInfer, /// No expected type was given where it was needed (mostly inferations)
 	cannotResolve, /// Something like noMatchingOverload, but this is reported when multiple approaches to resolution are possible - for example operator resolution (a && b => a.#operator( Operator.or, b ) or b.#operator( Operator.orRight, a ) )
-	needThis, /// Calling member function without context ptr
 
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
@@ -81,6 +80,11 @@ enum E {
 	entryFunctionProblem, /// Missing main or wrong arguments or so
 	cppCompilationFailed, /// Error in compiling the C++ code
 	binaryExecutionFailed, /// Run binary resulted with exit code != 0
+
+	// FUNCTIONS:
+	needThis, /// Calling member function without context ptr
+	staticCallOnly, /// Function can be only callable as static (cannot have this)
+	invalidCastReturnType, /// Cast function returned unexpected type
 }
 
 enum ErrorSeverity {

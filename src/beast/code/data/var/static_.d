@@ -9,7 +9,7 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 	protected:
 		this( DataEntity parent ) {
 			parent_ = parent;
-			staticData_ = new Data( this );
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 		}
 
 	public:
@@ -18,8 +18,11 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 		}
 
 	public:
-		final override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
+		final override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( matchLevel != MatchLevel.fullMatch )
+				return new Data( this, matchLevel );
+			else
+				return staticData_;
 		}
 
 		abstract bool isCtime( );
@@ -36,9 +39,9 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 		final static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( Symbol_StaticVariable sym ) {
+				this( Symbol_StaticVariable sym, MatchLevel matchLevel ) {
 					// Static variables are in global scope
-					super( sym );
+					super( sym, matchLevel );
 					sym_ = sym;
 				}
 
@@ -56,13 +59,13 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 				}
 
 				override string identificationString( ) {
-					return "%s %s".format( sym_.dataType.tryGetIdentificationString, super.identificationString );
+					return "%s %s".format( sym_.dataType.tryGetIdentificationString, identificationString_noPrefix );
 				}
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
 					auto _gd = ErrorGuard( this );
-					
+
 					cb.build_memoryAccess( sym_.memoryPtr );
 				}
 

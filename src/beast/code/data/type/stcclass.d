@@ -7,7 +7,7 @@ abstract class Symbol_StaticClass : Symbol_Class {
 
 	public:
 		this( DataEntity parent ) {
-			staticData_ = new Data( this );
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 			parent_ = parent;
 		}
 
@@ -17,8 +17,11 @@ abstract class Symbol_StaticClass : Symbol_Class {
 		}
 
 	public:
-		final override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
+		final override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( matchLevel != MatchLevel.fullMatch )
+				return new Data( this, matchLevel );
+			else
+				return staticData_;
 		}
 
 	protected:
@@ -29,8 +32,8 @@ abstract class Symbol_StaticClass : Symbol_Class {
 		final static class Data : super.Data {
 
 			public:
-				this( Symbol_StaticClass sym ) {
-					super( sym );
+				this( Symbol_StaticClass sym, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
 
 					sym_ = sym;
 				}

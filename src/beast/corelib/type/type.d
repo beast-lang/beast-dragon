@@ -1,10 +1,8 @@
 module beast.corelib.type.type;
 
 import beast.corelib.type.toolkit;
+import beast.code.data.toolkit;
 import beast.code.data.type.stcclass;
-import beast.code.data.scope_.scope_;
-import beast.code.data.overloadset;
-import beast.code.data.type.type;
 
 /// Type 'Type' -- typeof all classes etc.
 /// The root of all good and evil in Beast.
@@ -33,11 +31,16 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 		}
 
 	public:
-		override Overloadset _resolveIdentifier_pre( Identifier id, DataEntity instance ) {
+		override string valueIdentificationString( MemoryPtr value ) {
+			return value.readType.identificationString;
+		}
+
+	protected:
+		override Overloadset _resolveIdentifier_pre( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			if ( instance ) {
 				Symbol_Type type = instance.ctExec_asType( );
 
-				if ( auto result = type.resolveIdentifier( id, null ) )
+				if ( auto result = type.resolveIdentifier( id, null, matchLevel ) )
 					return result;
 			}
 

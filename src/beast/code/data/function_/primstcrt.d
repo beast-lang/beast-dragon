@@ -1,5 +1,5 @@
-/// PRIMitive STatic RunTime
-module beast.code.data.function_.primstrt;
+/// PRIMitive STatiC RunTime
+module beast.code.data.function_.primstcrt;
 
 import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.env;
@@ -11,7 +11,7 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		this( Identifier identifier, DataEntity parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, BackendPrimitiveOperation op ) {
-			staticData_ = new Data( this );
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 
 			identifier_ = identifier;
 			parent_ = parent;
@@ -37,8 +37,11 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	public:
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( matchLevel != MatchLevel.fullMatch )
+				return new Data( this, matchLevel );
+			else
+				return staticData_;
 		}
 
 	protected:
@@ -58,8 +61,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Data : super.Data {
 
 			public:
-				this( Symbol_PrimitiveStaticRuntimeFunction sym ) {
-					super( sym );
+				this( Symbol_PrimitiveStaticRuntimeFunction sym, MatchLevel matchLevel ) {
+					super( sym, matchLevel | MatchLevel.staticCall );
 
 					sym_ = sym;
 				}
@@ -69,8 +72,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 					return sym_.parent_;
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					return new Match( sym_, this, ast, isOnlyOverloadOption );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					return new Match( sym_, this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
 				}
 
 			private:
@@ -81,8 +84,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
-					super( sym, sourceEntity, ast, isOnlyOverloadOption );
+				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					super( sym, sourceEntity, ast, isOnlyOverloadOption, matchLevel );
 
 					sym_ = sym;
 				}

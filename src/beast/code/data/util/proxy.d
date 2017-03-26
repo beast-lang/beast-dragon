@@ -2,13 +2,14 @@ module beast.code.data.util.proxy;
 
 import beast.code.data.toolkit;
 import beast.code.data.decorator.decorator;
-import beast.code.data.callable;
+import beast.code.data.callable.match;
 
 /// Proxy data entity that passes everything to the source entity; used as an utility for other data entities
 abstract class ProxyDataEntity : DataEntity {
 
 	public:
-		this( DataEntity sourceEntity ) {
+		this( DataEntity sourceEntity, MatchLevel matchLevel ) {
+			super( matchLevel );
 			assert( sourceEntity );
 			sourceEntity_ = sourceEntity;
 		}
@@ -30,8 +31,8 @@ abstract class ProxyDataEntity : DataEntity {
 			return sourceEntity_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-			return sourceEntity_.startCallMatch( ast, isOnlyOverloadOption );
+		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+			return sourceEntity_.startCallMatch( ast, isOnlyOverloadOption, matchLevel );
 		}
 
 		override Symbol_Decorator isDecorator( ) {
@@ -56,8 +57,8 @@ abstract class ProxyDataEntity : DataEntity {
 		}
 
 	protected:
-		override Overloadset _resolveIdentifier_main( Identifier id ) {
-			return sourceEntity_.resolveIdentifier( id );
+		override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
+			return sourceEntity_.resolveIdentifier( id, matchLevel );
 		}
 
 	protected:

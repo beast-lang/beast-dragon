@@ -12,7 +12,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
-			staticData_ = new Data( this );
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 
 			ast_ = ast;
 			decorationList_ = decorationList;
@@ -45,9 +45,11 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	public:
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			// TODO: MatchFlags
-			return staticData_;
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( matchLevel != MatchLevel.fullMatch )
+				return new Data( this, matchLevel );
+			else
+				return staticData_;
 		}
 
 	protected:
@@ -125,9 +127,9 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Data : super.Data {
 
 			public:
-				this( Symbol_UserStaticRuntimeFunction sym ) {
+				this( Symbol_UserStaticRuntimeFunction sym, MatchLevel matchLevel ) {
 					assert( this.outer );
-					super( sym );
+					super( sym, matchLevel | MatchLevel.staticCall );
 
 					sym_ = sym;
 				}

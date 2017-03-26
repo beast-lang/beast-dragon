@@ -7,6 +7,8 @@ final class SubstitutiveDataEntity : DataEntity {
 
 	public:
 		this( MemoryPtr ptr, Symbol_Type type ) {
+			super( MatchLevel.fullMatch );
+
 			ptr_ = ptr;
 			type_ = type;
 		}

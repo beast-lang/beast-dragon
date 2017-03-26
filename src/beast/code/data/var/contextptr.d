@@ -8,6 +8,7 @@ final class DataEntity_ContextPointer : DataEntity_LocalVariable {
 	public:
 		this( Identifier identifier, Symbol_Type parentType, MemoryPtr ctimeValue = MemoryPtr( 0 ) ) {
 			super( parentType, !ctimeValue.isNull, MemoryBlock.Flag.contextPtr );
+			assert( parentType.instanceSize, "ParentType %s instanceSize 0".format( parentType.identificationString ) );
 
 			if( !ctimeValue.isNull )
 				memoryPtr.write( ctimeValue, parentType.instanceSize );

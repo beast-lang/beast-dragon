@@ -14,7 +14,9 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
 		this( Identifier identifier, Symbol_Type parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, CodeFunction codeFunction ) {
-			staticData_ = new StaticData( this );
+			assert( parent.instanceSize, "Parent %s instanceSize 0".format( parent.identificationString ) );
+
+			staticData_ = new Data( this, null, MatchLevel.fullMatch );
 
 			identifier_ = identifier;
 			parent_ = parent;
@@ -40,11 +42,11 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	public:
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			if ( !parentInstance )
-				return staticData_;
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( parentInstance || matchLevel != MatchLevel.fullMatch )
+				return new Data( this, parentInstance, matchLevel );
 			else
-				return new Data( this, parentInstance );
+				return staticData_;
 		}
 
 	protected:
@@ -83,7 +85,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		Identifier identifier_;
 		Symbol_Type parent_;
 		Symbol_Type returnType_;
-		StaticData staticData_;
+		Data staticData_;
 		ExpandedFunctionParameter[ ] parameters_;
 		CodeFunction codeFunction_;
 
@@ -91,9 +93,9 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final static class Data : super.Data {
 
 			public:
-				this( Symbol_BootstrapMemberRuntimeFunction sym, DataEntity parentInstance ) {
-					super( sym );
-					assert( parentInstance.dataType is sym.parent_ );
+				this( Symbol_BootstrapMemberRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
+					assert( !parentInstance || parentInstance.dataType is sym.parent_ );
 
 					parentInstance_ = parentInstance;
 					sym_ = sym;
@@ -101,11 +103,20 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				override DataEntity parent( ) {
-					return parentInstance_;
+					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					return new Match( sym_, this, ast, isOnlyOverloadOption );
+				override string identificationString_noPrefix( ) {
+					return "%s.%s".format( sym_.parent_.identificationString, identification );
+				}
+
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					if ( parentInstance_ )
+						return new Match( sym_, this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+					else {
+						benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
+						return new InvalidCallableMatch( this, "need this" );
+					}
 				}
 
 			private:
@@ -114,34 +125,11 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		}
 
-		final static class StaticData : super.Data {
-
-			public:
-				this( Symbol_BootstrapMemberRuntimeFunction sym ) {
-					super( sym );
-					sym_ = sym;
-				}
-
-			public:
-				override DataEntity parent( ) {
-					return sym_.parent_.dataEntity;
-				}
-
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
-					return new InvalidCallableMatch( this, "need this" );
-				}
-
-			private:
-				Symbol_BootstrapMemberRuntimeFunction sym_;
-
-		}
-
 		final static class Match : super.Match {
 
 			public:
-				this( Symbol_BootstrapMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
-					super( sym, sourceEntity, ast, isOnlyOverloadOption );
+				this( Symbol_BootstrapMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					super( sym, sourceEntity, ast, isOnlyOverloadOption, matchLevel );
 
 					sym_ = sym;
 					parentInstance_ = sourceEntity.parentInstance_;

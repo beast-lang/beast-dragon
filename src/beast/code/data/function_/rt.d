@@ -76,8 +76,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		abstract static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( Symbol_RuntimeFunction sym ) {
-					super( sym );
+				this( Symbol_RuntimeFunction sym, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
 					sym_ = sym;
 				}
 
@@ -101,18 +101,18 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override string identificationString( ) {
-					return "%s %s".format( sym_.returnType.tryGetIdentificationString, super.identificationString );
+					return "%s %s".format( sym_.returnType.tryGetIdentificationString, identificationString_noPrefix );
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					return new Match( sym_, this, ast, isOnlyOverloadOption );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					return new Match( sym_, this, ast, isOnlyOverloadOption, this.matchLevel | matchLevel );
 				}
 
 			protected:
-				override Overloadset _resolveIdentifier_pre( Identifier id ) {
+				override Overloadset _resolveIdentifier_pre( Identifier id, MatchLevel matchLevel ) {
 					if ( id == ID!"#returnType" )
-						return sym_.returnType.dataEntity.Overloadset;
+						return sym_.returnType.dataEntity( matchLevel ).Overloadset;
 
 					return Overloadset( );
 				}
@@ -125,19 +125,19 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		static class Match : SeriousCallableMatch {
 
 			public:
-				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
-					super( sourceEntity, ast, isOnlyOverloadOption );
+				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					super( sourceEntity, ast, isOnlyOverloadOption, matchLevel );
 					sym_ = sym;
 				}
 
 			protected:
-				override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+				override MatchLevel _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 					auto _sgd = scope_.scopeGuard;
-					MatchFlags result = MatchFlags.fullMatch;
+					MatchLevel result = MatchLevel.fullMatch;
 
 					if ( argumentIndex_ >= sym_.parameters.length ) {
 						errorStr = "too many arguments";
-						return MatchFlags.noMatch;
+						return MatchLevel.noMatch;
 					}
 
 					ExpandedFunctionParameter param = sym_.parameters[ argumentIndex_ ];
@@ -147,21 +147,21 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					else
 						result |= matchStandardArgument( expression, entity, dataType, param.dataType );
 
-					if ( result == MatchFlags.noMatch )
-						return MatchFlags.noMatch;
+					if ( result == MatchLevel.noMatch )
+						return MatchLevel.noMatch;
 
 					arguments_ ~= entity;
 
 					return result;
 				}
 
-				override MatchFlags _finish( ) {
+				override MatchLevel _finish( ) {
 					if ( argumentIndex_ != sym_.parameters.length ) {
 						errorStr = "not enough arguments";
-						return MatchFlags.noMatch;
+						return MatchLevel.noMatch;
 					}
 
-					return MatchFlags.fullMatch | super._finish( );
+					return MatchLevel.fullMatch | super._finish( );
 				}
 
 				override DataEntity _toDataEntity( ) {
@@ -178,6 +178,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			public:
 				this( Symbol_RuntimeFunction sym, Match match ) {
+					super( match.matchLevel );
 					arguments_ = match.arguments_;
 					ast_ = match.ast;
 					sym_ = sym;

@@ -5,6 +5,7 @@ import beast.util.identifiable;
 import beast.code.ast.expr.expression;
 import beast.code.ast.expr.vardecl;
 import beast.code.data.var.static_;
+import beast.code.data.scope_.root;
 
 /// Expanded function parameter
 final class ExpandedFunctionParameter : Identifiable {
@@ -103,15 +104,12 @@ final class ExpandedFunctionParameter : Identifiable {
 		}
 
 		override string identificationString( ) {
-			string result = dataType.tryGetIdentificationString;
-
-			if ( identifier )
-				result ~= " " ~ identifier.str;
-
 			if ( isConstValue )
-				result = "@ctime %s = %s".format( result, dataType.valueIdentificationString( constValue ) );
-
-			return result;
+				return "@ctime %s = %s".format( dataType.tryGetIdentificationString, dataType.valueIdentificationString( constValue ) );
+			else if ( identifier )
+				return "%s %s".format( dataType.tryGetIdentificationString, identifier.str );
+			else
+				return dataType.tryGetIdentificationString;
 		}
 
 	private:

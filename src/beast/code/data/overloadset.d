@@ -3,7 +3,7 @@ module beast.code.data.overloadset;
 import beast.code.data.toolkit;
 import beast.code.data.decorator.decorator;
 import beast.code.ast.expr.parentcomma;
-import beast.code.data.callable;
+import beast.code.data.callable.match;
 import beast.code.data.scope_.local;
 import beast.code.ast.expr.expression;
 

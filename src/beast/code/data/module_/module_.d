@@ -10,7 +10,7 @@ abstract class Symbol_Module : Symbol {
 
 	public:
 		this( ) {
-			staticData_ = new Data( this );
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 			importSpaceData_ = new ImportSpaceData( this );
 		}
 
@@ -20,8 +20,11 @@ abstract class Symbol_Module : Symbol {
 		}
 
 	public:
-		final override DataEntity dataEntity( DataEntity instance = null ) {
-			return staticData_;
+		final override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity instance = null ) {
+			if ( matchLevel != MatchLevel.fullMatch )
+				return new Data( this, matchLevel );
+			else
+				return staticData_;
 		}
 
 	protected:
@@ -35,8 +38,8 @@ abstract class Symbol_Module : Symbol {
 		final static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( Symbol_Module sym ) {
-					super( sym );
+				this( Symbol_Module sym, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
 
 					sym_ = sym;
 				}
@@ -56,9 +59,9 @@ abstract class Symbol_Module : Symbol {
 				}
 
 			protected:
-				protected override Overloadset _resolveIdentifier_main( Identifier id ) {
+				protected override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
 					// TODO: Copy this to Module core type
-					if ( auto result = sym_.namespace.resolveIdentifier( id, null ) )
+					if ( auto result = sym_.namespace.resolveIdentifier( id, null, matchLevel ) )
 						return result;
 
 					return Overloadset( );
@@ -73,6 +76,7 @@ abstract class Symbol_Module : Symbol {
 
 			public:
 				this( Symbol_Module sym ) {
+					super( MatchLevel.fullMatch );
 					sym_ = sym;
 				}
 
@@ -103,12 +107,16 @@ abstract class Symbol_Module : Symbol {
 					return null;
 				}
 
+				override string identificationString_noPrefix() {
+					return null;
+				}
+
 			protected:
-				override Overloadset _resolveIdentifier_main( Identifier id ) {
+				override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
 					// TODO: imports and public imports
 
 					if ( sym_ !is coreLibrary.module_ ) {
-						if ( auto result = coreLibrary.module_.dataEntity.resolveIdentifier( id ) )
+						if ( auto result = coreLibrary.module_.dataEntity.resolveIdentifier( id, matchLevel ) )
 							return result;
 					}
 

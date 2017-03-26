@@ -10,7 +10,7 @@ abstract class Symbol_Decorator : Symbol {
 	public:
 		this( DataEntity parent ) {
 			parent_ = parent;
-			staticData_ = new Data;
+			staticData_ = new Data( this, MatchLevel.fullMatch );
 		}
 
 	public:
@@ -19,8 +19,11 @@ abstract class Symbol_Decorator : Symbol {
 		}
 
 	public:
-		final override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
+		final override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( matchLevel == MatchLevel.fullMatch )
+				return staticData_;
+			else
+				return new Data( this, matchLevel );
 		}
 
 	public:
@@ -45,11 +48,12 @@ abstract class Symbol_Decorator : Symbol {
 		DataEntity staticData_;
 
 	private:
-		final class Data : SymbolRelatedDataEntity {
+		final static class Data : SymbolRelatedDataEntity {
 
 			public:
-				this( ) {
-					super( this.outer );
+				this( Symbol_Decorator sym, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
+					sym_ = sym;
 				}
 
 			public:
@@ -63,12 +67,15 @@ abstract class Symbol_Decorator : Symbol {
 				}
 
 				override DataEntity parent( ) {
-					return this.outer.parent_;
+					return sym_.parent_;
 				}
 
 				override Symbol_Decorator isDecorator( ) {
-					return this.outer;
+					return sym_;
 				}
+
+			private:
+				Symbol_Decorator sym_;
 
 		}
 

@@ -2,7 +2,9 @@ module beast.code.data.function_.toolkit;
 
 public {
 	import beast.code.ast.expr.expression : AST_Expression;
-	import beast.code.data.callable : CallableMatch, SeriousCallableMatch, InvalidCallableMatch;
+	import beast.code.data.callable.match : CallableMatch;
+	import beast.code.data.callable.seriousmtch : SeriousCallableMatch;
+	import beast.code.data.callable.invalidmtch : InvalidCallableMatch;
 	import beast.code.data.function_.expandedparameter : ExpandedFunctionParameter;
 	import beast.code.data.function_.function_ : Symbol_Function;
 	import beast.code.data.function_.rt : Symbol_RuntimeFunction;

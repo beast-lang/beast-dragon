@@ -2,8 +2,9 @@ module beast.code.ast.expr.parentcomma;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.p1;
-import beast.code.data.callable;
+import beast.code.data.callable.match;
 import beast.code.ast.expr.vardecl;
+import beast.code.data.matchlevel;
 
 /// Parameter list used in declarations
 final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
@@ -89,6 +90,7 @@ private final class DataEntity_ParentComma : DataEntity {
 
 	public:
 		this( DataEntity[ ] payload, DataEntity base, AST_ParentCommaExpression ast ) {
+			super( base.matchLevel );
 			payload_ = payload;
 			base_ = base;
 		}
@@ -112,8 +114,8 @@ private final class DataEntity_ParentComma : DataEntity {
 			return base_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-			return base_.startCallMatch( ast, isOnlyOverloadOption );
+		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+			return base_.startCallMatch( ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
 		}
 
 	public:

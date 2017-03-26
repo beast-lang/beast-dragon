@@ -50,10 +50,6 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 			return identifier_;
 		}
 
-		override size_t instanceSize( ) {
-			return baseClass_.instanceSize;
-		}
-
 		override Namespace namespace( ) {
 			return namespace_;
 		}

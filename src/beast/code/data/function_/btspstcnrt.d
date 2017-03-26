@@ -12,12 +12,11 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 		}
 
 	public:
-		this( DataEntity parent, Identifier id, CallMatchFactory!( false, Data ) matchFactory ) {
+		this( DataEntity parent, Identifier id, CallMatchFactory!( false, Data ) matchFactory, bool staticCallOnly = false ) {
 			parent_ = parent;
 			id_ = id;
 			matchFactory_ = matchFactory;
-
-			staticData_ = new Data( this );
+			staticCallOnly_ = staticCallOnly;
 		}
 
 	public:
@@ -30,23 +29,24 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 		}
 
 	public:
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			return staticData_;
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			return new Data( this, parentInstance, matchLevel );
 		}
 
 	private:
 		DataEntity parent_;
 		Identifier id_;
 		CallMatchFactory!( false, Data ) matchFactory_;
-		DataEntity staticData_;
+		bool staticCallOnly_;
 
 	protected:
-		final static class Data : SymbolRelatedDataEntity {
+		final static class Data : super.Data {
 
 			public:
-				this( Symbol_BootstrapStaticNonRuntimeFunction sym ) {
-					super( sym );
+				this( Symbol_BootstrapStaticNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
+					super( sym, matchLevel | MatchLevel.staticCall );
 					sym_ = sym;
+					parentInstance_ = parentInstance;
 				}
 
 			public:
@@ -72,12 +72,18 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					if ( parentInstance_ is null || !sym_.staticCallOnly_ )
+						return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+					else {
+						//benforce( !isOnlyOverloadOption, E.staticCallOnly, "Function %s can only be called statically".format( this.tryGetIdentificationString ) );
+						return new InvalidCallableMatch( this, "can only be called statically" );
+					}
 				}
 
 			protected:
 				Symbol_BootstrapStaticNonRuntimeFunction sym_;
+				DataEntity parentInstance_;
 
 		}
 

@@ -13,7 +13,7 @@ abstract class CallMatchFactory( bool isMemberFunction_, SourceEntity_ ) {
 		alias SourceEntity = SourceEntity_;
 
 	public:
-		abstract CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption );
+		abstract CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel );
 
 		abstract string[ ] argumentsIdentificationStrings( );
 
@@ -31,8 +31,8 @@ final class CallMatchFactoryImpl( bool isMemberFunction, SourceEntity, Builder_ 
 		}
 
 	public:
-		override CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
-			return new Match!( typeof( this ) )( this, sourceEntity, ast, isOnlyOverloadOption );
+		override CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+			return new Match!( typeof( this ) )( this, sourceEntity, ast, isOnlyOverloadOption, matchLevel );
 		}
 
 		override string[ ] argumentsIdentificationStrings( ) {
@@ -57,8 +57,8 @@ final static class Match( Factory ) : SeriousCallableMatch {
 		enum isMemberFunction = Factory.isMemberFunction;
 
 	public:
-		this( Factory factory, SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption ) {
-			super( sourceEntity, ast, isOnlyOverloadOption, factory.builder_.builder!( 0 ).initialMatchFlags_ );
+		this( Factory factory, SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+			super( sourceEntity, ast, isOnlyOverloadOption, factory.builder_.builder!( 0 ).initialMatchFlags_ | matchLevel );
 
 			factory_ = factory;
 
@@ -67,12 +67,12 @@ final static class Match( Factory ) : SeriousCallableMatch {
 		}
 
 	protected:
-		override MatchFlags _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
+		override MatchLevel _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
 			foreach ( i; aliasSeqOf!( iota( 1, Factory.Builder.BuilderCount ) ) ) {
 				if ( currentFactoryItem_ == i ) {
 					bool nextFactoryItem = true;
 
-					MatchFlags result = factory_.builder_.builder!i.matchArgument( this, expression, entity, dataType, params_[ Builder.Builder!i.ParamsOffset .. Builder.Builder!i.ParamsOffset + Builder.Builder!i.Params.length ], nextFactoryItem );
+					MatchLevel result = factory_.builder_.builder!i.matchArgument( this, expression, entity, dataType, params_[ Builder.Builder!i.ParamsOffset .. Builder.Builder!i.ParamsOffset + Builder.Builder!i.Params.length ], nextFactoryItem );
 
 					if ( nextFactoryItem )
 						currentFactoryItem_++;
@@ -83,17 +83,17 @@ final static class Match( Factory ) : SeriousCallableMatch {
 
 			// If currentFactoryItem_ is outside builder bounds, that means that there are more arguments that parameters
 			errorStr = "too many arguments";
-			return MatchFlags.noMatch;
+			return MatchLevel.noMatch;
 		}
 
-		override MatchFlags _finish( ) {
+		override MatchLevel _finish( ) {
 			// Either we must have processed all factory items or the last one must be satisfied (this happens when the parameter is variadic)
 			if ( currentFactoryItem_ != Factory.Builder.BuilderCount && !factory_.builder_.isSatisfied( params_[ Builder.ParamsOffset .. $ ] ) ) {
 				errorStr = "not enough arguments";
-				return MatchFlags.noMatch;
+				return MatchLevel.noMatch;
 			}
 
-			return MatchFlags.fullMatch;
+			return MatchLevel.fullMatch;
 		}
 
 		override DataEntity _toDataEntity( ) {
@@ -195,12 +195,12 @@ struct Builer_Base( bool isMemberFunction_, SourceEntity_ ) {
 	alias Params = TypeTuple!( );
 
 	auto ref markAsFallback( ) {
-		initialMatchFlags_ &= CallableMatch.MatchFlags.fallback;
+		initialMatchFlags_ |= MatchLevel.fallback;
 		return this;
 	}
 
 	private:
-		CallableMatch.MatchFlags initialMatchFlags_ = CallableMatch.MatchFlags.fullMatch;
+		MatchLevel initialMatchFlags_ = MatchLevel.fullMatch;
 }
 
 struct Builder_RuntimeParameter( Parent ) {
@@ -208,10 +208,10 @@ struct Builder_RuntimeParameter( Parent ) {
 
 	alias Params = TypeTuple!( DataEntity );
 
-	CallableMatch.MatchFlags matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
+	MatchLevel matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
 		auto result = match.matchStandardArgument( expression, entity, dataType, type_ );
-		if ( result == CallableMatch.MatchFlags.noMatch )
-			return CallableMatch.MatchFlags.noMatch;
+		if ( result == MatchLevel.noMatch )
+			return MatchLevel.noMatch;
 
 		params[ 0 ] = entity;
 		return result;
@@ -231,12 +231,12 @@ struct Builder_CtimeParameter( Parent ) {
 
 	alias Params = TypeTuple!( MemoryPtr );
 
-	CallableMatch.MatchFlags matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
+	MatchLevel matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
 		MemoryPtr value;
 
 		auto result = match.matchCtimeArgument( expression, entity, dataType, type_, value );
-		if ( result == CallableMatch.MatchFlags.noMatch )
-			return CallableMatch.MatchFlags.noMatch;
+		if ( result == MatchLevel.noMatch )
+			return MatchLevel.noMatch;
 
 		params[ 0 ] = value;
 		return result;
@@ -256,10 +256,10 @@ struct Builder_ConstParameter( Parent ) {
 
 	alias Params = TypeTuple!( );
 
-	CallableMatch.MatchFlags matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
+	MatchLevel matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
 		auto result = match.matchConstValue( expression, entity, dataType, type_, value_ );
-		if ( result == CallableMatch.MatchFlags.noMatch )
-			return CallableMatch.MatchFlags.noMatch;
+		if ( result == MatchLevel.noMatch )
+			return MatchLevel.noMatch;
 
 		return result;
 	}
@@ -279,12 +279,12 @@ struct Builder_Anything( Parent ) {
 
 	alias Params = TypeTuple!( AST_Expression[ ], DataEntity[ ] );
 
-	CallableMatch.MatchFlags matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
+	MatchLevel matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
 		params[ 0 ] ~= expression;
 		params[ 1 ] ~= entity;
 
 		nextFactoryItem = false;
-		return CallableMatch.MatchFlags.fullMatch;
+		return MatchLevel.fullMatch;
 	}
 
 	string identificationString( ) {

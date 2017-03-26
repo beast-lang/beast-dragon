@@ -17,12 +17,12 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 			id_ = id;
 			matchFactory_ = matchFactory;
 
-			staticData_ = new StaticData( this );
+			staticData_ = new Data( this, null, MatchLevel.fullMatch );
 		}
 
 	public:
 		override DeclType declarationType( ) {
-			return DeclType.staticFunction;
+			return DeclType.memberFunction;
 		}
 
 		override Identifier identifier( ) {
@@ -30,9 +30,9 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 		}
 
 	public:
-		override DataEntity dataEntity( DataEntity parentInstance = null ) {
-			if ( parentInstance )
-				return new Data( this, parentInstance );
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+			if ( parentInstance || matchLevel != MatchLevel.fullMatch )
+				return new Data( this, parentInstance, matchLevel );
 			else
 				return staticData_;
 		}
@@ -41,14 +41,14 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 		DataEntity parent_;
 		Identifier id_;
 		CallMatchFactory!( true, Data ) matchFactory_;
-		DataEntity staticData_;
+		Data staticData_;
 
 	protected:
-		final static class Data : SymbolRelatedDataEntity {
+		final static class Data : super.Data {
 
 			public:
-				this( Symbol_BootstrapMemberNonRuntimeFunction sym, DataEntity parentInstance ) {
-					super( sym );
+				this( Symbol_BootstrapMemberNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
+					super( sym, matchLevel );
 					sym_ = sym;
 					parentInstance_ = parentInstance;
 				}
@@ -56,6 +56,10 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 			public:
 				override string identification( ) {
 					return "%s( %s )".format( sym_.identifier.str, sym_.matchFactory_.argumentsIdentificationStrings.joiner( ", " ) );
+				}
+
+				override string identificationString_noPrefix( ) {
+					return "%s.%s".format( sym_.parent_.identificationString, identification );
 				}
 
 				override Symbol_Type dataType( ) {
@@ -81,54 +85,18 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption );
+				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+					if ( parentInstance_ )
+						return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+					else {
+						benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
+						return new InvalidCallableMatch( this, "need this" );
+					}
 				}
 
 			protected:
 				Symbol_BootstrapMemberNonRuntimeFunction sym_;
 				DataEntity parentInstance_;
-
-		}
-
-		final static class StaticData : SymbolRelatedDataEntity {
-
-			public:
-				this( Symbol_BootstrapMemberNonRuntimeFunction sym ) {
-					super( sym );
-					sym_ = sym;
-				}
-
-			public:
-				override string identification( ) {
-					return "%s( %s )".format( sym_.identifier.str, sym_.matchFactory_.argumentsIdentificationStrings.joiner( ", " ) );
-				}
-
-				override Symbol_Type dataType( ) {
-					// TODO: better
-					return coreLibrary.type.Void;
-				}
-
-				final override DataEntity parent( ) {
-					return sym_.parent_;
-				}
-
-				final override bool isCtime( ) {
-					return true;
-				}
-
-				final override bool isCallable( ) {
-					return true;
-				}
-
-			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption ) {
-					benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
-					return new InvalidCallableMatch( this, "need this" );
-				}
-
-			private:
-				Symbol_BootstrapMemberNonRuntimeFunction sym_;
 
 		}
 
