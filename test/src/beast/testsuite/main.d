@@ -35,6 +35,8 @@ int main( string[ ] args ) {
 	"../test/output/".mkdirRecurse( );
 	"../test/tmp/".mkdirRecurse( );
 
+	File log = File( "../test/log/log.txt", "w" );
+
 	Test[ ] tests, activeTests, failedTests;
 
 	foreach ( location; testsDir.dirEntries( "t_*", SpanMode.depth ) ) {
@@ -62,22 +64,27 @@ int main( string[ ] args ) {
 		const bool result = test.run( );
 
 		synchronized ( testsMutex ) {
-			if ( result ) {
-				writeln( "[   ] ", test.identifier, ": PASSED" );
-			}
+			string str;
+			if ( result )
+				str = "[   ] %s: PASSED\n".format( test.identifier );
+
 			else {
-				writeln( "[ # ] ", test.identifier, ": FAILED" );
+				str = "[ # ] %s: FAILED\n".format( test.identifier );
 				failedTests ~= test;
 
 				if ( showLogs )
-					test.logFilename.readText.writeln;
+					str ~= test.logFilename.readText ~ "\n";
 			}
+
+			log.write( str );
+			stdout.write( str );
+			stdout.flush();
 		}
 	}
 
-	writeln;
-	writeln( "[   ] PASSED: ", activeTests.length - failedTests.length );
-	writeln( "[ ", failedTests.length ? "#" : " ", " ] FAILED: ", failedTests.length );
+	string str = "\n[   ] PASSED: %s\n[ %s ] FAILED: %s\n".format( activeTests.length - failedTests.length, failedTests.length ? "#" : " ", failedTests.length );
+	stdout.write( str );
+	log.write( str );
 
 	thread_joinAll( );
 

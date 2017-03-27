@@ -13,7 +13,7 @@ abstract class CallMatchFactory( bool isMemberFunction_, SourceEntity_ ) {
 		alias SourceEntity = SourceEntity_;
 
 	public:
-		abstract CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel );
+		abstract CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel );
 
 		abstract string[ ] argumentsIdentificationStrings( );
 
@@ -31,8 +31,8 @@ final class CallMatchFactoryImpl( bool isMemberFunction, SourceEntity, Builder_ 
 		}
 
 	public:
-		override CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-			return new Match!( typeof( this ) )( this, sourceEntity, ast, isOnlyOverloadOption, matchLevel );
+		override CallableMatch startCallMatch( SourceEntity sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+			return new Match!( typeof( this ) )( this, sourceEntity, ast, canThrowErrors, matchLevel );
 		}
 
 		override string[ ] argumentsIdentificationStrings( ) {
@@ -57,8 +57,8 @@ final static class Match( Factory ) : SeriousCallableMatch {
 		enum isMemberFunction = Factory.isMemberFunction;
 
 	public:
-		this( Factory factory, SourceEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-			super( sourceEntity, ast, isOnlyOverloadOption, factory.builder_.builder!( 0 ).initialMatchFlags_ | matchLevel );
+		this( Factory factory, SourceEntity sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+			super( sourceEntity, ast, canThrowErrors, factory.builder_.builder!( 0 ).initialMatchFlags_ | matchLevel );
 
 			factory_ = factory;
 

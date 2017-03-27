@@ -8,13 +8,13 @@ import beast.code.data.scope_.blurry;
 /// You wanna use this class, it implements lot of utility stuff
 abstract class SeriousCallableMatch : CallableMatch {
 	public:
-		this( DataEntity sourceDataEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel initialMatchLevel = MatchLevel.fullMatch ) {
+		this( DataEntity sourceDataEntity, AST_Node ast, bool canThrowErrors, MatchLevel initialMatchLevel = MatchLevel.fullMatch ) {
 			super( sourceDataEntity, initialMatchLevel );
 			assert( currentScope );
 
 			scope__ = new BlurryDataScope( currentScope );
 			ast_ = ast;
-			isOnlyOverloadOption_ = isOnlyOverloadOption;
+			isOnlyOverloadOption_ = canThrowErrors;
 		}
 
 	public:

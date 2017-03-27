@@ -78,11 +78,11 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					return "%s.%s".format( sym_.parent_.identificationString, identification );
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
 					if ( parentInstance_ )
-						return new Match( sym_, this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+						return new Match( sym_, this, ast, canThrowErrors, matchLevel | this.matchLevel );
 					else {
-						benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
+						benforce( !canThrowErrors, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
 						return new InvalidCallableMatch( this, "need this" );
 					}
 				}
@@ -96,8 +96,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-					super( sym, sourceEntity, ast, isOnlyOverloadOption, matchLevel );
+				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+					super( sym, sourceEntity, ast, canThrowErrors, matchLevel );
 
 					parentInstance_ = sourceEntity.parentInstance_;
 					sym_ = sym;

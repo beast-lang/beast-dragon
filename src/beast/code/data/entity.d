@@ -40,7 +40,7 @@ abstract class DataEntity : Identifiable {
 		}
 
 		/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
-		CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+		CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
 			assert( 0, identificationString ~ " is not callable" );
 		}
 

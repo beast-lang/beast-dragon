@@ -85,11 +85,11 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
 					if ( parentInstance_ )
-						return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+						return sym_.matchFactory_.startCallMatch( this, ast, canThrowErrors, matchLevel | this.matchLevel );
 					else {
-						benforce( !isOnlyOverloadOption, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
+						benforce( !canThrowErrors, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
 						return new InvalidCallableMatch( this, "need this" );
 					}
 				}

@@ -114,8 +114,8 @@ private final class DataEntity_ParentComma : DataEntity {
 			return base_.isCallable;
 		}
 
-		override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-			return base_.startCallMatch( ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+		override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+			return base_.startCallMatch( ast, canThrowErrors, matchLevel | this.matchLevel );
 		}
 
 	public:

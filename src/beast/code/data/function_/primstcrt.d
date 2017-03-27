@@ -72,8 +72,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 					return sym_.parent_;
 				}
 
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-					return new Match( sym_, this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+					return new Match( sym_, this, ast, canThrowErrors, matchLevel | this.matchLevel );
 				}
 
 			private:
@@ -84,8 +84,8 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Match : super.Match {
 
 			public:
-				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-					super( sym, sourceEntity, ast, isOnlyOverloadOption, matchLevel );
+				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+					super( sym, sourceEntity, ast, canThrowErrors, matchLevel );
 
 					sym_ = sym;
 				}

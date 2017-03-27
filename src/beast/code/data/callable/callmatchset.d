@@ -18,7 +18,7 @@ struct CallMatchSet {
 
 			foreach ( overload; overloadset ) {
 				if ( overload.isCallable )
-					matches ~= overload.startCallMatch( ast, overloadset.length == 1, matchLevel );
+					matches ~= overload.startCallMatch( ast, reportErrors && ( overloadset.length == 1 ), matchLevel );
 
 				// If the overload is not callable, we try to overload against overload.#operator( Operator.call, XXX )
 				else {

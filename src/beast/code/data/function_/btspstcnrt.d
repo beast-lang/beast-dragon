@@ -72,11 +72,11 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
+				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
 					if ( parentInstance_ is null || !sym_.staticCallOnly_ )
-						return sym_.matchFactory_.startCallMatch( this, ast, isOnlyOverloadOption, matchLevel | this.matchLevel );
+						return sym_.matchFactory_.startCallMatch( this, ast, canThrowErrors, matchLevel | this.matchLevel );
 					else {
-						//benforce( !isOnlyOverloadOption, E.staticCallOnly, "Function %s can only be called statically".format( this.tryGetIdentificationString ) );
+						//benforce( !canThrowErrors, E.staticCallOnly, "Function %s can only be called statically".format( this.tryGetIdentificationString ) );
 						return new InvalidCallableMatch( this, "can only be called statically" );
 					}
 				}

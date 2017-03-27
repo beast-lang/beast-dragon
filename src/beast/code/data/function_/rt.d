@@ -105,8 +105,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 			public:
-				override CallableMatch startCallMatch( AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-					return new Match( sym_, this, ast, isOnlyOverloadOption, this.matchLevel | matchLevel );
+				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+					return new Match( sym_, this, ast, canThrowErrors, this.matchLevel | matchLevel );
 				}
 
 			protected:
@@ -125,8 +125,8 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		static class Match : SeriousCallableMatch {
 
 			public:
-				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, AST_Node ast, bool isOnlyOverloadOption, MatchLevel matchLevel ) {
-					super( sourceEntity, ast, isOnlyOverloadOption, matchLevel );
+				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+					super( sourceEntity, ast, canThrowErrors, matchLevel );
 					sym_ = sym;
 				}
 
