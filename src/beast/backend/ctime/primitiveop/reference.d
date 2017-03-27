@@ -3,19 +3,19 @@ module beast.backend.ctime.primitiveop.reference;
 import beast.backend.ctime.primitiveop.toolkit;
 import beast.code.hwenv.hwenv;
 
-void primitiveOp_storeAddr( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_getAddr( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		args[ 1 ].buildCode( cb );
-		const MemoryPtr arg1 = result_;
+		arg1( cb );
+		const MemoryPtr arg1v = result_;
 
-		inst.buildCode( cb );
-		result_.write( &arg1.val, hardwareEnvironment.effectivePointerSize );
+		arg2( cb );
+		arg1v.write( &result_.val, hardwareEnvironment.effectivePointerSize );
 	}
 }
 
-void primitiveOp_loadAddr( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_dereference( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		inst.buildCode( cb );
+		arg1( cb );
 		result_ = result_.readMemoryPtr;
 	}
 }

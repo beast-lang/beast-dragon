@@ -9,6 +9,7 @@ import beast.code.data.function_.bstpstcnrt;
 import beast.code.data.function_.btspmemrt;
 import beast.code.data.function_.expandedparameter;
 import beast.code.data.var.tmplocal;
+import beast.code.data.function_.primmemrt;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -41,13 +42,13 @@ abstract class Symbol_Type : Symbol {
 			if ( !isReferenceType && instanceSize ) {
 				auto refType = coreLibrary.type.Reference.referenceTypeOf( this );
 				// Implicit cast to reference type
-				mem ~= new Symbol_BootstrapMemberRuntimeFunction( ID!"#implicitCast", this, refType, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, refType, //
 						ExpandedFunctionParameter.bootstrap( refType.dataEntity ), //
-						( cb, params ) { //
-							auto var = new DataEntity_TmpLocalVariable( refType, params[ 0 ].isCtime );
+						( cb, inst, args ) { //
+							auto var = new DataEntity_TmpLocalVariable( refType, inst.isCtime );
 							cb.build_localVariableDefinition( var );
-							var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.opRefAssign.dataEntity, params[ 0 ] ).buildCode( cb );
-							cb.build_return( var );
+							var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.opRefAssign.dataEntity, inst ).buildCode( cb );
+							var.buildCode( cb );
 						} );
 			}
 

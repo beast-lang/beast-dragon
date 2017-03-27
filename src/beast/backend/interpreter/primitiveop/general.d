@@ -2,32 +2,34 @@ module beast.backend.interpreter.primitiveop.general;
 
 import beast.backend.interpreter.primitiveop.toolkit;
 
-void primitiveOp_memZero( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_memZero( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		inst.buildCode( cb );
-		addInstruction( I.zero, operandResult_, inst.dataType.instanceSize.iopLiteral );
+		arg1( cb );
+		addInstruction( I.zero, operandResult_, argT.instanceSize.iopLiteral );
 	}
 }
 
-void primitiveOp_memCpy( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_memCpy( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		args[ 1 ].buildCode( cb );
-		InstructionOperand arg1 = operandResult_;
+		arg1( cb );
+		InstructionOperand arg1v = operandResult_;
 
-		inst.buildCode( cb );
-		addInstruction( I.mov, operandResult_, arg1, inst.dataType.instanceSize.iopLiteral );
+		arg2( cb );
+		addInstruction( I.mov, arg1v, operandResult_, argT.instanceSize.iopLiteral );
 	}
 }
 
-void primitiveOp_noopDtor( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_noopDtor( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	// Do nothing
 }
 
-void primitiveOp_print( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_print( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	cb.addInstruction( I.printError );
 }
 
-void primitiveOp_assert_( CB cb, DataEntity inst, DataEntity[ ] args ) {
-	args[ 0 ].buildCode( cb );
-	cb.addInstruction( I.assert_, cb.operandResult_ );
+void primitiveOp_assert_( CB cb, T argT, F arg1, F arg2, F arg3 ) {
+	with ( cb ) {
+		arg1( cb );
+		cb.addInstruction( I.assert_, operandResult_ );
+	}
 }

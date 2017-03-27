@@ -105,7 +105,7 @@ final class MemoryManager {
 
 				foreach ( i, block; mmap ) {
 					if ( block.startPtr == ptr ) {
-						benforce( block.session == context.session, E.protectedMemory, "Cannot free memory block owned by a different session" );
+						benforce( block.session == context.session, E.protectedMemory, "Cannot free memory block owned by a different session (%#x)".format( ptr.val ) );
 
 						mmap = mmap[ 0 .. i ] ~ mmap[ i + 1 .. $ ];
 						context.sessionMemoryBlocks.remove( block.startPtr.val );
@@ -113,11 +113,11 @@ final class MemoryManager {
 						return;
 					}
 					else
-						benforce( block.startPtr < ptr || block.endPtr >= ptr, E.invalidMemoryOperation, "You have to call free on memory block start pointer, not any pointer in the memory block" );
+						benforce( block.startPtr < ptr || block.endPtr >= ptr, E.invalidMemoryOperation, "You have to call free on memory block start pointer, not any pointer in the memory block (%#x)".format( ptr.val ) );
 				}
 			}
 
-			berror( E.invalidMemoryOperation, "Cannot free - memory with this pointer is not allocated" );
+			berror( E.invalidMemoryOperation, "Cannot free - memory with this pointer is not allocated (%#x)".format( ptr.val ) );
 		}
 
 		void free( MemoryBlock block ) {

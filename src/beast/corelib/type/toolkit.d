@@ -4,7 +4,6 @@ public {
 	import beast.backend.common.primitiveop : BackendPrimitiveOperation;
 	import beast.code.data.codenamespace.bootstrap : BootstrapNamespace;
 	import beast.code.data.codenamespace.namespace : Namespace;
-	import beast.code.data.function_.btspmemrt : Symbol_BootstrapMemberRuntimeFunction;
 	import beast.code.data.function_.expandedparameter : ExpandedFunctionParameter;
 	import beast.code.data.function_.primmemrt : Symbol_PrimitiveMemberRuntimeFunction;
 	import beast.code.data.type.btspstcclass : Symbol_BootstrapStaticClass;

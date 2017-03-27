@@ -7,17 +7,21 @@ import beast.code.data.var.local;
 import beast.backend.common.primitiveop;
 
 /// Primitive (compiler-defined, handled by backend) static runtime (non-templated) function
+/// Calling primitive functions doesn't result in funciton call - given code is injected directly (like inline)
 final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
-		this( Identifier identifier, DataEntity parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, BackendPrimitiveOperation op ) {
+		alias PrimitiveFunc = void delegate( CodeBuilder cb, DataEntity [] args );
+
+	public:
+		this( Identifier identifier, DataEntity parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, PrimitiveFunc func ) {
 			staticData_ = new Data( this, MatchLevel.fullMatch );
 
 			identifier_ = identifier;
 			parent_ = parent;
 			returnType_ = returnType;
 			parameters_ = parameters;
-			op_ = op;
+			func_ = func;
 		}
 
 		override Identifier identifier( ) {
@@ -55,7 +59,7 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 		Symbol_Type returnType_;
 		Data staticData_;
 		ExpandedFunctionParameter[ ] parameters_;
-		BackendPrimitiveOperation op_;
+		PrimitiveFunc func_;
 
 	protected:
 		final class Data : super.Data {
@@ -113,7 +117,7 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 				override void buildCode( CodeBuilder cb ) {
 					const auto _gd = ErrorGuard( codeLocation );
 
-					cb.build_primitiveOperation( sym_.returnType_, op_, null, arguments_ );
+					sym_.func_( cb, arguments_ );
 				}
 
 			private:

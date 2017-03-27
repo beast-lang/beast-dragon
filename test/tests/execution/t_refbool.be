@@ -24,14 +24,7 @@ Void main() {
 
 	print( x ); //! stdout: "1"
 	print( y ); //! stdout: "0"
-	print( xr ); //! stdout: "1"
-	print( yr ); //! stdout: "0"
-
-	xr = false;
-
-	print( x ); //! stdout: "1"
-	print( y ); //! stdout: "0"
-	print( xr ); //! stdout: "1"
+	print( xr ); //! stdout: "0"
 	print( yr ); //! stdout: "0"
 
 	xr = true;
@@ -41,19 +34,12 @@ Void main() {
 	print( xr ); //! stdout: "1"
 	print( yr ); //! stdout: "1"
 
-	yr = false;
+	x = false;
 
-	print( x ); //! stdout: "1"
-	print( y ); //! stdout: "0"
+	print( x ); //! stdout: "0"
+	print( y ); //! stdout: "1"
 	print( xr ); //! stdout: "1"
-	print( yr ); //! stdout: "0"
-
-	yr := x;
-
-	print( x ); //! stdout: "1"
-	print( y ); //! stdout: "0"
-	print( xr ); //! stdout: "1"
-	print( yr ); //! stdout: "0"
+	print( yr ); //! stdout: "1"
 
 	yr = false;
 
@@ -61,4 +47,18 @@ Void main() {
 	print( y ); //! stdout: "0"
 	print( xr ); //! stdout: "0"
 	print( yr ); //! stdout: "0"
+
+	yr := x;
+
+	print( x ); //! stdout: "0"
+	print( y ); //! stdout: "0"
+	print( xr ); //! stdout: "0"
+	print( yr ); //! stdout: "0"
+
+	yr = true;
+
+	print( x ); //! stdout: "1"
+	print( y ); //! stdout: "0"
+	print( xr ); //! stdout: "0"
+	print( yr ); //! stdout: "1"
 }

@@ -30,17 +30,24 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 			// Implicit constructor
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
-					BackendPrimitiveOperation.memZero );
+					( cb, inst, args ) { //
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memZero, inst );
+					} );
 
 			// Copy/assign constructor
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.opAssign, this ), //
-					BackendPrimitiveOperation.memCpy );
+					( cb, inst, args ) { //
+						// 0th argument is #Ctor.opAssign!
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+					} );
 
 			// Destructor
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
-					BackendPrimitiveOperation.noopDtor );
+					( cb, inst, args ) { //
+						cb.build_primitiveOperation( BackendPrimitiveOperation.noopDtor, inst );
+					} );
 
 			namespace_.initialize( members );
 		}

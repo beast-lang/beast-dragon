@@ -81,19 +81,10 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			result_ = result;
 		}
 
-		override void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
 			static import beast.backend.ctime.primitiveop;
 
 			debug result_ = MemoryPtr( );
-
-			if ( returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( returnType, true );
-				build_localVariableDefinition( resultVar );
-			}
-
-			auto _s = scoped!LocalDataScope( );
-			auto _sgd = _s.scopeGuard;
-			pushScope( );
 
 			mixin( ( ) { //
 				import std.array : appender;
@@ -105,7 +96,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
 
 					static if ( __traits( hasMember, beast.backend.ctime.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-						result ~= "beast.backend.ctime.primitiveop.primitiveOp_%s( this, parentInstance, arguments );\nbreak;\n".format( opStr );
+						result ~= "beast.backend.ctime.primitiveop.primitiveOp_%s( this, argT, arg1, arg2, arg3 );\nbreak;\n".format( opStr );
 					else
 						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.ctime\" );\n".format( opStr );
 				}
@@ -113,9 +104,6 @@ final class CodeBuilder_Ctime : CodeBuilder {
 				result ~= "}\n";
 				return result.data;
 			}( ) );
-
-			popScope( );
-			_s.finish( );
 		}
 
 	public:

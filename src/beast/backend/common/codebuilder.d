@@ -10,6 +10,9 @@ abstract class CodeBuilder : Identifiable {
 		/// When called, StmtFunction should build given part of the statement using provided codebuilder
 		alias StmtFunction = void delegate( CodeBuilder cb );
 
+		/// When called, StmtFunction should build expression using provided codebuilder		
+		alias ExprFunction = void delegate( CodeBuilder cb );
+
 	public: // Declaration related build commands
 		void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
@@ -43,17 +46,33 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
-		void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
+		/// Utility function calling original build_primitiveOperation (argT => arg1.dataType)
+		pragma( inline ) final void build_primitiveOperation( BackendPrimitiveOperation op, DataEntity arg1 ) {
+			build_primitiveOperation( op, arg1.dataType, &arg1.buildCode );
+		}
+
+		/// Utility function calling original build_primitiveOperation (argT => arg1.dataType)
+		pragma( inline ) final void build_primitiveOperation( BackendPrimitiveOperation op, DataEntity arg1, DataEntity arg2 ) {
+			build_primitiveOperation( op, arg1.dataType, &arg1.buildCode, &arg2.buildCode );
 		}
 
 	public: // Statement related build commands
 		/// Builds the "if" construction
 		/// Condition has to be of type bool
 		/// elseBranch can be null
-		void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+		void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
+
+		/// Utility function for if
+		final void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+			build_if( &condition.buildCode, thenBranch, elseBranch );
+		}
+
 
 		void build_return( DataEntity returnValue ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );

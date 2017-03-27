@@ -22,6 +22,10 @@ Bool printFalse() {
 	return false;
 }
 
+Void reprint( Bool b ) {
+	print( b );
+}
+
 // Static variable value should be executed at ctime (for now)
 Bool x = and( true, false );
 Bool z = foo();
@@ -36,6 +40,9 @@ Void main() {
 	print( a ); //! stdout: "1"
 
 	print( z ); //! stdout: "0"
+
+	reprint( true ); //! stdout: "1"
+	reprint( false ); //! stdout: "0"
 
 	// Now we test execution order
 	print( printTrue() && printFalse() ); //! stdout: "100"

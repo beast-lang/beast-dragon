@@ -159,7 +159,12 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false, "arg%s".format( i + 1 ) );
 				build_localVariableDefinition( argVar );
+
+				codeResult_.formattedWrite( "%s{\n", tabs );
+				pushScope();
 				build_copyCtor( argVar, arguments[ i ] );
+				popScope();
+				codeResult_.formattedWrite( "%s}\n", tabs );
 
 				argumentNames ~= "&" ~ cppIdentifier( argVar );
 			}
@@ -173,22 +178,16 @@ class CodeBuilder_Cpp : CodeBuilder {
 			resultVarName_ = resultVarName;
 		}
 
-		override void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
 			static import beast.backend.cpp.primitiveop;
 
 			debug resultVarName_ = null;
 			//codeResult_.formattedWrite( "%s// PrimitiveOp %s\n", tabs, op );
-
+/*
 			if ( returnType !is coreLibrary.type.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
-			}
-
-			codeResult_.formattedWrite( "%s{\n", tabs );
-
-			auto _s = scoped!LocalDataScope( );
-			auto _sgd = _s.scopeGuard;
-			pushScope( );
+			}*/
 
 			mixin( ( ) { //
 				auto result = appender!string;
@@ -198,7 +197,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
 
 					static if ( __traits( hasMember, beast.backend.cpp.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-						result ~= "beast.backend.cpp.primitiveop.primitiveOp_%s( this, parentInstance, arguments );\nbreak;\n".format( opStr );
+						result ~= "beast.backend.cpp.primitiveop.primitiveOp_%s( this, argT, arg1, arg2, arg3 );\nbreak;\n".format( opStr );
 					else
 						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.cpp\" );\n".format( opStr );
 				}
@@ -206,15 +205,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 				result ~= "}\n";
 				return result.data;
 			}( ) );
-
-			popScope( );
-			_s.finish( );
-
-			codeResult_.formattedWrite( "%s}\n", tabs );
 		}
 
 	public: // Statement related build commands
-		override void build_if( DataEntity condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			codeResult_.formattedWrite( "%s{\n", tabs );
 			pushScope( );
 
@@ -222,8 +216,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 			auto _sgd = _s.scopeGuard; // Build the condition
 
 			{
-				condition.buildCode( this );
-				codeResult_.formattedWrite( "%sif( %s ) {\n", tabs, resultVarName_ );
+				condition( this );
+				codeResult_.formattedWrite( "%sif( VAL( %s, bool ) ) {\n", tabs, resultVarName_ );
 			}
 
 			// Build then branch
@@ -381,9 +375,12 @@ class CodeBuilder_Cpp : CodeBuilder {
 		size_t childrenCounter_; /// Increments every time a new hash is needed
 		size_t hashCounter_;
 		Appender!string codeResult_, declarationsResult_, typesResult_; /// Identifier of a variable representing result of last build expression
-		string resultVarName_;
 		size_t tabOffset_; /// Accumulator for optimized tabs output
 		string tabsString_;
+
+	package:
+		/// Variable name representing last build expression
+		string resultVarName_;
 
 	private:
 		Symbol_RuntimeFunction currentFunction;

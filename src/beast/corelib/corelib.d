@@ -64,3 +64,15 @@ class CoreLibrary {
 }
 
 __gshared CoreLibrary coreLibrary;
+
+ref CoreLibrary_Types coreType() {
+	return coreLibrary.type;
+}
+
+ref CoreLibrary_Constants coreConst() {
+	return coreLibrary.constant;
+}
+
+ref CoreLibrary_Enums coreEnum() {
+	return coreLibrary.enum_;
+}

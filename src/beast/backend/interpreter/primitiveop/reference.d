@@ -4,19 +4,19 @@ import beast.backend.interpreter.primitiveop.toolkit;
 import beast.code.hwenv.hwenv;
 import beast.backend.interpreter.instruction;
 
-void primitiveOp_storeAddr( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_getAddr( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		args[ 1 ].buildCode( cb );
-		const auto arg1 = operandResult_;
+		arg1( cb );
+		const auto arg1v = operandResult_;
 
-		inst.buildCode( cb );
-		addInstruction( I.stAddr, operandResult_, arg1 );
+		arg2( cb );
+		addInstruction( I.stAddr, arg1v, operandResult_ );
 	}
 }
 
-void primitiveOp_loadAddr( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_dereference( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		inst.buildCode( cb );
+		arg1( cb );
 		switch ( operandResult_.type ) {
 
 		case InstructionOperand.Type.heapRef: // If the operands are not already references, we simply make them into references

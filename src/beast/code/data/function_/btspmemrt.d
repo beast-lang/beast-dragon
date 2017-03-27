@@ -4,8 +4,9 @@ module beast.code.data.function_.btspmemrt;
 import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.env;
 import beast.code.data.var.local;
-
+/*
 /// Bootstrap (compiler-defined) member (non-static) runtime (non-templated) function
+/// Calling a boostrap function results in a function call
 final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
@@ -169,3 +170,4 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 }
+*/

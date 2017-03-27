@@ -20,10 +20,14 @@ struct CoreLibrary_Functions {
 
 			sink( printBool = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
 					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
-					BackendPrimitiveOperation.print ) );
+					( cb, args ) { //
+						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
+					} ) );
 
 			sink( assert_ = new Symbol_PrimitiveStaticRuntimeFunction( ID!"assert", parent, //
 					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
-					BackendPrimitiveOperation.assert_ ) );
+					( cb, args ) { //
+						cb.build_primitiveOperation( BackendPrimitiveOperation.assert_, args[ 0 ] );
+					} ) );
 		}
 }

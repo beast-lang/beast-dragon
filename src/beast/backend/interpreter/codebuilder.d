@@ -12,6 +12,9 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 	alias I = Instruction.I;
 
 	public:
+		alias InstructionPtr = size_t;
+
+	public:
 		final string identificationString( ) {
 			return "interpreter";
 		}
@@ -99,7 +102,9 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
+				pushScope();
 				build_copyCtor( argVars[ i ], arguments[ i ] );
+				popScope();
 			}
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
@@ -116,17 +121,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			operandResult_ = operandResult;
 		}
 
-		override void build_primitiveOperation( Symbol_Type returnType, BackendPrimitiveOperation op, DataEntity parentInstance, DataEntity[ ] arguments ) {
+		override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
 			static import beast.backend.interpreter.primitiveop;
-
-			if ( returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( returnType, false );
-				build_localVariableDefinition( resultVar );
-			}
-
-			auto _s = scoped!LocalDataScope( );
-			auto _sgd = _s.scopeGuard;
-			pushScope( );
 
 			mixin( ( ) { //
 				import std.array : appender;
@@ -138,7 +134,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
 
 					static if ( __traits( hasMember, beast.backend.interpreter.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-						result ~= "beast.backend.interpreter.primitiveop.primitiveOp_%s( this, parentInstance, arguments );\nbreak;\n".format( opStr );
+						result ~= "beast.backend.interpreter.primitiveop.primitiveOp_%s( this, argT, arg1, arg2, arg3 );\nbreak;\n".format( opStr );
 					else
 						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.interpreter\" );\n".format( opStr );
 				}
@@ -146,12 +142,44 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				result ~= "}\n";
 				return result.data;
 			}( ) );
-
-			popScope( );
-			_s.finish( );
 		}
 
 	public:
+		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+			pushScope( );
+
+			auto _s = scoped!LocalDataScope( );
+			auto _sgd = _s.scopeGuard; // Build the condition
+
+			InstructionPtr condJmpInstr;
+			{
+				condition( this );
+				condJmpInstr = addInstruction( I.jmpFalse, iopPlaceholder, operandResult_ );
+			}
+
+			// Build then branch
+			InstructionPtr thenJmpInstr;
+			{
+				pushScope( );
+				thenBranch( this );
+				popScope( );
+				thenJmpInstr = addInstruction( I.jmp, iopPlaceholder );
+			}
+
+			// Build else branch
+			if ( elseBranch ) {
+				setInstructionOperand( condJmpInstr, 0, jumpTarget );
+				pushScope( );
+				elseBranch( this );
+				popScope( );
+			}
+
+			popScope( );
+			_s.finish( );
+
+			setInstructionOperand( thenJmpInstr, 0, jumpTarget );
+		}
+
 		override void build_return( DataEntity returnValue ) {
 			assert( currentFunction );
 
@@ -182,13 +210,13 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	package:
 		/// Adds instruction, returns it's ID (index)
-		pragma( inline ) size_t addInstruction( I i, InstructionOperand op1 = InstructionOperand( ), InstructionOperand op2 = InstructionOperand( ), InstructionOperand op3 = InstructionOperand( ) ) {
+		pragma( inline ) InstructionPtr addInstruction( I i, InstructionOperand op1 = InstructionOperand( ), InstructionOperand op2 = InstructionOperand( ), InstructionOperand op3 = InstructionOperand( ) ) {
 			result_ ~= Instruction( i, op1, op2, op3 );
 			return result_.data.length - 1;
 		}
 
 		/// Updates instruction operand via it's ID (index)
-		pragma( inline ) void setInstructionOperand( size_t instruction, size_t operandId, InstructionOperand set ) {
+		pragma( inline ) void setInstructionOperand( InstructionPtr instruction, size_t operandId, InstructionOperand set ) {
 			assert( result_.data[ instruction ].op[ operandId ].type == InstructionOperand.Type.placeholder, "You can only update placeholder operands" );
 			result_.data[ instruction ].op[ operandId ] = set;
 		}

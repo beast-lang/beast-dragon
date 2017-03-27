@@ -2,9 +2,9 @@ module beast.backend.interpreter.op.control;
 
 import beast.backend.interpreter.op.toolkit;
 
-//debug = instructions;
+//debug = interpreter;
 
-debug ( instructions ) {
+debug( interpreter ) {
 	import std.stdio : writefln;
 }
 
@@ -32,6 +32,9 @@ pragma( inline ):
 
 		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
 		ir.stack ~= memoryManager.alloc( bytes );
+
+		debug( interpreter )
+			writefln( "alloc BP+%s (%#x)", ir.stack.length - 1, ir.stack[ $ - 1 ].val );
 	}
 
 	void op_skipAlloc( Interpreter ir, size_t bpOffset ) {
@@ -39,16 +42,29 @@ pragma( inline ):
 
 		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
 		ir.stack ~= MemoryPtr( );
+
+		debug( interpreter )
+			writefln( "skipalloc BP+%s", ir.stack.length - 1 );
 	}
 
 	void op_popScope( Interpreter ir, size_t targetBpOffset ) {
 		const size_t targetStackSize = ir.currentFrame.basePointer + targetBpOffset;
 
-		assert( targetStackSize < ir.stack.length, "popScope out of bounds (%s - %s)".format( ir.stack.length, targetStackSize ) );
+		assert( targetStackSize < ir.stack.length, " popScope out of bounds(  % s -  % s ) ".format( ir.stack.length, targetStackSize ) );
 
-		foreach ( ptr; ir.stack[ targetStackSize .. $ ] ) {
-			if ( !ptr.isNull )
+		foreach ( i; targetStackSize .. ir.stack.length ) {
+			auto ptr = ir.stack[ i ];
+
+			if ( !ptr.isNull ) {
+				debug( interpreter )
+					writefln( "free BP+%s (%#x)", i, ptr.val );
+
 				memoryManager.free( ptr );
+
+			}
+			else
+				debug( interpreter )
+					writefln( "free BP+%s (null)", i );
 		}
 
 		ir.stack.length = targetStackSize;
@@ -63,7 +79,7 @@ pragma( inline ):
 			currentFrame.sourceBytecode = func.interpreterCode.bytecode;
 			currentFrame.instructionPointer = 0;
 
-			context.currentRecursionLevel ++;
+			context.currentRecursionLevel++;
 			benforce( context.currentRecursionLevel <= project.configuration.maxRecursion, E.ctStackOverflow, "Recursion of compile time function execution exceeded the limit of %s".format( project.configuration.maxRecursion ) );
 		}
 	}
@@ -72,14 +88,11 @@ pragma( inline ):
 		with ( ir ) {
 			assert( callStack.length );
 
-			foreach ( i; currentFrame.basePointer .. stack.length ) {
-				if ( !stack[ i ].isNull )
-					memoryManager.free( stack[ i ] );
-			}
+			op_popScope( ir, 0 );
 
 			currentFrame = callStack[ $ - 1 ];
 			callStack.length--;
-			context.currentRecursionLevel --;
+			context.currentRecursionLevel--;
 		}
 	}
 

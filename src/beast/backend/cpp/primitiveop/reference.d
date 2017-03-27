@@ -3,19 +3,19 @@ module beast.backend.cpp.primitiveop.reference;
 import beast.backend.cpp.primitiveop.toolkit;
 import beast.code.hwenv.hwenv;
 
-void primitiveOp_storeAddr( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_getAddr( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		args[ 1 ].buildCode( cb );
-		const string arg1 = resultVarName_;
+		arg1( cb );
+		const string arg1v = resultVarName_;
 
-		inst.buildCode( cb );
-		codeResult_.formattedWrite( "%sVAL( %s, void* ) = %s;\n", tabs, resultVarName_, arg1 );
+		arg2( cb );
+		codeResult_.formattedWrite( "%sVAL( %s, void* ) = %s;\n", tabs, arg1v, resultVarName_ );
 	}
 }
 
-void primitiveOp_loadAddr( CB cb, DataEntity inst, DataEntity[ ] args ) {
+void primitiveOp_dereference( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
-		inst.buildCode( cb );
+		arg1( cb );
 		resultVarName_ = "*( ( unsigned char ** ) ( %s ) )".format( resultVarName_ );
 	}
 }

@@ -66,13 +66,13 @@ struct Instruction {
 			string ops;
 
 			if ( op[ 0 ].type != InstructionOperand.Type.unused ) {
-				ops ~= " %-10s".format( op[ 0 ].identificationString );
+				ops ~= " %s".format( op[ 0 ].identificationString );
 
 				if ( op[ 1 ].type != InstructionOperand.Type.unused ) {
-					ops ~= " %-10s".format( op[ 1 ].identificationString );
+					ops ~= ", %s".format( op[ 1 ].identificationString );
 
 					if ( op[ 2 ].type != InstructionOperand.Type.unused )
-						ops ~= " %-10s".format( op[ 2 ].identificationString );
+						ops ~= ", %s".format( op[ 2 ].identificationString );
 				}
 				else {
 					assert( op[ 2 ].type == InstructionOperand.Type.unused );
@@ -83,7 +83,7 @@ struct Instruction {
 				assert( op[ 2 ].type == InstructionOperand.Type.unused );
 			}
 
-			return "%-15s%s".format( enumAssocInvert!I[ i ], ops );
+			return "%s%s".format( enumAssocInvert!I[ i ], ops );
 		}
 
 }

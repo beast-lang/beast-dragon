@@ -32,46 +32,44 @@ final class Symbol_Type_Reference : Symbol_Class {
 				Symbol[ ] mem;
 				auto tp = &coreLibrary.type;
 
-				// Implicit ctor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap( ), //
-						BackendPrimitiveOperation.memZero );
-
-				// Copy/assign ctor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap( enm.xxctor.opAssign, this ), //
-						BackendPrimitiveOperation.memCpy );
+				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCtor( this ); // Implicit constructor
+				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCopyCtor( this ); // Copy constructor
+				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newNoopDtor( this ); // Destructor
 
 				// Ref ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.opRefAssign, baseType ), //
-						BackendPrimitiveOperation.storeAddr );
+						( cb, inst, args ) { //
+							// arg0 is #Ctor.opRefAssign!
+							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
+						} );
 
-				// Dtor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap( ), //
-						BackendPrimitiveOperation.noopDtor );
-
-				// Reference assign :=
+				// Reference assign refa := refb
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, this ), //
-						BackendPrimitiveOperation.memCpy );
+						( cb, inst, args ) { //
+							// arg0 is #Ctor.opRefAssign!
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+						} );
+
+				// Reference assign refa := b
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", this, tp.Void, //
+						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, baseType_ ), //
+						( cb, inst, args ) { //
+							// arg0 is #Ctor.opRefAssign!
+							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
+						} );
 
 				// Implicit cast to base type
-				mem ~= new Symbol_BootstrapMemberRuntimeFunction( ID!"#implicitCast", this, baseType_, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, baseType_, //
 						ExpandedFunctionParameter.bootstrap( baseType_.dataEntity ), //
-						( cb, params ) { //
-							// Although loadAddr returns something, we pass Void as a return type,
-							// because build_primitiveOperation would allocate a variable for the return value (which we don't want to)
-							cb.build_primitiveOperation( coreLibrary.type.Void, BackendPrimitiveOperation.loadAddr, params[ 0 ], null );
+						( cb, inst, args ) { //
+							cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, inst );
 						} );
 
 				// Alias for #operator
 				mem ~= new Symbol_BootstrapAlias( ID!"#operator", ( matchLevel, inst ) { //
-					if ( inst )
-						return new ProxyData( inst, baseType_ ).resolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
-					else
-						return baseType_.dataEntity( matchLevel ).resolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
+					return ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).resolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
 				} );
 
 				// Alias #baseType
@@ -172,9 +170,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
-					// Although loadAddr returns something, we pass Void as a return type,
-					// because build_primitiveOperation would allocate a variable for the return value (which we don't want to)
-					cb.build_primitiveOperation( coreLibrary.type.Void, BackendPrimitiveOperation.loadAddr, sourceEntity_, null );
+					cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, sourceEntity_ );
 				}
 
 			protected:
