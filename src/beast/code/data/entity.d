@@ -101,7 +101,8 @@ abstract class DataEntity : Identifiable {
 	public:
 		/// Resolves identifier (drill-down)
 		/// The scope can be used for creating temporary variables
-		final Overloadset resolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+		/// Can return empty overloadset
+		final Overloadset tryResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			if ( id == ID!"#type" )
 				return Overloadset( dataType.dataEntity );
 
@@ -119,7 +120,7 @@ abstract class DataEntity : Identifiable {
 
 		/// Resolves the identifier, throws an error if the overloadset is empty
 		final Overloadset expectResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
-			auto result = resolveIdentifier( id, matchLevel );
+			auto result = tryResolveIdentifier( id, matchLevel );
 			benforce( !result.isEmpty, E.unknownIdentifier, "Could not resolve identifier '%s' for %s".format( id.str, identificationString ) );
 			return result;
 		}
@@ -127,7 +128,7 @@ abstract class DataEntity : Identifiable {
 		/// Resolves identifier recursively (looking into parent entities)
 		/// The scope can be used for creating temporary variables
 		final Overloadset recursivelyResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
-			if ( auto result = resolveIdentifier( id, matchLevel ) )
+			if ( auto result = tryResolveIdentifier( id, matchLevel ) )
 				return result;
 
 			if ( auto parent = parent ) {
@@ -154,7 +155,7 @@ abstract class DataEntity : Identifiable {
 			if ( dataType is targetType )
 				return this;
 
-			if ( auto castCall = resolveIdentifier( ID!"#implicitCast" ).resolveCall( ast, false, targetType.dataEntity ) ) {
+			if ( auto castCall = tryResolveIdentifier( ID!"#implicitCast" ).resolveCall( ast, false, targetType.dataEntity ) ) {
 				benforce( castCall.dataType is targetType, E.invalidCastReturnType, "%s has return type %s (#cast always have to return type given by first parameter)".format( castCall.identificationString, castCall.dataType.identificationString ) );
 				return castCall;
 			}

@@ -5,7 +5,7 @@ import beast.code.ast.toolkit;
 final class AST_ReturnStatement : AST_Statement {
 
 	public:
-		static bool canParse( ) {
+		pragma( inline ) static bool canParse( ) {
 			return currentToken == Token.Keyword.return_;
 		}
 

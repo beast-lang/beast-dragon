@@ -69,7 +69,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 				// Alias for #operator
 				mem ~= new Symbol_BootstrapAlias( ID!"#operator", ( matchLevel, inst ) { //
-					return ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).resolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
+					return ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
 				} );
 
 				// Alias #baseType

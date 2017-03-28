@@ -47,7 +47,7 @@ abstract class Symbol_Type : Symbol {
 						( cb, inst, args ) { //
 							auto var = new DataEntity_TmpLocalVariable( refType, inst.isCtime );
 							cb.build_localVariableDefinition( var );
-							var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.opRefAssign.dataEntity, inst ).buildCode( cb );
+							var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.opRefAssign.dataEntity, inst ).buildCode( cb );
 							var.buildCode( cb );
 						} );
 			}

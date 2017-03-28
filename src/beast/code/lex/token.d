@@ -35,8 +35,10 @@ final class Token {
 
 			if_,
 			else_,
+			while_,
 
 			auto_,
+			break_,
 			return_
 		}
 

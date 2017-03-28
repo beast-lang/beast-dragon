@@ -73,6 +73,29 @@ abstract class CodeBuilder : Identifiable {
 			build_if( &condition.buildCode, thenBranch, elseBranch );
 		}
 
+		/// Builds the "loop" construction - infinite loop (has to be stopped using break)
+		void build_loop( StmtFunction body_ ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
+		/// Builds the "break" construction - exists the topmost breakable scope (breakable without a label)
+		final void build_break() {
+			foreach_reverse( i, ref s; scopeStack_ ) {
+				if( s.flags & ScopeFlags.breakableWithoutLabel ) {
+					assert( i != 0 );
+					build_break( i );
+					return;
+				}
+			}
+
+			berror( E.nothingToBreakOrContinue, "There is nothing you can break from implicitly - decorate the desired scope with @label( \"xx\" ) and then use \"break xx;\"" );
+		}
+
+		/// Builds the "break" construction - exits all scopes up to given index (inclusive) (index is given by scopeStack_)
+		void build_break( size_t scopeIndex ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
 		void build_return( DataEntity returnValue ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
@@ -89,52 +112,57 @@ abstract class CodeBuilder : Identifiable {
 	protected:
 		/// Creates a new scope (scopes are stored on a stack)
 		/// CodeBuilder scopes are used for destructor generating
-		void pushScope( ) {
-			scopeStack_ ~= topScope_;
-			topScope_ = Scope( );
+		void pushScope( ScopeFlags flags = ScopeFlags.none ) {
+			scopeStack_ ~= Scope( scopeStack_.length, flags );
 		}
 
 		/// Destroys the last scope
 		/// CodeBuilder scopes are used for destructor generating
 		void popScope( bool generateDestructors = true ) {
 			if ( generateDestructors )
-				generateScopeExit( topScope_ );
+				generateScopeExit( scopeStack_[ $ - 1 ] );
 
-			assert( scopeStack_.length );
-
-			topScope_ = scopeStack_[ $ - 1 ];
 			scopeStack_.length--;
 		}
 
 		/// Generates destructors for all the scope
 		final void generateScopesExit( ) {
-			generateScopeExit( topScope_ );
-
-			foreach_reverse ( scope_; scopeStack_ )
-				generateScopeExit( scope_ );
+			foreach_reverse ( ref s; scopeStack_ )
+				generateScopeExit( s );
 		}
 
 		final void addToScope( DataEntity_LocalVariable var ) {
-			topScope_.variables ~= var;
+			scopeStack_[ $ - 1 ].variables ~= var;
 		}
 
 		final DataEntity_LocalVariable[ ] scopeItems( ) {
-			return topScope_.variables;
+			return scopeStack_[ $ - 1 ].variables;
 		}
 
-	private:
-		final void generateScopeExit( ref Scope scope_ ) {
+	protected:
+		void generateScopeExit( ref Scope scope_ ) {
 			foreach_reverse ( var; scope_.variables )
 				build_dtor( var );
 		}
 
-	private:
-		Scope topScope_;
+	protected:
 		Scope[ ] scopeStack_;
 
-	private:
+	protected:
 		struct Scope {
+			/// Index of the scope in the scopeStack_
+			size_t index;
+			ScopeFlags flags;
 			DataEntity_LocalVariable[ ] variables;
+		}
+		enum ScopeFlags {
+			/// If the scope can be breaked/continued just using break; (without @label("xx") and break xx;)
+			breakableWithoutLabel = 1,
+			/// Whether it is possible to use continue statement on the scope
+			continuable = breakableWithoutLabel << 1,
+
+			none = 0,
+			loop = breakableWithoutLabel | continuable,
 		}
 
 }

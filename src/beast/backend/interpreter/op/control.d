@@ -50,7 +50,7 @@ pragma( inline ):
 	void op_popScope( Interpreter ir, size_t targetBpOffset ) {
 		const size_t targetStackSize = ir.currentFrame.basePointer + targetBpOffset;
 
-		assert( targetStackSize < ir.stack.length, " popScope out of bounds(  % s -  % s ) ".format( ir.stack.length, targetStackSize ) );
+		assert( targetStackSize <= ir.stack.length, " popScope out of bounds(  % s -  % s ) ".format( ir.stack.length, targetStackSize ) );
 
 		foreach ( i; targetStackSize .. ir.stack.length ) {
 			auto ptr = ir.stack[ i ];

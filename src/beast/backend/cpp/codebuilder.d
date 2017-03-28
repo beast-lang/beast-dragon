@@ -55,6 +55,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				declarationsResult_.formattedWrite( "%s%s;\n", tabs, proto );
 				codeResult_.formattedWrite( "%s%s {\n", tabs, proto );
 
+				labelHash_ = func.outerHash;
 				pushScope( );
 
 				auto prevFunc = currentFunction;
@@ -246,6 +247,22 @@ class CodeBuilder_Cpp : CodeBuilder {
 			debug resultVarName_ = null;
 		}
 
+		override void build_loop( StmtFunction body_ ) {
+			pushScope( ScopeFlags.loop );
+			codeResult_.formattedWrite( "%swhile( true ) {\n", tabs( -1 ) );
+			body_( this );
+			codeResult_.formattedWrite( "%s}\n", tabs( -1 ) );
+			popScope( );
+		}
+
+		override void build_break( size_t scopeIndex ) {
+			foreach_reverse ( ref s; scopeStack_[ scopeIndex .. $ ] )
+				generateScopeExit( s );
+
+			additionalScopeData_[ scopeIndex ].requiresEndLabelConstruction = true;
+			codeResult_.formattedWrite( "%sgoto elbl_%s;\n", tabs, additionalScopeData_[ scopeIndex ].hash.str );
+		}
+
 		override void build_return( DataEntity returnValue ) {
 			assert( currentFunction );
 
@@ -272,10 +289,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 				if ( parameterCount )
 					result ~= ", ";
 
-				auto de = func.dataEntity;
-				auto i = de.identificationString;
-				auto pa = de.parent;
-				auto dt = pa.dataType;
 				result.formattedWrite( "%s *context", cppIdentifier( func.dataEntity.parent.ctExec.readType ) );
 				parameterCount++;
 			}
@@ -362,9 +375,15 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 	public:
-		override void pushScope( ) {
+		override void pushScope( ScopeFlags flags = ScopeFlags.none ) {
 			tabOffset_++;
-			super.pushScope( );
+			labelHash_ += Hash( 1 );
+
+			super.pushScope( flags );
+			if ( flags & ScopeFlags.continuable )
+				codeResult_.formattedWrite( "slbl_%s:\n", labelHash_.str );
+
+			additionalScopeData_ ~= AdditionalScopeData( labelHash_ );
 		}
 
 		override void popScope( bool generateDestructors = true ) {
@@ -372,6 +391,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 			auto result = resultVarName_;
 
 			super.popScope( generateDestructors );
+
+			if ( additionalScopeData_[ $ - 1 ].requiresEndLabelConstruction )
+				codeResult_.formattedWrite( "elbl_%s:\n", additionalScopeData_[ $ - 1 ].hash.str );
+
+			additionalScopeData_.length--;
 			tabOffset_--;
 
 			resultVarName_ = result;
@@ -391,5 +415,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	private:
 		Symbol_RuntimeFunction currentFunction;
+		AdditionalScopeData[ ] additionalScopeData_;
+		/// Outer hash used for creating labels (stolen from current function/type)
+		Hash labelHash_;
+
+	private:
+		struct AdditionalScopeData {
+			Hash hash;
+			bool requiresEndLabelConstruction;
+		}
 
 }

@@ -76,6 +76,7 @@ enum E {
 
 	// STATEMENTS:
 	missingReturnExpression,
+	nothingToBreakOrContinue, /// Could not found any scope to break/continue
 
 	// BUILDING:
 	entryFunctionProblem, /// Missing main or wrong arguments or so

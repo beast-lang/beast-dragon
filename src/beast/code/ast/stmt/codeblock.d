@@ -5,11 +5,11 @@ import beast.code.ast.toolkit;
 final class AST_CodeBlockStatement : AST_Statement {
 
 	public:
-		static bool canParse( ) {
+		pragma( inline ) static bool canParse( ) {
 			return currentToken == Token.Special.lBrace;
 		}
 
-		static AST_CodeBlockStatement parse( ) {
+		pragma( inline ) static AST_CodeBlockStatement parse( ) {
 			return parse( codeLocationGuard( ), null );
 		}
 

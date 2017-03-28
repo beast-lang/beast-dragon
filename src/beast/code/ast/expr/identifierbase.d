@@ -42,7 +42,7 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 					return Overloadset( );
 				}
 
-				result = inferredType.dataEntity.resolveIdentifier( identifier );
+				result = inferredType.dataEntity.tryResolveIdentifier( identifier );
 
 				if ( result.isEmpty ) {
 					if ( errorOnInferrationFailure )

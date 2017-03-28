@@ -22,7 +22,7 @@ struct CallMatchSet {
 
 				// If the overload is not callable, we try to overload against overload.#operator( Operator.call, XXX )
 				else {
-					auto suboverloadset = overload.resolveIdentifier( Identifier.preobtained!"#operator" );
+					auto suboverloadset = overload.tryResolveIdentifier( Identifier.preobtained!"#operator" );
 					foreach ( suboverload; suboverloadset ) {
 						if ( suboverload.isCallable )
 							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );

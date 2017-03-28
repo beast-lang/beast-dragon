@@ -23,8 +23,8 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 
 				// We construct the local variable based on the if result
 				cb.build_if( inst, //
-					&var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, coreConst.true_.dataEntity ).buildCode, //
-					&var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, args[ 1 ] ).buildCode );
+					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, coreConst.true_.dataEntity ).buildCode, //
+					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, args[ 1 ] ).buildCode );
 
 				// Result expression is var
 				var.buildCode( cb );
@@ -40,8 +40,8 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 
 				// We construct the local variable based on the if result
 				cb.build_if( inst, //
-					&var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, args[ 1 ] ).buildCode, //
-					&var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, coreConst.false_.dataEntity ).buildCode );
+					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, args[ 1 ] ).buildCode, //
+					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, coreConst.false_.dataEntity ).buildCode );
 
 				// Result expression is var
 				var.buildCode( cb );

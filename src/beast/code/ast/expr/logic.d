@@ -54,7 +54,7 @@ final class AST_LogicExpression : AST_Expression {
 			DataEntity opRightArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOrR.dataEntity : coreLibrary.enum_.operator.binAndR.dataEntity;
 
 			foreach ( item; items ) {
-				if ( auto op = result.resolveIdentifier( ID!"#operator" ).resolveCall( this, false, opArg, item ) ) {
+				if ( auto op = result.tryResolveIdentifier( ID!"#operator" ).resolveCall( this, false, opArg, item ) ) {
 					result = op;
 					continue;
 				}
@@ -66,7 +66,7 @@ final class AST_LogicExpression : AST_Expression {
 				if ( !entity )
 					return Overloadset( );
 
-				if ( auto op = entity.resolveIdentifier( ID!"#operator" ).resolveCall( this, false, opRightArg, item ) ) {
+				if ( auto op = entity.tryResolveIdentifier( ID!"#operator" ).resolveCall( this, false, opRightArg, item ) ) {
 					result = op;
 					continue;
 				}

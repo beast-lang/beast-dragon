@@ -3,13 +3,21 @@ module beast.code.ast.stmt.statement;
 import beast.code.ast.toolkit;
 import beast.code.ast.decl.declaration;
 import beast.code.ast.stmt.return_;
+import beast.code.ast.stmt.if_;
+import beast.code.ast.stmt.codeblock;
+import beast.code.ast.stmt.while_;
+import beast.code.ast.stmt.break_;
 
 /// Statement is anything in the function body
 abstract class AST_Statement : AST_Node {
 
 	public:
-		static bool canParse( ) {
-			return AST_Declaration.canParse || AST_Expression.canParse || AST_ReturnStatement.canParse;
+		pragma( inline ) static bool canParse( ) {
+			return (  //
+					AST_Declaration.canParse || AST_Expression.canParse || AST_CodeBlockStatement.canParse //
+					 || AST_ReturnStatement.canParse || AST_BreakStatement.canParse //
+					 || AST_IfStatement.canParse || AST_WhileStatement.canParse //
+			 );
 		}
 
 		static AST_Statement parse( AST_DecorationList decorationList ) {
@@ -24,8 +32,23 @@ abstract class AST_Statement : AST_Node {
 			if ( currentToken == Token.Keyword.auto_ )
 				return AST_Declaration.parse( decorationList );
 
+			// RETURN / BREAK / CONTINUE
 			else if ( AST_ReturnStatement.canParse )
 				return AST_ReturnStatement.parse( _gd, decorationList );
+
+			else if ( AST_BreakStatement.canParse )
+				return AST_BreakStatement.parse( _gd, decorationList );
+
+			// BRANCHING
+			else if ( AST_IfStatement.canParse )
+				return AST_IfStatement.parse( _gd, decorationList );
+
+			else if ( AST_WhileStatement.canParse )
+				return AST_WhileStatement.parse( _gd, decorationList );
+
+			// SPECIAL
+			else if ( AST_CodeBlockStatement.canParse )
+				return AST_CodeBlockStatement.parse( _gd, decorationList );
 
 			else if ( AST_Expression.canParse ) {
 				AST_Expression expr = AST_Expression.parse( false );

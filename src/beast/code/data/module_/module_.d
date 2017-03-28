@@ -116,7 +116,7 @@ abstract class Symbol_Module : Symbol {
 					// TODO: imports and public imports
 
 					if ( sym_ !is coreLibrary.module_ ) {
-						if ( auto result = coreLibrary.module_.dataEntity.resolveIdentifier( id, matchLevel ) )
+						if ( auto result = coreLibrary.module_.dataEntity.tryResolveIdentifier( id, matchLevel ) )
 							return result;
 					}
 
