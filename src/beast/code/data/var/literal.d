@@ -1,31 +1,32 @@
-module beast.code.data.var.btspconst;
+module beast.code.data.var.literal;
 
 import beast.code.data.toolkit;
 import beast.code.data.var.static_;
 
-final class Symbol_BoostrapConstant : Symbol_StaticVariable {
+final class Symbol_Literal : Symbol_StaticVariable {
 
 	public:
 		/// Length of the data is inferred from the dataType instance size
-		this( DataEntity parent, Identifier identifier, Symbol_Type dataType, ulong data ) {
-			super( parent );
-			assert( dataType.instanceSize <= data.sizeof );
+		this( Symbol_Type dataType, const ubyte[ ] data ) {
+			super( null );
+			assert( dataType.instanceSize == data.length );
 
 			dataType_ = dataType;
-			identififer_ = identifier;
 
 			with ( memoryManager.session ) {
 				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
-				block.identifier = identifier.str;
+				id_ = Identifier( "lit_0x%s".format( memoryPtr_.val ) );
+
+				block.identifier = id_.str;
 				block.relatedDataEntity = dataEntity;
 
-				memoryPtr_ = block.startPtr.write( &data, dataType.instanceSize );
+				memoryPtr_ = block.startPtr.write( data );
 			}
 		}
 
 	public:
 		override Identifier identifier( ) {
-			return identififer_;
+			return id_;
 		}
 
 		override Symbol_Type dataType( ) {
@@ -41,8 +42,8 @@ final class Symbol_BoostrapConstant : Symbol_StaticVariable {
 		}
 
 	protected:
+		Identifier id_;
 		Symbol_Type dataType_;
-		Identifier identififer_;
 		MemoryPtr memoryPtr_;
 
 }

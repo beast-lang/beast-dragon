@@ -3,6 +3,8 @@ module beast.code.lex.lexer;
 import beast.code.lex.toolkit;
 import beast.core.project.codesource;
 import beast.core.project.codelocation;
+import std.bigint;
+import beast.code.data.var.literal;
 
 pragma( inline ) {
 	/// Context-local lexer instance
@@ -91,6 +93,14 @@ final class Lexer {
 							}
 							break;
 
+						case '0': .. case '9': {
+								state = State.wholeNumber;
+								wholeNumAccumulator = currentChar_ - '0';
+								wholeNumNegative = false;
+								pos_++;
+							}
+							break;
+
 						case ' ', '\t', '\n': { // Whitespace
 								pos_++;
 							}
@@ -116,6 +126,12 @@ final class Lexer {
 
 						case '|': {
 								state = State.orPrefix;
+								pos_++;
+							}
+							break;
+
+						case '-': {
+								state = State.minusPrefix;
 								pos_++;
 							}
 							break;
@@ -211,6 +227,32 @@ final class Lexer {
 					}
 					break;
 
+				case State.wholeNumber: {
+						switch ( currentChar_ ) {
+
+						case '0': .. case '9': {
+								wholeNumAccumulator *= 10;
+								wholeNumAccumulator += currentChar_ - '0';
+								pos_++;
+							}
+							break;
+
+						default: {
+								if ( wholeNumNegative )
+									wholeNumAccumulator = -wholeNumAccumulator;
+
+								if ( wholeNumAccumulator >= int.min && wholeNumAccumulator <= int.max ) {
+									int data = wholeNumAccumulator.toInt;
+									return new Token( new Symbol_Literal( coreLibrary.type.Int, cast( ubyte[ ] )( cast( void* )&data )[ 0 .. data.sizeof ] ).dataEntity );
+								}
+								else
+									berror( E.intLiteralTooBig, "There is no type so far that could contain int value this big" );
+							}
+
+						}
+					}
+					break;
+
 				case State.slashPrefix: {
 						if ( currentChar_ == '/' ) {
 							state = State.singleLineComment;
@@ -253,6 +295,26 @@ final class Lexer {
 						else
 							return new Token( Token.Operator.bitOr );
 					}
+
+				case State.minusPrefix: {
+						switch ( currentChar_ ) {
+
+						case '0': .. case '9': {
+								state = State.wholeNumber;
+								wholeNumAccumulator = currentChar_ - '0';
+								wholeNumNegative = true;
+								pos_++;
+							}
+							break;
+
+						default: {
+								pos_++;
+								return new Token( Token.Operator.minus );
+							}
+
+						}
+					}
+					break;
 
 				case State.singleLineComment: {
 						if ( currentChar_ == '\n' || currentChar_ == EOF )
@@ -335,20 +397,28 @@ final class Lexer {
 
 	private:
 		string stringAccumulator;
+		bool wholeNumNegative;
+		BigInt wholeNumAccumulator;
 
 	private:
 		enum char EOF = 0;
 		enum State {
 			init,
-			identifierOrKeyword,
+			identifierOrKeyword, // PREFIXES
 			slashPrefix, /// Token that begins with "/": can be "/", "/* comment */" or "// comment \n"
 			colonPrefix, /// Token that begins with ":": can be ":" or ":="
 			andPrefix, /// Token that begins with "&": can be "&" or "&&"
 			orPrefix, /// Token that begins with "|": can be "|" or "||"
+			minusPrefix, /// Token that begins with "-": can be number literal or minus prefix operator
+
+			// COMMENTS
 			singleLineComment,
 			multiLineComment,
 			multiLineComment_possibleEnd, /// When there's * in the multiline comment (beginning of */)
 			multiLineComment_possibleBegin, /// When there's / in the multiline comment (beginning of /*)
+
+			/// NUMBERS
+			wholeNumber, /// Parsing whole number part of a number literal
 		}
 
 }

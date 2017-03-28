@@ -26,6 +26,7 @@ enum E {
 	// LEXER:
 	unexpectedCharacter, /// Unexpected character when lexing
 	unclosedComment, /// Found EOF when scanning for end of comment block
+	intLiteralTooBig,
 
 	// PARSER:
 	syntaxError, /// Unexpected token

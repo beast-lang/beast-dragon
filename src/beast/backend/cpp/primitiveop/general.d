@@ -48,6 +48,8 @@ void primitiveOp_print( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 
 		if ( argT is coreLibrary.type.Bool )
 			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, bool ) );\n", tabs, resultVarName_ );
+		else if ( argT is coreLibrary.type.Int )
+			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, int32_t ) );\n", tabs, resultVarName_ );
 		else
 			assert( 0, "Print not implemented for " ~ argT.identificationString );
 	}

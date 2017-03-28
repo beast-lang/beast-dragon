@@ -4,6 +4,7 @@ import beast.code.lex.identifier;
 import beast.code.lex.toolkit;
 import beast.core.project.codelocation;
 import std.algorithm.searching : endsWith;
+import std.bigint;
 
 final class Token {
 
@@ -14,10 +15,9 @@ final class Token {
 			identifier,
 			keyword,
 			operator,
-			special
+			special,
+			literal,
 		}
-
-		static immutable string[ ] typeStr = [ "", "identifier", "keyword", "operator", "" ];
 
 		// Ugly dmft formatting
 		static immutable Data[ ] typeDefaultData = [ {identifier:
@@ -25,7 +25,8 @@ final class Token {
 		null}, {keyword:
 		Keyword._noKeyword}, {operator:
 		Operator._noOperator}, {special:
-		Special._noSpecial} ];
+		Special._noSpecial}, {literal:
+		null} ];
 
 		enum Keyword {
 			_noKeyword,
@@ -53,8 +54,8 @@ final class Token {
 
 		enum Operator {
 			_noOperator,
-			add, /// '+'
-			subtract, /// '-'
+			plus, /// '+'
+			minus, /// '-'
 			multiply, /// '*'
 			divide, /// '/'
 
@@ -125,50 +126,61 @@ final class Token {
 			data.operator = operator;
 		}
 
+		this( DataEntity literal ) {
+			this( );
+			type = Type.literal;
+			data.literal = literal;
+		}
+
 	public:
 		CodeLocation codeLocation;
 		const Type type;
 		Token previousToken;
 
 	public:
-		Identifier identifier( ) {
+		pragma( inline ) Identifier identifier( ) {
 			assert( type == Type.identifier );
 			return data.identifier;
 		}
 
-		Keyword keyword( ) {
+		pragma( inline ) Keyword keyword( ) {
 			assert( type == Type.keyword );
 			return data.keyword;
 		}
 
-		Operator operator( ) {
+		pragma( inline ) Operator operator( ) {
 			assert( type == Type.operator );
 			return data.operator;
 		}
 
-		Special special( ) {
+		pragma( inline ) Special special( ) {
 			assert( type == Type.special );
 			return data.special;
 		}
 
+		pragma( inline ) DataEntity literal( ) {
+			assert( type == Type.literal );
+			return data.literal;
+		}
+
 	public:
-		void expect( Type type, lazy string whatExpected = null ) {
+		pragma( inline ) void expect( Type type, lazy string whatExpected = null ) {
 			expect( type, typeDefaultData[ type ], whatExpected );
 		}
 
-		void expect( Keyword kwd, lazy string whatExpected = null ) {
+		pragma( inline ) void expect( Keyword kwd, lazy string whatExpected = null ) {
 			Data data = {keyword:
 			kwd};
 			expect( Type.keyword, data, whatExpected );
 		}
 
-		void expect( Operator op, lazy string whatExpected = null ) {
+		pragma( inline ) void expect( Operator op, lazy string whatExpected = null ) {
 			Data data = {operator:
 			op};
 			expect( Type.operator, data, whatExpected );
 		}
 
-		void expect( Special sp, lazy string whatExpected = null ) {
+		pragma( inline ) void expect( Special sp, lazy string whatExpected = null ) {
 			Data data = {special:
 			sp};
 			expect( Type.special, data, whatExpected );
@@ -196,6 +208,10 @@ final class Token {
 				result = data.special == Special._noSpecial || this.data.special == data.special;
 				break;
 
+			case Type.literal:
+				result = true;
+				break;
+
 			default:
 				result = true;
 				break;
@@ -221,24 +237,24 @@ final class Token {
 			return result;
 		}
 
-		void reportSyntaxError( string whatExpected ) {
+		pragma( inline ) void reportSyntaxError( string whatExpected ) {
 			berror( E.syntaxError, "Expected %s but got %s".format( whatExpected, descStr ), codeLocation.errGuardFunction );
 		}
 
 	public:
-		bool opEquals( Type t ) const {
+		pragma( inline ) bool opEquals( Type t ) const {
 			return type == t;
 		}
 
-		bool opEquals( Keyword kwd ) const {
+		pragma( inline ) bool opEquals( Keyword kwd ) const {
 			return type == Type.keyword && data.keyword == kwd;
 		}
 
-		bool opEquals( Operator op ) const {
+		pragma( inline ) bool opEquals( Operator op ) const {
 			return type == Type.operator && data.operator == op;
 		}
 
-		bool opEquals( Special spec ) const {
+		pragma( inline ) bool opEquals( Special spec ) const {
 			return type == Type.special && data.special == spec;
 		}
 
@@ -252,44 +268,32 @@ final class Token {
 		}
 
 	public:
-		string descStr( ) {
+		pragma( inline ) string descStr( ) {
 			return descStr( type, data );
 		}
 
 		static string descStr( Type type, const Data data ) {
-			string result = typeStr[ type ];
-
 			switch ( type ) {
 
-			case Type.identifier: {
-					if ( data.identifier )
-						result ~= " '" ~ data.identifier.str ~ "'";
-				}
-				break;
+			case Type.identifier:
+				return "identifier%s".format( data.identifier ? " '%s'".format( data.identifier.str ) : null );
 
-			case Type.keyword: {
-					if ( string str = keywordStr[ cast( size_t ) data.keyword ] )
-						result ~= " '" ~ str ~ "'";
-				}
-				break;
+			case Type.keyword:
+				return "keyword%s".format( data.keyword ? " '%s'".format( keywordStr[ cast( size_t ) data.keyword ] ) : null );
 
-			case Type.operator: {
-					if ( string str = operatorStr[ cast( int ) data.operator ] )
-						result ~= " '" ~ str ~ "'";
-				}
-				break;
+			case Type.operator:
+				return "keyword%s".format( data.operator ? " '%s'".format( operatorStr[ cast( size_t ) data.operator ] ) : null );
 
-			case Type.special: {
-					result ~= specialStr[ cast( int ) data.operator ];
-				}
-				break;
+			case Type.special:
+				return specialStr[ cast( int ) data.special ];
+
+			case Type.literal:
+				return "literal";
 
 			default:
-				break;
+				return null;
 
 			}
-
-			return result;
 		}
 
 	private:
@@ -298,6 +302,7 @@ final class Token {
 			Keyword keyword;
 			Operator operator;
 			Special special;
+			DataEntity literal;
 		}
 
 		Data data;

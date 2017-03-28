@@ -10,7 +10,7 @@ import beast.backend.common.primitiveop;
 struct CoreLibrary_Functions {
 
 	public:
-		Symbol_Function printBool;
+		Symbol_Function printBool, printInt;
 
 		Symbol_Function assert_;
 
@@ -20,6 +20,11 @@ struct CoreLibrary_Functions {
 
 			sink( printBool = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
 					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
+					( cb, args ) { //
+						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
+					} ) );
+			sink( printInt = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
+					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Int ), //
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
 					} ) );
