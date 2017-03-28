@@ -283,7 +283,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	private:
 		Symbol_RuntimeFunction currentFunction_;
-		AdditionalScopeData[ ] additionalScopeData_;
+		AdditionalScopeData[ ] additionalScopeData_ = [ AdditionalScopeData() ];
 
 	private:
 		struct AdditionalScopeData {

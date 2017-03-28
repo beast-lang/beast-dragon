@@ -415,7 +415,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	private:
 		Symbol_RuntimeFunction currentFunction;
-		AdditionalScopeData[ ] additionalScopeData_;
+		AdditionalScopeData[ ] additionalScopeData_ = [ AdditionalScopeData() ];
 		/// Outer hash used for creating labels (stolen from current function/type)
 		Hash labelHash_;
 

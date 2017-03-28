@@ -79,9 +79,9 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		/// Builds the "break" construction - exists the topmost breakable scope (breakable without a label)
-		final void build_break() {
-			foreach_reverse( i, ref s; scopeStack_ ) {
-				if( s.flags & ScopeFlags.breakableWithoutLabel ) {
+		final void build_break( ) {
+			foreach_reverse ( i, ref s; scopeStack_ ) {
+				if ( s.flags & ScopeFlags.breakableWithoutLabel ) {
 					assert( i != 0 );
 					build_break( i );
 					return;
@@ -146,7 +146,7 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 	protected:
-		Scope[ ] scopeStack_;
+		Scope[ ] scopeStack_ = [ Scope( 0 ) ];
 
 	protected:
 		struct Scope {
@@ -155,6 +155,7 @@ abstract class CodeBuilder : Identifiable {
 			ScopeFlags flags;
 			DataEntity_LocalVariable[ ] variables;
 		}
+
 		enum ScopeFlags {
 			/// If the scope can be breaked/continued just using break; (without @label("xx") and break xx;)
 			breakableWithoutLabel = 1,
