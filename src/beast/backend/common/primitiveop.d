@@ -16,10 +16,11 @@ enum BackendPrimitiveOperation {
 	// INT ops
 	intAdd, /// (arg2 + arg3 => arg1, considers argT.instanceSize)
 	intSub, /// (arg2 - arg3 => arg1, considers argT.instanceSize)
+	intMult, /// (arg2 * arg3 => arg1, considers argT.instanceSize)
+	intDiv, /// (arg2 / arg3 => arg1, considers argT.instanceSize)
 
 	// REREFERENCE/POINTER ops
 	getAddr, /// (&arg2 > arg1) Stores reference (pointer) to given expression into given variable
 	dereference, /// (*arg1) Returns (reference to) data referenced by given variable
-
 
 }

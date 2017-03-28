@@ -34,6 +34,8 @@ struct Instruction {
 
 			intAdd32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 + op2
 			intSub32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 - op2
+			intMult32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 * op2
+			intDiv32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 / op2
 		}
 
 	public:

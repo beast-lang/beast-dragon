@@ -114,23 +114,22 @@ struct CallMatchSet {
 					berror( E.noMatchingOverload, "%s does not match arguments %s: %s".format( matches[ 0 ].sourceDataEntity.tryGetIdentificationString, argumentListIdentificationString, matches[ 0 ].errorStr ) );
 				else
 					berror( E.noMatchingOverload, //
-							"None of the overloads match arguments %s: %s".format(  //
+							"None of the overloads match arguments %s:%s".format(  //
 								argumentListIdentificationString, //
-								matches.map!( x => "\n\t%s:\n\t\t%s".format( x.sourceDataEntity.tryGetIdentificationString, x.errorStr ) ).joiner ) //
+								matches.map!( x => "\n\n\t%s:\n\t\t%s".format( x.sourceDataEntity.tryGetIdentificationString, x.errorStr ) ).joiner ) //
 							 );
 
 				return null;
 			}
 
-			if ( bestMatchCount != 1 ) {
-				benforce( !reportErrors, E.ambiguousResolution, //
-						"Ambiguous overload resolution for arguments %s:\n%s".format(  //
-							argumentListIdentificationString, //
-							matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, x.matchLevel ) ).joiner( "\n\t\tor\n" ), //
-							 ) );
-
-				return null;
-			}
+			// Report errors do not apply on amiguous resolution (that would screw up things)
+			// Report errors = false is used when trying binary operations and their reverse versions -> a.#operator( binXX, b ), then b.#operator( binXXR, a )
+			// If reportErrors would hide ambiguous resolution, then ambiguous resolution would cause trying the binXXR variant, which is not a correct behavior
+			benforce( bestMatchCount == 1, E.ambiguousResolution, //
+					"Ambiguous overload resolution for arguments %s:%s".format(  //
+						argumentListIdentificationString, //
+						matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\n\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, x.matchLevel ) ).joiner, //
+						 ) );
 
 			return bestMatch.toDataEntity;
 		}

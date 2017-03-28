@@ -69,7 +69,7 @@ abstract class AST_Expression : AST_Statement {
 				return null;
 
 			DataEntity resultEntity = result.single_expectType( expectedType );
-			
+
 			assert( resultEntity.dataType is expectedType );
 			return resultEntity;
 		}
@@ -85,7 +85,9 @@ abstract class AST_Expression : AST_Statement {
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
-			buildSemanticTree_single( ).buildCode( cb );
+			cb.build_scope( ( cb ) { //
+				buildSemanticTree_single( ).buildCode( cb );
+			} );
 		}
 
 		final MemoryPtr ctExec( Symbol_Type expectedType ) {

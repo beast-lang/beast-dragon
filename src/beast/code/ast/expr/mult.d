@@ -1,11 +1,11 @@
-module beast.code.ast.expr.sum;
+module beast.code.ast.expr.mult;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.mult;
+import beast.code.ast.expr.unary;
 import beast.code.ast.expr.binary;
 
-final class AST_SumExpression : AST_Expression {
-	alias LowerLevelExpression = AST_MultExpression;
+final class AST_MultExpression : AST_Expression {
+	alias LowerLevelExpression = AST_UnaryExpression;
 
 	public:
 		static bool canParse( ) {
@@ -17,13 +17,13 @@ final class AST_SumExpression : AST_Expression {
 
 			AST_Expression base = LowerLevelExpression.parse( );
 
-			if ( currentToken != Token.Operator.plus && currentToken != Token.Operator.minus )
+			if ( currentToken != Token.Operator.multiply && currentToken != Token.Operator.divide )
 				return base;
 
-			auto result = new AST_SumExpression;
+			auto result = new AST_MultExpression;
 			result.base = base;
 
-			while ( currentToken == Token.Operator.plus || currentToken == Token.Operator.minus ) {
+			while ( currentToken == Token.Operator.multiply || currentToken == Token.Operator.divide ) {
 				Item item;
 				item.op = currentToken.operator;
 
@@ -65,14 +65,14 @@ final class AST_SumExpression : AST_Expression {
 			foreach ( item; items ) {
 				switch ( item.op ) {
 
-				case Token.Operator.plus:
-					opArg = opr.binPlus.dataEntity;
-					opArgR = opr.binPlusR.dataEntity;
+				case Token.Operator.multiply:
+					opArg = opr.binMult.dataEntity;
+					opArgR = opr.binMultR.dataEntity;
 					break;
 
-				case Token.Operator.minus:
-					opArg = opr.binMinus.dataEntity;
-					opArgR = opr.binMinusR.dataEntity;
+				case Token.Operator.divide:
+					opArg = opr.binDiv.dataEntity;
+					opArgR = opr.binDivR.dataEntity;
 					break;
 
 				default:

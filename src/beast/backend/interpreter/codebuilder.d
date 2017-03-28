@@ -124,6 +124,12 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		mixin Build_PrimitiveOperationImpl!( "interpreter", "operandResult_" );
 
 	public:
+		override void build_scope( StmtFunction body_ ) {
+			pushScope( );
+			body_( this );
+			popScope( );
+		}
+
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			pushScope( );
 

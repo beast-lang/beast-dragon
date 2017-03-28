@@ -2,6 +2,7 @@ module beast.code.ast.expr.logic;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.sum;
+import beast.code.ast.expr.binary;
 
 final class AST_LogicExpression : AST_Expression {
 	alias LowerLevelExpression = AST_SumExpression;
@@ -50,28 +51,10 @@ final class AST_LogicExpression : AST_Expression {
 				return Overloadset( );
 
 			DataEntity opArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOr.dataEntity : coreLibrary.enum_.operator.binAnd.dataEntity;
-			DataEntity opRightArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOrR.dataEntity : coreLibrary.enum_.operator.binAndR.dataEntity;
+			DataEntity opArgR = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOrR.dataEntity : coreLibrary.enum_.operator.binAndR.dataEntity;
 
-			foreach ( item; items ) {
-				if ( auto op = result.tryResolveIdentifier( ID!"#operator" ).resolveCall( this, false, opArg, item ) ) {
-					result = op;
-					continue;
-				}
-
-				// If looking for left.#operator( xx, right ) failed, we build right side and try right.#operator( xxR, left )
-				DataEntity entity = item.buildSemanticTree( null, false ).single;
-
-				// If errorOnInferrationFailure is false then entity might be null (inferration failure)
-				if ( !entity )
-					return Overloadset( );
-
-				if ( auto op = entity.tryResolveIdentifier( ID!"#operator" ).resolveCall( this, false, opRightArg, item ) ) {
-					result = op;
-					continue;
-				}
-
-				berror( E.cannotResolve, "Cannot resolve %s %s %s".format( result.identificationString, Token.operatorStr[ op ], entity.identificationString ) );
-			}
+			foreach ( item; items )
+				result = resolveBinaryOperation( this, result, item, opArg, opArgR, op );
 
 			return result.Overloadset;
 		}

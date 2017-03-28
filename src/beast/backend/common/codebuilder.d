@@ -60,7 +60,16 @@ abstract class CodeBuilder : Identifiable {
 			build_primitiveOperation( op, arg1.dataType, &arg1.buildCode, &arg2.buildCode );
 		}
 
+		/// Utility function calling original build_primitiveOperation (argT => arg1.dataType)
+		pragma( inline ) final void build_primitiveOperation( BackendPrimitiveOperation op, DataEntity arg1, DataEntity arg2, DataEntity arg3 ) {
+			build_primitiveOperation( op, arg1.dataType, &arg1.buildCode, &arg2.buildCode, &arg3.buildCode );
+		}
+
 	public: // Statement related build commands
+		void build_scope( StmtFunction body_ ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
 		/// Builds the "if" construction
 		/// Condition has to be of type bool
 		/// elseBranch can be null
@@ -187,13 +196,15 @@ abstract class CodeBuilder : Identifiable {
 							static if ( params.length == 1 )
 								result ~= "{ beast.backend.%s.primitiveop.primitiveOp_%s( this ); break; }\n".format( packageName, opStr );
 							else static if ( params.length == 2 )
-								result ~= "{ assert( argT, \"argT is null\" ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT ); break; }\n".format( packageName, opStr );
+								result ~= "{ assert( argT, \"argT is null %s %s\" ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT ); break; }\n".format( packageName, opStr, packageName, opStr );
 							else static if ( params.length == 3 )
-								result ~= "{ assert( argT, \"argT is null\" ); assert( arg1, \"arg1 is null\" ); arg1( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, %s ); break; }\n".format( packageName, opStr, resultVar );
+								result ~= "{ assert( argT, \"argT is null %s %s\" ); assert( arg1, \"arg1 is null %s %s\" ); arg1( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, %s ); break; }\n".format( packageName, opStr, packageName, opStr, packageName, opStr, resultVar );
 							else static if ( params.length == 4 )
-								result ~= "{ assert( argT, \"argT is null\" ); assert( arg1, \"arg1 is null\" ); assert( arg2, \"arg2 is null\" ); arg1( this ); auto arg1v = %s; arg2( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, %s ); break; }\n".format( resultVar, packageName, opStr, resultVar );
+								result ~= "{ assert( argT, \"argT is null %s %s\" ); assert( arg1, \"arg1 is null %s %s\" ); assert( arg2, \"arg2 is null %s %s\" ); arg1( this ); auto arg1v = %s; arg2( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, %s ); break; }\n".format( packageName,
+									opStr, packageName, opStr, packageName, opStr, resultVar, packageName, opStr, resultVar );
 							else static if ( params.length == 5 )
-								result ~= "{ assert( argT, \"argT is null\" ); assert( arg1, \"arg1 is null\" ); assert( arg2, \"arg2 is null\" ); assert( arg3, \"arg3 is null\" ); arg1( this ); auto arg1v = %s; arg2( this ); auto arg2v = %s; arg3( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, arg2v, %s ); break; }\n".format( resultVar, resultVar, packageName, opStr, resultVar );
+								result ~= "{ assert( argT, \"argT is null %s %s\" ); assert( arg1, \"arg1 is null %s %s\" ); assert( arg2, \"arg2 is null %s %s\" ); assert( arg3, \"arg3 is null %s %s\" ); arg1( this ); auto arg1v = %s; arg2( this ); auto arg2v = %s; arg3( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, arg2v, %s ); break; }\n"
+									.format( packageName, opStr, packageName, opStr, packageName, opStr, packageName, opStr, resultVar, resultVar, packageName, opStr, resultVar );
 						}
 						else
 							result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );

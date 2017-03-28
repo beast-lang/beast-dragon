@@ -106,6 +106,11 @@ final class Lexer {
 							}
 							break;
 
+						case '*': {
+								pos_++;
+								return new Token( Token.Operator.multiply );
+							}
+
 						case '/': {
 								state = State.slashPrefix;
 								pos_++;
@@ -129,6 +134,11 @@ final class Lexer {
 								pos_++;
 							}
 							break;
+
+						case '+': {
+								pos_++;
+								return new Token( Token.Operator.plus );
+							}
 
 						case '-': {
 								state = State.minusPrefix;

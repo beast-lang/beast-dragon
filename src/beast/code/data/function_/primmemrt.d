@@ -5,6 +5,8 @@ import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.env;
 import beast.code.data.var.local;
 import beast.backend.common.primitiveop;
+import beast.code.data.var.btspconst;
+import beast.code.data.var.tmplocal;
 
 /// Primitive (compiler-defined, handled by backend) member (non-static) runtime (non-templated) function
 /// Calling primitive functions doesn't result in funciton call - given code is injected directly (like inline)
@@ -97,6 +99,21 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					( cb, inst, args ) { //
 						// 0th arg is Operator.assign!
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+					} );
+		}
+
+		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp tmp; tp <= inst operation arg1 }
+		static Symbol newPrimitiveBinaryOp( Symbol_Type tp, Symbol_BoostrapConstant operator, BackendPrimitiveOperation operation ) {
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, tp, //
+					ExpandedFunctionParameter.bootstrap( operator, tp ), //
+					( cb, inst, args ) { //
+						// 0th arg is operator
+						auto var = new DataEntity_TmpLocalVariable( tp, false );
+						cb.build_localVariableDefinition( var );
+						cb.build_primitiveOperation( operation, var, inst, args[ 1 ] );
+
+						// Store var into result operand
+						var.buildCode( cb );
 					} );
 		}
 

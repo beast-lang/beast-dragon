@@ -84,6 +84,13 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		mixin Build_PrimitiveOperationImpl!( "ctime", "result_" );
 
 	public:
+		override void build_scope( StmtFunction body_ ) {
+			pushScope( );
+			body_( this );
+			popScope( );
+		}
+
+	public:
 		override void popScope( bool generateDestructors = true ) {
 			// Result might be f-ked around because of destructors
 			auto result = result_;

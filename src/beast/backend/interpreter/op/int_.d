@@ -17,3 +17,11 @@ pragma( inline ):
 	void op_intSub32( Interpreter ir, MemoryPtr target, MemoryPtr op1, MemoryPtr op2 ) {
 		target.writePrimitive( op1.readPrimitive!int - op2.readPrimitive!int );
 	}
+
+	void op_intMult32( Interpreter ir, MemoryPtr target, MemoryPtr op1, MemoryPtr op2 ) {
+		target.writePrimitive( op1.readPrimitive!int * op2.readPrimitive!int );
+	}
+
+	void op_intDiv32( Interpreter ir, MemoryPtr target, MemoryPtr op1, MemoryPtr op2 ) {
+		target.writePrimitive( op1.readPrimitive!int / op2.readPrimitive!int );
+	}

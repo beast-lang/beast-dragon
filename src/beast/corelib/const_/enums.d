@@ -23,6 +23,7 @@ struct CoreLibrary_Enums {
 		struct OperatorItems {
 			C binOr, binOrR, binAnd, binAndR;
 			C binPlus, binPlusR, binMinus, binMinusR;
+			C binMult, binMultR, binDiv, binDivR;
 
 			C funcCall;
 

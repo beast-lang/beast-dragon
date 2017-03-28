@@ -183,6 +183,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 		mixin Build_PrimitiveOperationImpl!( "cpp", "resultVarName_" );
 
 	public: // Statement related build commands
+		override void build_scope( StmtFunction body_ ) {
+			codeResult_.formattedWrite( "%s{\n", tabs );
+			pushScope( );
+			body_( this );
+			popScope( );
+			codeResult_.formattedWrite( "%s}\n", tabs );
+		}
+
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			codeResult_.formattedWrite( "%s{\n", tabs );
 			pushScope( );
