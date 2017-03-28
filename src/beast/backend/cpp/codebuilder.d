@@ -180,34 +180,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			resultVarName_ = resultVarName;
 		}
 
-		override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
-			static import beast.backend.cpp.primitiveop;
-
-			debug resultVarName_ = null;
-			//codeResult_.formattedWrite( "%s// PrimitiveOp %s\n", tabs, op );
-			/*
-			if ( returnType !is coreLibrary.type.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( returnType, false, "result" );
-				build_localVariableDefinition( resultVar );
-			}*/
-
-			mixin( ( ) { //
-				auto result = appender!string;
-				result ~= "final switch( op ) {\n";
-
-				foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
-					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
-
-					static if ( __traits( hasMember, beast.backend.cpp.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-						result ~= "beast.backend.cpp.primitiveop.primitiveOp_%s( this, argT, arg1, arg2, arg3 );\nbreak;\n".format( opStr );
-					else
-						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.cpp\" );\n".format( opStr );
-				}
-
-				result ~= "}\n";
-				return result.data;
-			}( ) );
-		}
+		mixin Build_PrimitiveOperationImpl!( "cpp", "resultVarName_" );
 
 	public: // Statement related build commands
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
@@ -415,7 +388,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	private:
 		Symbol_RuntimeFunction currentFunction;
-		AdditionalScopeData[ ] additionalScopeData_ = [ AdditionalScopeData() ];
+		AdditionalScopeData[ ] additionalScopeData_ = [ AdditionalScopeData( ) ];
 		/// Outer hash used for creating labels (stolen from current function/type)
 		Hash labelHash_;
 

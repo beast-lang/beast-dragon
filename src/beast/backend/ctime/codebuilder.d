@@ -81,30 +81,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			result_ = result;
 		}
 
-		override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
-			static import beast.backend.ctime.primitiveop;
-
-			debug result_ = MemoryPtr( );
-
-			mixin( ( ) { //
-				import std.array : appender;
-
-				auto result = appender!string;
-				result ~= "final switch( op ) {\n";
-
-				foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
-					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
-
-					static if ( __traits( hasMember, beast.backend.ctime.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-						result ~= "beast.backend.ctime.primitiveop.primitiveOp_%s( this, argT, arg1, arg2, arg3 );\nbreak;\n".format( opStr );
-					else
-						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.ctime\" );\n".format( opStr );
-				}
-
-				result ~= "}\n";
-				return result.data;
-			}( ) );
-		}
+		mixin Build_PrimitiveOperationImpl!( "ctime", "result_" );
 
 	public:
 		override void popScope( bool generateDestructors = true ) {

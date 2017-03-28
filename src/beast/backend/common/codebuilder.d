@@ -166,4 +166,43 @@ abstract class CodeBuilder : Identifiable {
 			loop = breakableWithoutLabel | continuable,
 		}
 
+		mixin template Build_PrimitiveOperationImpl( string packageName, string resultVar ) {
+			override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+				mixin( "static import beast.backend.%s.primitiveop;".format( packageName ) );
+
+				mixin( ( ) { //
+					import std.array : appender;
+					import std.traits : Parameters;
+
+					auto result = appender!string;
+					result ~= "final switch( op ) {\n";
+
+					foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
+						result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
+
+						static if ( __traits( hasMember, mixin( "beast.backend.%s.primitiveop".format( packageName ) ), "primitiveOp_%s".format( opStr ) ) ) {
+							mixin( "alias func = beast.backend.%s.primitiveop.primitiveOp_%s;".format( packageName, opStr ) );
+							alias params = Parameters!func;
+
+							static if ( params.length == 1 )
+								result ~= "{ beast.backend.%s.primitiveop.primitiveOp_%s( this ); break; }\n".format( packageName, opStr );
+							else static if ( params.length == 2 )
+								result ~= "{ assert( argT, \"argT is null\" ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT ); break; }\n".format( packageName, opStr );
+							else static if ( params.length == 3 )
+								result ~= "{ assert( argT, \"argT is null\" ); assert( arg1, \"arg1 is null\" ); arg1( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, %s ); break; }\n".format( packageName, opStr, resultVar );
+							else static if ( params.length == 4 )
+								result ~= "{ assert( argT, \"argT is null\" ); assert( arg1, \"arg1 is null\" ); assert( arg2, \"arg2 is null\" ); arg1( this ); auto arg1v = %s; arg2( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, %s ); break; }\n".format( resultVar, packageName, opStr, resultVar );
+							else static if ( params.length == 5 )
+								result ~= "{ assert( argT, \"argT is null\" ); assert( arg1, \"arg1 is null\" ); assert( arg2, \"arg2 is null\" ); assert( arg3, \"arg3 is null\" ); arg1( this ); auto arg1v = %s; arg2( this ); auto arg2v = %s; arg3( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, arg2v, %s ); break; }\n".format( resultVar, resultVar, packageName, opStr, resultVar );
+						}
+						else
+							result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );
+					}
+
+					result ~= "}\n";
+					return result.data;
+				}( ) );
+			}
+		}
+
 }

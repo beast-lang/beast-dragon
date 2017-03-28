@@ -10,4 +10,4 @@ public {
 alias I = Instruction.I;
 alias CB = CodeBuilder_Interpreter;
 alias T = Symbol_Type;
-alias F = CodeBuilder.ExprFunction;
+alias Op = InstructionOperand;

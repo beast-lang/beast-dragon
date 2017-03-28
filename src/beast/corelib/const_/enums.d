@@ -21,13 +21,12 @@ struct CoreLibrary_Enums {
 		E Operator;
 
 		struct OperatorItems {
-			C binOr, binOrR;
-			C binAnd, binAndR;
+			C binOr, binOrR, binAnd, binAndR;
+			C binPlus, binPlusR, binMinus, binMinusR;
 
 			C funcCall;
 
 			C preNot;
-
 			C suffRef, suffNot;
 
 			C assign, refAssign;

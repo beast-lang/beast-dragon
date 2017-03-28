@@ -121,28 +121,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			operandResult_ = operandResult;
 		}
 
-		override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
-			static import beast.backend.interpreter.primitiveop;
-
-			mixin( ( ) { //
-				import std.array : appender;
-
-				auto result = appender!string;
-				result ~= "final switch( op ) {\n";
-
-				foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
-					result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
-
-					static if ( __traits( hasMember, beast.backend.interpreter.primitiveop, "primitiveOp_%s".format( opStr ) ) )
-						result ~= "beast.backend.interpreter.primitiveop.primitiveOp_%s( this, argT, arg1, arg2, arg3 );\nbreak;\n".format( opStr );
-					else
-						result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.interpreter\" );\n".format( opStr );
-				}
-
-				result ~= "}\n";
-				return result.data;
-			}( ) );
-		}
+		mixin Build_PrimitiveOperationImpl!( "interpreter", "operandResult_" );
 
 	public:
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
@@ -283,7 +262,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	private:
 		Symbol_RuntimeFunction currentFunction_;
-		AdditionalScopeData[ ] additionalScopeData_ = [ AdditionalScopeData() ];
+		AdditionalScopeData[ ] additionalScopeData_ = [ AdditionalScopeData( ) ];
 
 	private:
 		struct AdditionalScopeData {

@@ -1,10 +1,10 @@
 module beast.code.ast.expr.logic;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.unary;
+import beast.code.ast.expr.sum;
 
 final class AST_LogicExpression : AST_Expression {
-	alias LowerLevelExpression = AST_UnaryExpression;
+	alias LowerLevelExpression = AST_SumExpression;
 
 	public:
 		static bool canParse( ) {
@@ -49,7 +49,6 @@ final class AST_LogicExpression : AST_Expression {
 			if ( !result )
 				return Overloadset( );
 
-			// TODO: also and operator
 			DataEntity opArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOr.dataEntity : coreLibrary.enum_.operator.binAnd.dataEntity;
 			DataEntity opRightArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOrR.dataEntity : coreLibrary.enum_.operator.binAndR.dataEntity;
 

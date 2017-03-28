@@ -8,4 +8,4 @@ public {
 
 alias CB = CodeBuilder_Cpp;
 alias T = Symbol_Type;
-alias F = CodeBuilder.ExprFunction;
+alias Op = string;

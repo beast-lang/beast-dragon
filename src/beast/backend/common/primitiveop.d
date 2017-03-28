@@ -14,6 +14,8 @@ enum BackendPrimitiveOperation {
 	boolNot, /// (arg2 > arg1) Perform a boolean inversion
 
 	// INT ops
+	intAdd, /// (arg2 + arg3 => arg1, considers argT.instanceSize)
+	intSub, /// (arg2 - arg3 => arg1, considers argT.instanceSize)
 
 	// REREFERENCE/POINTER ops
 	getAddr, /// (&arg2 > arg1) Stores reference (pointer) to given expression into given variable

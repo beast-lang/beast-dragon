@@ -31,6 +31,9 @@ struct Instruction {
 			jmp, /// (target: jt) Jumps to given instruction (ID/index)
 
 			boolNot, /// (target: ptr, source: ptr) Boolean not operation
+
+			intAdd32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 + op2
+			intSub32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 - op2
 		}
 
 	public:
