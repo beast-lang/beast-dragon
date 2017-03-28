@@ -53,10 +53,12 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 	public:
 		override void build_memoryAccess( MemoryPtr pointer ) {
 			MemoryBlock block = pointer.block;
-			operandResult_ = block.isLocal ? block.localVariable.interpreterBpOffset.iopBpOffset : pointer.iopPtr;
+			operandResult_ = block.isLocal ? block.relatedDataEntity.asLocalVariable_interpreterBpOffset.iopBpOffset : pointer.iopPtr;
 		}
 
 		override void build_memoryWrite( MemoryPtr target, DataEntity data ) {
+			MemoryBlock block = target.block;
+
 			data.buildCode( this );
 			InstructionOperand assignedValue = operandResult_;
 
@@ -92,7 +94,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 					continue;
 				}
 
-				auto argVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false );
 				build_localVariableDefinition( argVar );
 
 				argVars[ i ] = argVar;
@@ -102,9 +104,9 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
-				pushScope();
+				pushScope( );
 				build_copyCtor( argVars[ i ], arguments[ i ] );
-				popScope();
+				popScope( );
 			}
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {

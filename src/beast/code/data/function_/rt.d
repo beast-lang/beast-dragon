@@ -35,6 +35,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 			// Enforce return type deduction
 			returnType( );
 
+			// We also need staticMemberMerger
+			// TODO: make staticMemberMerger asynchronous so this is not necessary (also we need to synchronize error reporting so we don't get two same errors from the same code)
+			enforceDone_codeProcessing( );
+
 			buildDefinitionsCode( cb, staticMembersMergerWIP_ );
 		}
 

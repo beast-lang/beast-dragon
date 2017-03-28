@@ -6,6 +6,7 @@ import std.format : formattedWrite;
 import beast.code.data.scope_.local;
 import beast.code.data.var.result;
 import beast.core.error.error;
+import beast.code.lex.identifier;
 
 // TODO: Asynchronous proxy definition handler
 
@@ -161,9 +162,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 				build_localVariableDefinition( argVar );
 
 				codeResult_.formattedWrite( "%s{\n", tabs );
-				pushScope();
+				pushScope( );
 				build_copyCtor( argVar, arguments[ i ] );
-				popScope();
+				popScope( );
 				codeResult_.formattedWrite( "%s}\n", tabs );
 
 				argumentNames ~= "&" ~ cppIdentifier( argVar );
@@ -183,7 +184,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			debug resultVarName_ = null;
 			//codeResult_.formattedWrite( "%s// PrimitiveOp %s\n", tabs, op );
-/*
+			/*
 			if ( returnType !is coreLibrary.type.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
@@ -285,7 +286,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 					continue;
 				if ( parameterCount )
 					result ~= ", ";
-				result.formattedWrite( "%s *%s", cppIdentifier( param.dataType ), cppIdentifier( param ) );
+				result.formattedWrite( "%s *%s", cppIdentifier( param.dataType ), cppParamIdentifier( param.index, param.identifier ) );
 				parameterCount++;
 			}
 
@@ -297,38 +298,44 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	public:
 		static string cppIdentifier( DataEntity_LocalVariable var ) {
-			return "_%s__%s".format( var.outerHash.str, var.identifier ? safeIdentifier( var.identifier.str ) : var.memoryBlock.identifier ? safeIdentifier( var.memoryBlock.identifier ) : "tmp" );
+			return "_%s_%s".format( var.outerHash.str, var.identifier ? safeIdentifier( var.identifier.str ) : "tmp" );
 		}
 
 		static string cppIdentifier( Symbol sym ) {
-			return "_%s__%s".format( sym.outerHash.str, sym.identifier ? safeIdentifier( sym.identifier.str ) : "tmp" );
+			return "_%s_%s".format( sym.outerHash.str, sym.identifier ? safeIdentifier( sym.identifier.str ) : "tmp" );
 		}
 
-		static string cppIdentifier( ExpandedFunctionParameter param ) {
-			return "_%s__%s".format( param.outerHash.str, safeIdentifier( param.identifier.str ) );
+		static string cppIdentifier( DataEntity e ) {
+			if ( e.identifier )
+				return "_%s_%s".format( e.outerHash.str, safeIdentifier( e.identifier.str ) );
+			else
+				return "_%s_tmp".format( e.outerHash.str );
+		}
+
+		static string cppParamIdentifier( size_t index, Identifier id ) {
+			return "_p%s_%s".format( index, safeIdentifier( id.str ) );
 		}
 
 		static string cppIdentifier( MemoryBlock block, bool addrOf = false ) {
 			string addrOfStr = addrOf ? "&" : "";
-			if ( block.isFunctionParameter )
-				return cppIdentifier( block.functionParameter );
 
-			else if ( block.flags & MemoryBlock.Flag.result )
+			if ( block.flag( MemoryBlock.Flag.functionParameter ) )
+				return cppParamIdentifier( block.relatedDataEntity.asFunctionParameter_index, block.relatedDataEntity.identifier );
+
+			if ( block.flag( MemoryBlock.Flag.result ) )
 				return "result";
 
-			else if ( block.flags & MemoryBlock.Flag.contextPtr )
+			else if ( block.flag( MemoryBlock.Flag.contextPtr ) )
 				return "context";
 
-			else if ( block.isLocal ) {
-				assert( block.localVariable );
-				return addrOfStr ~ cppIdentifier( block.localVariable );
-			}
-
 			else if ( block.identifier )
-				return "%s__%#x_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
+				return "%s_%#x_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
+
+			else if ( block.relatedDataEntity )
+				return addrOfStr ~ cppIdentifier( block.relatedDataEntity );
 
 			else
-				return "%s__%#x".format( addrOfStr, block.startPtr.val );
+				return "%s_%#x".format( addrOfStr, block.startPtr.val );
 		}
 
 		static string safeIdentifier( string id ) {

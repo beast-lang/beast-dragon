@@ -67,6 +67,7 @@ final class Backend_Cpp : Backend {
 			result ~= "#include <stdio.h>\n";
 			result ~= "#include <string.h>\n";
 			result ~= "#include <stdlib.h>\n";
+			result ~= "#include <assert.h>\n";
 			result ~= "\n";
 
 			result ~= "// TYPES\n";

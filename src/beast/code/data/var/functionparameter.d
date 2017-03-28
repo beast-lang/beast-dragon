@@ -11,7 +11,6 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 			assert( param.identifier );
 			super( param.dataType, param.isConstValue, MemoryBlock.Flag.functionParameter );
 
-			memoryBlock_.functionParameter = param;
 			param_ = param;
 
 			// Context pointer is always bp offset -1 (even if there is no context needed
@@ -29,6 +28,11 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 
 		override AST_Node ast( ) {
 			return param_.ast;
+		}
+
+	public:
+		override size_t asFunctionParameter_index( ) {
+			return -interpreterBpOffset - 2;
 		}
 
 	private:

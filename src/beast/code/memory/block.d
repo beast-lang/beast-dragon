@@ -86,6 +86,24 @@ final class MemoryBlock {
 		}
 
 	public:
+		string identificationString( ) {
+			if ( flag( Flag.result ) )
+				return "#return#";
+
+			else if ( flag( Flag.contextPtr ) )
+				return "#this#";
+
+			else if ( relatedDataEntity )
+				return relatedDataEntity.identificationString;
+
+			else if ( identifier )
+				return identifier;
+
+			else
+				return "#var#";
+		}
+
+	public:
 		/// First byte that belongs to the block
 		const MemoryPtr startPtr;
 		/// First byte that doesn't belong to the block
@@ -99,14 +117,9 @@ final class MemoryBlock {
 		/// Flags that can be modified asynchronously (atomic or write only)
 		shared ubyte sharedFlags;
 		void* data;
-		/// Memory block can have an identifier - results in more readable C code
+
+		/// Data entity related to the code block
+		DataEntity relatedDataEntity;
 		string identifier;
-
-	public:
-		/// Used when the block is related to a local variables
-		DataEntity_LocalVariable localVariable;
-
-		/// Used when the block is related to a function parameter
-		ExpandedFunctionParameter functionParameter;
 
 }

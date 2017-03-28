@@ -11,6 +11,7 @@ enum BackendPrimitiveOperation {
 	assert_, /// (arg0) Operand must be true or throws an error
 
 	// BOOL ops
+	boolNot, /// (arg2 > arg1) Perform a boolean inversion
 
 	// INT ops
 

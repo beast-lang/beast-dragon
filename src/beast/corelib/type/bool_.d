@@ -34,7 +34,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binAnd, tp.Bool ), //
 			( cb, inst, args ) { //
-				/// 0th operator is Operator.binAnd
+				/// args[ 0 ] is Operator.binAnd
 				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, false );
 				cb.build_localVariableDefinition( var );
 
@@ -42,6 +42,20 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 				cb.build_if( inst, //
 					&var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, args[ 1 ] ).buildCode, //
 					&var.resolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreEnum.xxctor.opAssign, coreConst.false_.dataEntity ).buildCode );
+
+				// Result expression is var
+				var.buildCode( cb );
+			} );
+
+	// !a
+	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
+			ExpandedFunctionParameter.bootstrap( enm.operator.preNot ), //
+			( cb, inst, args ) { //
+				/// args[ 0 ] is Operator.binAnd
+
+				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, false );
+				cb.build_localVariableDefinition( var );
+				cb.build_primitiveOperation( BackendPrimitiveOperation.boolNot, var, inst );
 
 				// Result expression is var
 				var.buildCode( cb );

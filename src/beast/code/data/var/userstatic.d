@@ -104,6 +104,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 					ast_.buildConstructor( substEntity, cb );
 				}
 
+				block.relatedDataEntity = dataEntity;
 				block.identifier = identifier.str;
 
 				// We have to mark the variable as runtime after calling its constructor (which is done at ctime)

@@ -51,6 +51,7 @@ enum E {
 	invalidPointer, /// Memory with given address is not allocated
 	nullPointer, /// When trying to do something with null pointer
 	invalidData, /// Data is somehow invalid (for example invalid Type value)
+	runtimeMemoryManipulation, /// Trying to read to/write from runtime memory
 
 	// CTIME:
 	valueNotCtime, /// Value is not known at compile time

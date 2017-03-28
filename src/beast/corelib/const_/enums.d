@@ -7,6 +7,10 @@ import beast.code.data.type.btspenum;
 
 struct CoreLibrary_Enums {
 
+	private:
+		alias C = Symbol_BoostrapConstant;
+		alias E = Symbol_BootstrapEnum;
+
 	public:
 		/// ( baseClass )
 		alias enum_ = Decorator!( "corelib.enum.enum_", string );
@@ -14,17 +18,19 @@ struct CoreLibrary_Enums {
 
 	public:
 		@enum_( "Int" )
-		Symbol_BootstrapEnum Operator;
+		E Operator;
 
 		struct OperatorItems {
-			Symbol_BoostrapConstant binOr, binOrR;
-			Symbol_BoostrapConstant binAnd, binAndR;
+			C binOr, binOrR;
+			C binAnd, binAndR;
 
-			Symbol_BoostrapConstant funcCall;
+			C funcCall;
 
-			Symbol_BoostrapConstant suffRef, suffNot;
+			C preNot;
 
-			Symbol_BoostrapConstant assign, refAssign;
+			C suffRef, suffNot;
+
+			C assign, refAssign;
 		}
 
 		@standardEnumItems( "Operator" )
@@ -32,11 +38,11 @@ struct CoreLibrary_Enums {
 
 	public:
 		@enum_( "Int" )
-		Symbol_BootstrapEnum XXCtor;
+		E XXCtor;
 
 		struct XXCtorItems {
-			Symbol_BoostrapConstant opAssign; /// Assign constructor: #ctor( #Ctor.opAssign, val ) -> Var x = y
-			Symbol_BoostrapConstant opRefAssign; /// Ref assign constructor: #ctor( #Ctor.opRefAssign, val ) -> Var x := y
+			C opAssign; /// Assign constructor: #ctor( #Ctor.opAssign, val ) -> Var x = y
+			C opRefAssign; /// Ref assign constructor: #ctor( #Ctor.opRefAssign, val ) -> Var x := y
 		}
 
 		@standardEnumItems( "XXCtor" )

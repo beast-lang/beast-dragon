@@ -38,7 +38,7 @@ struct CallMatchSet {
 			auto _sgd = scope_.scopeGuard;
 
 			Symbol_Type dataType = entity.dataType;
-			argumentTypes ~= dataType;
+			argumentEntities ~= entity;
 
 			foreach ( match; matches ) {
 				with ( memoryManager.session )
@@ -57,7 +57,7 @@ struct CallMatchSet {
 
 			DataEntity entity = expr.buildSemanticTree_single( false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
-			argumentTypes ~= dataType;
+			argumentEntities ~= entity;
 
 			foreach ( match; matches ) {
 				with ( memoryManager.session )
@@ -136,8 +136,9 @@ struct CallMatchSet {
 		}
 
 	public:
-		/// List of types of arguments, null item means item needs inferring
-		Symbol_Type[ ] argumentTypes;
+		/// List of data entities representing arguments
+		/// Some of them can be null (where inferration was needed)
+		DataEntity[ ] argumentEntities;
 
 		CallableMatch[ ] matches;
 
@@ -147,7 +148,17 @@ struct CallMatchSet {
 
 	public:
 		string argumentListIdentificationString( ) {
-			return "( %s )".format( argumentTypes.map!( x => x is null ? "#inferred#" : x.identificationString ).joiner( ", " ).to!string );
+			string[ ] args;
+			foreach ( arg; argumentEntities ) {
+				if ( arg is null )
+					args ~= "#inferred#";
+				else if ( arg.isCtime )
+					args ~= "%s = %s".format( arg.dataType.identificationString, arg.dataType.valueIdentificationString( arg.ctExec ) );
+				else
+					args ~= "%s".format( arg.dataType.identificationString );
+			}
+
+			return "( %s )".format( args.joiner( ", " ) );
 		}
 
 }

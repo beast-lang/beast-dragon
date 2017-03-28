@@ -56,6 +56,6 @@ void primitiveOp_print( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 void primitiveOp_assert_( CB cb, T argT, F arg1, F arg2, F arg3 ) {
 	with ( cb ) {
 		arg1( cb );
-		codeResult_.formattedWrite( "%sassert( VAR( %s, bool ) );\n", tabs, resultVarName_ );
+		codeResult_.formattedWrite( "%sassert( VAL( %s, bool ) );\n", tabs, resultVarName_ );
 	}
 }

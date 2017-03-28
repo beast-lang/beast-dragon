@@ -136,7 +136,7 @@ final class MemoryManager {
 			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 			benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session" );
 			benforce( block.endPtr <= ptr + data.length, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
-			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot write to runtime memory" );
+			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
 
 			debug synchronized ( this ) {
 				debug assert( block.session in activeSessions );
@@ -160,7 +160,7 @@ final class MemoryManager {
 			}
 
 			benforce( block.endPtr <= ptr + bytes, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
-			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.invalidMemoryOperation, "Cannnot read from runtime memory" );
+			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.runtimeMemoryManipulation, "Cannnot read from runtime memory (%s)".format( block.identificationString ) );
 			return cast( const ubyte[ ] )( block.data + ( ptr - block.startPtr ).val )[ 0 .. bytes ];
 		}
 

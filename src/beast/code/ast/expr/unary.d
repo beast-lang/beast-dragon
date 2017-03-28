@@ -8,17 +8,24 @@ final class AST_UnaryExpression : AST_Expression {
 
 	public:
 		enum Operator {
+			// PREFIX OPERATORS
+			preNot,
+
+			// SUFFIX OPERATORS
 			questionMark,
-			exclamationMark
+			suffNot,
 		}
 
 	public:
 		static bool canParse( ) {
-			return LowerLevelExpression.canParse;
+			return LowerLevelExpression.canParse || currentToken == Token.Operator.exclamationMark;
 		}
 
 		static AST_Expression parse( ) {
 			auto _gd = codeLocationGuard( );
+
+			if ( currentToken.matchAndNext( Token.Operator.exclamationMark ) )
+				return new AST_UnaryExpression( LowerLevelExpression.parse( ), [ Operator.preNot ], _gd.get( ) );
 
 			AST_Expression base = LowerLevelExpression.parse( );
 
@@ -33,7 +40,7 @@ final class AST_UnaryExpression : AST_Expression {
 
 					while ( true ) {
 						if ( currentToken.matchAndNext( Token.Operator.exclamationMark ) )
-							ops ~= Operator.exclamationMark;
+							ops ~= Operator.suffNot;
 						else if ( currentToken.matchAndNext( Token.Operator.questionMark ) )
 							ops ~= Operator.questionMark;
 						else
@@ -71,11 +78,17 @@ final class AST_UnaryExpression : AST_Expression {
 			foreach ( op; operators ) {
 				final switch ( op ) {
 
+					// PREFIX OPERATORS
+				case Operator.preNot:
+					result = result.resolveIdentifier( ID!"#operator" ).resolveCall( this, true, coreLibrary.enum_.operator.preNot );
+					break;
+
+					// SUFFIX OPERATORS
 				case Operator.questionMark:
 					result = result.resolveIdentifier( ID!"#operator" ).resolveCall( this, true, coreLibrary.enum_.operator.suffRef );
 					break;
 
-				case Operator.exclamationMark:
+				case Operator.suffNot:
 					result = result.resolveIdentifier( ID!"#operator" ).resolveCall( this, true, coreLibrary.enum_.operator.suffNot );
 					break;
 

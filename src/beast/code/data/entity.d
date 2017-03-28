@@ -48,6 +48,16 @@ abstract class DataEntity : Identifiable {
 			return null;
 		}
 
+		/// If the data entity represents a parameter, returns its index
+		size_t asFunctionParameter_index() {
+			assert( 0, identificationString ~ " is not a parameter" );
+		}
+
+		/// If the data entity represents a local variable, returns its base pointer offset for interpreter
+		size_t asLocalVariable_interpreterBpOffset() {
+			assert( 0, identificationString ~ " is not a local variable" );
+		}
+
 	public:
 		/// Identifier of the data that vaguely corresponds with the symbol table (can be null)
 		Identifier identifier( ) {

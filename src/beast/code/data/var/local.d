@@ -6,7 +6,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 	mixin TaskGuard!"outerHashObtaining";
 
 	public:
-		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag, string memBlockId = null ) {
+		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag ) {
 			super( MatchLevel.fullMatch );
 
 			assert( dataType.instanceSize != 0, "DataType %s instanceSize 0".format( dataType.identificationString ) );
@@ -21,8 +21,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			debug assert( context.jobId == scope__.jobId );
 
 			memoryBlock_ = memoryManager.allocBlock( dataType_.instanceSize, MemoryBlock.Flag.local | additionalMemoryBlockFlags );
-			memoryBlock_.localVariable = this;
-			memoryBlock_.identifier = memBlockId;
+			memoryBlock_.relatedDataEntity = this;
 
 			if ( !isCtime_ )
 				memoryBlock_.flags |= MemoryBlock.Flag.runtime;
@@ -65,6 +64,11 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			auto _gd = ErrorGuard( this );
 
 			cb.build_memoryAccess( memoryPtr );
+		}
+
+	public:
+		override size_t asLocalVariable_interpreterBpOffset( ) {
+			return interpreterBpOffset;
 		}
 
 	public:

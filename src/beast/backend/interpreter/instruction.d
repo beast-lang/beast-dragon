@@ -29,6 +29,8 @@ struct Instruction {
 			jmpTrue, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is true
 			jmpFalse, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is false
 			jmp, /// (target: jt) Jumps to given instruction (ID/index)
+
+			boolNot, /// (target: ptr, source: ptr) Boolean not operation
 		}
 
 	public:

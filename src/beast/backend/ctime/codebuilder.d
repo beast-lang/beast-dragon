@@ -37,7 +37,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			debug assert( context.jobId == jobId_ );
 
 			MemoryBlock b = memoryManager.findMemoryBlock( pointer );
-			benforce( !b.isRuntime, E.valueNotCtime, b.isLocal ? "Variable '%s' is not ctime".format( b.localVariable.identificationString ) : "Variable is not ctime" );
+			benforce( !b.isRuntime, E.valueNotCtime, "Variable %s is not ctime".format( b.identificationString ) );
 
 			result_ = pointer;
 		}

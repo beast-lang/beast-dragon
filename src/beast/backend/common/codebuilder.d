@@ -73,7 +73,6 @@ abstract class CodeBuilder : Identifiable {
 			build_if( &condition.buildCode, thenBranch, elseBranch );
 		}
 
-
 		void build_return( DataEntity returnValue ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
