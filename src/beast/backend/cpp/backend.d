@@ -5,6 +5,7 @@ import beast.backend.cpp.codebuilder;
 import beast.backend.toolkit;
 import beast.core.error.error;
 import std.array : appender, Appender, replace;
+
 static import std.file;
 import std.format : formattedWrite;
 import std.stdio : writeln;
@@ -22,7 +23,7 @@ final class Backend_Cpp : Backend {
 			// Must be done in a thread because of task guards
 			taskManager.imminentIssueJob( { //
 				auto entryModule = project.entryModule.symbol.dataEntity;
-				
+
 				auto _sgd = scopeGuard( new RootDataScope( entryModule ) );
 				entryModule.expectResolveIdentifier( ID!"main" ).resolveCall( null, true ).buildCode( entryFunctionCallCB );
 			} );
@@ -62,7 +63,8 @@ final class Backend_Cpp : Backend {
 				return;
 
 			auto result = appender!string;
-			result ~= "#define VAL( var, type ) ( *( ( type* )( var ) ) )\n\n";
+			result ~= "#define VAL( var, type ) ( *( ( type* )( var ) ) )\n";
+			result ~= "#define CTMEM\n\n";
 			result ~= "#include <stdint.h>\n";
 			result ~= "#include <stdio.h>\n";
 			result ~= "#include <string.h>\n";
@@ -85,6 +87,13 @@ final class Backend_Cpp : Backend {
 			// Main function
 			{
 				result ~= "int main() {\n";
+
+				foreach( cb; initCodebuilders_ ) {
+					assert( !cb.code_types );
+					assert( !cb.code_declarations );
+					result ~= cb.code_implementations;
+				}
+
 				result ~= entryFunctionCallCB.code_implementations;
 				result ~= "\treturn 0;\n";
 				result ~= "}\n";
@@ -114,6 +123,17 @@ final class Backend_Cpp : Backend {
 		}
 
 	public:
+		override void buildInitCode( CodeBuilder.StmtFunction func ) {
+			assert( !finished_ );
+
+			auto cb = new CodeBuilder_Cpp( 1 );
+			cb.build_scope( func );
+
+			synchronized ( this )
+				initCodebuilders_ ~= cb;
+		}
+
+	public:
 		/// Includes definition of given runtime function in the output code
 		override void buildRuntimeFunction( Symbol_RuntimeFunction func ) {
 			assert( !finished_ );
@@ -135,7 +155,10 @@ final class Backend_Cpp : Backend {
 		}
 
 	private:
+		/// Codebuilders with function codes etc
 		CodeBuilder_Cpp[ ] codebuilders_;
+		/// Codebuilders containing code that should be executed before main function
+		CodeBuilder_Cpp[ ] initCodebuilders_;
 		debug bool finished_;
 
 }

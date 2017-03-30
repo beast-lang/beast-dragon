@@ -26,9 +26,8 @@ Void reprint( Bool b ) {
 	print( b );
 }
 
-// Static variable value should be executed at ctime (for now)
-Bool x = and( true, false );
-Bool z = foo();
+@ctime Bool x = and( true, false );
+@ctime Bool z = foo();
 
 Void main() {
 	print( x ); //! stdout: "0"

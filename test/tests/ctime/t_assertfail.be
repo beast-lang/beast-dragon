@@ -5,13 +5,13 @@ Bool err1() {
 	return false;
 }
 
-Bool a = err1();
+@ctime Bool a = err1();
 
 Bool err2() { //! error: noReturnExit
 
 }
 
-Bool b = err2();
+@ctime Bool b = err2();
 
 Void main() {
 

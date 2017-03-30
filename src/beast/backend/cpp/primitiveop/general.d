@@ -25,6 +25,8 @@ pragma( inline ) string memType( size_t instanceSize ) {
 
 void primitiveOp_memZero( CB cb, T t, Op arg1 ) {
 	with ( cb ) {
+		enforceOperandNotCtime( arg1 );
+
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, %s ) = 0;\n", tabs, arg1, mt );
 		else
@@ -34,6 +36,8 @@ void primitiveOp_memZero( CB cb, T t, Op arg1 ) {
 
 void primitiveOp_memCpy( CB cb, T t, Op arg1, Op arg2 ) {
 	with ( cb ) {
+		enforceOperandNotCtime( arg1 );
+
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, %s ) = VAL( %s, %s );\n", tabs, arg1, mt, arg2, mt );
 		else
@@ -43,6 +47,8 @@ void primitiveOp_memCpy( CB cb, T t, Op arg1, Op arg2 ) {
 
 void primitiveOp_memEq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 	with ( cb ) {
+		enforceOperandNotCtime( arg1 );
+
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( VAL( %s, %s ) == VAL( %s, %s ) );\n", tabs, arg1, arg2, mt, arg3, mt );
 		else
@@ -52,6 +58,8 @@ void primitiveOp_memEq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 
 void primitiveOp_memNeq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 	with ( cb ) {
+		enforceOperandNotCtime( arg1 );
+
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( VAL( %s, %s ) != VAL( %s, %s ) );\n", tabs, arg1, arg2, mt, arg3, mt );
 		else
@@ -60,6 +68,7 @@ void primitiveOp_memNeq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 }
 
 void primitiveOp_noopDtor( CB cb, T t, Op arg1 ) {
+	cb.enforceOperandNotCtime( arg1 );
 	cb.codeResult_.formattedWrite( "%s// %s DTOR\n", cb.tabs, arg1 );
 }
 

@@ -38,15 +38,6 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
-		/// Builds write to a memory
-		void build_memoryWrite( MemoryPtr target, DataEntity data ) {
-			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
-		}
-
-		final void build_memoryWrite( MemoryPtr target, Symbol sym ) {
-			build_memoryWrite( target, sym.dataEntity );
-		}
-
 		void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}

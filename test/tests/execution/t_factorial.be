@@ -40,8 +40,8 @@ Int recursiveTests() {
 	return recursiveFactorial( 7 );
 }
 
-Int ctimeTests = tests();
-Int ctimeRecursiveTests = recursiveTests();
+@ctime Int ctimeTests = tests();
+@ctime Int ctimeRecursiveTests = recursiveTests();
 
 Void main() {
 	print( tests() ); //! stdout: 5040

@@ -24,11 +24,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 	public:
-		override bool isCtime( ) {
-			return true;
-		}
-
-	public:
 		string code_types( ) {
 			return typesResult_.data;
 		}
@@ -113,24 +108,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 				resultVarName_ = cppIdentifier( block, true );
 			else
 				resultVarName_ = "( %s + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
-		}
 
-		override void build_memoryWrite( MemoryPtr target, DataEntity data ) {
-			data.buildCode( this );
-			const string rightOp = resultVarName_;
-
-			MemoryBlock block = target.block;
-			block.markReferenced( );
-
-			benforce( block.isRuntime, E.protectedMemory, "Cannot write to ctime variable at runtime" );
-
-			string var;
-			if ( block.startPtr == target )
-				var = cppIdentifier( block, true );
-			else
-				var = "( %s + %s )".format( cppIdentifier( block, true ), target - block.startPtr );
-
-			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, var, rightOp, data.dataType.instanceSize );
+			if ( !block.isRuntime )
+				resultVarName_ = "CTMEM " ~ resultVarName_;
 		}
 
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
@@ -385,6 +365,21 @@ class CodeBuilder_Cpp : CodeBuilder {
 			tabOffset_--;
 
 			resultVarName_ = result;
+		}
+
+	package:
+		pragma( inline ) static void enforceOperandNotCtime( string op ) {
+			benforce( !isOperandCtime( op ), E.protectedMemory, "Cannot write to @ctime variable in runtime" );
+		}
+
+		pragma( inline ) static bool isOperandCtime( string op ) {
+			import std.algorithm : startsWith;
+
+			return op.startsWith( "CTMEM " );
+		}
+
+		pragma( inline ) static string inheritCtime( string op, string sourceOp ) {
+			return isOperandCtime( sourceOp ) ? "CTIME " ~ op : op;
 		}
 
 	package:

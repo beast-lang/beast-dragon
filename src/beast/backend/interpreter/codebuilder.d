@@ -54,16 +54,6 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			operandResult_ = block.isLocal ? block.relatedDataEntity.asLocalVariable_interpreterBpOffset.iopBpOffset : pointer.iopPtr;
 		}
 
-		override void build_memoryWrite( MemoryPtr target, DataEntity data ) {
-			MemoryBlock block = target.block;
-
-			data.buildCode( this );
-			InstructionOperand assignedValue = operandResult_;
-
-			build_memoryAccess( target );
-			addInstruction( I.mov, operandResult_, assignedValue, data.dataType.instanceSize.iopLiteral );
-		}
-
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			/*
 				Call convention:

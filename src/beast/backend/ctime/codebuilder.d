@@ -14,6 +14,11 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		}
 
 	public:
+		override bool isCtime( ) {
+			return true;
+		}
+
+	public:
 		/// Result of the last "built" (read "executed") code
 		MemoryPtr result( ) {
 			debug {

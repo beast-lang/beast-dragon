@@ -25,8 +25,6 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 			if ( !isCtime_ )
 				memoryBlock_.flags |= MemoryBlock.Flag.runtime;
-
-			// TODO: constructor calls?
 		}
 
 	public:
