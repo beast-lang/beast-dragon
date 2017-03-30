@@ -62,3 +62,11 @@ pragma( inline ):
 		debug ( interpreter )
 			writefln( "@%#x => %#x", op2.val, op1.val );
 	}
+
+	void op_markPtr( Interpreter ir, MemoryPtr op1 ) {
+		memoryManager.markAsPointer( op1 );
+	}
+
+	void op_unmarkPtr( Interpreter ir, MemoryPtr op1 ) {
+		memoryManager.unmarkAsPointer( op1 );
+	}

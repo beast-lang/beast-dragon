@@ -85,7 +85,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_typeDefinition( Symbol_Type type ) {
 			try {
 				if ( auto instanceSize = type.instanceSize )
-					typesResult_.formattedWrite( "%stypedef unsigned char %s[ %s ];\n", tabs, cppIdentifier( type ), instanceSize );
+					typesResult_.formattedWrite( "%stypedef uintptr_t %s[ %s ];\n", tabs, cppIdentifier( type ), ( instanceSize + hardwareEnvironment.pointerSize - 1 ) / hardwareEnvironment.pointerSize );
 				else
 					typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
 
@@ -107,7 +107,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.startPtr == pointer )
 				resultVarName_ = cppIdentifier( block, true );
 			else
-				resultVarName_ = "( %s + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
+				resultVarName_ = "( ( ( uint8_t* ) %s ) + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
 
 			if ( !block.isRuntime )
 				resultVarName_ = "CTMEM " ~ resultVarName_;
@@ -323,6 +323,17 @@ class CodeBuilder_Cpp : CodeBuilder {
 			return id.replace( "#", "_" );
 		}
 
+		static string memoryPtrIdentifier( MemoryPtr ptr ) {
+			MemoryBlock block = ptr.block;
+			block.markReferenced( );
+
+			string result;
+			if ( block.startPtr == ptr )
+				return cppIdentifier( block, true );
+			else
+				return "( ( ( uint8_t* ) %s ) + %s )".format( cppIdentifier( block, true ), ptr - block.startPtr );
+		}
+
 	public:
 		final string identificationString( ) {
 			return "codebuilder.c++";
@@ -379,7 +390,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		pragma( inline ) static string inheritCtime( string op, string sourceOp ) {
-			return isOperandCtime( sourceOp ) ? "CTIME " ~ op : op;
+			return isOperandCtime( sourceOp ) ? "CTMEM " ~ op : op;
 		}
 
 	package:

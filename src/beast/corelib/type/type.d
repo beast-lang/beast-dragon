@@ -1,7 +1,6 @@
 module beast.corelib.type.type;
 
 import beast.corelib.type.toolkit;
-import beast.code.data.toolkit;
 import beast.code.data.type.stcclass;
 
 /// Type 'Type' -- typeof all classes etc.

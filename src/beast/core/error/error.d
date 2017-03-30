@@ -54,6 +54,8 @@ enum E {
 	nullPointer, /// When trying to do something with null pointer
 	invalidData, /// Data is somehow invalid (for example invalid Type value)
 	runtimeMemoryManipulation, /// Trying to read to/write from runtime memory
+	corruptMemory, /// Memory corruption (for example when destroying unexising pointer)
+	unalignedMemory,
 
 	// CTIME:
 	valueNotCtime, /// Value is not known at compile time

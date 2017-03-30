@@ -1,7 +1,7 @@
 module beast.code.ast.decl.declaration;
 
 import beast.code.ast.decl.toolkit;
-import beast.code.ast.expr.p1;
+import beast.code.ast.expr.unary;
 import beast.code.ast.identifier;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
@@ -11,7 +11,7 @@ abstract class AST_Declaration : AST_Statement {
 
 	public:
 		static bool canParse( ) {
-			return AST_DecorationList.canParse || AST_P1Expression.canParse;
+			return AST_DecorationList.canParse || AST_UnaryExpression.canParse;
 		}
 
 		static AST_Declaration parse( AST_DecorationList parentDecorationList ) {
@@ -29,7 +29,7 @@ abstract class AST_Declaration : AST_Statement {
 
 		static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList ) {
 			/// Type of variable or return type of a function
-			AST_Expression type = AST_P1Expression.parse( );
+			AST_Expression type = AST_UnaryExpression.parse( );
 
 			return parse( _gd, decorationList, type );
 		}

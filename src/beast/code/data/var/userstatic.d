@@ -95,7 +95,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 				block.relatedDataEntity = dataEntity;
 				block.identifier = identifier.str;
 				memoryPtrWIP_ = block.startPtr;
-
+				
 				// We can't use this.dataEntity because that would cause a dependency loop (as we would require memoryPtr for this in it)
 				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataTypeWIP_ );
 

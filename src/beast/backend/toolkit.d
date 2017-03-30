@@ -21,4 +21,5 @@ public {
 	import beast.toolkit;
 	import beast.util.hash : Hash;
 	import beast.code.data.scope_.scope_ : currentScope, scopeGuard;
+	import beast.code.hwenv.hwenv : HardwareEnvironment, hardwareEnvironment;
 }

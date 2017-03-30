@@ -10,17 +10,20 @@ struct Instruction {
 
 	public:
 		enum I {
+			// GENERAL
 			noOp, /// Does basically nothing
 			noReturnError, /// () Throws an error - function did not exit using return statement
 			printError, /// () Throws an error - cannot print to stdout at compile time
 			assert_, /// (condition: ptr) If condition is false (evaluated as bool), reports an error
 
+			// STACK
 			allocLocal, /// (bpOffset : dd, bytes : dd) Allocates memory for a local variable
 			skipAlloc, /// (bpOffset: dd) Do not allocate memory for local variable (but increase stack offset)
 			popScope, /// (targetBpOffset: dd) Deallocates all variables on the stack above targetBpOffset
 			call, /// (function : func) Function call (arguments are passed on the stack in order [RETURN VALUE] [OP3] [OP2] [OP1] [CONTEXT PTR - always (even if null)])
 			ret, /// () returns from a function call
 
+			// COMPARISON
 			bitsCmp, /// (op1: ptr, op2: ptr, bytes: dd) Bit compares two operands and stores result into INTERNAL FLAGS (use cmpXX instructions)
 			cmpEq, /// (target: ptr) Stores bool into target stating whether previous comparison resulted x == y
 			cmpNeq, /// (target: ptr) Stores bool into target stating whether previous comparison resulted x != y
@@ -29,17 +32,23 @@ struct Instruction {
 			cmpGt, /// (target: ptr) Stores bool into target stating whether previous comparison resulted as x > y
 			cmpGte, /// (target: ptr) Stores bool into target stating whether previous comparison resulted as x >= y
 
+			// MEMORY
 			mov, /// (target : ptr, source : ptr, bytes : dd) Copies memory from one place to another
 			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
 			zero, /// (target: ptr, bytes: dd) Zeroes given memory
 			stAddr, /// (target: ptr, source: ptr) Stores address of source into the target
+			markPtr, /// (target: ptr) Mark given address as pointer
+			unmarkPtr, /// (target: ptr) Unmark given address as pointer
 
+			// BRANCHING
 			jmpTrue, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is true
 			jmpFalse, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is false
 			jmp, /// (target: jt) Jumps to given instruction (ID/index)
 
+			// BOOL
 			boolNot, /// (target: ptr, source: ptr) Boolean not operation)
 
+			// INT32
 			intAdd32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 + op2
 			intSub32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 - op2
 			intMult32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 * op2
@@ -54,7 +63,7 @@ struct Instruction {
 			op[ 1 ] = op2;
 			op[ 2 ] = op3;
 
-			codeLocation = getCodeLocation();
+			codeLocation = getCodeLocation( );
 		}
 
 	public:

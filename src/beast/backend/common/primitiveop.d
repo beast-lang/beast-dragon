@@ -26,6 +26,8 @@ enum BackendPrimitiveOperation {
 	intLte, /// (arg2 <= arg3 => arg1)
 
 	// REREFERENCE/POINTER ops
+	markPtr, /// (arg1) Marks given memory as a pointer (used for compile-time stuff)
+	unmarkPtr, /// (arg1) Unmarks given memory as a pointer
 	getAddr, /// (&arg2 > arg1) Stores reference (pointer) to given expression into given variable
 	dereference, /// (*arg1) Returns (reference to) data referenced by given variable
 

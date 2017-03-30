@@ -1,15 +1,10 @@
 module beast.corelib.type.reference;
 
-import beast.code.data.alias_.btsp;
-import beast.code.data.function_.bstpstcnrt;
-import beast.code.data.function_.primmemrt;
-import beast.code.data.toolkit;
-import beast.code.data.type.class_;
-import beast.code.data.type.type;
-import beast.code.data.util.proxy;
-import beast.code.hwenv.hwenv;
+import beast.backend.common.codebuilder;
 import beast.corelib.type.toolkit;
+import beast.util.hash;
 import core.sync.rwmutex;
+import beast.code.hwenv.hwenv;
 
 final class Symbol_Type_Reference : Symbol_Class {
 
@@ -32,16 +27,37 @@ final class Symbol_Type_Reference : Symbol_Class {
 				Symbol[ ] mem;
 				auto tp = &coreLibrary.type;
 
-				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCtor( this ); // Implicit constructor
-				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCopyCtor( this ); // Copy constructor
-				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newNoopDtor( this ); // Destructor
+				// Implicit constructor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+						ExpandedFunctionParameter.bootstrap( ), //
+						( cb, inst, args ) { //
+							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memZero, inst );
+						} );
+
+				// Copy ctor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.opAssign, this ), //
+						( cb, inst, args ) { //
+							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+						} );
 
 				// Ref ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.opRefAssign, baseType ), //
 						( cb, inst, args ) { //
 							// arg0 is #Ctor.opRefAssign!
+							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
+						} );
+
+				// Dtor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
+						ExpandedFunctionParameter.bootstrap( ), //
+						( cb, inst, args ) { //
+							cb.build_primitiveOperation( BackendPrimitiveOperation.unmarkPtr, inst );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.noopDtor, inst );
 						} );
 
 				// Reference assign refa := refb

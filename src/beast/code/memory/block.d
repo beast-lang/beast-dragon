@@ -37,7 +37,8 @@ final class MemoryBlock {
 			assert( context.session, "You need a session to be able to allocate" );
 			this.session = context.session;
 
-			data = GC.malloc( size );
+			data = cast(ubyte*) GC.malloc( size );
+			data[ 0 .. size ] = 0;
 		}
 
 		~this( ) {
@@ -116,7 +117,7 @@ final class MemoryBlock {
 		Flags flags;
 		/// Flags that can be modified asynchronously (atomic or write only)
 		shared ubyte sharedFlags;
-		void* data;
+		ubyte* data;
 
 		/// Data entity related to the code block
 		DataEntity relatedDataEntity;

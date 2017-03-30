@@ -11,3 +11,11 @@ void primitiveOp_getAddr( CB cb, T t, Op arg1, Op arg2 ) {
 void primitiveOp_dereference( CB cb, T t, Op arg1 ) {
 	cb.resultVarName_ = cb.inheritCtime( "*( ( unsigned char ** ) ( %s ) )".format( arg1 ), arg1 );
 }
+
+void primitiveOp_markPtr( CB cb, T t, Op arg1 ) {
+	// Do nothing - this is ctime stuff
+}
+
+void primitiveOp_unmarkPtr( CB cb, T t, Op arg1 ) {
+	// Do nothing - this is ctime stuff
+}

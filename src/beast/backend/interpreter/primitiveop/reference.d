@@ -39,3 +39,11 @@ void primitiveOp_dereference( CB cb, T t, Op arg1 ) {
 
 	}
 }
+
+void primitiveOp_markPtr( CB cb, T t, Op arg1 ) {
+	cb.addInstruction( I.markPtr, arg1 );
+}
+
+void primitiveOp_unmarkPtr( CB cb, T t, Op arg1 ) {
+	cb.addInstruction( I.unmarkPtr, arg1 );
+}

@@ -3,7 +3,7 @@ module beast.code.data.module_.bootstrap;
 import beast.code.data.toolkit;
 import beast.code.data.module_.module_;
 import beast.code.data.codenamespace.namespace;
-import beast.code.lex.identifier;
+import beast.code.lex.identifier : ExtendedIdentifier;
 import beast.code.data.codenamespace.bootstrap;
 
 /// Module that is defined in this compiler code

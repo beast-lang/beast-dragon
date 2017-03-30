@@ -5,6 +5,7 @@ import beast.code.ast.identifier;
 import beast.code.data.scope_.root;
 import beast.code.data.var.userstatic;
 import beast.code.data.var.userlocal;
+import beast.backend.ctime.codebuilder;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -78,21 +79,25 @@ final class AST_VariableDeclaration : AST_Declaration {
 				}
 			}
 			else {
+				DataEntity valueEntity;
+				DataEntity_UserLocalVariable var;
+
 				if ( dataType.isAutoExpression ) {
 					benforce( value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( currentScope.identificationString, identifier.str ) );
 
-					DataEntity valueEntity = value.buildSemanticTree_single;
-					DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( identifier, valueEntity.dataType, decorations, declData );
-					cb.build_localVariableDefinition( var );
-					buildConstructor( var, valueEntity, cb );
-					currentScope.addLocalVariable( var );
+					valueEntity = value.buildSemanticTree_single;
+					var = new DataEntity_UserLocalVariable( identifier, valueEntity.dataType, decorations, declData );
 				}
 				else {
-					DataEntity_UserLocalVariable var = new DataEntity_UserLocalVariable( this, decorations, declData );
-					cb.build_localVariableDefinition( var );
-					buildConstructor( var, cb );
-					currentScope.addLocalVariable( var );
+					var = new DataEntity_UserLocalVariable( this, decorations, declData );
+
+					if( value )
+						valueEntity = value.buildSemanticTree_singleInfer( var.dataType );
 				}
+
+				cb.build_localVariableDefinition( var );
+				buildConstructor( var, valueEntity, declData.isCtime ? scoped!CodeBuilder_Ctime : cb );
+				currentScope.addLocalVariable( var );
 			}
 		}
 
@@ -124,7 +129,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				match.arg( valueEntity );
 			}
 
-			match.finish( ).buildCode( cb );
+			match.finish().buildCode( cb );
 		}
 
 		pragma( inline ) void buildConstructor( DataEntity entity, CodeBuilder cb ) {

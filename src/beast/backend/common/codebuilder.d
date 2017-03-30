@@ -2,6 +2,7 @@ module beast.backend.common.codebuilder;
 
 import beast.backend.toolkit;
 import beast.util.identifiable;
+import beast.backend.ctime.codebuilder : CodeBuilder_Ctime;
 
 /// Root class for building code with any backend
 abstract class CodeBuilder : Identifiable {
@@ -116,7 +117,7 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {
-			var.expectResolveIdentifier( ID!"#dtor" ).resolveCall( null, true ).buildCode( this );
+			var.expectResolveIdentifier( ID!"#dtor" ).resolveCall( null, true ).buildCode( var.isCtime ? scoped!CodeBuilder_Ctime : this );
 		}
 
 	protected:
