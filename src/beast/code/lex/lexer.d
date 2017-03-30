@@ -147,9 +147,28 @@ final class Lexer {
 							break;
 
 						case '=': {
+								state = State.eqPrefix;
 								pos_++;
-								return new Token( Token.Operator.assign );
 							}
+							break;
+
+						case '!': {
+								state = State.exclamationPrefix;
+								pos_++;
+							}
+							break;
+
+						case '>': {
+								state = State.gtPrefix;
+								pos_++;
+							}
+							break;
+
+						case '<': {
+								state = State.lessPrefix;
+								pos_++;
+							}
+							break;
 
 						case '.': {
 								pos_++;
@@ -174,11 +193,6 @@ final class Lexer {
 						case '?': {
 								pos_++;
 								return new Token( Token.Operator.questionMark );
-							}
-
-						case '!': {
-								pos_++;
-								return new Token( Token.Operator.exclamationMark );
 							}
 
 						case '(': {
@@ -251,6 +265,7 @@ final class Lexer {
 								if ( wholeNumNegative )
 									wholeNumAccumulator = -wholeNumAccumulator;
 
+								// TODO: same-value literal merging
 								if ( wholeNumAccumulator >= int.min && wholeNumAccumulator <= int.max ) {
 									int data = wholeNumAccumulator.toInt;
 									return new Token( new Symbol_Literal( coreLibrary.type.Int, cast( ubyte[ ] )( cast( void* )&data )[ 0 .. data.sizeof ] ).dataEntity );
@@ -325,6 +340,66 @@ final class Lexer {
 						}
 					}
 					break;
+
+				case State.eqPrefix: {
+						switch ( currentChar_ ) {
+
+						case '=': {
+								pos_++;
+								return new Token( Token.Operator.equals );
+							}
+
+						default: {
+								return new Token( Token.Operator.assign );
+							}
+
+						}
+					}
+
+				case State.lessPrefix: {
+						switch ( currentChar_ ) {
+
+						case '=': {
+								pos_++;
+								return new Token( Token.Operator.lessEquals );
+							}
+
+						default: {
+								return new Token( Token.Operator.less );
+							}
+
+						}
+					}
+
+				case State.gtPrefix: {
+						switch ( currentChar_ ) {
+
+						case '=': {
+								pos_++;
+								return new Token( Token.Operator.greaterEquals );
+							}
+
+						default: {
+								return new Token( Token.Operator.greater );
+							}
+
+						}
+					}
+
+				case State.exclamationPrefix: {
+						switch ( currentChar_ ) {
+
+						case '=': {
+								pos_++;
+								return new Token( Token.Operator.notEquals );
+							}
+
+						default: {
+								return new Token( Token.Operator.exclamationMark );
+							}
+
+						}
+					}
 
 				case State.singleLineComment: {
 						if ( currentChar_ == '\n' || currentChar_ == EOF )
@@ -420,6 +495,10 @@ final class Lexer {
 			andPrefix, /// Token that begins with "&": can be "&" or "&&"
 			orPrefix, /// Token that begins with "|": can be "|" or "||"
 			minusPrefix, /// Token that begins with "-": can be number literal or minus prefix operator
+			lessPrefix, /// "<"
+			gtPrefix, /// ">"
+			eqPrefix, /// "="
+			exclamationPrefix, /// "!"
 
 			// COMMENTS
 			singleLineComment,

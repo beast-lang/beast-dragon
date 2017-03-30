@@ -26,27 +26,6 @@ pragma( inline ):
 		benforce( condition.readPrimitive!bool, E.ctAssertFail, "An assert has failed during compile-time execution" );
 	}
 
-	// ALLOCATION/DEALLOCATION
-	void op_allocLocal( Interpreter ir, size_t bpOffset, size_t bytes ) {
-		const size_t stackOffset = ir.currentFrame.basePointer + bpOffset;
-
-		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
-		ir.stack ~= memoryManager.alloc( bytes );
-
-		debug( interpreter )
-			writefln( "alloc BP+%s (%#x)", ir.stack.length - 1, ir.stack[ $ - 1 ].val );
-	}
-
-	void op_skipAlloc( Interpreter ir, size_t bpOffset ) {
-		const size_t stackOffset = ir.currentFrame.basePointer + bpOffset;
-
-		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
-		ir.stack ~= MemoryPtr( );
-
-		debug( interpreter )
-			writefln( "skipalloc BP+%s", ir.stack.length - 1 );
-	}
-
 	void op_popScope( Interpreter ir, size_t targetBpOffset ) {
 		const size_t targetStackSize = ir.currentFrame.basePointer + targetBpOffset;
 

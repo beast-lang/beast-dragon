@@ -22,6 +22,7 @@ enum E {
 	notImplemented, /// Feature not yet implemented
 	dependencyLoop, /// Task guard circular dependency
 	other, /// Other errors
+	invalidArgs, /// Run with invalid args
 
 	// LEXER:
 	unexpectedCharacter, /// Unexpected character when lexing

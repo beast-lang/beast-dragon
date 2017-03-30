@@ -24,6 +24,11 @@ abstract class DataEntity : Identifiable {
 		/// Parent of the current data entity, is used in recursive identifier resolution
 		abstract DataEntity parent( );
 
+		/// Symbol if we call .dataEntity on returns this DataEntity (or same type)
+		Symbol symbol( ) {
+			return null;
+		}
+
 		/// Specifies priority of this entity among overloading
 		final MatchLevel matchLevel( ) {
 			return overloadMatch_;
@@ -34,27 +39,17 @@ abstract class DataEntity : Identifiable {
 		/// This is mostly used in operator overloading (ctime vs nonctime overloads)
 		abstract bool isCtime( );
 
-		/// Returns if the current entity is callable
-		bool isCallable( ) {
-			return false;
-		}
-
-		/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
-		CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
-			assert( 0, identificationString ~ " is not callable" );
-		}
-
 		Symbol_Decorator isDecorator( ) {
 			return null;
 		}
 
 		/// If the data entity represents a parameter, returns its index
-		size_t asFunctionParameter_index() {
+		size_t asFunctionParameter_index( ) {
 			assert( 0, identificationString ~ " is not a parameter" );
 		}
 
 		/// If the data entity represents a local variable, returns its base pointer offset for interpreter
-		size_t asLocalVariable_interpreterBpOffset() {
+		size_t asLocalVariable_interpreterBpOffset( ) {
 			assert( 0, identificationString ~ " is not a local variable" );
 		}
 
@@ -85,6 +80,11 @@ abstract class DataEntity : Identifiable {
 				return this.tryGetIdentification;
 		}
 
+		/// Executes the dataEntity at ctime and returns string describing its value
+		pragma( inline ) final string valueIdentificationString( ) {
+			return dataType.valueIdentificationString( ctExec( ) );
+		}
+
 		/// AST node related with the entity, can be null
 		abstract AST_Node ast( );
 
@@ -96,6 +96,17 @@ abstract class DataEntity : Identifiable {
 		/// Outer hash - hash that is generated based on entity declaration and surroundings, not its definition (considering classes, functions, etc)
 		Hash outerHash( ) {
 			return parent.outerHash;
+		}
+
+	public:
+		/// Returns if the current entity is callable
+		bool isCallable( ) {
+			return false;
+		}
+
+		/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
+		CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+			assert( 0, identificationString ~ " is not callable" );
 		}
 
 	public:

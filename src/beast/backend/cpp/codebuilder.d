@@ -24,6 +24,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 	public:
+		override bool isCtime( ) {
+			return true;
+		}
+
+	public:
 		string code_types( ) {
 			return typesResult_.data;
 		}

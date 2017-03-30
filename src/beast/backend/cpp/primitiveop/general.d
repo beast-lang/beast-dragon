@@ -2,15 +2,31 @@ module beast.backend.cpp.primitiveop.general;
 
 import beast.backend.cpp.primitiveop.toolkit;
 
+pragma( inline ) string memType( size_t instanceSize ) {
+	switch ( instanceSize ) {
+
+	case 0:
+		assert( 0 );
+
+	case 1:
+		return "uint8_t";
+
+	case 2:
+		return "uint16_t";
+
+	case 4:
+		return "uint32_t";
+
+	default:
+		return null;
+
+	}
+}
+
 void primitiveOp_memZero( CB cb, T t, Op arg1 ) {
 	with ( cb ) {
-		size_t instSize = t.instanceSize;
-		if ( instSize == 1 )
-			codeResult_.formattedWrite( "%sVAL( %s, uint8_t ) = 0;\n", tabs, arg1 );
-		else if ( instSize == 2 )
-			codeResult_.formattedWrite( "%sVAL( %s, uint16_t ) = 0;\n", tabs, arg1 );
-		else if ( instSize == 4 )
-			codeResult_.formattedWrite( "%sVAL( %s, uint32_t ) = 0;\n", tabs, arg1 );
+		if ( string mt = memType( t.instanceSize ) )
+			codeResult_.formattedWrite( "%sVAL( %s, %s ) = 0;\n", tabs, arg1, mt );
 		else
 			codeResult_.formattedWrite( "%smemset( %s, 0, %s );\n", tabs, arg1 );
 	}
@@ -18,15 +34,28 @@ void primitiveOp_memZero( CB cb, T t, Op arg1 ) {
 
 void primitiveOp_memCpy( CB cb, T t, Op arg1, Op arg2 ) {
 	with ( cb ) {
-		size_t instSize = t.instanceSize;
-		if ( instSize == 1 )
-			codeResult_.formattedWrite( "%sVAL( %s, uint8_t ) = VAL( %s, uint8_t );\n", tabs, arg1, arg2 );
-		else if ( instSize == 2 )
-			codeResult_.formattedWrite( "%sVAL( %s, uint16_t ) = VAL( %s, uint16_t );\n", tabs, arg1, arg2 );
-		else if ( instSize == 4 )
-			codeResult_.formattedWrite( "%sVAL( %s, uint32_t ) = VAL( %s, uint32_t );\n", tabs, arg1, arg2 );
+		if ( string mt = memType( t.instanceSize ) )
+			codeResult_.formattedWrite( "%sVAL( %s, %s ) = VAL( %s, %s );\n", tabs, arg1, mt, arg2, mt );
 		else
-			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, arg1, arg2, instSize );
+			codeResult_.formattedWrite( "%smemcpy( %s, %s, %s );\n", tabs, arg1, arg2, t.instanceSize );
+	}
+}
+
+void primitiveOp_memEq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+	with ( cb ) {
+		if ( string mt = memType( t.instanceSize ) )
+			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( VAL( %s, %s ) == VAL( %s, %s ) );\n", tabs, arg1, arg2, mt, arg3, mt );
+		else
+			codeResult_.formattedWrite( "%VAL( %s, bool ) = ( memcmp( %s, %s, %s ) == 0 );\n", tabs, arg1, arg2, arg3, t.instanceSize );
+	}
+}
+
+void primitiveOp_memNeq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+	with ( cb ) {
+		if ( string mt = memType( t.instanceSize ) )
+			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( VAL( %s, %s ) != VAL( %s, %s ) );\n", tabs, arg1, arg2, mt, arg3, mt );
+		else
+			codeResult_.formattedWrite( "%VAL( %s, bool ) = ( memcmp( %s, %s, %s ) != 0 );\n", tabs, arg1, arg2, arg3, t.instanceSize );
 	}
 }
 

@@ -18,10 +18,12 @@ __gshared string testsDir, testRootDir;
 
 int main( string[ ] args ) {
 	bool showLogs;
+	bool onlyFailed;
 
 	auto getoptResult = getopt( args, //
 			std.getopt.config.bundling, //
-			"show-logs", "Show logs of failed tests in the stdout", &showLogs //
+			"showLogs", "Show logs of failed tests in the stdout", &showLogs, //
+			"f|onlyFailed", "Only executes previously failed tests", &onlyFailed //
 			 );
 
 	if ( getoptResult.helpWanted ) {
@@ -35,7 +37,14 @@ int main( string[ ] args ) {
 	"../test/output/".mkdirRecurse( );
 	"../test/tmp/".mkdirRecurse( );
 
+	bool[ string ] previouslyFailedTests;
+	if ( onlyFailed ) {
+		foreach ( ln; "../test/log/failed.txt".readText.replace( "\r", "" ).splitter( "\n" ) )
+			previouslyFailedTests[ ln ] = true;
+	}
+
 	File log = File( "../test/log/log.txt", "w" );
+	File failedTestsLog = File( "../test/log/failed.txt", "w" );
 
 	Test[ ] tests, activeTests, failedTests;
 
@@ -52,13 +61,18 @@ int main( string[ ] args ) {
 		tests ~= new Test( loc, id, 0 );
 	}
 
-	activeTests = tests;
+	foreach ( test; tests ) {
+		if ( onlyFailed && test.identifier !in previouslyFailedTests )
+			continue;
+
+		activeTests ~= test;
+	}
 
 	// Parallel version bugs a lot on Windows
 	version ( Windows )
-		auto it = tests;
+		auto it = activeTests;
 	else
-		auto it = tests.parallel;
+		auto it = activeTests.parallel;
 
 	foreach ( test; it ) {
 		const bool result = test.run( );
@@ -71,6 +85,7 @@ int main( string[ ] args ) {
 			else {
 				str = "[ # ] %s: FAILED\n".format( test.identifier );
 				failedTests ~= test;
+				failedTestsLog.writeln( test.identifier );
 
 				if ( showLogs )
 					str ~= test.logFilename.readText ~ "\n";
@@ -78,7 +93,7 @@ int main( string[ ] args ) {
 
 			log.write( str );
 			stdout.write( str );
-			stdout.flush();
+			stdout.flush( );
 		}
 	}
 

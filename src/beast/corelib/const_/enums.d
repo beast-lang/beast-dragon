@@ -8,7 +8,7 @@ import beast.code.data.type.btspenum;
 struct CoreLibrary_Enums {
 
 	private:
-		alias C = Symbol_BoostrapConstant;
+		alias C = Symbol_BootstrapConstant;
 		alias E = Symbol_BootstrapEnum;
 
 	public:
@@ -24,6 +24,10 @@ struct CoreLibrary_Enums {
 			C binOr, binOrR, binAnd, binAndR;
 			C binPlus, binPlusR, binMinus, binMinusR;
 			C binMult, binMultR, binDiv, binDivR;
+
+			C binEq, binEqR, binNeq, binNeqR;
+			C binLt, binLtR, binLte, binLteR;
+			C binGte, binGteR, binGt, binGtR;
 
 			C funcCall;
 
@@ -76,7 +80,7 @@ struct CoreLibrary_Enums {
 
 						foreach ( subMemName; __traits( derivedMembers, typeof( __traits( getMember, typeof( this ), memName ) ) ) ) {
 							rec.items ~= (  //
-									__traits( getMember, __traits( getMember, this, memName ), subMemName ) = new Symbol_BoostrapConstant(  //
+									__traits( getMember, __traits( getMember, this, memName ), subMemName ) = new Symbol_BootstrapConstant(  //
 									parent, //
 									subMemName.chomp( "_" ).Identifier, //
 									rec.baseClass, //

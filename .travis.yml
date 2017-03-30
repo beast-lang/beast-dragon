@@ -10,7 +10,7 @@ os:
 script:
   - dub build --compiler=${DC}
   - dub build --root=test
-  - cd bin && ./testsuite --show-logs
+  - cd bin && ./testsuite --showLogs
 
 notifications:
   email:

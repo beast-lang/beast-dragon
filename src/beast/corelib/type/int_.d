@@ -11,6 +11,12 @@ void initialize_Int( ref CoreLibrary_Types tp ) {
 
 	// Operator overloads
 	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( tp.Int ); // a = b
+	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( tp.Int ); // a == b, a != b
+
+	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( tp.Int, tp.Bool, coreLibrary.enum_.operator.binGt, BackendPrimitiveOperation.intGt ); // a > b
+	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( tp.Int, tp.Bool, coreLibrary.enum_.operator.binGte, BackendPrimitiveOperation.intGte ); // a >= b
+	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( tp.Int, tp.Bool, coreLibrary.enum_.operator.binLt, BackendPrimitiveOperation.intLt ); // a < b
+	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( tp.Int, tp.Bool, coreLibrary.enum_.operator.binLte, BackendPrimitiveOperation.intLte ); // a <= b
 
 	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( tp.Int, coreLibrary.enum_.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
 	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( tp.Int, coreLibrary.enum_.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b

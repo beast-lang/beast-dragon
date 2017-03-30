@@ -1,11 +1,11 @@
 module beast.code.ast.expr.logic;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.sum;
+import beast.code.ast.expr.cmp;
 import beast.code.ast.expr.binary;
 
 final class AST_LogicExpression : AST_Expression {
-	alias LowerLevelExpression = AST_SumExpression;
+	alias LowerLevelExpression = AST_CmpExpression;
 
 	public:
 		static bool canParse( ) {
@@ -20,7 +20,7 @@ final class AST_LogicExpression : AST_Expression {
 			if ( currentToken != Token.Operator.logOr && currentToken != Token.Operator.logAnd )
 				return base;
 
-			AST_LogicExpression result = new AST_LogicExpression;
+			auto result = new AST_LogicExpression;
 			result.op = currentToken.operator;
 			result.base = base;
 

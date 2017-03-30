@@ -32,7 +32,7 @@ final class ModuleManager {
 				// Otherwise try adding it to the project
 				// TODO: Implement searching in include directories
 
-				berror( E.notImplemented, "" );
+				berror( E.notImplemented, "Lazy including modules not implemented" );
 				assert( 0 );
 			}
 		}

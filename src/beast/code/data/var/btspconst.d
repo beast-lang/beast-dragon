@@ -3,7 +3,7 @@ module beast.code.data.var.btspconst;
 import beast.code.data.toolkit;
 import beast.code.data.var.static_;
 
-final class Symbol_BoostrapConstant : Symbol_StaticVariable {
+final class Symbol_BootstrapConstant : Symbol_StaticVariable {
 
 	public:
 		/// Length of the data is inferred from the dataType instance size

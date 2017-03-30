@@ -45,7 +45,7 @@ abstract class Symbol_Type : Symbol {
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, refType, //
 						ExpandedFunctionParameter.bootstrap( refType.dataEntity ), //
 						( cb, inst, args ) { //
-							auto var = new DataEntity_TmpLocalVariable( refType, inst.isCtime );
+							auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
 							cb.build_localVariableDefinition( var );
 							var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.opRefAssign.dataEntity, inst ).buildCode( cb );
 							var.buildCode( cb );

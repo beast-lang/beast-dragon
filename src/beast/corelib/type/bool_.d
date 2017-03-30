@@ -12,13 +12,14 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 
 	// Operator overloads
 	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( tp.Bool ); // a = b
+	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( tp.Bool ); // a == b, a != b
 
 	// a || b
 	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binOr, tp.Bool ), //
 			( cb, inst, args ) { //
 				// 0th operator is Operator.binOr
-				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, false );
+				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, cb.isCtime );
 				cb.build_localVariableDefinition( var );
 
 				// We construct the local variable based on the if result
@@ -35,7 +36,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			ExpandedFunctionParameter.bootstrap( enm.operator.binAnd, tp.Bool ), //
 			( cb, inst, args ) { //
 				/// args[ 0 ] is Operator.binAnd
-				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, false );
+				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, cb.isCtime );
 				cb.build_localVariableDefinition( var );
 
 				// We construct the local variable based on the if result
@@ -53,7 +54,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			( cb, inst, args ) { //
 				/// args[ 0 ] is Operator.binAnd
 
-				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, false );
+				auto var = new DataEntity_TmpLocalVariable( coreLibrary.type.Bool, cb.isCtime );
 				cb.build_localVariableDefinition( var );
 				cb.build_primitiveOperation( BackendPrimitiveOperation.boolNot, var, inst );
 

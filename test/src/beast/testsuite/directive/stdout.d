@@ -8,7 +8,7 @@ final class TestDirective_Stdout : TestDirective {
 
 	public:
 		this( TestDirectiveArguments args ) {
-			data_ = args.mainValue.parseJSON.str;
+			data_ = args.mainValue.startsWith( "\"" ) ? args.mainValue.parseJSON.str : args.mainValue;
 		}
 
 	public:

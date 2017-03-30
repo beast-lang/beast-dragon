@@ -13,6 +13,11 @@ abstract class CodeBuilder : Identifiable {
 		/// When called, StmtFunction should build expression using provided codebuilder		
 		alias ExprFunction = void delegate( CodeBuilder cb );
 
+	public:
+		bool isCtime( ) {
+			return false;
+		}
+
 	public: // Declaration related build commands
 		void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
@@ -63,6 +68,11 @@ abstract class CodeBuilder : Identifiable {
 		/// Utility function calling original build_primitiveOperation (argT => arg1.dataType)
 		pragma( inline ) final void build_primitiveOperation( BackendPrimitiveOperation op, DataEntity arg1, DataEntity arg2, DataEntity arg3 ) {
 			build_primitiveOperation( op, arg1.dataType, &arg1.buildCode, &arg2.buildCode, &arg3.buildCode );
+		}
+
+		/// Utility function calling original build_primitiveOperation
+		pragma( inline ) final void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT, DataEntity arg1, DataEntity arg2, DataEntity arg3 ) {
+			build_primitiveOperation( op, argT, &arg1.buildCode, &arg2.buildCode, &arg3.buildCode );
 		}
 
 	public: // Statement related build commands

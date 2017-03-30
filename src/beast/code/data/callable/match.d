@@ -46,19 +46,25 @@ abstract class CallableMatch {
 			return result;
 		}
 
-		pragma( inline ) final void finish( ) {
+		alias arg = matchNextArgument;
+
+		pragma( inline ) final CallableMatch finish( ) {
 			debug finished_ = true;
 
 			// No need for further matching
 			if ( matchLevel_ == MatchLevel.noMatch )
-				return;
+				return this;
 
 			matchLevel_ |= _finish( );
+			
+			return this;
 		}
 
 		/// Constructs a data entity that represents the function call expression
 		pragma( inline ) final DataEntity toDataEntity( ) {
+			assert( this );
 			debug assert( finished_ );
+			
 			assert( matchLevel_ != MatchLevel.noMatch );
 
 			return _toDataEntity( );

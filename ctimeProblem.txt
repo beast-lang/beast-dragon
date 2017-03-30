@@ -1,0 +1,6 @@
+@ctime auto foo( Int!? x ) {
+	x ++;
+
+	@static Type[] arr = [ Bool, Int8, Int16, Int32, Int64 ];
+	return arr[ x ]();
+}

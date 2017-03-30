@@ -28,7 +28,7 @@ Expects error/warning/hint on the file and line of the directive (error type is 
 Compiler performs only lexing/parsing phase
 
 ## stdout
-Expects program to output given string to stdout (string is passed as main valued and parsed as JSON string - it must be in quotation marks).
+Expects program to output given string to stdout (string is passed as main valued and parsed as JSON string if in quotation marks, otherwise as a plain string with stripped spaces around).
 
 When there are more stdout directives, the resulting stdout is expected to be concatenation of all of them.
 

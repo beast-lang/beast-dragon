@@ -21,6 +21,14 @@ struct Instruction {
 			call, /// (function : func) Function call (arguments are passed on the stack in order [RETURN VALUE] [OP3] [OP2] [OP1] [CONTEXT PTR - always (even if null)])
 			ret, /// () returns from a function call
 
+			bitsCmp, /// (op1: ptr, op2: ptr, bytes: dd) Bit compares two operands and stores result into INTERNAL FLAGS (use cmpXX instructions)
+			cmpEq, /// (target: ptr) Stores bool into target stating whether previous comparison resulted x == y
+			cmpNeq, /// (target: ptr) Stores bool into target stating whether previous comparison resulted x != y
+			cmpLt, /// (target: ptr) Stores bool into target stating whether previous comparison resulted as x < y
+			cmpLte, /// (target: ptr) Stores bool into target stating whether previous comparison resulted as x <= y
+			cmpGt, /// (target: ptr) Stores bool into target stating whether previous comparison resulted as x > y
+			cmpGte, /// (target: ptr) Stores bool into target stating whether previous comparison resulted as x >= y
+
 			mov, /// (target : ptr, source : ptr, bytes : dd) Copies memory from one place to another
 			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
 			zero, /// (target: ptr, bytes: dd) Zeroes given memory
@@ -30,12 +38,13 @@ struct Instruction {
 			jmpFalse, /// (target: jt, condition: ptr) Jumps to given instruction (ID/index) when condition (read as 1byte boolean) is false
 			jmp, /// (target: jt) Jumps to given instruction (ID/index)
 
-			boolNot, /// (target: ptr, source: ptr) Boolean not operation
+			boolNot, /// (target: ptr, source: ptr) Boolean not operation)
 
 			intAdd32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 + op2
 			intSub32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 - op2
 			intMult32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 * op2
 			intDiv32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 / op2
+			intCmp32, /// (op1: ptr, op2: ptr) Compares two integers and stores the result into INTERNAL FLAGS (use cmpXX instructions)
 		}
 
 	public:

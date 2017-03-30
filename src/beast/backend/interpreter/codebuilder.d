@@ -168,11 +168,13 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void build_loop( StmtFunction body_ ) {
-			auto jt = jumpTarget( );
 			pushScope( ScopeFlags.loop );
+			auto jt = jumpTarget( );
+			pushScope( );
 			body_( this );
 			popScope( );
 			addInstruction( I.jmp, jt );
+			popScope( );
 		}
 
 		override void build_break( size_t scopeIndex ) {
@@ -200,14 +202,15 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			import std.stdio : writefln;
 			import beast.core.error.error : stderrMutex;
 
-			synchronized ( stderrMutex ) {
-				writefln( "\n== BEGIN CODE %s\n", desc );
+			// uncommenting this causes freezes - dunno why
+			//synchronized ( stderrMutex ) {
+			writefln( "\n== BEGIN CODE %s\n", desc );
 
-				foreach ( i, instr; result_.data )
-					writefln( "@%3s   %s", i, instr.identificationString );
+			foreach ( i, instr; result_.data )
+				writefln( "@%3s   %s", i, instr.identificationString );
 
-				writefln( "\n== END\n" );
-			}
+			writefln( "\n== END\n" );
+			//}
 		}
 
 	package:
@@ -258,7 +261,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 	protected:
 		override void generateScopeExit( ref Scope scope_ ) {
 			super.generateScopeExit( scope_ );
-			addInstruction( I.popScope, additionalScopeData_[ scope_.index ].bpOffset.iopLiteral );
+
+			size_t targetBPOffset = additionalScopeData_[ scope_.index ].bpOffset;
+			if ( targetBPOffset < currentBPOffset_ )
+				addInstruction( I.popScope, targetBPOffset.iopLiteral );
 		}
 
 	package:

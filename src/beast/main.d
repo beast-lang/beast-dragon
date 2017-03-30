@@ -101,6 +101,8 @@ void mainImpl( string[ ] args ) {
 		doProject = false;
 	}
 
+	benforce( args.length == 1, E.invalidArgs, "Invalid arguments provided. Type 'beast --help' for help." );
+
 	if ( !doProject )
 		return;
 

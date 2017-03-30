@@ -170,6 +170,16 @@ final class Interpreter {
 		MemoryPtr[ ] stack;
 		debug ( interpreter ) size_t execId;
 
+		RFlag flagsRegister;
+
+	package:
+		pragma( inline ) void flagsRegister_setFlag( RFlag flag, bool set ) {
+			if ( set )
+				flagsRegister |= flag;
+			else
+				flagsRegister &= ~flag;
+		}
+
 	package:
 		alias JumpTarget = Typedef!( size_t, 0, "beast.interpreter.jumpTarget" );
 		struct StackFrame {
@@ -180,6 +190,12 @@ final class Interpreter {
 
 			/// Instruction that should be executed after a return from this stack
 			size_t instructionPointer;
+		}
+
+	public:
+		enum RFlag {
+			equals = 1,
+			less = equals << 1
 		}
 
 }

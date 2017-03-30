@@ -12,10 +12,10 @@ struct CoreLibrary_Constants {
 
 	public:
 		@constant( "Bool", 0x01 )
-		Symbol_BoostrapConstant true_;
+		Symbol_BootstrapConstant true_;
 
 		@constant( "Bool", 0x00 )
-		Symbol_BoostrapConstant false_;
+		Symbol_BootstrapConstant false_;
 
 	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
@@ -27,7 +27,7 @@ struct CoreLibrary_Constants {
 				foreach ( attr; __traits( getAttributes, __traits( getMember, this, memName ) ) ) {
 					static if ( is( typeof( attr ) == constant ) ) {
 						sink(  //
-								__traits( getMember, this, memName ) = new Symbol_BoostrapConstant(  //
+								__traits( getMember, this, memName ) = new Symbol_BootstrapConstant(  //
 								parent, //
 								memName.chomp( "_" ).Identifier, //
 								__traits( getMember, types, attr[ 0 ] ), //

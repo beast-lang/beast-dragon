@@ -70,13 +70,28 @@ final class Token {
 
 			dollar, /// '$'
 
+			lessEquals, /// <=
+			less, /// <
+			equals, /// ==
+			notEquals, /// !=
+			greater, /// >
+			greaterEquals, /// >=
+
 			questionMark, /// '?'
 			exclamationMark, /// '!'
 
 			_length
 		}
 
-		static immutable string[ Operator._length ] operatorStr = [ null, "+", "-", "*", "/", "=", ":=", "&", "|", "&&", "||", "$", "?", "!" ];
+		static immutable string[ Operator._length ] operatorStr = [ null, //
+			"+", "-", "*", "/", //
+			"=", ":=", //
+			"&", "|", //
+			"&&", "||", //
+			"$", //
+			"<=", "<", "==", "!=", ">", ">=", //
+			"?", "!" //
+			 ];
 
 		enum Special {
 			_noSpecial,
@@ -282,7 +297,7 @@ final class Token {
 				return "keyword%s".format( data.keyword ? " '%s'".format( keywordStr[ cast( size_t ) data.keyword ] ) : null );
 
 			case Type.operator:
-				return "keyword%s".format( data.operator ? " '%s'".format( operatorStr[ cast( size_t ) data.operator ] ) : null );
+				return "operator%s".format( data.operator ? " '%s'".format( operatorStr[ cast( size_t ) data.operator ] ) : null );
 
 			case Type.special:
 				return specialStr[ cast( int ) data.special ];

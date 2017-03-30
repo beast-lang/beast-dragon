@@ -103,12 +103,12 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp tmp; tp <= inst operation arg1 }
-		static Symbol newPrimitiveBinaryOp( Symbol_Type tp, Symbol_BoostrapConstant operator, BackendPrimitiveOperation operation ) {
+		static Symbol newPrimitiveBinaryOp( Symbol_Type tp, Symbol_BootstrapConstant operator, BackendPrimitiveOperation operation ) {
 			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, tp, //
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
-						auto var = new DataEntity_TmpLocalVariable( tp, false );
+						auto var = new DataEntity_TmpLocalVariable( tp, cb.isCtime );
 						cb.build_localVariableDefinition( var );
 						cb.build_primitiveOperation( operation, var, inst, args[ 1 ] );
 
@@ -117,16 +117,59 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					} );
 		}
 
+		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp2 tmp; tp <= inst operation arg1 }
+		static Symbol newPrimitiveBinaryOp( Symbol_Type tp, Symbol_Type returnType, Symbol_BootstrapConstant operator, BackendPrimitiveOperation operation ) {
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, returnType, //
+					ExpandedFunctionParameter.bootstrap( operator, tp ), //
+					( cb, inst, args ) { //
+						// 0th arg is operator
+						auto var = new DataEntity_TmpLocalVariable( returnType, cb.isCtime );
+						cb.build_localVariableDefinition( var );
+						cb.build_primitiveOperation( operation, tp, var, inst, args[ 1 ] );
+
+						// Store var into result operand
+						var.buildCode( cb );
+					} );
+		}
+
+		/// Returns binary operator symbols that represent bit comparison (==, !=)
+		static Symbol[ ] newPrimitiveEqNeqOp( Symbol_Type tp ) {
+			return [ new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, coreType.Bool, //
+					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binEq, tp ), //
+					( cb, inst, args ) { //
+						// 0th arg is operator
+						auto var = new DataEntity_TmpLocalVariable( coreType.Bool, cb.isCtime );
+						cb.build_localVariableDefinition( var );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, inst, args[ 1 ] );
+
+						// Store var into result operand
+						var.buildCode( cb );
+					} ), //
+				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, coreType.Bool, //
+						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binNeq, tp ), //
+						( cb, inst, args ) { //
+							// 0th arg is operator
+							auto var = new DataEntity_TmpLocalVariable( coreType.Bool, cb.isCtime );
+							cb.build_localVariableDefinition( var );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, inst, args[ 1 ] );
+
+							// Store var into result operand
+							var.buildCode( cb );
+						} ) ];
+		}
+
 	protected:
-		final class Data : super.Data {
+		final static class Data : super.Data {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
 					super( sym, matchLevel );
-					assert( !parentInstance || parentInstance.dataType is parent_ );
 
 					sym_ = sym;
 					parentInstance_ = parentInstance;
+
+					debug if ( parentInstance )
+						assert( parentInstance.dataType is sym.parent_, "Parent instance is of type %s, but %s expected (%s)".format( parentInstance.dataType.identificationString, sym.parent_.identificationString, identificationString ) );
 				}
 
 			public:
@@ -153,7 +196,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		}
 
-		final class Match : super.Match {
+		final static class Match : super.Match {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
@@ -174,7 +217,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		}
 
-		final class MatchData : super.MatchData {
+		final static class MatchData : super.MatchData {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, Match match ) {

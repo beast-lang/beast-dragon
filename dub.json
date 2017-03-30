@@ -13,6 +13,9 @@
 	"versions": [
 		"cppBackend"
 	],
+	"debugVersions": [
+		"_interpreter"
+	],
 
 	"targetName": "beast",
 	"targetPath": "bin",

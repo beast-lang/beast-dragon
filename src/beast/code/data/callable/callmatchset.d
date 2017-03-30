@@ -76,7 +76,7 @@ struct CallMatchSet {
 
 	public:
 		/// Can return null when reportErrors is false
-		DataEntity finish( ) {
+		CallableMatch finish_getMatch( ) {
 			if ( matches.length == 0 )
 				return null;
 
@@ -131,7 +131,14 @@ struct CallMatchSet {
 						matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\n\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, x.matchLevel ) ).joiner, //
 						 ) );
 
-			return bestMatch.toDataEntity;
+			return bestMatch;
+		}
+
+		pragma( inline ) DataEntity finish() {
+			if( auto result = finish_getMatch() )
+				return result.toDataEntity();
+			else
+				return null;
 		}
 
 	public:
