@@ -123,7 +123,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			pushScope( );
 
-			auto _s = scoped!LocalDataScope( );
+			auto _s = new LocalDataScope( );
 			auto _sgd = _s.scopeGuard; // Build the condition
 
 			InstructionPtr condJmpInstr;

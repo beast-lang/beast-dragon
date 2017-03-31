@@ -14,9 +14,10 @@ final class Symbol_Literal : Symbol_StaticVariable {
 			dataType_ = dataType;
 
 			with ( memoryManager.session ) {
-				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
+				auto block = memoryManager.allocBlock( dataType.instanceSize );
 				id_ = Identifier( "lit_%#x".format( block.startPtr.val ) );
 
+				block.markDoNotGCAtSessionEnd( );
 				block.identifier = id_.str;
 				block.relatedDataEntity = dataEntity;
 

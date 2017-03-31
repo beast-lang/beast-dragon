@@ -100,7 +100,7 @@ abstract class AST_Expression : AST_Statement {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			with ( memoryManager.session ) {
-				auto _s = scoped!RootDataScope( parent );
+				auto _s = new RootDataScope( parent );
 				auto _sgd = _s.scopeGuard;
 
 				MemoryPtr result = ctExec( expectedType );

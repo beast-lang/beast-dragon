@@ -21,8 +21,12 @@ abstract class Symbol_Type : Symbol {
 		this( ) {
 			typeUID_ = typeUIDKeeper( this );
 
-			with ( memoryManager.session )
-				ctimeValue_ = memoryManager.alloc( size_t.sizeof, MemoryBlock.Flag.doNotGCAtSessionEnd, "%s_typeid".format( identifier.str ) ).writePrimitive( typeUID_ );
+			with ( memoryManager.session ) {
+				MemoryBlock block = memoryManager.allocBlock( size_t.sizeof );
+				block.identifier = "%s_typeid".format( identifier.str );
+				block.markDoNotGCAtSessionEnd( );
+				ctimeValue_ = block.startPtr.writePrimitive( typeUID_ );
+			}
 
 			baseNamespace_ = new BootstrapNamespace( this );
 

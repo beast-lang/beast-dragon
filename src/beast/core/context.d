@@ -8,6 +8,8 @@ import beast.core.task.context;
 import beast.core.error.guard;
 import beast.core.task.worker;
 import beast.code.data.scope_.scope_;
+import std.container.rbtree;
+import beast.code.memory.ptr : MemoryPtr;
 
 /// General project-related data
 __gshared Project project;
@@ -15,7 +17,7 @@ __gshared Project project;
 /// TaskManager is in charge of parallelism and work planning
 __gshared TaskManager taskManager;
 
-struct ContextData {
+class ContextData {
 
 	public:
 		/// Currently working lexer
@@ -37,6 +39,11 @@ struct ContextData {
 
 		/// Memory blocks allocated by the sessions in the stack
 		MemoryBlock[ size_t ][ ] sessionMemoryBlockStack;
+
+		/// Pointers created in the current session
+		RedBlackTree!MemoryPtr sessionPointers;
+
+		RedBlackTree!MemoryPtr[] sessionPointersStack;
 
 	public:
 		/// This is to prevent passing scopes aroung all the time

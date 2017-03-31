@@ -34,7 +34,7 @@ final class Backend_Cpp : Backend {
 			taskManager.waitForEverythingDone( );
 			memoryManager.finish( );
 
-			finished_ = true;
+			debug finished_ = true;
 
 			auto code_memory = appender!string;
 			auto code_memorydecl = appender!string;
@@ -47,15 +47,12 @@ final class Backend_Cpp : Backend {
 				prevPtr = block.startPtr.val;
 				debug prevBlock = block;
 
-				/* TODO: this has to be done incrementally
-				if ( !block.isReferenced )
-					continue;*/
-
-				if ( block.isLocal ) // TODO: this should never happen
-					continue;
-
 				string identifier = CodeBuilder_Cpp.cppIdentifier( block );
 				size_t arraySize = ( block.size + hardwareEnvironment.pointerSize - 1 ) / hardwareEnvironment.pointerSize;
+
+				if( block.isReferenced )
+				code_memory.formattedWrite( "/* REFERENCED */ " );
+
 				code_memorydecl.formattedWrite( "extern uintptr_t %s[%s];\n", identifier, arraySize );
 				code_memory.formattedWrite( "uintptr_t %s[%s] = { ", identifier, arraySize );
 
@@ -157,7 +154,7 @@ final class Backend_Cpp : Backend {
 
 	public:
 		override void buildInitCode( CodeBuilder.StmtFunction func ) {
-			assert( !finished_ );
+			debug assert( !finished_ );
 
 			auto cb = new CodeBuilder_Cpp( 1 );
 			cb.build_scope( func );
@@ -169,7 +166,7 @@ final class Backend_Cpp : Backend {
 	public:
 		/// Includes definition of given runtime function in the output code
 		override void buildRuntimeFunction( Symbol_RuntimeFunction func ) {
-			assert( !finished_ );
+			debug assert( !finished_ );
 
 			auto cb = new CodeBuilder_Cpp( );
 			func.buildCode( cb );
@@ -179,7 +176,7 @@ final class Backend_Cpp : Backend {
 
 		/// Includes declaration of given type in the output code (no member functions, only the type itself)
 		override void buildType( Symbol_Type type ) {
-			assert( !finished_ );
+			debug assert( !finished_ );
 
 			auto cb = new CodeBuilder_Cpp( );
 			cb.build_typeDefinition( type );

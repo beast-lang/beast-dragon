@@ -74,7 +74,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
 			with ( memoryManager.session ) {
-				auto _s = scoped!RootDataScope( parent );
+				auto _s = new RootDataScope( parent );
 				auto _sgd = _s.scopeGuard;
 
 				DataEntity valueEntity;
@@ -91,7 +91,8 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 				}
 
 				// We allocate a memory block
-				MemoryBlock block = memoryManager.allocBlock( dataTypeWIP_.instanceSize, MemoryBlock.Flag.doNotGCAtSessionEnd );
+				MemoryBlock block = memoryManager.allocBlock( dataTypeWIP_.instanceSize );
+				block.markDoNotGCAtSessionEnd();
 				block.relatedDataEntity = dataEntity;
 				block.identifier = identifier.str;
 				memoryPtrWIP_ = block.startPtr;

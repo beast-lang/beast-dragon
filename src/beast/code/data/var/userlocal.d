@@ -30,7 +30,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 			Symbol_Type dataType;
 			// Deduce data type
 			{
-				auto _s = scoped!LocalDataScope( );
+				auto _s = new LocalDataScope( );
 				auto _sgd = _s.scopeGuard;
 
 				dataType = typeExpression.buildSemanticTree_singleExpect( coreLibrary.type.Type ).ctExec_asType( );

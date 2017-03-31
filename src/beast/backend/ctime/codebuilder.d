@@ -59,7 +59,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 				result = resultVar.memoryPtr;
 			}
 
-			auto _s = scoped!LocalDataScope( );
+			auto _s = new LocalDataScope( );
 			auto _sgd = _s.scopeGuard;
 			pushScope( );
 

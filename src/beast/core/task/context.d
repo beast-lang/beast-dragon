@@ -18,7 +18,7 @@ final class TaskContext {
 	public:
 		alias Job = void delegate( );
 
-	package:
+	public:
 		this( ) {
 			fiber_ = new Fiber( &run );
 		}
@@ -51,7 +51,7 @@ final class TaskContext {
 
 				fiber_.reset( );
 				job_ = job;
-				contextData_ = ContextData( );
+				contextData_ = new ContextData( );
 				contextData_.jobId = jobIdGen( );
 				contextData_.taskContext = this;
 			}

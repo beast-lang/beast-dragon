@@ -1,5 +1,7 @@
 module beast.main;
 
+static import std.getopt;
+
 import beast.code.hwenv.hwenv;
 import beast.code.hwenv.native;
 import beast.code.memory.memorymgr;
@@ -19,13 +21,16 @@ import std.path : absolutePath, dirName, pathSplitter;
 import std.stdio : stdin, writeln, writef, stderr, write;
 import std.string : strip;
 import std.process : execute;
-
-static import std.getopt;
+import beast.core.context;
+import beast.core.task.context;
 
 void mainImpl( string[ ] args ) {
 	HookAppInit.call( );
 
 	project = new Project;
+	context = new ContextData;
+	// We create a dummy taskContext because of task guards
+	context.taskContext = new TaskContext();
 
 	/// Absolute file path of project file
 	string projectFile;

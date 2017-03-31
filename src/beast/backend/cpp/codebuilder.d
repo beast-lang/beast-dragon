@@ -125,7 +125,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
 
-			auto _s = scoped!LocalDataScope( );
+			auto _s = new LocalDataScope( );
 			auto _sgd = _s.scopeGuard;
 			pushScope( );
 
@@ -180,7 +180,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			codeResult_.formattedWrite( "%s{\n", tabs );
 			pushScope( );
 
-			auto _s = scoped!LocalDataScope( );
+			auto _s = new LocalDataScope( );
 			auto _sgd = _s.scopeGuard; // Build the condition
 
 			{

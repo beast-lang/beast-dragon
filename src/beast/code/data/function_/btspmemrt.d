@@ -53,7 +53,7 @@ final class Symbol_BootstrapMemberRuntimeFunction : Symbol_RuntimeFunction {
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
-				auto _s = scoped!RootDataScope( staticData_ );
+				auto _s = new !RootDataScope( staticData_ );
 				auto _sgd = _s.scopeGuard;
 
 				cb.build_functionDefinition( this, ( cb ) { //

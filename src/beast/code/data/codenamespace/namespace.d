@@ -46,7 +46,7 @@ abstract class Namespace : Identifiable {
 					groupedMembers_[ sym.identifier ] = [ sym ];
 			}
 
-			initialized_ = true;
+			debug initialized_ = true;
 		}
 
 	private:

@@ -51,7 +51,7 @@ mixin template TaskGuard( string guardName ) {
 			import beast.util.util : tryGetIdentificationString;
 
 			static assert( is( typeof( this ) : Identifiable ), "TaskGuards can only be mixed into classes that implement Identifiable interface (%s)".format( typeof( this ).stringof ) );
-			assert( Worker.current, "All task guards must be processed in worker threads" );
+			//assert( Worker.current, "All task guards must be processed in worker threads" );
 
 			enum executeFunctionName = "execute_" ~ guardName;
 			mixin( "alias tgdFlags = _taskGuard_flags_%s;".format( guardName ) );
@@ -168,7 +168,9 @@ mixin template TaskGuard( string guardName ) {
 					thisContext.blockingContext_ = null;
 					*/
 
-				assert( context.taskContext is thisContext );
+				auto a = context;
+				auto b = a.taskContext;
+				assert( b is thisContext );
 				assert( tgdFlags & Flags.done );
 
 				if ( tgdFlags & Flags.error )

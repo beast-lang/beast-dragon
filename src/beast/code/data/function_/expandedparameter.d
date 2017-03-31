@@ -55,7 +55,7 @@ final class ExpandedFunctionParameter : Identifiable {
 					param.dataType = arg.dataType;
 
 					with ( memoryManager.session ) {
-						auto _s = scoped!RootDataScope( null );
+						auto _s = new RootDataScope( null );
 						auto _sgd = _s.scopeGuard;
 
 						param.constValue = arg.ctExec( );

@@ -56,7 +56,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
 				auto _gd = ErrorGuard( codeLocation );
-				auto _s = scoped!RootDataScope( staticData_ );
+				auto _s = new RootDataScope( staticData_ );
 				auto _sgd = _s.scopeGuard;
 
 				cb.build_functionDefinition( this, ( cb ) { //
@@ -112,7 +112,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 		final void execute_parameterExpanding( ) {
 			with ( memoryManager.session ) {
-				auto _s = scoped!RootDataScope( parent_ );
+				auto _s = new RootDataScope( parent_ );
 				auto _sgd = _s.scopeGuard;
 
 				foreach ( i, expr; ast_.parameterList.items )

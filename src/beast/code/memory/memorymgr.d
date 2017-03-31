@@ -78,6 +78,7 @@ final class MemoryManager {
 				}
 			}
 
+			assert( result.startPtr.val !in context.sessionMemoryBlocks );
 			context.sessionMemoryBlocks[ result.startPtr.val ] = result;
 
 			return result;
@@ -116,11 +117,12 @@ final class MemoryManager {
 						benforce( block.session == context.session, E.protectedMemory, "Cannot free memory block owned by a different session (%#x)".format( ptr.val ) );
 
 						mmap_ = mmap_[ 0 .. i ] ~ mmap_[ i + 1 .. $ ];
+
+						assert( block.startPtr.val in context.sessionMemoryBlocks );
 						context.sessionMemoryBlocks.remove( block.startPtr.val );
 
 						// We also have to unmark pointers in the block
-						synchronized ( pointerListMutex_.writer )
-							pointerList_.removeKey( pointerList_.upperBound( block.startPtr - 1 ).until!( x => x >= block.endPtr ) );
+						context.sessionPointers.removeKey( pointersInSessionBlock( block ) );
 
 						return;
 					}
@@ -134,6 +136,21 @@ final class MemoryManager {
 
 		void free( MemoryBlock block ) {
 			free( block.startPtr );
+		}
+
+		// Frees the block in the GC cleanup when finishing memoryMgr
+		private void sudoFree( MemoryBlock targetBlock ) {
+			debug assert( finished_ );
+
+			foreach ( i, block; mmap_ ) {
+				if ( block !is targetBlock )
+					continue;
+
+				mmap_ = mmap_[ 0 .. i ] ~ mmap_[ i + 1 .. $ ];
+				return;
+			}
+
+			assert( 0 );
 		}
 
 	public:
@@ -156,6 +173,8 @@ final class MemoryManager {
 				debug assert( context.jobId == activeSessions_[ block.session ] );
 			}
 
+			debug assert( !block.wasReadOutsideContext, "Block was read outside context before write (race condition might occur)" );
+
 			// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
 		}
@@ -173,6 +192,10 @@ final class MemoryManager {
 
 			benforce( ptr + bytes <= block.endPtr, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
 			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.runtimeMemoryManipulation, "Cannnot read from runtime memory (%s)".format( block.identificationString ) );
+
+			debug if ( context.jobId != block.jobId )
+				block.wasReadOutsideContext = true;
+
 			return ( block.data + ( ptr - block.startPtr ).val )[ 0 .. bytes ];
 		}
 
@@ -194,41 +217,51 @@ final class MemoryManager {
 
 	public:
 		void markAsPointer( const MemoryPtr ptr ) {
-			assert( !finished_ );
+			debug assert( !finished_ );
 
+			// context.sessionPointers is per-context and context can be acessed from one thread only, so we don't need mutexes
 			benforce( ptr.val % hardwareEnvironment.pointerSize == 0, E.unalignedMemory, "Pointers must be memory-aligned" );
-
-			synchronized ( pointerListMutex_.writer ) {
-				benforce( ptr !in pointerList_, E.corruptMemory, "Corrupt memory: dual initialization of a pointer" );
-				pointerList_.insert( ptr );
-			}
+			benforce( ptr !in context.sessionPointers, E.corruptMemory, "Corrupt memory: dual initialization of a pointer" );
+			context.sessionPointers.insert( ptr );
 		}
 
 		void unmarkAsPointer( const MemoryPtr ptr ) {
-			assert( !finished_ );
+			debug assert( !finished_ );
 
-			synchronized ( pointerListMutex_.writer ) {
-				benforce( ptr in pointerList_, E.corruptMemory, "Corrupt memory: destroying unexisting pointer" );
-				pointerList_.removeKey( ptr );
-			}
+			benforce( ptr in context.sessionPointers, E.corruptMemory, "Corrupt memory: destroying unexisting pointer" );
+			context.sessionPointers.removeKey( ptr );
 		}
 
 		/// Returns if given memory has been marked as pointer previously
 		bool isPointer( const MemoryPtr ptr ) {
-			synchronized ( pointerListMutex_.reader )
-				return ptr in pointerList_;
+			debug assert( finished_ );
+			return ptr in pointerList_;
 		}
 
 		/// Returns next nearest memory pointer (where nextPtr > ptr) or NULL if there is no such pointer
 		MemoryPtr nextPointer( const MemoryPtr ptr ) {
-			synchronized ( pointerListMutex_.reader ) {
-				auto range = pointerList_.upperBound( ptr );
-				return range.empty ? MemoryPtr( 0 ) : range.front;
-			}
+			debug assert( finished_ );
+
+			auto range = pointerList_.upperBound( ptr );
+			return range.empty ? MemoryPtr( 0 ) : range.front;
+		}
+
+		auto pointersInBlock( MemoryBlock block ) {
+			debug assert( finished_ );
+			return pointerList_.upperBound( block.startPtr - 1 ).until!( x => x >= block.endPtr );
+		}
+
+	protected:
+		/// Returns range of MemoryPtr s - pointer in given block
+		/// Works only for blocks allocated by current session
+		auto pointersInSessionBlock( MemoryBlock block ) {
+			assert( block.session == context.session );
+			return context.sessionPointers.upperBound( block.startPtr - 1 ).until!( x => x >= block.endPtr );
 		}
 
 	public:
 		void startSession( ) {
+			debug assert( !finished_ );
 			static __gshared UIDGenerator sessionUIDGen;
 
 			size_t session = sessionUIDGen( );
@@ -239,27 +272,53 @@ final class MemoryManager {
 			context.sessionStack ~= context.session;
 			context.session = session;
 
-			debug synchronized ( this ) {
+			context.sessionPointersStack ~= context.sessionPointers;
+			context.sessionPointers = new RedBlackTree!MemoryPtr;
+
+			debug synchronized ( this )
 				activeSessions_[ session ] = context.jobId;
-			}
 		}
 
 		void endSession( ) {
-			MemoryBlock[ ] freeList;
+			debug assert( !finished_ );
 
-			// TODO: We also have to do reference checking (don't delete blocks references can lead to)
-			synchronized ( blockListMutex_.reader ) {
+			// "GC" cleanup blocks at session end
+			{
+				MemoryBlock[ ] list;
+
 				foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
-					if ( ( block.isLocal || !block.isReferenced ) && !( block.flags & MemoryBlock.Flag.doNotGCAtSessionEnd ) )
-						freeList ~= block;
+					if ( block.isDoNotGCAtSessionEnd )
+						list ~= block;
 				}
+
+				while ( list.length ) {
+					MemoryBlock block = list[ $ - 1 ];
+					list.length--;
+
+					auto pointersInBlock = pointersInSessionBlock( block );
+					assert( ( !block.isLocal && !block.isRuntime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
+
+					foreach ( ptr; pointersInBlock ) {
+						MemoryBlock block2 = ptr.block;
+						if ( block2.isDoNotGCAtSessionEnd )
+							continue;
+
+						block2.markDoNotGCAtSessionEnd;
+						list ~= block2;
+					}
+				}
+
+				// We have to copy blocks to be deleted, because sessionMemoryBlocks shrinks as blocks are freed
+				foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
+					if ( !block.isDoNotGCAtSessionEnd )
+						list ~= block;
+					else
+						assert( !block.isLocal );
+				}
+
+				foreach ( block; list )
+					free( block );
 			}
-
-			// We must do this outside the loop because free also locks blockListMutex_
-			foreach ( block; freeList )
-				free( block );
-
-			context.sessionMemoryBlocks = null;
 
 			debug synchronized ( this ) {
 				debug assert( context.session in activeSessions_, "Invalid session" );
@@ -268,9 +327,15 @@ final class MemoryManager {
 				activeSessions_.remove( context.session );
 			}
 
+			synchronized ( pointerListMutex_.writer )
+				pointerList_.insert( context.sessionPointers[ ] );
+
 			if ( context.sessionStack.length ) {
 				context.session = context.sessionStack[ $ - 1 ];
 				context.sessionStack.length--;
+
+				context.sessionPointers = context.sessionPointersStack[ $ - 1 ];
+				context.sessionPointersStack.length--;
 
 				context.sessionMemoryBlocks = context.sessionMemoryBlockStack[ $ - 1 ];
 				context.sessionMemoryBlockStack.length--;
@@ -311,6 +376,43 @@ final class MemoryManager {
 		/// Disables all further memory manipulations
 		void finish( ) {
 			debug finished_ = true;
+			debug assert( activeSessions_.length == 0 );
+
+			// GC all unreferenced blocks
+			{
+				MemoryBlock[ ] list;
+
+				foreach ( block; mmap_ ) {
+					assert( !block.isLocal, "Local blocks should have been freed already" );
+
+					if ( block.isReferenced )
+						list ~= block;
+				}
+
+				while ( list.length ) {
+					MemoryBlock block = list[ $ - 1 ];
+					list.length--;
+
+					foreach ( ptr; pointersInBlock( block ) ) {
+						MemoryBlock block2 = ptr.readMemoryPtr.block;
+
+						if ( block2.isReferenced )
+							continue;
+
+						block2.markReferenced;
+						list ~= block2;
+					}
+				}
+
+				// Now we use the list as free list
+				foreach ( block; mmap_ ) {
+					if ( !block.isReferenced )
+						list ~= block;
+				}
+
+				foreach ( block; list )
+					sudoFree( block );
+			}
 		}
 
 	public:
@@ -352,6 +454,7 @@ final class MemoryManager {
 		ReadWriteMutex blockListMutex_, pointerListMutex_;
 
 		/// List of addresses that contain pointers
+		/// Data are first stored in context.sessionPointers, to this list, they're added after session end
 		RedBlackTree!MemoryPtr pointerList_;
 
 }
