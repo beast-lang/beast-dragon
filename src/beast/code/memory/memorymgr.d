@@ -245,10 +245,19 @@ final class MemoryManager {
 		}
 
 		void endSession( ) {
-			foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
-				if ( ( block.isLocal || !block.isReferenced ) && !( block.flags & MemoryBlock.Flag.doNotGCAtSessionEnd ) )
-					free( block );
+			MemoryBlock[ ] freeList;
+
+			// TODO: We also have to do reference checking (don't delete blocks references can lead to)
+			synchronized ( blockListMutex_.reader ) {
+				foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
+					if ( ( block.isLocal || !block.isReferenced ) && !( block.flags & MemoryBlock.Flag.doNotGCAtSessionEnd ) )
+						freeList ~= block;
+				}
 			}
+
+			// We must do this outside the loop because free also locks blockListMutex_
+			foreach ( block; freeList )
+				free( block );
 
 			context.sessionMemoryBlocks = null;
 
