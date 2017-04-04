@@ -141,6 +141,9 @@ struct Instruction {
 			case 4:
 				return cast( I )( I._int32 + type );
 
+			case 8:
+				return cast( I )( I._int64 + type );
+
 			default:
 				assert( 0, "No numeric instructions for type of size %s".format( numericSize ) );
 
