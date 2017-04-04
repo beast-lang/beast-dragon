@@ -1,4 +1,4 @@
-module beast.backend.interpreter.op.int_;
+module beast.backend.interpreter.op.int32;
 
 import beast.backend.interpreter.op.toolkit;
 
@@ -46,7 +46,7 @@ pragma( inline ):
 	}
 
 	void op_intCmp32( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
-		int tmp = op1.readPrimitive!int - op2.readPrimitive!int;
+		auto tmp = op1.readPrimitive!int - op2.readPrimitive!int;
 		ir.flagsRegister_setFlag( ir.RFlag.less, tmp < 0 );
 		ir.flagsRegister_setFlag( ir.RFlag.equals, tmp == 0 );
 
