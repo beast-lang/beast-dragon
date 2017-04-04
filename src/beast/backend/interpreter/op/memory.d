@@ -3,6 +3,7 @@ module beast.backend.interpreter.op.memory;
 import beast.backend.interpreter.op.toolkit;
 import beast.code.hwenv.hwenv;
 import std.range : repeat;
+import core.checkedint : addu;
 
 //debug = interpreter;
 

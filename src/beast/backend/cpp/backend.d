@@ -50,9 +50,6 @@ final class Backend_Cpp : Backend {
 				string identifier = CodeBuilder_Cpp.cppIdentifier( block );
 				size_t arraySize = ( block.size + hardwareEnvironment.pointerSize - 1 ) / hardwareEnvironment.pointerSize;
 
-				if( block.isReferenced )
-				code_memory.formattedWrite( "/* REFERENCED */ " );
-
 				code_memorydecl.formattedWrite( "extern uintptr_t %s[%s];\n", identifier, arraySize );
 				code_memory.formattedWrite( "uintptr_t %s[%s] = { ", identifier, arraySize );
 

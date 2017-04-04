@@ -33,3 +33,6 @@ Expects program to output given string to stdout (string is passed as main value
 When there are more stdout directives, the resulting stdout is expected to be concatenation of all of them.
 
 Directives do not take execution or parsing order into consideration - they are parsed in the order they are mentioned in the source file.
+
+## run
+Tells the compiler to run the test after compiling. The test is not run if there is no ```run``` or ```stdout``` directive in the test.

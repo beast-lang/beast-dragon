@@ -27,12 +27,11 @@ final class ModuleManager {
 				if ( auto result = id in moduleList_ )
 					return *result;
 
-				// TODO: std library injection
-
 				// Otherwise try adding it to the project
 				// TODO: Implement searching in include directories
 
-				berror( E.notImplemented, "Lazy including modules not implemented" );
+				berror( E.moduleNotFound, "Module %s not found".format( id.str ) );
+				//berror( E.notImplemented, "Lazy including modules not implemented" );
 				assert( 0 );
 			}
 		}

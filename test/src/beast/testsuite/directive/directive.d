@@ -88,6 +88,7 @@ class TestDirectiveArguments {
 			import beast.testsuite.directive.onlylexing : TestDirective_OnlyLexing;
 			import beast.testsuite.directive.onlyparsing : TestDirective_OnlyParsing;
 			import beast.testsuite.directive.stdout : TestDirective_Stdout;
+			import beast.testsuite.directive.run : TestDirective_Run;
 
 			switch ( name ) {
 
@@ -102,6 +103,9 @@ class TestDirectiveArguments {
 
 			case "stdout":
 				return new TestDirective_Stdout( this );
+
+			case "run":
+				return new TestDirective_Run( this );
 
 			default:
 				assert( 0, "%s:%s:%s: Unknown directive '%s'".format( test.identifier, file, line, name ) );

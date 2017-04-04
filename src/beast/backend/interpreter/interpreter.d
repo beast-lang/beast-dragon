@@ -6,6 +6,7 @@ import std.typecons : Typedef;
 import std.meta : aliasSeqOf;
 import std.range : iota;
 import beast.core.error.guard;
+import std.algorithm.searching : startsWith;
 
 //debug = interpreter;
 
@@ -60,8 +61,12 @@ final class Interpreter {
 				auto result = appender!string;
 				result ~= "final switch( instr.i ) {\n";
 
-				foreach ( instrName; __traits( derivedMembers, Instruction.I ) )
-					result ~= "case Instruction.I.%s: executeInstruction!\"%s\"( instr ); break;\n".format( instrName, instrName );
+				foreach ( instrName; __traits( derivedMembers, Instruction.I ) ) {
+					if ( instrName.startsWith( "_" ) )
+						result ~= "case Instruction.I.%s: assert( 0, \"Invalid instruction: %s\" );\n".format( instrName, instrName );
+					else
+						result ~= "case Instruction.I.%s: executeInstruction!\"%s\"( instr ); break;\n".format( instrName, instrName );
+				}
 
 				result ~= "}";
 				return result.data;

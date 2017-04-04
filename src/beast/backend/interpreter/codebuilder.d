@@ -54,6 +54,56 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			operandResult_ = block.isLocal ? block.relatedDataEntity.asLocalVariable_interpreterBpOffset.iopBpOffset : pointer.iopPtr;
 		}
 
+		override void build_offset( ExprFunction expr, size_t offset ) {
+			expr( this );
+			final switch ( operandResult_.type ) {
+
+			case InstructionOperand.Type.directData:
+			case InstructionOperand.Type.functionPtr:
+			case InstructionOperand.Type.jumpTarget:
+			case InstructionOperand.Type.placeholder:
+			case InstructionOperand.Type.unused:
+				assert( 0, "Cannot offset operand %s".format( operandResult_.identificationString ) );
+
+			case InstructionOperand.Type.heapRef:
+				operandResult_.heapLocation.val += offset;
+				break;
+
+			case InstructionOperand.Type.stackRef: {
+					// Stack offset is not simple either - because it is var based, not memory based, we cannot simply increment it
+					auto varOperand = currentBPOffset_.iopBpOffset;
+					auto ptrSize = hardwareEnvironment.pointerSize;
+
+					addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, ptrSize.iopLiteral );
+					addInstruction( I.stAddr, varOperand, operandResult_ );
+					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
+
+					operandResult_.type = InstructionOperand.Type.refStackRef;
+					operandResult_.basePointerOffset = currentBPOffset_;
+
+					currentBPOffset_++;
+				}
+				break;
+
+			case InstructionOperand.Type.refHeapRef:
+			case InstructionOperand.Type.refStackRef: {
+					auto varOperand = currentBPOffset_.iopBpOffset;
+					auto ptrSize = hardwareEnvironment.pointerSize;
+
+					addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, ptrSize.iopLiteral );
+					addInstruction( I.mov, varOperand, operandResult_, ptrSize.iopLiteral );
+					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
+
+					operandResult_.type = InstructionOperand.Type.refStackRef;
+					operandResult_.basePointerOffset = currentBPOffset_;
+
+					currentBPOffset_++;
+				}
+				break;
+
+			}
+		}
+
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			/*
 				Call convention:
@@ -98,6 +148,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			}
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
+				assert( parentInstance );
 				parentInstance.buildCode( this );
 			}
 			else {
@@ -109,6 +160,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			popScope( );
 			operandResult_ = operandResult;
+		}
+
+		override void build_contextPtr( ) {
+			operandResult_ = ( -1 ).iopBpOffset;
 		}
 
 		mixin Build_PrimitiveOperationImpl!( "interpreter", "operandResult_" );

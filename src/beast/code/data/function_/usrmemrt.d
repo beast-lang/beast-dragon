@@ -1,27 +1,27 @@
-/// USeR StaTiC RunTime
-module beast.code.data.function_.usrstcrt;
+/// USeR MEMber RunTime
+module beast.code.data.function_.usrmemrt;
 
 import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.function_;
 import beast.code.decorationlist;
 import beast.code.ast.decl.env;
 
-final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
+final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
 	mixin TaskGuard!"parameterExpanding";
 
 	public:
 		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
-			staticData_ = new Data( this, MatchLevel.fullMatch );
+			staticData_ = new Data( this, MatchLevel.fullMatch, null );
 
 			ast_ = ast;
 			decorationList_ = decorationList;
-			parent_ = data.env.staticMembersParent;
+			parent_ = data.env.parentType;
 
 			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
 			taskManager.delayedIssueJob( { enforceDone_parameterExpanding( ); } );
 
-			decorationList_.enforceAllResolved(); // TODO: move somewhere else eventually
+			decorationList_.enforceAllResolved( ); // TODO: move somewhere else eventually
 		}
 
 		override Identifier identifier( ) {
@@ -43,13 +43,13 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 		override DeclType declarationType( ) {
-			return DeclType.staticFunction;
+			return DeclType.memberFunction;
 		}
 
 	public:
 		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
-			if ( matchLevel != MatchLevel.fullMatch )
-				return new Data( this, matchLevel );
+			if ( matchLevel != MatchLevel.fullMatch || parentInstance )
+				return new Data( this, matchLevel, parentInstance );
 			else
 				return staticData_;
 		}
@@ -57,9 +57,13 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
 			with ( memoryManager.session ) {
+				auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_, cb.isCtime );
+
 				auto _gd = ErrorGuard( codeLocation );
-				auto _s = new RootDataScope( staticData_ );
+				auto _s = new RootDataScope( thisPtr );
 				auto _sgd = _s.scopeGuard;
+
+				_s.addEntity( thisPtr );
 
 				cb.build_functionDefinition( this, ( cb ) { //
 					foreach ( param; parameters ) {
@@ -68,7 +72,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 					}
 
 					scope env = DeclarationEnvironment.newFunctionBody( );
-					env.staticMembersParent = parent_;
+					env.staticMembersParent = parent_.dataEntity;
 					env.staticMemberMerger = staticMemberMerger;
 
 					if ( !ast_.returnType.isAutoExpression )
@@ -101,7 +105,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		AST_FunctionDeclaration ast_;
 		DecorationList decorationList_;
 		Data staticData_;
-		DataEntity parent_;
+		Symbol_Type parent_;
 
 	protected:
 		final void execute_returnTypeDeduction( ) {
@@ -109,12 +113,12 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			if ( ast_.returnType.isAutoExpression )
 				enforceDone_codeProcessing( );
 			else
-				returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreLibrary.type.Type, parent_ ).readType( );
+				returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreLibrary.type.Type, parent_.dataEntity ).readType( );
 		}
 
 		final void execute_parameterExpanding( ) {
 			with ( memoryManager.session ) {
-				auto _s = new RootDataScope( parent_ );
+				auto _s = new RootDataScope( parent_.dataEntity );
 				auto _sgd = _s.scopeGuard;
 
 				foreach ( i, expr; ast_.parameterList.items )
@@ -129,20 +133,31 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		final class Data : super.Data {
 
 			public:
-				this( Symbol_UserStaticRuntimeFunction sym, MatchLevel matchLevel ) {
+				this( Symbol_UserMemberRuntimeFunction sym, MatchLevel matchLevel, DataEntity parentInstance ) {
 					assert( this.outer );
 					super( sym, matchLevel | MatchLevel.staticCall );
 
 					sym_ = sym;
+					parentInstance_ = parentInstance;
 				}
 
 			public:
 				override DataEntity parent( ) {
-					return sym_.parent_;
+					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
+				}
+
+				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+					if ( parentInstance_ )
+						return new Match( sym_, this, parentInstance_, ast, canThrowErrors, matchLevel | this.matchLevel );
+					else {
+						benforce( !canThrowErrors, E.needThis, "Need this for %s".format( this.tryGetIdentificationString ) );
+						return new InvalidCallableMatch( this, "need this" );
+					}
 				}
 
 			private:
-				Symbol_UserStaticRuntimeFunction sym_;
+				Symbol_UserMemberRuntimeFunction sym_;
+				DataEntity parentInstance_;
 
 		}
 

@@ -1,4 +1,4 @@
-module beast.code.data.var.userlocal;
+module beast.code.data.var.usrlcl;
 
 import beast.code.data.toolkit;
 import beast.code.data.var.local;
@@ -44,7 +44,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 		this( Identifier id, Symbol_Type dataType, DecorationList decorationList, VariableDeclarationData data ) {
 			identifier_ = id;
 			
-			benforce( dataType.instanceSize > 0, E.zeroSizeVariable, "Variable '%s' type '%s' has zero size".format( identifier_.str, dataType.identificationString ) );
+			benforce( dataType.instanceSize > 0, E.zeroSizeVariable, "Variable %s of type %s has zero size".format( identifier_.str, dataType.identificationString ) );
 
 			super( dataType, data.isCtime );
 

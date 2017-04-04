@@ -6,12 +6,13 @@ import beast.code.ast.identifier;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.expr.auto_;
+import beast.code.ast.decl.class_;
 
 abstract class AST_Declaration : AST_Statement {
 
 	public:
 		static bool canParse( ) {
-			return AST_DecorationList.canParse || AST_UnaryExpression.canParse;
+			return AST_DecorationList.canParse || AST_UnaryExpression.canParse || AST_Class.canParse;
 		}
 
 		static AST_Declaration parse( AST_DecorationList parentDecorationList ) {
@@ -28,6 +29,9 @@ abstract class AST_Declaration : AST_Statement {
 		}
 
 		static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList ) {
+			if ( AST_Class.canParse )
+				return AST_Class.parse( );
+				
 			/// Type of variable or return type of a function
 			AST_Expression type = AST_UnaryExpression.parse( );
 

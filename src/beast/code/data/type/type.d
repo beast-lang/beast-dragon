@@ -43,7 +43,7 @@ abstract class Symbol_Type : Symbol {
 					} ), //
 					true );
 
-			if ( !isReferenceType && instanceSize ) {
+			if ( !isReferenceType ) {
 				auto refType = coreLibrary.type.Reference.referenceTypeOf( this );
 				// Implicit cast to reference type
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, refType, //

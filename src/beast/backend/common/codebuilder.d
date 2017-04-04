@@ -39,11 +39,21 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
+		/// Builds access to a memory described by expr but offsetted with offset
+		void build_offset( ExprFunction expr, size_t offset ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
 		void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
 		void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
+		/// Builds access to context ptr
+		void build_contextPtr( ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 

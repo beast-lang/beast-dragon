@@ -37,6 +37,8 @@ struct Instruction {
 			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
 			zero, /// (target: ptr, bytes: dd) Zeroes given memory
 			stAddr, /// (target: ptr, source: ptr) Stores address of source into the target
+
+			// Pointers
 			markPtr, /// (target: ptr) Mark given address as pointer
 			unmarkPtr, /// (target: ptr) Unmark given address as pointer
 
@@ -49,11 +51,23 @@ struct Instruction {
 			boolNot, /// (target: ptr, source: ptr) Boolean not operation)
 
 			// INT32
+			_int32,
 			intAdd32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 + op2
+			intAddConst32, /// (target: ptr, op1: ptr, op2: dd) target <= op1 + op2
 			intSub32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 - op2
 			intMult32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 * op2
 			intDiv32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 / op2
 			intCmp32, /// (op1: ptr, op2: ptr) Compares two integers and stores the result into INTERNAL FLAGS (use cmpXX instructions)
+		}
+
+		enum NumI {
+			_none,
+			add,
+			addConst,
+			sub,
+			mult,
+			div,
+			cmp
 		}
 
 	public:
@@ -109,6 +123,19 @@ struct Instruction {
 			}
 
 			return "%s%s".format( enumAssocInvert!I[ i ], ops );
+		}
+
+	public:
+		static I numericI( size_t numericSize, NumI type ) {
+			switch ( numericSize ) {
+
+			case 4:
+				return cast( I )( I._int32 + type );
+
+			default:
+				assert( 0, "No numeric instructions for type of size %s".format( numericSize ) );
+
+			}
 		}
 
 }

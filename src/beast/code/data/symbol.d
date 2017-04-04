@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 import beast.util.identifiable;
 import beast.core.project.codelocation;
 import beast.util.hash;
+import beast.code.data.var.mem;
 
 /// Declaration of something (not really explaining, I know)
 abstract class Symbol : Identifiable {
@@ -39,7 +40,7 @@ abstract class Symbol : Identifiable {
 			return dataEntity.identificationString_noPrefix;
 		}
 
-		final string identification() {
+		final string identification( ) {
 			return dataEntity.identification;
 		}
 
@@ -60,6 +61,11 @@ abstract class Symbol : Identifiable {
 
 		Overloadset overloadset( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
 			return dataEntity( matchLevel, parentInstance ).Overloadset;
+		}
+
+	public:
+		Symbol_MemberVariable isMemberVariable( ) {
+			return null;
 		}
 
 	protected:
@@ -90,7 +96,7 @@ abstract class SymbolRelatedDataEntity : DataEntity {
 			return symbol_.identifier;
 		}
 
-		final override Symbol symbol() {
+		final override Symbol symbol( ) {
 			return symbol_;
 		}
 

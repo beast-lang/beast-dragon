@@ -3,9 +3,10 @@ module beast.code.ast.decl.variable;
 import beast.code.ast.decl.toolkit;
 import beast.code.ast.identifier;
 import beast.code.data.scope_.root;
-import beast.code.data.var.userstatic;
-import beast.code.data.var.userlocal;
+import beast.code.data.var.usrstc;
+import beast.code.data.var.usrlcl;
 import beast.backend.ctime.codebuilder;
+import beast.code.data.var.usrmem;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -51,8 +52,12 @@ final class AST_VariableDeclaration : AST_Declaration {
 				// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
 				sink( new Symbol_UserStaticVariable( this, decorationList, declData ) );
 			}
-			else
-				berror( E.notImplemented, "Not implemented" );
+			else {
+				benforce( env.parentType !is null, E.memVarOutsideClass, "Cannot declare nonstatic variables outside classes" );
+				benforce( env.parentType.declarationType == Symbol.DeclType.staticClass || env.parentType.declarationType == Symbol.DeclType.memberClass, E.memVarOutsideClass, "Cannot declare nonstatic variables outside classes" );
+
+				sink( new Symbol_UserMemberVariable( this, decorationList, declData ) );
+			}
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
@@ -79,6 +84,8 @@ final class AST_VariableDeclaration : AST_Declaration {
 				}
 			}
 			else {
+				assert( !env.parentType );
+
 				DataEntity valueEntity;
 				DataEntity_UserLocalVariable var;
 
@@ -91,7 +98,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				else {
 					var = new DataEntity_UserLocalVariable( this, decorations, declData );
 
-					if( value )
+					if ( value )
 						valueEntity = value.buildSemanticTree_singleInfer( var.dataType );
 				}
 
@@ -129,7 +136,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				match.arg( valueEntity );
 			}
 
-			match.finish().buildCode( cb );
+			match.finish( ).buildCode( cb );
 		}
 
 		pragma( inline ) void buildConstructor( DataEntity entity, CodeBuilder cb ) {

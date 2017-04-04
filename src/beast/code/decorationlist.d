@@ -6,6 +6,7 @@ import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.decoration;
 import beast.code.data.decorator.decorator;
+import beast.code.ast.decl.class_;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
 final class DecorationList {
@@ -45,6 +46,11 @@ final class DecorationList {
 		/// Applies all possible decorations in the functionDeclarationModifier context and removes them from the list
 		void apply_functionDeclarationModifier( FunctionDeclarationData var ) {
 			standardDecoratorProcedure!"functionDeclarationModifier"( coreLibrary.module_.dataEntity, var );
+		}
+
+		/// Applies all possible decorations in the classDeclarationModifier context and removes them from the list
+		void apply_classDeclarationModifier( ClassDeclarationData var ) {
+			standardDecoratorProcedure!"classDeclarationModifier"( coreLibrary.module_.dataEntity, var );
 		}
 
 		Symbol_Type apply_typeWrapper( Symbol_Type originalType ) {

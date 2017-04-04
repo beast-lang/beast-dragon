@@ -89,7 +89,7 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				this( Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
-					super( sym, sourceEntity, ast, canThrowErrors, matchLevel );
+					super( sym, sourceEntity, null, ast, canThrowErrors, matchLevel );
 
 					sym_ = sym;
 				}

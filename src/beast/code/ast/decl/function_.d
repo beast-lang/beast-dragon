@@ -6,6 +6,7 @@ import beast.code.ast.expr.parentcomma;
 import beast.code.ast.stmt.codeblock;
 import beast.code.data.scope_.root;
 import beast.code.data.function_.usrstcrt;
+import beast.code.data.function_.usrmemrt;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -31,7 +32,7 @@ final class AST_FunctionDeclaration : AST_Declaration {
 	public:
 		override void executeDeclarations( DeclarationEnvironment env, void delegate( Symbol ) sink ) {
 			const auto __gd = ErrorGuard( codeLocation );
-			
+
 			FunctionDeclarationData declData = new FunctionDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
 
@@ -42,8 +43,10 @@ final class AST_FunctionDeclaration : AST_Declaration {
 
 			if ( declData.isStatic && !declData.isCtime && isRuntime )
 				sink( new Symbol_UserStaticRuntimeFunction( this, decorations, declData ) );
+			else if ( !declData.isStatic && !declData.isCtime && isRuntime )
+				sink( new Symbol_UserMemberRuntimeFunction( this, decorations, declData ) );
 			else
-				berror( E.notImplemented, "Not implemented" );
+				berror( E.notImplemented, "Non-static, ctime or 'templated' functions are not implemented yet" );
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {

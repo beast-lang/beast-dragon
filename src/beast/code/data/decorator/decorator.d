@@ -3,6 +3,7 @@ module beast.code.data.decorator.decorator;
 import beast.code.data.toolkit;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
+import beast.code.ast.decl.class_;
 
 /// Base class for all decorator types
 abstract class Symbol_Decorator : Symbol {
@@ -34,6 +35,11 @@ abstract class Symbol_Decorator : Symbol {
 
 		/// Tries to apply in the functionDeclarationModifier context. Returns true if successful
 		bool apply_functionDeclarationModifier( FunctionDeclarationData data ) {
+			return false;
+		}
+
+		/// Tries to apply in the classDeclarationModifier context. Returns true if successful
+		bool apply_classDeclarationModifier( ClassDeclarationData data ) {
 			return false;
 		}
 

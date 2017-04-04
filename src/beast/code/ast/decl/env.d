@@ -21,12 +21,22 @@ final class DeclarationEnvironment {
 			return result;
 		}
 
+		static DeclarationEnvironment newClass( ) {
+			DeclarationEnvironment result = new DeclarationEnvironment;
+			result.isStatic = false;
+			return result;
+		}
+
 	public:
 		bool isStatic = true;
 		bool isCtime = false;
 
 	public:
 		Symbol_Type parentType;
+
+		/// Delegate that is used when declaring class members
+		/// Points to parent class function that enforces that members have correct parent offset (bytes from this) value set
+		void delegate() enforceDone_memberOffsetObtaining;
 
 		/// Parent for static members
 		DataEntity staticMembersParent;

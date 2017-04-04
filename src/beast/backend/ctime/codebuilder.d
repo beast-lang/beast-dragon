@@ -47,6 +47,11 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			result_ = pointer;
 		}
 
+		override void build_offset( ExprFunction expr, size_t offset ) {
+			expr( this );
+			result_.val += offset;
+		}
+
 	public:
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			// We execute the runtime function using the interpreter
@@ -64,7 +69,8 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			pushScope( );
 
 			MemoryPtr ctx;
-			if ( parentInstance ) {
+			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
+				assert( parentInstance );
 				parentInstance.buildCode( this );
 				ctx = result_;
 			}

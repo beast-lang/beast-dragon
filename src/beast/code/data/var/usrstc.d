@@ -1,4 +1,4 @@
-module beast.code.data.var.userstatic;
+module beast.code.data.var.usrstc;
 
 import beast.code.data.toolkit;
 import beast.code.data.var.static_;

@@ -12,6 +12,8 @@ abstract class Namespace : Identifiable {
 
 	public:
 		Symbol[ ] members( ) {
+			debug assert( initialized_ );
+			
 			return members_;
 		}
 

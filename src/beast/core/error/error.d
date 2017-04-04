@@ -39,6 +39,7 @@ enum E {
 	moduleNameConflict, /// Two modules with same name
 	moduleNameMismatch, /// Expected module name does not match with the actual one (in module statement in the beginning of the file)
 	noModulesInSourceDirectory, /// This is a warning, occurs when there's a source directory with no modules in it
+	moduleNotFound,
 
 	// DECORATORS:
 	decoratorConflict, /// Two decorators are incompatible with each other
@@ -74,6 +75,7 @@ enum E {
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)
 	missingInitValue, /// When auto x;
+	memVarOutsideClass,
 
 	// TYPES:
 	referenceOfReference, /// Tried to create reference of reference

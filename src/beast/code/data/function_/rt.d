@@ -110,7 +110,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			public:
 				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
-					return new Match( sym_, this, ast, canThrowErrors, this.matchLevel | matchLevel );
+					return new Match( sym_, this, null, ast, canThrowErrors, this.matchLevel | matchLevel );
 				}
 
 			protected:
@@ -129,9 +129,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		static class Match : SeriousCallableMatch {
 
 			public:
-				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
+				this( Symbol_RuntimeFunction sym, DataEntity sourceEntity, DataEntity parentInstance, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
 					super( sourceEntity, ast, canThrowErrors, matchLevel );
 					sym_ = sym;
+					sourceEntity_ = sourceEntity;
+					parentInstance_ = parentInstance;
 				}
 
 			protected:
@@ -172,9 +174,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return new MatchData( sym_, this );
 				}
 
-			private:
+			protected:
 				Symbol_RuntimeFunction sym_;
 				DataEntity[ ] arguments_;
+				DataEntity sourceEntity_, parentInstance_;
 
 		}
 
@@ -186,10 +189,11 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					arguments_ = match.arguments_;
 					ast_ = match.ast;
 					sym_ = sym;
+					parentInstance_ = match.parentInstance_;
 				}
 
 			public:
-				override Symbol_Type dataType( ) {
+				final override Symbol_Type dataType( ) {
 					return sym_.returnType;
 				}
 
@@ -202,31 +206,30 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return "%s( ... )( %s )".format( sym_.baseIdentifier, arguments_.map!( x => x.tryGetIdentificationString ).joiner( ", " ).to!string );
 				}*/
 
-				override string identificationString( ) {
+				final override string identificationString( ) {
 					//return "%s %s".format( sym_.returnType.tryGetIdentificationString, super.identificationString );
 					return "%s (expression)".format( sym_.returnType.tryGetIdentificationString );
 				}
 
-				override DataEntity parent( ) {
+				final override DataEntity parent( ) {
 					return sym_.dataEntity.parent;
 				}
 
-				override AST_Node ast( ) {
+				final override AST_Node ast( ) {
 					return ast_;
 				}
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
 					const auto _gd = ErrorGuard( codeLocation );
-
-					cb.build_functionCall( sym_, null, arguments_ );
+					cb.build_functionCall( sym_, parentInstance_, arguments_ );
 				}
 
 			protected:
 				DataEntity[ ] arguments_;
+				DataEntity parentInstance_;
 				AST_Node ast_;
 				Symbol_RuntimeFunction sym_;
-
 		}
 
 }

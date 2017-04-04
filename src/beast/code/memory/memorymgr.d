@@ -30,11 +30,13 @@ final class MemoryManager {
 			debug assert( !finished_ );
 			assert( bytes, "Trying to allocate 0 bytes" );
 
-			// We round the bytes to pointerSize so all the data is aligned
-			bytes = ( bytes + hardwareEnvironment.pointerSize - 1 ) / hardwareEnvironment.pointerSize * hardwareEnvironment.pointerSize;
-			assert( bytes % hardwareEnvironment.pointerSize == 0 );
+			auto ptrSize = hardwareEnvironment.pointerSize;
 
-			MemoryPtr endPtr = MemoryPtr( hardwareEnvironment.pointerSize /* != 0 to prevent allocating on a null pointer, pointerSize so it is aligned */  );
+			// We round the bytes to pointerSize so all the data is aligned
+			bytes += ( ptrSize - bytes % ptrSize ) % ptrSize;
+			assert( bytes % ptrSize == 0 );
+
+			MemoryPtr endPtr = MemoryPtr( ptrSize /* != 0 to prevent allocating on a null pointer, pointerSize so it is aligned */  );
 			MemoryBlock result;
 
 			synchronized ( blockListMutex_.writer ) {

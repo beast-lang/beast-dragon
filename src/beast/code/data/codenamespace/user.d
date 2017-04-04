@@ -20,6 +20,11 @@ final class UserNamespace : Namespace {
 		}
 
 	public:
+		override Symbol[ ] members( ) {
+			enforceDone_membersObtaining();
+			return super.members;
+		}
+
 		override Overloadset resolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			enforceDone_membersObtaining( );
 			return super.resolveIdentifier( id, instance, matchLevel );

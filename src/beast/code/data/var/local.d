@@ -10,6 +10,7 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			super( MatchLevel.fullMatch );
 
 			assert( dataType.instanceSize != 0, "DataType %s instanceSize 0".format( dataType.identificationString ) );
+			assert( currentScope, "Initializing local variable outside scope" );
 
 			dataType_ = dataType;
 			isCtime_ = isCtime;

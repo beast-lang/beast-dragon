@@ -200,9 +200,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
-					super( sym, sourceEntity, ast, canThrowErrors, matchLevel );
-
-					parentInstance_ = sourceEntity.parentInstance_;
+					super( sym, sourceEntity, sourceEntity.parentInstance_, ast, canThrowErrors, matchLevel );
 					sym_ = sym;
 				}
 
@@ -212,7 +210,6 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 			private:
-				DataEntity parentInstance_;
 				Symbol_PrimitiveMemberRuntimeFunction sym_;
 
 		}
@@ -223,7 +220,6 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, Match match ) {
 					super( sym, match );
 
-					parentInstance_ = match.parentInstance_;
 					sym_ = sym;
 				}
 
@@ -235,7 +231,6 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 			private:
-				DataEntity parentInstance_;
 				Symbol_PrimitiveMemberRuntimeFunction sym_;
 
 		}

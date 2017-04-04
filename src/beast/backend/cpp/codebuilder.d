@@ -7,6 +7,7 @@ import beast.code.data.scope_.local;
 import beast.code.data.var.result;
 import beast.core.error.error;
 import beast.code.lex.identifier;
+import std.algorithm.searching : startsWith;
 
 // TODO: Asynchronous proxy definition handler
 
@@ -113,6 +114,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 				resultVarName_ = "CTMEM " ~ resultVarName_;
 		}
 
+		override void build_offset( ExprFunction expr, size_t offset ) {
+			expr( this );
+			resultVarName_ = "%s( ( ( uint8_t* ) %s ) + %s )".format( resultVarName_.startsWith( "CTMEM " ) ? "CTMEM " : null, resultVarName_, offset );
+		}
+
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
 			//codeResult_.formattedWrite( "%s// Function %s call\n", tabs, function_.tryGetIdentificationString );
 
@@ -163,6 +169,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
 			resultVarName_ = resultVarName;
+		}
+
+		override void build_contextPtr( ) {
+			resultVarName_ = "context";
 		}
 
 		mixin Build_PrimitiveOperationImpl!( "cpp", "resultVarName_" );
@@ -304,9 +314,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.flag( MemoryBlock.Flag.result ) )
 				return "result";
 
-			else if ( block.flag( MemoryBlock.Flag.contextPtr ) )
-				return "context";
-
 			else if ( block.identifier )
 				return "%s_%#x_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
 
@@ -331,7 +338,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.startPtr == ptr )
 				return cppIdentifier( block, true );
 			else
-				return "( ( ( uint8_t* ) %s ) + %s )".format( cppIdentifier( block, true ), ptr - block.startPtr );
+				return "%s( ( ( uint8_t* ) %s ) + %s )".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ), ptr - block.startPtr );
 		}
 
 	public:
