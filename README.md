@@ -51,7 +51,7 @@ class C {
   Int! x; // Int! == mutable Int
 
 @public:
-  Int #operator( Operator.binaryPlus, Int other ) { // Operator overloading, constant-value parameters
+  Int #opBinary( Operator.binaryPlus, Int other ) { // Operator overloading, constant-value parameters
     return x + other;
   }
 
@@ -79,6 +79,9 @@ Void main() {
   stdout.writeln( s );
 
   stdout.writeln( c + x ); // Writes 8
-  stdout.writeln( c.#operator.#parameters[1].type.#identifier ); // Compile-time language reflection
+  stdout.writeln( c.#opBinary.#parameters[1].type.#identifier ); // Compile-time language reflection
 }
 ```
+
+# News
+__04.04.2017__: We have classes now! Constructors are not generated automatically, so you have to do ```Void #ctor() { mem1.#ctor(); mem2.#ctor(); }```

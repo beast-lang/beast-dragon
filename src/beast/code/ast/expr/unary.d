@@ -80,16 +80,16 @@ final class AST_UnaryExpression : AST_Expression {
 
 					// PREFIX OPERATORS
 				case Operator.preNot:
-					result = result.expectResolveIdentifier( ID!"#operator" ).resolveCall( this, true, coreLibrary.enum_.operator.preNot );
+					result = result.expectResolveIdentifier( ID!"#opUnary" ).resolveCall( this, true, coreLibrary.enum_.operator.preNot );
 					break;
 
 					// SUFFIX OPERATORS
 				case Operator.questionMark:
-					result = result.expectResolveIdentifier( ID!"#operator" ).resolveCall( this, true, coreLibrary.enum_.operator.suffRef );
+					result = result.expectResolveIdentifier( ID!"#opUnary" ).resolveCall( this, true, coreLibrary.enum_.operator.suffRef );
 					break;
 
 				case Operator.suffNot:
-					result = result.expectResolveIdentifier( ID!"#operator" ).resolveCall( this, true, coreLibrary.enum_.operator.suffNot );
+					result = result.expectResolveIdentifier( ID!"#opUnary" ).resolveCall( this, true, coreLibrary.enum_.operator.suffNot );
 					break;
 
 				}

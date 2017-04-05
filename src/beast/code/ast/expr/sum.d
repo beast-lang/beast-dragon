@@ -58,7 +58,6 @@ final class AST_SumExpression : AST_Expression {
 				return Overloadset( );
 
 			DataEntity opArg;
-			DataEntity opArgR;
 
 			auto opr = &coreLibrary.enum_.operator;
 
@@ -67,12 +66,10 @@ final class AST_SumExpression : AST_Expression {
 
 				case Token.Operator.plus:
 					opArg = opr.binPlus.dataEntity;
-					opArgR = opr.binPlusR.dataEntity;
 					break;
 
 				case Token.Operator.minus:
 					opArg = opr.binMinus.dataEntity;
-					opArgR = opr.binMinusR.dataEntity;
 					break;
 
 				default:
@@ -80,7 +77,7 @@ final class AST_SumExpression : AST_Expression {
 
 				}
 
-				result = resolveBinaryOperation( this, result, item.expr, opArg, opArgR, item.op );
+				result = resolveBinaryOperation( this, result, item.expr, opArg, item.op );
 			}
 
 			return result.Overloadset;

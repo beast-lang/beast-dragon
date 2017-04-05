@@ -20,12 +20,12 @@ struct CallMatchSet {
 				if ( overload.isCallable )
 					matches ~= overload.startCallMatch( ast, reportErrors && ( overloadset.length == 1 ), matchLevel );
 
-				// If the overload is not callable, we try to overload against overload.#operator( Operator.call, XXX )
+				// If the overload is not callable, we try to overload against overload.#opCall( XXX )
 				else {
-					auto suboverloadset = overload.tryResolveIdentifier( Identifier.preobtained!"#operator" );
+					auto suboverloadset = overload.tryResolveIdentifier( Identifier.preobtained!"#opCall" );
 					foreach ( suboverload; suboverloadset ) {
 						if ( suboverload.isCallable )
-							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel ).matchNextArgument( coreLibrary.enum_.operator.funcCall.dataEntity );
+							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel );
 					}
 				}
 			}
@@ -123,8 +123,8 @@ struct CallMatchSet {
 			}
 
 			// Report errors do not apply on amiguous resolution (that would screw up things)
-			// Report errors = false is used when trying binary operations and their reverse versions -> a.#operator( binXX, b ), then b.#operator( binXXR, a )
-			// If reportErrors would hide ambiguous resolution, then ambiguous resolution would cause trying the binXXR variant, which is not a correct behavior
+			// Report errors = false is used when trying binary operations and their reverse versions -> a.#opBinary( binXX, b ), then b.#opBinaryR( binXX, a )
+			// If reportErrors would hide ambiguous resolution, then ambiguous resolution would cause trying the opBinaryR variant, which is not a correct behavior
 			benforce( bestMatchCount == 1, E.ambiguousResolution, //
 					"Ambiguous overload resolution for arguments %s:%s".format(  //
 						argumentListIdentificationString, //

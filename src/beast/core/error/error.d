@@ -70,7 +70,7 @@ enum E {
 	ambiguousResolution, /// Multiple overloads match given parameters
 	unknownIdentifier, /// Identifier was not found (either recursively or not)
 	cannotInfer, /// No expected type was given where it was needed (mostly inferations)
-	cannotResolve, /// Something like noMatchingOverload, but this is reported when multiple approaches to resolution are possible - for example operator resolution (a && b => a.#operator( Operator.or, b ) or b.#operator( Operator.orRight, a ) )
+	cannotResolve, /// Something like noMatchingOverload, but this is reported when multiple approaches to resolution are possible - for example operator resolution (a && b => a.#opBinary( Operator.or, b ) or b.#opBinaryR( Operator.or, a ) )
 
 	// VARIABLES:
 	zeroSizeVariable, /// Trying to declare a variable of type void (warning)

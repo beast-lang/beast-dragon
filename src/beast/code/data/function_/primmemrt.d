@@ -94,7 +94,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns assign operator that does a bit copy
 		static Symbol newPrimitiveAssignOp( Symbol_Type tp ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, coreLibrary.type.Void, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", tp, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.assign, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is Operator.assign!
@@ -104,7 +104,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp tmp; tp <= inst operation arg1 }
 		static Symbol newPrimitiveBinaryOp( Symbol_Type tp, Symbol_BootstrapConstant operator, BackendPrimitiveOperation operation ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, tp, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, tp, //
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
@@ -119,7 +119,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp2 tmp; tp <= inst operation arg1 }
 		static Symbol newPrimitiveBinaryOp( Symbol_Type tp, Symbol_Type returnType, Symbol_BootstrapConstant operator, BackendPrimitiveOperation operation ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, returnType, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, returnType, //
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
@@ -134,7 +134,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns binary operator symbols that represent bit comparison (==, !=)
 		static Symbol[ ] newPrimitiveEqNeqOp( Symbol_Type tp ) {
-			return [ new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, coreType.Bool, //
+			return [ new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
 					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binEq, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
@@ -145,7 +145,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 						// Store var into result operand
 						var.buildCode( cb );
 					} ), //
-				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp, coreType.Bool, //
+				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
 						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binNeq, tp ), //
 						( cb, inst, args ) { //
 							// 0th arg is operator

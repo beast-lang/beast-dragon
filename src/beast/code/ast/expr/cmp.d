@@ -4,7 +4,6 @@ import beast.code.ast.toolkit;
 import beast.code.ast.expr.sum;
 import beast.code.ast.expr.binary;
 import std.range : chain;
-import std.typecons : Tuple, tuple;
 import beast.code.data.var.btspconst;
 import beast.code.data.symbol;
 import beast.code.data.matchlevel;
@@ -37,7 +36,7 @@ final class AST_CmpExpression : AST_Expression {
 				groups &= cmpOperatorGroups( item.op );
 				benforce( groups != 0 || result.items.length == 0, E.invalidOpCombination, //
 						"Cannot combine comparison operators %s".format( chain( result.items.map!( x => x.op ), [ item.op ] ).map!( x => "'%s'".format( Token.operatorStr[ cast( int ) x ] ) ).joiner( ", " ) ), //
-						( err ) { err.codeLocation = _gd.get(); } );
+						( err ) { err.codeLocation = _gd.get( ); } );
 
 				getNextToken( );
 				item.expr = LowerLevelExpression.parse( );
@@ -75,20 +74,17 @@ final class AST_CmpExpression : AST_Expression {
 				return Overloadset( );
 
 			auto binAnd = coreLibrary.enum_.operator.binAnd.dataEntity;
-			auto binAndR = coreLibrary.enum_.operator.binAndR.dataEntity;
 			auto opAssign = coreLibrary.enum_.xxctor.opAssign.dataEntity;
 
 			foreach ( item; items ) {
-				auto opArgs = cmpOperatorEnumConsts( item.op );
-
 				ProcessedItem pitem;
 				pitem.operand = item.expr.buildSemanticTree_single( );
 				pitem.operandCtor = pitem.operand.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( item.expr, true, MatchLevel.fullMatch ).arg( opAssign ).arg( pitem.operand ).finish_getMatch( ).sourceDataEntity.symbol;
-				pitem.cmpFunction = prepareResolveBinaryOperation( item.expr, leftOperand, pitem.operand, opArgs[ 0 ].dataEntity, opArgs[ 1 ].dataEntity, item.op );
+				pitem.cmpFunction = prepareResolveBinaryOperation( item.expr, leftOperand, pitem.operand, cmpOperatorEnumConst( item.op ).dataEntity, item.op );
 
 				DataEntity tmpCmpFunction = pitem.cmpFunction( leftOperand, pitem.operand );
 				if ( result ) {
-					pitem.andFunction = prepareResolveBinaryOperation( item.expr, result, tmpCmpFunction, binAnd, binAndR, Token.Operator.logAnd );
+					pitem.andFunction = prepareResolveBinaryOperation( item.expr, result, tmpCmpFunction, binAnd, Token.Operator.logAnd );
 					result = pitem.andFunction( result, tmpCmpFunction );
 					pitem.dataType = result.dataType;
 				}
@@ -137,26 +133,26 @@ final class AST_CmpExpression : AST_Expression {
 			}
 		}
 
-		pragma( inline ) static Tuple!( Symbol_BootstrapConstant, Symbol_BootstrapConstant ) cmpOperatorEnumConsts( Token.Operator op ) {
+		pragma( inline ) static Symbol_BootstrapConstant cmpOperatorEnumConst( Token.Operator op ) {
 			switch ( op ) {
 
 			case Token.Operator.equals:
-				return tuple( coreLibrary.enum_.operator.binEq, coreLibrary.enum_.operator.binEqR );
+				return coreLibrary.enum_.operator.binEq;
 
 			case Token.Operator.notEquals:
-				return tuple( coreLibrary.enum_.operator.binNeq, coreLibrary.enum_.operator.binNeqR );
+				return coreLibrary.enum_.operator.binNeq;
 
 			case Token.Operator.less:
-				return tuple( coreLibrary.enum_.operator.binLt, coreLibrary.enum_.operator.binLtR );
+				return coreLibrary.enum_.operator.binLt;
 
 			case Token.Operator.lessEquals:
-				return tuple( coreLibrary.enum_.operator.binLte, coreLibrary.enum_.operator.binLteR );
+				return coreLibrary.enum_.operator.binLte;
 
 			case Token.Operator.greater:
-				return tuple( coreLibrary.enum_.operator.binGt, coreLibrary.enum_.operator.binGtR );
+				return coreLibrary.enum_.operator.binGt;
 
 			case Token.Operator.greaterEquals:
-				return tuple( coreLibrary.enum_.operator.binGte, coreLibrary.enum_.operator.binGteR );
+				return coreLibrary.enum_.operator.binGte;
 
 			default:
 				assert( 0 );

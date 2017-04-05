@@ -37,7 +37,7 @@ abstract class Symbol_Type : Symbol {
 			Symbol[ ] mem;
 
 			// T? -> reference
-			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#operator", //
+			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opUnary", //
 					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ast ) { //
 						return coreLibrary.type.Reference.referenceTypeOf( this ).dataEntity; //
 					} ), //
@@ -97,7 +97,7 @@ abstract class Symbol_Type : Symbol {
 			if ( auto result = _resolveIdentifier_mid( id, instance, matchLevel ) )
 				return result;
 
-			// If this ever needs to be enabled, the reference #operator fallback function needs to be reworked
+			// If this ever needs to be enabled, the reference #opXX fallback function needs to be reworked
 			// (as it would not pass anything to this)
 			// Look in the core.Type
 			/*if ( this !is coreLibrary.type.Type ) {

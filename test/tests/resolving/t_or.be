@@ -15,7 +15,7 @@ Void main() {
 	poo( staticVar || false );
 	true || ( false && true );
 	true || false || true;
-	true.#operator( Operator.binOr, true );
+	true.#opBinary( Operator.binOr, true );
 }
 
 Void err1() {
@@ -23,5 +23,5 @@ Void err1() {
 }
 
 Void err2() {
-	Bool.#operator( :binOr, false ); //! error: noMatchingOverload
+	Bool.#opBinary( :binOr, false ); //! error: noMatchingOverload
 }

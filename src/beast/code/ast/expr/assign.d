@@ -53,7 +53,7 @@ final class AST_AssignExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto __gd = ErrorGuard( codeLocation );
 			
-			return left.buildSemanticTree_single( ).expectResolveIdentifier( ID!"#operator" ).resolveCall( this, true, operatorConstArg, right ).Overloadset;
+			return left.buildSemanticTree_single( ).expectResolveIdentifier( ID!"#opAssign" ).resolveCall( this, true, operatorConstArg, right ).Overloadset;
 		}
 
 	public:

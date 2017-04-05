@@ -61,7 +61,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 						} );
 
 				// Reference assign refa := refb
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", this, tp.Void, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, this ), //
 						( cb, inst, args ) { //
 							// arg0 is #Ctor.opRefAssign!
@@ -69,7 +69,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 						} );
 
 				// Reference assign refa := b
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", this, tp.Void, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, baseType_ ), //
 						( cb, inst, args ) { //
 							// arg0 is #Ctor.opRefAssign!
@@ -83,9 +83,9 @@ final class Symbol_Type_Reference : Symbol_Class {
 							cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, inst );
 						} );
 
-				// Alias for #operator
-				mem ~= new Symbol_BootstrapAlias( ID!"#operator", ( matchLevel, inst ) { //
-					return ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#operator", matchLevel | MatchLevel.alias_ );
+				// Alias for #opAssign
+				mem ~= new Symbol_BootstrapAlias( ID!"#opAssign", ( matchLevel, inst ) { //
+					return ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#opAssign", matchLevel | MatchLevel.alias_ );
 				} );
 
 				// Alias #baseType

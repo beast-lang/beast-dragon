@@ -15,7 +15,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 	mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( tp.Bool ); // a == b, a != b
 
 	// a || b
-	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
+	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binOr, tp.Bool ), //
 			( cb, inst, args ) { //
 				// 0th operator is Operator.binOr
@@ -32,7 +32,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			} );
 
 	// a && b
-	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
+	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binAnd, tp.Bool ), //
 			( cb, inst, args ) { //
 				/// args[ 0 ] is Operator.binAnd
@@ -49,7 +49,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			} );
 
 	// !a
-	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#operator", tp.Bool, tp.Bool, //
+	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opUnary", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.preNot ), //
 			( cb, inst, args ) { //
 				/// args[ 0 ] is Operator.binAnd

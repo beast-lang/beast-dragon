@@ -12,7 +12,7 @@ Void foo2( Operator op ) {
 
 }
 
-Void foo3( Operator.binOrR ) {
+Void foo3( Operator.binAnd ) {
 
 }
 
@@ -22,11 +22,11 @@ Void foo3( Operator.binOr ) {
 
 Void main() {
 	foo1( Operator.binOr );
-	foo1( Operator.binOrR );
+	foo1( Operator.binAnd );
 	foo1( :binOr );
 	foo1( :funcCall );
 
-	foo3( :binOrR );
+	foo3( :binAnd );
 	foo3( :binOr );
 	foo3( Operator.binOr );
 }

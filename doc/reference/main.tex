@@ -276,9 +276,9 @@ void main() {
 	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
 	
 	1
-		& \inlineCode{x(args)} & \inlineCode{funcCall} & Function call & \multirow{3}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x[args]} & \inlineCode{brackets} & Array subscripting & \\
-		& \inlineCode{x.ident} & \inlineCode{dispatch} & Attribute access & \\
+		& \inlineCode{x(args)} & & Function call & \multirow{3}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x[args]} & & Array subscripting & \\
+		& \inlineCode{x.ident} & & Attribute access & \\
 	\hline
 	
 	2
@@ -294,76 +294,76 @@ void main() {
 		& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & \multirow{2}{*}{L$\rightarrow$R} \\
 		& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
 		\cline{2-5}
-		& \inlineCode{\$} & \inlineCode{dollar} & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
+		& \inlineCode{\$} & & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
 	\hline
 	
 	3
 		& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
-		& \inlineCode{new x( args )} & \inlineCode{new_} & Dynamic construction & \\
+		& \inlineCode{new x( args )} & & Dynamic construction & \\
 	\hline
 	
 	4
-		& \inlineCode{x * y} & \inlineCode{binMult(R)} & Multiplication & \multirow{2}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x / y} & \inlineCode{binDiv(R)} & Division \\
+		& \inlineCode{x * y} & \inlineCode{binMult} & Multiplication & \multirow{2}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x / y} & \inlineCode{binDiv} & Division \\
 		\cline{2-5}
-		& \inlineCode{x \% y} & \inlineCode{binMod(R)} & Modulo & NOCH \\
+		& \inlineCode{x \% y} & \inlineCode{binMod} & Modulo & NOCH \\
 	\hline
 	
 	5
-		& \inlineCode{x + y} & \inlineCode{binPlus(R)} & Addition & \multirow{2}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x - y} & \inlineCode{binMinus(R)} & Subtraction & \\
+		& \inlineCode{x + y} & \inlineCode{binPlus} & Addition & \multirow{2}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x - y} & \inlineCode{binMinus} & Subtraction & \\
 	\hline
 	
 	\multirow{4}{1.5cm}{\centering 6\\(cannot use P3, P4)}
-		& \inlineCode{x & y} & \inlineCode{binAnd(R)} & Bitwise AND & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
-		& \inlineCode{x | y} & \inlineCode{binOr(R)} & Bitwise OR & \\
-		& \inlineCode{x ^ y} & \inlineCode{binXor(R)} & Bitwise XOR / power & \\
+		& \inlineCode{x & y} & \inlineCode{binBitAnd} & Bitwise AND & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
+		& \inlineCode{x | y} & \inlineCode{binBitOr} & Bitwise OR & \\
+		& \inlineCode{x ^ y} & \inlineCode{binBitXor} & Bitwise XOR / power & \\
 		\cline{2-5}
-		& \inlineCode{x >> y} & \inlineCode{binRSft(R)} & Bitwise right shift & \multirow{4}{*}{NOCH} \\
-		& \inlineCode{x << y} & \inlineCode{binLSft(R)} & Bitwise left shift & \\
-		& \inlineCode{x >>> y} & \inlineCode{binRRot(R)} & Bitwise right circular shift & \\
-		& \inlineCode{x <<< y} & \inlineCode{binLRot(R)} & Bitwise left circular shift & \\
+		& \inlineCode{x >> y} & \inlineCode{binRSft} & Bitwise right shift & \multirow{4}{*}{NOCH} \\
+		& \inlineCode{x << y} & \inlineCode{binLSft} & Bitwise left shift & \\
+		& \inlineCode{x >>> y} & \inlineCode{binRRot} & Bitwise right circular shift & \\
+		& \inlineCode{x <<< y} & \inlineCode{binLRot} & Bitwise left circular shift & \\
 	\hline
 	
 	7
-		& \inlineCode{x is y} & \inlineCode{binIs(R)} & Is (pattern matching) & \multirow{5}{*}{NOCH} \\
-		& \inlineCode{x !is y} & \inlineCode{binIsNot(R)} & Is not & \\
-		& \inlineCode{x in y} & \inlineCode{binIn(R)} & In & \\
-		& \inlineCode{x !in y} & \inlineCode{binNotIn(R)} & Not in & \\
-		& \inlineCode{x != y} & \inlineCode{binNeq(R)} & Not equal to & \\
+		& \inlineCode{x is y} & \inlineCode{binIs} & Is (pattern matching) & \multirow{5}{*}{NOCH} \\
+		& \inlineCode{x !is y} & \inlineCode{binIsNot} & Is not & \\
+		& \inlineCode{x in y} & \inlineCode{binIn} & In & \\
+		& \inlineCode{x !in y} & \inlineCode{binNotIn} & Not in & \\
+		& \inlineCode{x != y} & \inlineCode{binNeq} & Not equal to & \\
 		\cline{2-5}
-		& \inlineCode{x < y} & \inlineCode{binLt(R)} & Less than & \\
-		& \inlineCode{x <= y} & \inlineCode{binLte(R)} & Less than or equal to & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R\\SPEC}} \\
-		& \inlineCode{x == y} & \inlineCode{binEq(R)} & Equal to & \\
-		& \inlineCode{x >= y} & \inlineCode{binGte(R)} & Greater than or equal to & \\
-		& \inlineCode{x > y} & \inlineCode{binGt(R)} & Less than & \\
+		& \inlineCode{x < y} & \inlineCode{binLt} & Less than & \\
+		& \inlineCode{x <= y} & \inlineCode{binLte} & Less than or equal to & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R\\SPEC}} \\
+		& \inlineCode{x == y} & \inlineCode{binEq} & Equal to & \\
+		& \inlineCode{x >= y} & \inlineCode{binGte} & Greater than or equal to & \\
+		& \inlineCode{x > y} & \inlineCode{binGt} & Less than & \\
 	\hline
 	
 	8
-		& \inlineCode{x && y} & \inlineCode{binLogAnd(R)} & Logical AND & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
-		& \inlineCode{x || y} & \inlineCode{binLogOr(R)} & Logical OR & \\
+		& \inlineCode{x && y} & \inlineCode{binLogAnd} & Logical AND & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
+		& \inlineCode{x || y} & \inlineCode{binLogOr} & Logical OR & \\
 	\hline
 	
 	9
-		& \inlineCode{x .. y} & \inlineCode{binRange(R)} & Range & NOCH \\
+		& \inlineCode{x .. y} & \inlineCode{binRange} & Range & NOCH \\
 	\hline
 	
 	10
-		& \inlineCode{x = y} & \inlineCode{assign(R)} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
-		& \inlineCode{x := y} & \inlineCode{refAssign(R)} & Reference assignment & \\
+		& \inlineCode{x = y} & \inlineCode{assign} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
+		& \inlineCode{x := y} & \inlineCode{refAssign} & Reference assignment & \\
 		\cline{2-5}
-		& \inlineCode{x += y} & \inlineCode{plusAssign(R)} & \multirow{12}{*}{Various assignments} & \multirow{12}{*}{NOCH} \\
-		& \inlineCode{x -= y} & \inlineCode{minusAssign(R)} && \\
-		& \inlineCode{x *= y} & \inlineCode{multAssign(R)} && \\
-		& \inlineCode{x /= y} & \inlineCode{divAssign(R)} && \\
-		& \inlineCode{x \%= y} & \inlineCode{modAssign(R)} && \\
-		& \inlineCode{x &= y} & \inlineCode{andAssign(R)} && \\
-		& \inlineCode{x |= y} & \inlineCode{orAssign(R)} && \\
-		& \inlineCode{x ^= y} & \inlineCode{xorAssign(R)} && \\
-		& \inlineCode{x <<= y} & \inlineCode{lSftAssign(R)} && \\
-		& \inlineCode{x >>= y} & \inlineCode{rSftAssign(R)} && \\
-		& \inlineCode{x <<<= y} & \inlineCode{lRotAssign(R)} && \\
-		& \inlineCode{x >>>= y} & \inlineCode{rRotAssign(R)} && \\
+		& \inlineCode{x += y} & \inlineCode{binPlus} & \multirow{12}{*}{Various assignments} & \multirow{12}{*}{NOCH} \\
+		& \inlineCode{x -= y} & \inlineCode{binMinus} && \\
+		& \inlineCode{x *= y} & \inlineCode{binMult} && \\
+		& \inlineCode{x /= y} & \inlineCode{binDiv} && \\
+		& \inlineCode{x \%= y} & \inlineCode{binMod} && \\
+		& \inlineCode{x &= y} & \inlineCode{binBitAnd} && \\
+		& \inlineCode{x |= y} & \inlineCode{binBitOr} && \\
+		& \inlineCode{x ^= y} & \inlineCode{binBitXor} && \\
+		& \inlineCode{x <<= y} & \inlineCode{binLSft} && \\
+		& \inlineCode{x >>= y} & \inlineCode{binRSft} && \\
+		& \inlineCode{x <<<= y} & \inlineCode{binLRot} && \\
+		& \inlineCode{x >>>= y} & \inlineCode{binRRot} && \\
 		\cline{2-5}
 		& \inlineCode{x => y} & (not overloadable) & Association & NOCH \\
 	\hline
@@ -409,6 +409,9 @@ When chaining comparison operators, the expressions in form \inlineCode{x == y >
 
 \paragraph{Evaluation order}
 Operands are evaluated left to right, if not specified otherwise.
+
+\subsection{Operator overloading}
+%TODO
 
 \section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
 Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:

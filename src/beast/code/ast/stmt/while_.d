@@ -35,7 +35,7 @@ final class AST_WhileStatement : AST_Statement {
 
 			cb.build_loop( ( CodeBuilder cb ) { //
 				cb.build_if(  //
-					condition.buildSemanticTree_singleExpect( coreLibrary.type.Bool ).expectResolveIdentifier( ID!"#operator" ).resolveCall( condition, true, coreLibrary.enum_.operator.preNot ), //
+					condition.buildSemanticTree_singleExpect( coreLibrary.type.Bool ).expectResolveIdentifier( ID!"#opUnary" ).resolveCall( condition, true, coreLibrary.enum_.operator.preNot ), //
 					( CodeBuilder cb ) { //
 						cb.build_break( );
 					}, null );

@@ -58,7 +58,6 @@ final class AST_MultExpression : AST_Expression {
 				return Overloadset( );
 
 			DataEntity opArg;
-			DataEntity opArgR;
 
 			auto opr = &coreLibrary.enum_.operator;
 
@@ -67,12 +66,10 @@ final class AST_MultExpression : AST_Expression {
 
 				case Token.Operator.multiply:
 					opArg = opr.binMult.dataEntity;
-					opArgR = opr.binMultR.dataEntity;
 					break;
 
 				case Token.Operator.divide:
 					opArg = opr.binDiv.dataEntity;
-					opArgR = opr.binDivR.dataEntity;
 					break;
 
 				default:
@@ -80,7 +77,7 @@ final class AST_MultExpression : AST_Expression {
 
 				}
 
-				result = resolveBinaryOperation( this, result, item.expr, opArg, opArgR, item.op );
+				result = resolveBinaryOperation( this, result, item.expr, opArg, item.op );
 			}
 
 			return result.Overloadset;
