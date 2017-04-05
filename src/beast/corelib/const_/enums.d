@@ -17,7 +17,7 @@ struct CoreLibrary_Enums {
 		alias standardEnumItems = Decorator!( "corelib.enum.standardEnumItems", string );
 
 	public:
-		@enum_( "Int" )
+		@enum_( "Int32" )
 		E Operator;
 
 		struct OperatorItems {
@@ -41,12 +41,12 @@ struct CoreLibrary_Enums {
 		OperatorItems operator;
 
 	public:
-		@enum_( "Int" )
+		@enum_( "Int32" )
 		E XXCtor;
 
 		struct XXCtorItems {
-			C opAssign; /// Assign constructor: #ctor( #Ctor.opAssign, val ) -> Var x = y
-			C opRefAssign; /// Ref assign constructor: #ctor( #Ctor.opRefAssign, val ) -> Var x := y
+			C assign; /// Assign constructor: #ctor( #Ctor.assign, val ) -> Var x = y
+			C refAssign; /// Ref assign constructor: #ctor( #Ctor.refAssign, val ) -> Var x := y
 		}
 
 		@standardEnumItems( "XXCtor" )

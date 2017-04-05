@@ -14,7 +14,7 @@
 		"cppBackend"
 	],
 	"debugVersions": [
-		"_interpreter"
+		"_interpreter", "_gc", "_ctime"
 	],
 
 	"targetName": "beast",

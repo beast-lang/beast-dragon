@@ -6,6 +6,8 @@ import beast.util.decorator;
 import beast.corelib.type.reference;
 import beast.code.data.function_.bstpstcnrt;
 import beast.corelib.type.int_;
+import beast.corelib.type.pointer;
+import beast.code.hwenv.hwenv;
 
 struct CoreLibrary_Types {
 	/// ( instanceSize, defaultValue )
@@ -13,22 +15,35 @@ struct CoreLibrary_Types {
 	alias enumType = Decorator!( "corelib.types.enum", string );
 
 	public:
-		@bootstrapType( 1 )
-		Symbol_BootstrapStaticClass Bool;
-
 		@bootstrapType( 0 )
 		Symbol_BootstrapStaticClass Void;
 
+		@bootstrapType( 1 )
+		Symbol_BootstrapStaticClass Bool;
+
+	public:
+		// TODO: Unsigned types
+		// TODO: Type recasting
 		@bootstrapType( 4 )
-		Symbol_BootstrapStaticClass Int;
+		Symbol_BootstrapStaticClass Int32;
+
+		@bootstrapType( 8 )
+		Symbol_BootstrapStaticClass Int64;
+
+		Symbol_BootstrapStaticClass Size;
+
+	public:
+		Symbol_Type_Type Type;
 
 		ReferenceTypeManager Reference;
-
-		Symbol_Type_Type Type;
+		Symbol_Type_Pointer Pointer;
 
 	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			sink( Type = new Symbol_Type_Type( parent ) );
+			sink( Pointer = new Symbol_Type_Pointer( parent ) );
+
+			sink( new Symbol_BootstrapAlias( ID!"Int", ( matchLevel, inst ) => Int32.dataEntity( matchLevel ).Overloadset ) );
 
 			// Auto-initialize bootstrap types
 			{
@@ -53,6 +68,22 @@ struct CoreLibrary_Types {
 			}
 
 			Reference = new ReferenceTypeManager( sink, parent );
+
+			// TODO: Dedicated type for Size
+			switch ( hardwareEnvironment.pointerSize ) {
+
+			case 4:
+				Size = Int32;
+				break;
+
+			case 8:
+				Size = Int64;
+				break;
+
+			default:
+				assert( 0, "Unsupported pointer size" );
+
+			}
 		}
 
 		/// Second phase of initialization
@@ -61,8 +92,11 @@ struct CoreLibrary_Types {
 
 			Void.initialize( null );
 			Type.initialize( );
+			Pointer.initialize( );
 
-			initialize_Int( this );
+			initialize_Int( Int32, this );
+			initialize_Int( Int64, this );
+
 			initialize_Bool( this );
 		}
 

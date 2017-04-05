@@ -22,7 +22,7 @@ struct CallMatchSet {
 
 				// If the overload is not callable, we try to overload against overload.#opCall( XXX )
 				else {
-					auto suboverloadset = overload.tryResolveIdentifier( Identifier.preobtained!"#opCall" );
+					auto suboverloadset = overload.tryResolveIdentifier( Identifier.preobtained!"#call" );
 					foreach ( suboverload; suboverloadset ) {
 						if ( suboverload.isCallable )
 							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel );

@@ -1,10 +1,10 @@
-module beast.code.data.function_.bstpmemnrt;
+module beast.code.data.function_.primmemnrt;
 
 import beast.code.data.function_.toolkit;
 import beast.code.data.function_.nonrt;
 import beast.code.data.function_.nrtparambuilder;
 
-final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction {
+final class Symbol_PrimitiveMemberNonRuntimeFunction : Symbol_NonRuntimeFunction {
 
 	public:
 		static auto paramsBuilder( ) {
@@ -12,7 +12,7 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 		}
 
 	public:
-		this( DataEntity parent, Identifier id, CallMatchFactory!( true, Data ) matchFactory ) {
+		this( Identifier id, Symbol_Type parent, CallMatchFactory!( true, Data ) matchFactory ) {
 			parent_ = parent;
 			id_ = id;
 			matchFactory_ = matchFactory;
@@ -38,7 +38,7 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 		}
 
 	private:
-		DataEntity parent_;
+		Symbol_Type parent_;
 		Identifier id_;
 		CallMatchFactory!( true, Data ) matchFactory_;
 		Data staticData_;
@@ -47,7 +47,7 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 		final static class Data : super.Data {
 
 			public:
-				this( Symbol_BootstrapMemberNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
+				this( Symbol_PrimitiveMemberNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
 					super( sym, matchLevel );
 					sym_ = sym;
 					parentInstance_ = parentInstance;
@@ -68,7 +68,7 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 				final override DataEntity parent( ) {
-					return sym_.parent_;
+					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
 				}
 
 				final override bool isCtime( ) {
@@ -95,7 +95,7 @@ final class Symbol_BootstrapMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 			protected:
-				Symbol_BootstrapMemberNonRuntimeFunction sym_;
+				Symbol_PrimitiveMemberNonRuntimeFunction sym_;
 				DataEntity parentInstance_;
 
 		}

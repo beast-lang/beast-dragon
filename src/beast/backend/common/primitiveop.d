@@ -20,15 +20,17 @@ enum BackendPrimitiveOperation {
 	intSub, /// (arg2 - arg3 => arg1, considers argT.instanceSize)
 	intMult, /// (arg2 * arg3 => arg1, considers argT.instanceSize)
 	intDiv, /// (arg2 / arg3 => arg1, considers argT.instanceSize)
-	intGt, /// (arg2 > arg3 => arg1)
-	intGte, /// (arg2 >= arg3 => arg1)
-	intLt, /// (arg2 < arg3 => arg1)
-	intLte, /// (arg2 <= arg3 => arg1)
+	intGt, /// (arg2 > arg3 => arg1, considers argT.instanceSize)
+	intGte, /// (arg2 >= arg3 => arg1, considers argT.instanceSize)
+	intLt, /// (arg2 < arg3 => arg1, considers argT.instanceSize)
+	intLte, /// (arg2 <= arg3 => arg1, considers argT.instanceSize)
 
 	// REREFERENCE/POINTER ops
 	markPtr, /// (arg1) Marks given memory as a pointer (used for compile-time stuff)
 	unmarkPtr, /// (arg1) Unmarks given memory as a pointer
 	getAddr, /// (&arg2 > arg1) Stores reference (pointer) to given expression into given variable
 	dereference, /// (*arg1) Returns (reference to) data referenced by given variable
+	malloc, /// (malloc( size_t arg2 ) => arg1 Mallocates n bytes and saves the pointer to arg1
+	free, /// free( arg1 ) Frees memory referenced by arg1
 
 }

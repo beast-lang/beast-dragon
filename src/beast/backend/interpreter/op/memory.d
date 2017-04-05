@@ -66,8 +66,28 @@ pragma( inline ):
 
 	void op_markPtr( Interpreter ir, MemoryPtr op1 ) {
 		memoryManager.markAsPointer( op1 );
+
+		debug ( interpreter )
+			writefln( "mark %s", op1 );
 	}
 
 	void op_unmarkPtr( Interpreter ir, MemoryPtr op1 ) {
 		memoryManager.unmarkAsPointer( op1 );
+
+		debug ( interpreter )
+			writefln( "unmark %s", op1 );
+	}
+
+	void op_malloc( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
+		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT ) );
+
+		debug ( interpreter )
+			writefln( "malloc( %s ) (=%s) => %s", op2.readSizeT, op1.readMemoryPtr, op1 );
+	}
+
+	void op_free( Interpreter ir, MemoryPtr op1 ) {
+		memoryManager.free( op1.readMemoryPtr );
+
+		debug ( interpreter )
+			writefln( "free( %s (=%s) )", op1, op1.readMemoryPtr );
 	}

@@ -2,9 +2,10 @@ module beast.code.data.function_.nrtparambuilder;
 
 import beast.code.data.function_.toolkit;
 import std.typetuple : TypeTuple;
-import std.traits : RepresentationTypeTuple;
+import std.traits : RepresentationTypeTuple, Parameters;
 import std.meta : aliasSeqOf;
 import std.range : iota;
+import std.functional : toDelegate;
 
 abstract class CallMatchFactory( bool isMemberFunction_, SourceEntity_ ) {
 
@@ -23,11 +24,16 @@ final class CallMatchFactoryImpl( bool isMemberFunction, SourceEntity, Builder_ 
 
 	public:
 		alias Builder = Builder_;
+		static string defaultIfFunc( Parameters!( Builder.IfFunc ) p ) {
+			return null;
+		}
 
 	public:
-		this( Builder builder, Builder.ObtainFunc obtainFunc ) {
+		/// ifFunc is used as a post condition checking whether the overload applies. It returns null if yes or error message if not
+		this( Builder builder, Builder.ObtainFunc obtainFunc, Builder.IfFunc ifFunc = toDelegate( &defaultIfFunc ) ) {
 			builder_ = builder;
 			obtainFunc_ = obtainFunc;
+			ifFunc_ = ifFunc;
 		}
 
 	public:
@@ -46,6 +52,7 @@ final class CallMatchFactoryImpl( bool isMemberFunction, SourceEntity, Builder_ 
 	private:
 		Builder builder_;
 		Builder.ObtainFunc obtainFunc_;
+		Builder.IfFunc ifFunc_;
 
 }
 
@@ -93,6 +100,17 @@ final static class Match( Factory ) : SeriousCallableMatch {
 				return MatchLevel.noMatch;
 			}
 
+			string ifResult;
+			static if ( isMemberFunction )
+				ifResult = factory_.ifFunc_( parentInstance_, params_ );
+			else
+				ifResult = factory_.ifFunc_( params_ );
+
+			if ( ifResult ) {
+				errorStr = ifResult;
+				return MatchLevel.noMatch;
+			}
+
 			return MatchLevel.fullMatch;
 		}
 
@@ -127,10 +145,14 @@ mixin template BuilderCommon( ) {
 		enum ParamsOffset = Parent.ParamsOffset + Parent.Params.length;
 	}
 
-	static if ( isMemberFunction )
+	static if ( isMemberFunction ) {
 		alias ObtainFunc = DataEntity delegate( AST_Node, DataEntity, ParamsTuple );
-	else
+		alias IfFunc = string delegate( DataEntity, ParamsTuple );
+	}
+	else {
 		alias ObtainFunc = DataEntity delegate( AST_Node, ParamsTuple );
+		alias IfFunc = string delegate( ParamsTuple );
+	}
 
 	/// Match single runtime parameter of type type (adds DataEntity parameter to obtainFunc)
 	auto rtArg( )( Symbol_Type type ) {
@@ -158,13 +180,22 @@ mixin template BuilderCommon( ) {
 		return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec );
 	}
 
-	/// Matches anything (adds Expression[] and DataEntity[] parameter to obtainFunc - Expression[] for unparsed parameters, DataEntity[] for parsed ones)
-	auto matchesAnything( )( ) {
-		return Builder_Anything!( typeof( this ) )( this );
+	/// Match single argument of any type
+	auto auto_( )() {
+		return Builder_Auto!( typeof( this ) )( this );
+	}
+
+	/// Matches anything (adds AST_Expression[] and DataEntity[] parameter to obtainFunc - AST_Expression[] for unparsed parameters, DataEntity[] for parsed ones)
+	auto ast( )( ) {
+		return Builder_AST!( typeof( this ) )( this );
 	}
 
 	CallMatchFactory!( isMemberFunction, SourceEntity ) finish( )( ObtainFunc obtainFunc ) {
 		return new CallMatchFactoryImpl!( isMemberFunction, SourceEntity, typeof( this ) )( this, obtainFunc );
+	}
+
+	CallMatchFactory!( isMemberFunction, SourceEntity ) finishIf( )( IfFunc ifFunc, ObtainFunc obtainFunc ) {
+		return new CallMatchFactoryImpl!( isMemberFunction, SourceEntity, typeof( this ) )( this, obtainFunc, ifFunc );
 	}
 
 	template Builder( size_t id ) {
@@ -274,7 +305,7 @@ struct Builder_ConstParameter( Parent ) {
 
 }
 
-struct Builder_Anything( Parent ) {
+struct Builder_AST( Parent ) {
 	mixin BuilderCommon;
 
 	alias Params = TypeTuple!( AST_Expression[ ], DataEntity[ ] );
@@ -294,5 +325,28 @@ struct Builder_Anything( Parent ) {
 	bool isSatisfied( ref Params params ) {
 		return true;
 	}
+
+}
+
+struct Builder_Auto( Parent ) {
+	mixin BuilderCommon;
+
+	alias Params = TypeTuple!( DataEntity );
+
+	MatchLevel matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
+		auto result = match.matchAutoArgument( expression, entity, dataType );
+		if ( result == MatchLevel.noMatch )
+			return MatchLevel.noMatch;
+
+		params[ 0 ] = entity;
+		return result;
+	}
+
+	string identificationString( ) {
+		return "@ctime %s".format( type_.tryGetIdentificationString );
+	}
+
+	private:
+		Symbol_Type type_;
 
 }

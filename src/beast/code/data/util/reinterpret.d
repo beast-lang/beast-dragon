@@ -7,7 +7,7 @@ import beast.code.data.util.proxy;
 final class DataEntity_ReinterpretCast : ProxyDataEntity {
 
 	public:
-		this( DataEntity sourceEntity, Symbol_Type newType, MatchLevel matchLevel ) {
+		this( DataEntity sourceEntity, Symbol_Type newType, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			super( sourceEntity, matchLevel );
 			newType_ = newType;
 		}

@@ -74,12 +74,12 @@ final class AST_CmpExpression : AST_Expression {
 				return Overloadset( );
 
 			auto binAnd = coreLibrary.enum_.operator.binAnd.dataEntity;
-			auto opAssign = coreLibrary.enum_.xxctor.opAssign.dataEntity;
+			auto assign = coreLibrary.enum_.xxctor.assign.dataEntity;
 
 			foreach ( item; items ) {
 				ProcessedItem pitem;
 				pitem.operand = item.expr.buildSemanticTree_single( );
-				pitem.operandCtor = pitem.operand.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( item.expr, true, MatchLevel.fullMatch ).arg( opAssign ).arg( pitem.operand ).finish_getMatch( ).sourceDataEntity.symbol;
+				pitem.operandCtor = pitem.operand.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( item.expr, true, MatchLevel.fullMatch ).arg( assign ).arg( pitem.operand ).finish_getMatch( ).sourceDataEntity.symbol;
 				pitem.cmpFunction = prepareResolveBinaryOperation( item.expr, leftOperand, pitem.operand, cmpOperatorEnumConst( item.op ).dataEntity, item.op );
 
 				DataEntity tmpCmpFunction = pitem.cmpFunction( leftOperand, pitem.operand );
@@ -219,7 +219,7 @@ final class AST_CmpExpression : AST_Expression {
 
 						auto var = new DataEntity_TmpLocalVariable( item.operand.dataType, cb.isCtime );
 						cb.build_localVariableDefinition( var );
-						item.operandCtor.dataEntity( MatchLevel.fullMatch, var ).startCallMatch( item.operand.ast, true, MatchLevel.fullMatch ).arg( coreLibrary.enum_.xxctor.opAssign.dataEntity ).arg( item.operand ).finish( ).toDataEntity( ).buildCode( cb );
+						item.operandCtor.dataEntity( MatchLevel.fullMatch, var ).startCallMatch( item.operand.ast, true, MatchLevel.fullMatch ).arg( coreLibrary.enum_.xxctor.assign.dataEntity ).arg( item.operand ).finish( ).toDataEntity( ).buildCode( cb );
 
 						item2.andFunction( item.cmpFunction( leftOperand, var ), new Data( ast_, var, processedItems_[ 1 .. $ ], item2.dataType, isCtime ) ).buildCode( cb );
 					}
@@ -229,7 +229,7 @@ final class AST_CmpExpression : AST_Expression {
 						cb.build_localVariableDefinition( var );
 
 						// We have pre-resolved ctor from the buildSemanticTree
-						item.operandCtor.dataEntity( MatchLevel.fullMatch, var ).startCallMatch( item.operand.ast, true, MatchLevel.fullMatch ).arg( coreLibrary.enum_.xxctor.opAssign.dataEntity ).arg( item.operand ).finish( ).toDataEntity( ).buildCode( cb );
+						item.operandCtor.dataEntity( MatchLevel.fullMatch, var ).startCallMatch( item.operand.ast, true, MatchLevel.fullMatch ).arg( coreLibrary.enum_.xxctor.assign.dataEntity ).arg( item.operand ).finish( ).toDataEntity( ).buildCode( cb );
 
 						DataEntity cmpResult = item.cmpFunction( leftOperand, var );
 						result = result ? item.andFunction( result, cmpResult ) : cmpResult;

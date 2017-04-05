@@ -37,6 +37,8 @@ struct Instruction {
 			movConst, /// (target: ptr, source: dd, bytes: dd) Saves given data into memory
 			zero, /// (target: ptr, bytes: dd) Zeroes given memory
 			stAddr, /// (target: ptr, source: ptr) Stores address of source into the target
+			malloc, /// (target: ptr, bytes: ptr) Mallocaes n bytes and stores the pointer to target
+			free, /// (target: ptr) Frees the memory referenced by target
 
 			// Pointers
 			markPtr, /// (target: ptr) Mark given address as pointer

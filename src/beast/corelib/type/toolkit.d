@@ -11,7 +11,7 @@ public {
 	import beast.code.data.matchlevel : MatchLevel;
 	import beast.code.data.overloadset : Overloadset;
 	import beast.code.data.type.btspstcclass : Symbol_BootstrapStaticClass;
-	import beast.code.data.type.class_ : Symbol_Class;
+	import beast.code.data.type.stcclass : Symbol_StaticClass;
 	import beast.code.data.type.type : Symbol_Type;
 	import beast.code.data.util.proxy : ProxyDataEntity;
 	import beast.code.hwenv.hwenv : HardwareEnvironment;

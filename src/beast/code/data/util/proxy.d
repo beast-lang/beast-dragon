@@ -39,6 +39,10 @@ abstract class ProxyDataEntity : DataEntity {
 			return sourceEntity_.isDecorator;
 		}
 
+		override void buildCode( CodeBuilder cb ) {
+			sourceEntity_.buildCode( cb );
+		}
+
 	public:
 		override Identifier identifier( ) {
 			return sourceEntity_.identifier;

@@ -70,6 +70,10 @@ abstract class CallableMatch {
 			return _toDataEntity( );
 		}
 
+		size_t argumentIndex() {
+			return argumentIndex_;
+		}
+
 	protected:
 		/// The actual matchLevel is minimal match level from all _matchNextArgument and _finish calls
 		MatchLevel _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {

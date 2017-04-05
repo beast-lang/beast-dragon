@@ -3,7 +3,7 @@ module t_simpleclass; //! run
 class C {
 
 	Void #ctor() {
-		x.#ctor( #Ctor.opAssign, 6 );
+		x.#ctor( #Ctor.assign, 6 );
 		y.#ctor();
 	}
 	Void #dtor() {

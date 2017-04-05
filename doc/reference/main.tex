@@ -410,9 +410,6 @@ When chaining comparison operators, the expressions in form \inlineCode{x == y >
 \paragraph{Evaluation order}
 Operands are evaluated left to right, if not specified otherwise.
 
-\subsection{Operator overloading}
-%TODO
-
 \section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
 Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
 
@@ -582,7 +579,6 @@ enum Operator {
 		unarySuff = suffNot | suffMult | suffAnd /* etc */,
 		
 		binary = binMult | binDiv | binMod /* etc */,
-		binaryRight = binMultR | binDivR | binModR /* etc */,
 		anyAssign = assign | refAssign | plusAssign /* etc */
 	}	
 }
@@ -590,8 +586,9 @@ enum Operator {
 
 All operators can be overloaded. This is done by overloading/implementing function:
 \begin{code}
-auto #operator( @ctime Operator op, auto args ... );
+auto #opXX( @ctime Operator op, auto args ... );
 \end{code}
+where \inlineCode{opXX} is function name (mentioned below).
 
 So for example, you can overload all unary operators at once using:
 \begin{code}
@@ -603,9 +600,7 @@ So for example, you can overload all unary operators at once using:
 	}
 	
 @public:
-	auto #operator( @ctime Operator op, auto args ... )
-		if( op is :unary )
-	{
+	auto #opUnary( @ctime Operator op, auto args ... ) {
 		return referencedValue.#operator( op, args ... );
 	}
 	
@@ -617,10 +612,10 @@ So for example, you can overload all unary operators at once using:
 
 or you can overload one exact operator:
 \begin{code}
-Boolean #operator( Operator.preNot ) {
+Boolean #opUnary( Operator.preNot ) {
 	return !referencedValue;	
 }
-Int16 #operator( Operator("x++") ) {
+Int16 #opUnary( Operator("x++") ) {
 	return referencedValue ++;
 }
 \end{code}
@@ -628,11 +623,11 @@ Int16 #operator( Operator("x++") ) {
 You can also make operator overload implementations virtual (if they don't contain any ctime variables):
 \begin{code}
 class A {
-	@public @abstract Void #operator( Operator.plusAssign, A@ other );
+	@public @abstract Void #opAssign( Operator.binPlus, A@ other );
 }
 
 @final class B : @public A {
-	@public @override Void #operator( Operator.plusAssign, A@ other ) {
+	@public @override Void #opAssign( Operator.binPlus, A@ other ) {
 		// code here	
 	}
 }
@@ -650,7 +645,7 @@ Here, \inlineCode{x} is the left operand and the \inlineCode{ident} is the right
 \begin{enumerate}
 	\item Check if the left operand overloadset contains only one record (or error).
 	\item Perform a scoped identifier resolution for the left operand scope, looking for the \inlineCode{ident}; return the results if any.
-	\item If the resolution resulted an empty overloadset, try calling (left operand scope identifier resolution + overload resolution + call)\\ \inlineCode{instance.#operator( Operator.dispatch, "ident" )}
+	\item If the resolution resulted an empty overloadset, try calling (left operand scope identifier resolution + overload resolution + call)\\ \inlineCode{instance.#dispatch( "ident" )}
 	\item If it fails, show an error
 \end{enumerate}
 
@@ -665,7 +660,7 @@ class Vector( UInt16 dimensions ) {
 	
 	(...)
 	
-	auto #operator( Operator.dispatch, @ctime String str )
+	auto #dispatch( @ctime String str )
 		if( str.allMatch( x => "xyz".contains( x ) ) )
 	{
 		@ctime Index[ Char ] translationArray = [
@@ -693,7 +688,7 @@ Void main() {
 
 \paragraph{TODO} Exceptions used for overload filtering
 
-\subsection{The '\inlineCode{x(args)}' (funcCall) operator}
+\subsection{The '\inlineCode{x(args)}' operator}
 Consider expression
 \begin{code}
 a.f( arg1, arg2 )
@@ -713,7 +708,7 @@ If the overload set contains only functions:
 If not:
 \begin{enumerate}
 	\item Check if the left operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{a.f.#operator( Operator.funcCall, arg1, arg2 )}.
+	\item Resolve and call \inlineCode{a.f.#call( arg1, arg2 )}.
 \end{enumerate}
 
 \paragraph{Consequences}
@@ -751,13 +746,13 @@ Here, the \inlineCode{x} is the left operand and \inlineCode{arg1} and \inlineCo
 \paragraph{Behavior}
 \begin{enumerate}
 	\item Check if the left operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#operator( Operator.brackets, arg1, arg2 )} (or error).
+	\item Resolve and call \inlineCode{x.#index( arg1, arg2 )} (or error).
 \end{enumerate}
 
 \subsection{The '\inlineCode{\$}' (dollar) operator}
 In the bracket parameters, you can use the \inlineCode{\$} operator.
 
-It doesn't take any operands and translates to \inlineCode{x.#operator( Operator.dollar, Index paramId )} where \inlineCode{paramId} is the index of the bracket parameter the dollar operator was used in (starting from 0).
+It doesn't take any operands and translates to \inlineCode{x.#dollar( Index paramId )} where \inlineCode{paramId} is the index of the bracket parameter the dollar operator was used in (starting from 0).
 
 \subsection{Unary operators}
 Consider expression
@@ -770,7 +765,7 @@ Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
 \paragraph{Behavior}
 \begin{enumerate}
 	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#operator( op )} (or error).
+	\item Resolve and call \inlineCode{x.#opUnary( op )} (or error).
 \end{enumerate}
 
 \subsection{Binary (and assign) operators}
@@ -784,11 +779,11 @@ Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operan
 \paragraph{Behavior}
 \begin{enumerate}
 	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#operator( op, y )}.
-	\item If previous step did not found any matching overload, resolve and call \inlineCode{y.#operator( opR, x )} (or error).
+	\item Resolve and call \inlineCode{x.#opBinary( op, y )}.
+	\item If previous step did not found any matching overload, resolve and call \inlineCode{y.#opBinaryR( op, x )} (or error).
 \end{enumerate}
 
-Every binary operator has two records in the \inlineCode{Operator} enum -- one that ends with the \inlineCode{R} and one that does not. The \inlineCode{R} here means right. For the expression shown above, the compiler would call \inlineCode{x.#operator( Operator.binPlus, y )}, eventually \inlineCode{y.#operator( Operator.binPlusR, x )}.
+Every binary operator has a record in the \inlineCode{Operator} enum.
 
 \subsection{The '\inlineCode{x .. y}' (range) operator}
 This operator is almost equivalent to \inlineCode{Range( x.#type )( x, y )}, except it infers the Range type from expected parameter type if possible.
@@ -1369,6 +1364,7 @@ class SymbolMetadata {
 String #className // Can be null for anonymous classes
 ClassMetadata #class
 Overloadset #member( String identifier )
+Size #instanceSize
 
 class ClassMetadata {
 }

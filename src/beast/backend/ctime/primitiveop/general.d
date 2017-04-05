@@ -3,12 +3,20 @@ module beast.backend.ctime.primitiveop.general;
 import beast.backend.ctime.primitiveop.toolkit;
 import std.range : repeat;
 
+debug ( ctime ) import std.stdio : writefln;
+
 void primitiveOp_memZero( CB cb, T t, Op arg1 ) {
 	arg1.write( repeat( cast( ubyte ) 0, t.instanceSize ).array );
+
+	debug ( ctime )
+		writefln( "CTIME zero %s, %s", arg1, t.instanceSize );
 }
 
 void primitiveOp_memCpy( CB cb, T t, Op arg1, Op arg2 ) {
 	arg1.write( arg2, t.instanceSize );
+
+	debug ( ctime )
+		writefln( "CTIME memcpy %s => %s, %s (%s)", arg2, arg1, t.instanceSize, arg1.read( t.instanceSize ) );
 }
 
 void primitiveOp_noopDtor( CB cb ) {

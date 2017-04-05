@@ -213,7 +213,7 @@ final class MemoryManager {
 				}
 			}
 
-			berror( E.invalidPointer, "There's no memory allocated on a given address" );
+			berror( E.invalidPointer, "There's no memory allocated on a given address (%#x)".format( ptr.val ) );
 			assert( 0 );
 		}
 
@@ -284,6 +284,8 @@ final class MemoryManager {
 		void endSession( ) {
 			debug assert( !finished_ );
 
+			debug ( gc ) import std.stdio : writefln;
+
 			// "GC" cleanup blocks at session end
 			{
 				MemoryBlock[ ] list;
@@ -301,7 +303,10 @@ final class MemoryManager {
 					assert( ( !block.isLocal && !block.isRuntime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
 
 					foreach ( ptr; pointersInBlock ) {
-						MemoryBlock block2 = ptr.block;
+						debug ( gc )
+							writefln( "endsession pointer at %s (=%s)", ptr, ptr.readMemoryPtr );
+
+						MemoryBlock block2 = ptr.readMemoryPtr.block;
 						if ( block2.isDoNotGCAtSessionEnd )
 							continue;
 
@@ -312,10 +317,18 @@ final class MemoryManager {
 
 				// We have to copy blocks to be deleted, because sessionMemoryBlocks shrinks as blocks are freed
 				foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
-					if ( !block.isDoNotGCAtSessionEnd )
+					if ( !block.isDoNotGCAtSessionEnd ) {
+						debug ( gc )
+							writefln( "endsession cleanup %s", block.startPtr );
+
 						list ~= block;
-					else
+					}
+					else {
+						debug ( gc )
+							writefln( "endsession keep %s", block.startPtr );
+
 						assert( !block.isLocal );
+					}
 				}
 
 				foreach ( block; list )

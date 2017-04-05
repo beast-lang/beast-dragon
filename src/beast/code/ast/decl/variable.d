@@ -127,11 +127,11 @@ final class AST_VariableDeclaration : AST_Declaration {
 			auto match = entity.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( this, true );
 
 			if ( valueEntity ) {
-				// colonAssign calls #ctor( #Ctor.opRefAssign, value );
+				// colonAssign calls #ctor( #Ctor.refAssign, value );
 				if ( valueColonAssign )
-					match.arg( coreLibrary.enum_.xxctor.opRefAssign );
+					match.arg( coreLibrary.enum_.xxctor.refAssign );
 				else
-					match.arg( coreLibrary.enum_.xxctor.opAssign );
+					match.arg( coreLibrary.enum_.xxctor.assign );
 
 				match.arg( valueEntity );
 			}

@@ -6,14 +6,14 @@ import beast.util.hash;
 import core.sync.rwmutex;
 import beast.code.hwenv.hwenv;
 
-final class Symbol_Type_Reference : Symbol_Class {
+final class Symbol_Type_Reference : Symbol_StaticClass {
 
 	public:
 		this( DataEntity parent, Symbol_Type baseType ) {
 			id_ = Identifier( "%s_ref".format( baseType.identifier.str ) );
 
 			// Identifier must be available
-			super( );
+			super( parent );
 
 			parent_ = parent;
 			baseType_ = baseType;
@@ -37,7 +37,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 				// Copy ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
-						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.opAssign, this ), //
+						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.assign, this ), //
 						( cb, inst, args ) { //
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
@@ -45,9 +45,9 @@ final class Symbol_Type_Reference : Symbol_Class {
 
 				// Ref ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap( enm.xxctor.opRefAssign, baseType ), //
+						ExpandedFunctionParameter.bootstrap( enm.xxctor.refAssign, baseType ), //
 						( cb, inst, args ) { //
-							// arg0 is #Ctor.opRefAssign!
+							// arg0 is #Ctor.refAssign!
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
 						} );
@@ -64,7 +64,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, this ), //
 						( cb, inst, args ) { //
-							// arg0 is #Ctor.opRefAssign!
+							// arg0 is #Ctor.refAssign!
 							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
 						} );
 
@@ -72,7 +72,7 @@ final class Symbol_Type_Reference : Symbol_Class {
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", this, tp.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, baseType_ ), //
 						( cb, inst, args ) { //
-							// arg0 is #Ctor.opRefAssign!
+							// arg0 is #Ctor.refAssign!
 							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
 						} );
 
@@ -83,15 +83,26 @@ final class Symbol_Type_Reference : Symbol_Class {
 							cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, inst );
 						} );
 
+				// Implicit cast to pointer
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, coreType.Pointer, //
+						ExpandedFunctionParameter.bootstrap( coreType.Pointer.dataEntity ), //
+						( cb, inst, args ) { //
+							// Result is this entity, just with a different type (but that is not saved)
+							inst.buildCode( cb );
+						} );
+
 				// Alias for #opAssign
-				mem ~= new Symbol_BootstrapAlias( ID!"#opAssign", ( matchLevel, inst ) { //
-					return ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#opAssign", matchLevel | MatchLevel.alias_ );
-				} );
+				mem ~= new Symbol_BootstrapAlias( ID!"#opAssign", //
+						( matchLevel, inst ) => ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#opAssign", matchLevel | MatchLevel.alias_ ) );
 
 				// Alias #baseType
 				mem ~= new Symbol_BootstrapAlias( ID!"#baseType", ( matchLevel, parentInstance ) { //
 					return baseType_.dataEntity( matchLevel ).Overloadset;
 				} );
+
+				// #refData for acessing all the reference members
+				mem ~= new Symbol_BootstrapAlias( ID!"#refData", //
+						( matchLevel, inst ) => ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).Overloadset );
 
 				namespace_.initialize( mem );
 			}
@@ -100,10 +111,6 @@ final class Symbol_Type_Reference : Symbol_Class {
 	public:
 		override Identifier identifier( ) {
 			return id_;
-		}
-
-		override DeclType declarationType( ) {
-			return DeclType.staticClass;
 		}
 
 		override size_t instanceSize( ) {
@@ -133,7 +140,6 @@ final class Symbol_Type_Reference : Symbol_Class {
 		}
 
 	private:
-		Data staticData_;
 		Symbol_Type baseType_;
 		BootstrapNamespace namespace_;
 		DataEntity parent_;
@@ -149,10 +155,6 @@ final class Symbol_Type_Reference : Symbol_Class {
 				}
 
 			public:
-				override DataEntity parent( ) {
-					return sym_.parent_;
-				}
-
 				override string identificationString_noPrefix( ) {
 					return "%s?".format( sym_.baseType_.tryGetIdentificationString );
 				}

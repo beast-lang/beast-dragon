@@ -17,7 +17,7 @@ abstract class Symbol_StaticClass : Symbol_Class {
 		}
 
 	public:
-		final override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
+		override DataEntity dataEntity( MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null ) {
 			if ( matchLevel != MatchLevel.fullMatch )
 				return new Data( this, matchLevel );
 			else
@@ -28,8 +28,8 @@ abstract class Symbol_StaticClass : Symbol_Class {
 		DataEntity staticData_;
 		DataEntity parent_;
 
-	private:
-		final static class Data : super.Data {
+	protected:
+		static class Data : super.Data {
 
 			public:
 				this( Symbol_StaticClass sym, MatchLevel matchLevel ) {

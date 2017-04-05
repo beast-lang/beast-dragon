@@ -5,6 +5,9 @@ import beast.code.memory.block;
 import beast.code.memory.memorymgr;
 import beast.code.data.type.type;
 import beast.code.hwenv.hwenv;
+import core.stdc.string : memcpy;
+import std.algorithm.searching : all;
+import std.range : repeat;
 
 enum nullMemoryPtr = MemoryPtr( 0 );
 
@@ -57,9 +60,30 @@ struct MemoryPtr {
 			return type;
 		}
 
+		void writeMemoryPtr( MemoryPtr ptr ) const {
+			writeSizeT( ptr.val );
+		}
+
 		MemoryPtr readMemoryPtr( ) const {
-			MemoryPtr result;
-			result.val = *( cast( size_t* ) read( hardwareEnvironment.effectivePointerSize ) );
+			return MemoryPtr( readSizeT );
+		}
+
+		/// Writes size_t but maximally up to hardwareEnvironment.pointerSize
+		void writeSizeT( size_t val ) const {
+			auto ptrSize = hardwareEnvironment.effectivePointerSize;
+			write( &val, ptrSize );
+
+			if ( ptrSize > size_t.sizeof )
+				MemoryPtr( val + size_t.sizeof ).write( repeat( cast( ubyte ) 0, ptrSize - size_t.sizeof ).array );
+		}
+
+		size_t readSizeT( ) const {
+			size_t result;
+			auto ptrSize = hardwareEnvironment.effectivePointerSize;
+			memcpy( &result, read( ptrSize ).ptr, ptrSize );
+
+			benforce( ptrSize <= size_t.sizeof || MemoryPtr( val + size_t.sizeof ).read( ptrSize - size_t.sizeof ).all!( x => x == 0 ), E.invalidPointer, "Pointer value too big for the compiler machine to handle" );
+
 			return result;
 		}
 

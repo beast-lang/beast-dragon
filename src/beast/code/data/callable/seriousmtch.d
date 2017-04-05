@@ -33,6 +33,20 @@ abstract class SeriousCallableMatch : CallableMatch {
 		}
 
 	public:
+		final MatchLevel matchAutoArgument( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType ) {
+			MatchLevel result = MatchLevel.inferrationsNeeded;
+
+			/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
+			if ( !entity ) {
+				errorStr = "cannot infer argument %s".format( argumentIndex_ + 1 );
+				return MatchLevel.noMatch;
+			}
+
+			dataType = entity.dataType;
+
+			return result;
+		}
+
 		final MatchLevel matchStandardArgument( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType ) {
 			MatchLevel result = MatchLevel.fullMatch;
 

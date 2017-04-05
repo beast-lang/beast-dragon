@@ -76,9 +76,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		/// Returns copy constructor that copies all data from the source instance
 		static Symbol newPrimitiveCopyCtor( Symbol_Type tp ) {
 			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp, coreLibrary.type.Void, //
-					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.opAssign, tp ), //
+					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.assign, tp ), //
 					( cb, inst, args ) { //
-						// 0th arguments is #Ctor.opAssign!
+						// 0th arguments is #Ctor.assign!
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
 					} );
 		}

@@ -1,15 +1,20 @@
 module beast.code.data.type.type;
 
-import beast.code.data.toolkit;
-import beast.util.uidgen;
-import beast.toolkit;
-import beast.code.data.codenamespace.namespace;
+import beast.code.data.alias_.btsp;
 import beast.code.data.codenamespace.bootstrap;
+import beast.code.data.codenamespace.namespace;
 import beast.code.data.function_.bstpstcnrt;
-import beast.code.data.function_.btspmemrt;
 import beast.code.data.function_.expandedparameter;
-import beast.code.data.var.tmplocal;
+import beast.code.data.function_.primmemnrt;
 import beast.code.data.function_.primmemrt;
+import beast.code.data.toolkit;
+import beast.code.data.var.tmplocal;
+import beast.code.hwenv.hwenv;
+import beast.toolkit;
+import beast.util.uidgen;
+import core.stdc.string : memcpy;
+import std.range : chain;
+import beast.code.data.var.literal;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -43,6 +48,7 @@ abstract class Symbol_Type : Symbol {
 					} ), //
 					true );
 
+			// Implicit cast to reference
 			if ( !isReferenceType ) {
 				auto refType = coreLibrary.type.Reference.referenceTypeOf( this );
 				// Implicit cast to reference type
@@ -51,10 +57,45 @@ abstract class Symbol_Type : Symbol {
 						( cb, inst, args ) { //
 							auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
 							cb.build_localVariableDefinition( var );
-							var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.opRefAssign.dataEntity, inst ).buildCode( cb );
+							var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.refAssign.dataEntity, inst ).buildCode( cb );
 							var.buildCode( cb );
 						} );
 			}
+
+			// to function
+			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"to", this, //
+					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
+						( AST_Node, DataEntity inst, MemoryPtr targetType ) { //
+						DataEntity targetTypeEntity = targetType.readType.dataEntity;
+
+						CallMatchSet explicitCast = inst.tryResolveIdentifier( ID!"#explicitCast" ).CallMatchSet( ast, false ).arg( targetTypeEntity );
+						if ( auto result = explicitCast.finish( ) )
+							return result;
+
+						CallMatchSet implicitCast = inst.tryResolveIdentifier( ID!"#implicitCast" ).CallMatchSet( ast, false ).arg( targetTypeEntity );
+						if ( auto result = implicitCast.finish( ) )
+							return result;
+
+						berror( E.cannotResolve, "Cannot resolve %s.to( %s ):%s".format(  //
+						inst.identificationString, targetTypeEntity.identificationString, //
+						chain( explicitCast.matches, implicitCast.matches ).map!( x => "\n\t%s:\n\t\t%s\n".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner //
+						 ) );
+						assert( 0 );
+					} //
+					 ) );
+
+			// #instanceSize
+			// TODO: BETTER
+			mem ~= new Symbol_BootstrapAlias( ID!"#instanceSize", //
+					( MatchLevel matchLevel, DataEntity inst ) { //
+						ubyte[ ] data;
+						data.length = hardwareEnvironment.pointerSize;
+
+						size_t instanceSize = instanceSize;
+						memcpy( data.ptr, &instanceSize, hardwareEnvironment.effectivePointerSize );
+
+						return new Symbol_Literal( coreType.Size, data ).dataEntity.Overloadset;
+					} );
 
 			baseNamespace_.initialize( mem );
 

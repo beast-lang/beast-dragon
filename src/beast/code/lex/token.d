@@ -40,7 +40,10 @@ final class Token {
 
 			auto_,
 			break_,
-			return_
+			return_,
+
+			new_,
+			delete_,
 		}
 
 		static immutable string[ ] keywordStr = {

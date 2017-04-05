@@ -8,6 +8,9 @@ public {
 }
 
 alias I = Instruction.I;
+alias NumI = Instruction.NumI;
+alias numericI = Instruction.numericI;
+
 alias CB = CodeBuilder_Interpreter;
 alias T = Symbol_Type;
 alias Op = InstructionOperand;

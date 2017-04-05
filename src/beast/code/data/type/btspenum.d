@@ -5,7 +5,6 @@ import beast.code.data.codenamespace.namespace;
 import beast.code.data.codenamespace.bootstrap;
 import beast.code.data.type.enum_;
 import beast.code.data.type.stcclass;
-import beast.code.data.function_.btspmemrt;
 import beast.code.data.function_.primmemrt;
 import beast.code.data.function_.expandedparameter;
 import beast.backend.common.primitiveop;
@@ -36,9 +35,9 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 
 			// Copy/assign constructor
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
-					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.opAssign, this ), //
+					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.assign, this ), //
 					( cb, inst, args ) { //
-						// 0th argument is #Ctor.opAssign!
+						// 0th argument is #Ctor.assign!
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
 					} );
 
