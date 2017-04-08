@@ -5,15 +5,15 @@
 
 # Beast Programming Language
 
-[![Build Status](https://travis-ci.org/beast-lang/compiler.svg?branch=master)](https://travis-ci.org/beast-lang/compiler)
+[![Build Status](https://travis-ci.org/beast-lang/beast-dragon.svg?branch=master)](https://travis-ci.org/beast-lang/compiler)
 
 Beast is a new programming language mostly inspired by C++ and D.
 
 This repository contains (everything is WIP):
 
-* Sample transcompiler to C++
-* Language reference
-* Bachelor thesis text (Czech language)
+* Sample transcompiler to C (you will need a [D compiler](http://dlang.org/))
+* [Language reference](https://github.com/beast-lang/beast-dragon/blob/master/doc/reference/main.pdf)
+* [Bachelor thesis text](https://github.com/beast-lang/beast-dragon/blob/master/doc/bachelor_thesis_CZ/projekt.pdf) (Czech language)
 
 Source file extension: `.be`
 
@@ -22,13 +22,14 @@ Source file extension: `.be`
 * Importable modules (no header files like in C++)
 * C++ style multiple inheritance class system
 * Powerful compile-time engine
-* Compiled to binary (to C++ so far)
+* Compiled (to C so far, switch to LLVM is planned)
 * Const-by-default
 * Compile-time language reflection
 
 ## Progress
 
-* Compiler: Currently under intensive development, some very basic functionality working right now (compiles to C++, Bool, functions, print, ...)
+* Compiler: Currently under intensive development, some very basic functionality working right now (compiles to C++)
+	* See test/tests for working code examples
 * Std library: Nothing at all
 * Language reference: Nothing much
 
@@ -58,11 +59,16 @@ class C {
 }
 
 enum Enum {
-  a, b, c
+	a, b, c;
+	
+	// Enum member functions
+	Enum invertedValue() {
+		return c - this;	
+	}
 }
 
 String foo( Enum e, @ctime Type T ) { // T is a 'template' parameter
-  // 'template' and normal parameters are in the same parenthesis
+  // 'template' and normal parameters are in the same parentheses
   return e.to( String ) + T.#identifier; 
 }
 
@@ -71,7 +77,7 @@ Void main() {
   T x = 3;
 
   T = C;
-  T!? c := new C; // C!? - reference to a mutable object, := reference assignment operator
+  T!? c := new C(); // C!? - reference to a mutable object, := reference assignment operator
   c.x = 5;
 
   // Compile-time function execution, :XXX accessor that looks in parameter type
@@ -79,7 +85,7 @@ Void main() {
   stdout.writeln( s );
 
   stdout.writeln( c + x ); // Writes 8
-  stdout.writeln( c.#opBinary.#parameters[1].type.#identifier ); // Compile-time language reflection
+  stdout.writeln( c.#opBinary.#parameters[1].type.#identifier ); // Compile-time reflection
 }
 ```
 
