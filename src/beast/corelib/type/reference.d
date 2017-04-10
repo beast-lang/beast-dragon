@@ -136,7 +136,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 	protected:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			// We shadow referenced type namespace
-			return baseType_.resolveIdentifier( id, new ProxyData( instance, baseType_ ), matchLevel );
+			return baseType_.resolveIdentifier( id, instance ? new ProxyData( instance, baseType_ ) : null, matchLevel );
 		}
 
 	private:

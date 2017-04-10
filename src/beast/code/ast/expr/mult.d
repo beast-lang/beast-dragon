@@ -1,11 +1,11 @@
 module beast.code.ast.expr.mult;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.unary;
+import beast.code.ast.expr.new_;
 import beast.code.ast.expr.binary;
 
 final class AST_MultExpression : AST_Expression {
-	alias LowerLevelExpression = AST_UnaryExpression;
+	alias LowerLevelExpression = AST_NewExpression;
 
 	public:
 		static bool canParse( ) {

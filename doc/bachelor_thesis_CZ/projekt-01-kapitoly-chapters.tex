@@ -1446,3 +1446,7 @@ Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru.
  Bylo rozhodnuto, že demonstrační kompilátor bude založen na LL parseru, především kvůli větší intuitivnosti návrhu a lepším možnostem generování chybových zpráv. Dalším předmětem k úvaze bylo, zda opravdu použít generátor parseru, nebo parser napsat ručně. Napsání vlastního syntaktického a sémantického analyzátoru není obtížné a nejde o nic neobvyklého -- takto jsou řešeny například kompilátory Microsoft C\#\footnote{Dle \cite{JavaCompilerConstructionCampbell}, oddíl 8.5.2}, DMD\footnote{Kompilátor jazyka D; zřejmé z kódu parseru, viz \url{https://github.com/dlang/dmd/blob/master/src/parse.d}}, GCC\footnote{Uvedeno zde: \url{https://gcc.gnu.org/wiki/New_C_Parser}} nebo Clang\footnote{Uvedeno zde: \url{http://clang.llvm.org/features.html}, první odstavec předposledního oddílu}. Autor tohoto projektu zvolil variantu napsání vlastního parseru a lexeru metodou rekurzivního sestupu (modifikovanou tak, aby si poradila i s částmi gramatiky, které nejde zpracovat LL(1) parserem) ve víře, že časová náročnost bude srovnatelná s osvojením si a aplikací nové technologie s~tím, že takto napsaný parser bude lépe modifikovatelný a~všeobecně více "pod kontrolou".
 
 % TODO ref viz - viz kapitola/oddíl/xxx
+
+- Task guard, multithreading, dependency loop, tasks jako takové, error poisoning
+- Memory space - to už bylo popsáno
+- Overload resolution + inferring + @ctime

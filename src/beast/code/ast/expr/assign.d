@@ -57,7 +57,7 @@ final class AST_AssignExpression : AST_Expression {
 		}
 
 	public:
-		final override bool isUnaryExpression( ) {
+		final override bool isPrefixExpression( ) {
 			return true;
 		}
 

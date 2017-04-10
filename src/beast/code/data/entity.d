@@ -108,6 +108,22 @@ abstract class DataEntity : Identifiable {
 			assert( 0, identificationString ~ " is not callable" );
 		}
 
+		/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
+		final DataEntity resolveCall( Args... )( AST_Node ast, bool reportErrors, Args args ) {
+			auto _gd = ErrorGuard( ast );
+
+			CallableMatch match = startCallMatch( ast, reportErrors, overloadMatch_ );
+
+			foreach ( arg; args )
+				match.arg( arg );
+
+			match.finish( );
+
+			benforce( match.matchLevel != MatchLevel.noMatch, E.noMatchingOverload, "%s does not match given arguments: %s".format( identificationString, match.errorStr ) );
+
+			return match.toDataEntity( );
+		}
+
 	public:
 		/// Resolves identifier (drill-down)
 		/// The scope can be used for creating temporary variables

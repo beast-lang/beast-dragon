@@ -27,7 +27,7 @@ abstract class AST_AtomicExpression : AST_Expression {
 		}
 
 	public:
-		final override bool isUnaryExpression( ) {
+		final override bool isPrefixExpression( ) {
 			return true;
 		}
 

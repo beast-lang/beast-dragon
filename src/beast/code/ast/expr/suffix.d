@@ -1,12 +1,14 @@
-module beast.code.ast.expr.p1;
+module beast.code.ast.expr.suffix;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.atomic;
 import beast.code.ast.expr.auto_;
 import beast.code.ast.expr.parentcomma;
-import beast.code.ast.expr.p1_dotident;
+import beast.code.ast.expr.suffix_dotident;
+import beast.code.ast.expr.suffix_ops;
+import std.typecons : Tuple, tuple;
 
-final class AST_P1Expression : AST_Expression {
+final class AST_SuffixExpression : AST_Expression {
 
 	public:
 		static bool canParse( ) {
@@ -15,7 +17,7 @@ final class AST_P1Expression : AST_Expression {
 
 		static AST_Expression parse( ) {
 			AST_Expression base;
-			AST_P1ExpressionItem[ ] items;
+			AST_SuffixExpressionItem[ ] items;
 
 			if ( AST_AtomicExpression.canParse )
 				base = AST_AtomicExpression.parse( );
@@ -27,14 +29,16 @@ final class AST_P1Expression : AST_Expression {
 			while ( true ) {
 				if ( AST_ParentCommaExpression.canParse )
 					items ~= AST_ParentCommaExpression.parse( );
-				else if ( AST_P1_DotIdent.canParse )
-					items ~= AST_P1_DotIdent.parse( );
+				else if ( AST_Suffix_DotIdent.canParse )
+					items ~= AST_Suffix_DotIdent.parse( );
+				else if ( AST_Suffix_Operators.canParse )
+					items ~= AST_Suffix_Operators.parse( );
 				else
 					break;
 			}
 
 			if ( items.length ) {
-				AST_P1Expression result = new AST_P1Expression;
+				AST_SuffixExpression result = new AST_SuffixExpression;
 				result.base = base;
 				result.items = items;
 
@@ -46,11 +50,31 @@ final class AST_P1Expression : AST_Expression {
 
 	public:
 		AST_Expression base;
-		AST_P1ExpressionItem[ ] items;
+		AST_SuffixExpressionItem[ ] items;
 
 	public:
-		final override bool isUnaryExpression( ) {
+		final override bool isPrefixExpression( ) {
 			return true;
+		}
+
+		final override Tuple!( AST_Expression, AST_ParentCommaExpression ) asNewRightExpression( ) {
+			if ( auto right = items[ $ - 1 ].isParentCommaExpression ) {
+				AST_Expression expr;
+
+				if ( items.length > 1 ) {
+					auto e = new AST_SuffixExpression;
+					e.codeLocation = CodeLocation( base.codeLocation.source, base.codeLocation.startPos, right.codeLocation.startPos - base.codeLocation.startPos );
+					e.base = base;
+					e.items = items[ 0 .. $ - 1 ];
+					expr = e;
+				}
+				else
+					expr = base;
+
+				return tuple( expr, right );
+			}
+
+			return super.asNewRightExpression( );
 		}
 
 	public:
@@ -79,9 +103,11 @@ final class AST_P1Expression : AST_Expression {
 
 }
 
-interface AST_P1ExpressionItem {
+interface AST_SuffixExpressionItem {
 
 	public:
-		Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide );
+		abstract Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide );
+
+		abstract AST_ParentCommaExpression isParentCommaExpression( );
 
 }

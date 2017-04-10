@@ -1,13 +1,13 @@
 module beast.code.ast.expr.parentcomma;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.p1;
+import beast.code.ast.expr.suffix;
 import beast.code.data.callable.match;
 import beast.code.ast.expr.vardecl;
 import beast.code.data.matchlevel;
 
 /// Parameter list used in declarations
-final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
+final class AST_ParentCommaExpression : AST_Expression, AST_SuffixExpressionItem {
 
 	public:
 		static bool canParse( ) {
@@ -39,7 +39,7 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 
 	public:
 		/// Returns whether the parentcommaexpression could qualify as runtime parameter list
-		final bool isRuntimeParameterList( ) {
+		bool isRuntimeParameterList( ) {
 			foreach ( expr; items ) {
 				if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
 					// Auto expressions cannot be expanded
@@ -49,6 +49,10 @@ final class AST_ParentCommaExpression : AST_Expression, AST_P1ExpressionItem {
 			}
 
 			return true;
+		}
+
+		override AST_ParentCommaExpression isParentCommaExpression( ) {
+			return this;
 		}
 
 	public:

@@ -1,20 +1,21 @@
-module beast.code.ast.expr.p1_dotident;
+module beast.code.ast.expr.suffix_dotident;
 
 import beast.code.ast.toolkit;
-import beast.code.ast.expr.p1;
+import beast.code.ast.expr.suffix;
 import beast.code.ast.identifier;
+import beast.code.ast.expr.parentcomma;
 
 /// expr.ident
-final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
+final class AST_Suffix_DotIdent : AST_Node, AST_SuffixExpressionItem {
 
 	public:
 		static bool canParse( ) {
 			return currentToken == Token.Special.dot;
 		}
 
-		static AST_P1_DotIdent parse( ) {
+		static AST_SuffixExpressionItem parse( ) {
 			auto _gd = codeLocationGuard( );
-			auto result = new AST_P1_DotIdent( );
+			auto result = new AST_Suffix_DotIdent( );
 
 			currentToken.expectAndNext( Token.Special.dot );
 
@@ -30,8 +31,12 @@ final class AST_P1_DotIdent : AST_Node, AST_P1ExpressionItem {
 	public:
 		override Overloadset p1expressionItem_buildSemanticTree( Overloadset leftSide ) {
 			const auto __gd = ErrorGuard( codeLocation );
-			
+
 			return leftSide.single.expectResolveIdentifier( identifier );
+		}
+
+		override AST_ParentCommaExpression isParentCommaExpression( ) {
+			return null;
 		}
 
 	protected:

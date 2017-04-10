@@ -230,10 +230,10 @@ void main() {
 		\grAltLn \gr{BitExpr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{BitExpr} \}+ \\
 		
 	\grDef{BitExpr} \gr{SumExpr} \\
-		\grAltLn \gr{UnaryExpr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{UnaryExpr} \\
-		\grAltLn \gr{UnaryExpr} \{ \kwd{\&} \gr{UnaryExpr} \}+ \\
-		\grAltLn \gr{UnaryExpr} \{ \kwd{|} \gr{UnaryExpr} \}+ \\
-		\grAltLn \gr{UnaryExpr} \{ \kwd{\^} \gr{UnaryExpr} \}+ \\
+		\grAltLn \gr{PrefixExpr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{PrefixExpr} \\
+		\grAltLn \gr{PrefixExpr} \{ \kwd{\&} \gr{PrefixExpr} \}+ \\
+		\grAltLn \gr{PrefixExpr} \{ \kwd{|} \gr{PrefixExpr} \}+ \\
+		\grAltLn \gr{PrefixExpr} \{ \kwd{\^} \gr{PrefixExpr} \}+ \\
 	
 	\grDef{SumExpr} \gr{MultExpr} \\
 		\grAltLn \gr{MultExpr} \{ ( \kwd{+} | \kwd{-} ) \gr{MultExpr} \}+ \\
@@ -242,19 +242,17 @@ void main() {
 		\grAltLn \gr{VarDeclExpr} \{ ( \kwd{*} | \kwd{/} ) \gr{VarDeclExpr} \}+ \\
 		\grAltLn \gr{VarDeclExpr} \kwd{\%} \gr{VarDeclExpr} \\
 		
-	\grDef{VarDeclExpr} \gr{UnaryExpr} \\
-		\grAltLn \gr{UnaryExpr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
-		\grAltLn \kwd{new} \gr{UnaryExpr} [ \gr{ParentCommaExpr} ] \\
+	\grDef{VarDeclExpr} \gr{PrefixExpr} \\
+		\grAltLn \gr{PrefixExpr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
+		\grAltLn \kwd{new} \gr{PrefixExpr} [ \gr{ParentCommaExpr} ] \\
 
-	\grDef{UnaryExpr} \gr{P1Expr} \\
-		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{P1Expr} \\
-		\grAltLn \gr{P1Expr} ( \kwd{++} | \kwd{-{}-} ) \\
-		\grAltLn \gr{P1Expr} \{ \kwd{?} | \kwd{!} \}+ \\
-		\grAltLn \gr{InlineVarDecl} \\
+	\grDef{PrefixExpr} \gr{SuffixExpr} \\
+		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{SuffixExpr} \\
+		%\grAltLn \gr{InlineVarDecl} \\
 		\grAltLn \kwd{\$} \\
 		
-	\grDef{P1Expr} \gr{AtomExpr} \\
-		\grAltLn \gr{AtomExpr} \{ \gr{P1Op} \} \\
+	\grDef{SuffixExpr} \gr{AtomExpr} \\
+		\grAltLn \gr{AtomExpr} \{ \gr{SuffixExpr} \} \\
 	
 	\grDef{AtomExpr} [ \kwd{:} ] \token{Identifier} \\
 		\grAltLn \gr{Literal} \\
@@ -266,9 +264,11 @@ void main() {
 	\grDef{AssignOpOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
 		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
 	
-	\grDef{P1Op} \gr{ParentCommaExpr} \\
+	\grDef{SuffixOp} \gr{ParentCommaExpr} \\
 		\grAltLn \kwd{[} [ \gr{Expression} \{ \kwd{,} \gr{Expression} \} [ \kwd{,} ] ] \kwd{]} \\
 		\grAltLn \kwd{.} \token{Identifier} \\
+		\grAltLn \kwd{++} | \kwd{-{}-} \\
+		\grAltLn \kwd{?} | \kwd{!} \\
 \end{grammar}
 
 \subsection{Operator precedence}
@@ -276,9 +276,14 @@ void main() {
 	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
 	
 	1
-		& \inlineCode{x(args)} & & Function call & \multirow{3}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x(args)} & & Function call & \multirow{7}{*}{L$\rightarrow$R} \\
 		& \inlineCode{x[args]} & & Array subscripting & \\
 		& \inlineCode{x.ident} & & Attribute access & \\
+		\cline{2-4}
+		& \inlineCode{x++} & \inlineCode{suffInc} & Suffix increment & \\
+		& \inlineCode{x--} & \inlineCode{suffDec} & Suffix decrement & \\
+		& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & \\
+		& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
 	\hline
 	
 	2
@@ -288,18 +293,12 @@ void main() {
 		& \inlineCode{++x} & \inlineCode{preInc} & Prefix increment & \\
 		& \inlineCode{--x} & \inlineCode{preDec} & Prefix decrement & \\
 		\cline{2-5}
-		& \inlineCode{x++} & \inlineCode{suffInc} & Suffix increment & \multirow{2}{*}{NOCH} \\
-		& \inlineCode{x--} & \inlineCode{suffDec} & Suffix decrement & \\
-		\cline{2-5}
-		& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & \multirow{2}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
-		\cline{2-5}
 		& \inlineCode{\$} & & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
 	\hline
 	
 	3
-		& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
-		& \inlineCode{new x( args )} & & Dynamic construction & \\
+		%& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
+		& \inlineCode{new x( args )} & & Dynamic construction & NOCH \\
 	\hline
 	
 	4
@@ -574,9 +573,8 @@ enum Operator {
 	
 @public:
 	enum : Set {
-		unary = preNot | suffNot | preMinus /* etc */,
-		unaryPre = preNot | preMinus | preTilde /* etc */,
-		unarySuff = suffNot | suffMult | suffAnd /* etc */,
+		prefix = preNot | preMinus | preTilde /* etc */,
+		suffix = suffNot | suffMult | suffAnd /* etc */,
 		
 		binary = binMult | binDiv | binMod /* etc */,
 		anyAssign = assign | refAssign | plusAssign /* etc */
@@ -590,9 +588,9 @@ auto #opXX( @ctime Operator op, auto args ... );
 \end{code}
 where \inlineCode{opXX} is function name (mentioned below).
 
-So for example, you can overload all unary operators at once using:
+So for example, you can overload all suffix operators at once using:
 \begin{code}
-@final class UnaryProxy( Type T ) {
+@final class SuffixProxy( Type T ) {
 	
 @public:
 	Void #ctor( T? value ) {
@@ -600,7 +598,7 @@ So for example, you can overload all unary operators at once using:
 	}
 	
 @public:
-	auto #opUnary( @ctime Operator op, auto args ... ) {
+	auto #opSuffix( @ctime Operator op, auto args ... ) {
 		return referencedValue.#operator( op, args ... );
 	}
 	
@@ -612,10 +610,10 @@ So for example, you can overload all unary operators at once using:
 
 or you can overload one exact operator:
 \begin{code}
-Boolean #opUnary( Operator.preNot ) {
+Boolean #opSuffix( Operator.suffNot ) {
 	return !referencedValue;	
 }
-Int16 #opUnary( Operator("x++") ) {
+Int16 #opSuffix( Operator("x++") ) {
 	return referencedValue ++;
 }
 \end{code}
@@ -754,7 +752,21 @@ In the bracket parameters, you can use the \inlineCode{\$} operator.
 
 It doesn't take any operands and translates to \inlineCode{x.#dollar( Index paramId )} where \inlineCode{paramId} is the index of the bracket parameter the dollar operator was used in (starting from 0).
 
-\subsection{Unary operators}
+\subsection{Suffix operators}
+Consider expression
+\begin{code}
+	x++
+\end{code}
+
+Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#opSuffix( op )} (or error).
+\end{enumerate}
+
+\subsection{Prefix operators}
 Consider expression
 \begin{code}
 	++x
@@ -765,7 +777,7 @@ Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
 \paragraph{Behavior}
 \begin{enumerate}
 	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#opUnary( op )} (or error).
+	\item Resolve and call \inlineCode{x.#opPrefix( op )} (or error).
 \end{enumerate}
 
 \subsection{Binary (and assign) operators}
@@ -799,7 +811,7 @@ Operands separated by the comma are evaluated from left to right. Value of the r
 	\grDef{VarDeclCmd} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
 		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
 	\\
-	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{UnaryExpr} | \gr{AutoType} ) \\
+	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{PrefixExpr} | \gr{AutoType} ) \\
 	\grDef{AutoType} \kwd{auto} [ \kwd{?} ] [ \kwd{!} ] \\
 	\grDef{VarDeclCtor} ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
 \end{grammar}

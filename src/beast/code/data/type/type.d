@@ -14,13 +14,16 @@ import beast.toolkit;
 import beast.util.uidgen;
 import core.stdc.string : memcpy;
 import std.range : chain;
-import beast.code.data.var.literal;
+import beast.backend.common.primitiveop;
+import beast.code.data.util.btsp;
+import beast.code.data.var.btspconst;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
 
 /// Type in the Beast language
 abstract class Symbol_Type : Symbol {
+	mixin TaskGuard!"instanceSizeLiteralObtaining";
 
 	public:
 		this( ) {
@@ -42,7 +45,7 @@ abstract class Symbol_Type : Symbol {
 			Symbol[ ] mem;
 
 			// T? -> reference
-			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opUnary", //
+			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
 					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ast ) { //
 						return coreLibrary.type.Reference.referenceTypeOf( this ).dataEntity; //
 					} ), //
@@ -57,12 +60,15 @@ abstract class Symbol_Type : Symbol {
 						( cb, inst, args ) { //
 							auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
 							cb.build_localVariableDefinition( var );
-							var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreLibrary.enum_.xxctor.refAssign.dataEntity, inst ).buildCode( cb );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, var, inst );
+
+							// Result
 							var.buildCode( cb );
 						} );
 			}
 
-			// to function
+			// .to( XX )
 			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"to", this, //
 					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
 						( AST_Node, DataEntity inst, MemoryPtr targetType ) { //
@@ -84,18 +90,24 @@ abstract class Symbol_Type : Symbol {
 					} //
 					 ) );
 
-			// #instanceSize
-			// TODO: BETTER
-			mem ~= new Symbol_BootstrapAlias( ID!"#instanceSize", //
-					( MatchLevel matchLevel, DataEntity inst ) { //
-						ubyte[ ] data;
-						data.length = hardwareEnvironment.pointerSize;
+			// .addr
+			// TODO: better?
+			mem ~= new Symbol_BootstrapAlias( ID!"addr", //
+					( MatchLevel matchLevel, DataEntity inst ) => new DataEntity_Bootstrap( ID!"addr", coreType.Pointer, inst ? inst : dataEntity, inst ? inst.isCtime : true, //
+						( CodeBuilder cb ) { //
+							benforce( inst !is null, E.needThis, "Need this for %s.addr".format( dataEntity.identificationString ) );
 
-						size_t instanceSize = instanceSize;
-						memcpy( data.ptr, &instanceSize, hardwareEnvironment.effectivePointerSize );
+							auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, cb.isCtime );
+							cb.build_localVariableDefinition( var );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, var, inst );
 
-						return new Symbol_Literal( coreType.Size, data ).dataEntity.Overloadset;
-					} );
+							// Reulst
+							var.buildCode( cb );
+						} ).Overloadset );
+
+			// #instanceSize, lazily initialized
+			mem ~= new Symbol_BootstrapAlias( ID!"#instanceSize", ( matchLevel, inst ) => instanceSizeLiteral.Overloadset );
 
 			baseNamespace_.initialize( mem );
 
@@ -109,6 +121,12 @@ abstract class Symbol_Type : Symbol {
 
 		/// Size of instance in bytes
 		abstract size_t instanceSize( );
+
+		/// Size of instance as literal constant
+		final DataEntity instanceSizeLiteral( ) {
+			enforceDone_instanceSizeLiteralObtaining( );
+			return instanceSizeLiteralWIP_;
+		}
 
 	public:
 		final Overloadset resolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
@@ -178,10 +196,16 @@ abstract class Symbol_Type : Symbol {
 		debug bool initialized_;
 
 	private:
+		void execute_instanceSizeLiteralObtaining( ) {
+			instanceSizeLiteralWIP_ = new Symbol_BootstrapConstant( this.dataEntity, ID!"#instanceSize", coreType.Size, instanceSize ).dataEntity;
+		}
+
+	private:
 		MemoryPtr ctimeValue_;
 		/// Namespace containing implicit/default types for a type (implicit operators, reflection functions etc)
 		BootstrapNamespace baseNamespace_;
 		size_t typeUID_;
+		DataEntity instanceSizeLiteralWIP_;
 
 	protected:
 		abstract static class Data : SymbolRelatedDataEntity {

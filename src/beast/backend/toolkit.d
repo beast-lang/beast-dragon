@@ -17,7 +17,7 @@ public {
 	import beast.code.memory.block : MemoryBlock;
 	import beast.code.memory.memorymgr : memoryManager;
 	import beast.code.memory.ptr : MemoryPtr;
-	import beast.corelib.corelib : coreLibrary, coreConst, coreEnum, coreType;
+	import beast.corelib.corelib : coreLibrary, coreConst, coreEnum, coreType, coreFunc;
 	import beast.toolkit;
 	import beast.util.hash : Hash;
 	import beast.code.data.scope_.scope_ : currentScope, scopeGuard;

@@ -49,7 +49,7 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 			} );
 
 	// !a
-	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opUnary", tp.Bool, tp.Bool, //
+	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opPrefix", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.preNot ), //
 			( cb, inst, args ) { //
 				/// args[ 0 ] is Operator.binAnd

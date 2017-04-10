@@ -43,7 +43,7 @@ struct CoreLibrary_Functions {
 						// Result data
 						result.buildCode( cb );
 					} ) );
-			sink( malloc = new Symbol_PrimitiveStaticRuntimeFunction( ID!"free", parent, //
+			sink( free = new Symbol_PrimitiveStaticRuntimeFunction( ID!"free", parent, //
 					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Pointer ), //
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.free, args[ 0 ] );

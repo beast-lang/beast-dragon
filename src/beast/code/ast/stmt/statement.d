@@ -7,6 +7,7 @@ import beast.code.ast.stmt.if_;
 import beast.code.ast.stmt.codeblock;
 import beast.code.ast.stmt.while_;
 import beast.code.ast.stmt.break_;
+import beast.code.ast.stmt.delete_;
 
 /// Statement is anything in the function body
 abstract class AST_Statement : AST_Node {
@@ -17,6 +18,7 @@ abstract class AST_Statement : AST_Node {
 					AST_Declaration.canParse || AST_Expression.canParse || AST_CodeBlockStatement.canParse //
 					 || AST_ReturnStatement.canParse || AST_BreakStatement.canParse //
 					 || AST_IfStatement.canParse || AST_WhileStatement.canParse //
+					 || AST_DeleteStatement.canParse //
 			 );
 		}
 
@@ -50,12 +52,15 @@ abstract class AST_Statement : AST_Node {
 			else if ( AST_CodeBlockStatement.canParse )
 				return AST_CodeBlockStatement.parse( _gd, decorationList );
 
+			else if ( AST_DeleteStatement.canParse )
+				return AST_DeleteStatement.parse( _gd, decorationList );
+
 			else if ( AST_Expression.canParse ) {
 				AST_Expression expr = AST_Expression.parse( false );
 
 				// expr identifier => declaration
 				if ( currentToken == Token.Type.identifier ) {
-					benforce( expr.isUnaryExpression, E.syntaxError, "Syntax error - either unexpected identifier or type expression uses forbidden operators", ( msg ) { msg.codeLocation = currentToken.codeLocation; } );
+					benforce( expr.isPrefixExpression, E.syntaxError, "Syntax error - either unexpected identifier or type expression uses forbidden operators", ( msg ) { msg.codeLocation = currentToken.codeLocation; } );
 
 					return AST_Declaration.parse( _gd, decorationList, expr );
 				}

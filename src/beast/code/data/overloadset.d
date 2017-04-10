@@ -80,6 +80,8 @@ struct Overloadset {
 	public:
 		/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
 		DataEntity resolveCall( Args... )( AST_Node ast, bool reportErrors, Args args ) {
+			auto _gd = ErrorGuard( ast );
+
 			CallMatchSet match = CallMatchSet( this, ast, reportErrors );
 
 			foreach ( arg; args )

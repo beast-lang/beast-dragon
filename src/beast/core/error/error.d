@@ -83,6 +83,7 @@ enum E {
 	// STATEMENTS:
 	missingReturnExpression,
 	nothingToBreakOrContinue, /// Could not found any scope to break/continue
+	wrongDeleteExpression, /// When anything else but reference was passed to delete
 
 	// BUILDING:
 	entryFunctionProblem, /// Missing main or wrong arguments or so

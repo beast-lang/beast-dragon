@@ -7,6 +7,8 @@ import beast.code.memory.ptr;
 import beast.code.memory.memorymgr;
 import beast.code.data.scope_.root;
 import beast.code.ast.expr.assign;
+import std.typecons : Tuple;
+import beast.code.ast.expr.parentcomma;
 
 abstract class AST_Expression : AST_Statement {
 	alias LowerLevelExpression = AST_AssignExpression;
@@ -20,7 +22,7 @@ abstract class AST_Expression : AST_Statement {
 			auto _gd = codeLocationGuard( );
 			auto result = LowerLevelExpression.parse( );
 
-			if ( parseDeclarations && result.isUnaryExpression && currentToken == Token.Type.identifier )
+			if ( parseDeclarations && result.isPrefixExpression && currentToken == Token.Type.identifier )
 				return AST_VariableDeclarationExpression.parse( _gd, null, result );
 
 			return result;
@@ -28,7 +30,7 @@ abstract class AST_Expression : AST_Statement {
 
 	public:
 		/// Returns if the expression is P1 or lower
-		bool isUnaryExpression( ) {
+		bool isPrefixExpression( ) {
 			return false;
 		}
 
@@ -40,6 +42,16 @@ abstract class AST_Expression : AST_Statement {
 		/// Returns if the expression is variable declaration
 		AST_VariableDeclarationExpression isVariableDeclaration( ) {
 			return null;
+		}
+
+		AST_ParentCommaExpression isParentCommaExpression( ) {
+			return null;
+		}
+
+		Tuple!( AST_Expression, AST_ParentCommaExpression ) asNewRightExpression( ) {
+			auto _gd = ErrorGuard( this );
+			berror( E.syntaxError, "The 'new' expression has to end with '( args )'" );
+			assert( 0 );
 		}
 
 	public:

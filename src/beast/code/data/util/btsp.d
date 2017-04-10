@@ -5,19 +5,20 @@ import beast.code.data.decorator.decorator;
 import beast.code.data.callable.match;
 
 /// Data entity whose parameters are passed in the constructor
-abstract class DataEntity_Bootstrap : DataEntity {
+final class DataEntity_Bootstrap : DataEntity {
 
 	public:
 		alias BuildCodeFunc = void delegate( CodeBuilder cb );
 
 	public:
-		this( Symbol_Type dataType, DataEntity parent, bool isCtime, BuildCodeFunc buildCodeFunc, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+		this( Identifier identifier, Symbol_Type dataType, DataEntity parent, bool isCtime, BuildCodeFunc buildCodeFunc, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			super( matchLevel );
 
 			dataType_ = dataType;
 			parent_ = parent;
 			isCtime_ = isCtime;
 			buildCodeFunc_ = buildCodeFunc;
+			identifier_ = identifier;
 		}
 
 	public:
@@ -39,11 +40,7 @@ abstract class DataEntity_Bootstrap : DataEntity {
 
 	public:
 		override Identifier identifier( ) {
-			return null;
-		}
-
-		override string identification( ) {
-			return "#btsp#";
+			return identifier_;
 		}
 
 		override AST_Node ast( ) {
@@ -58,6 +55,7 @@ abstract class DataEntity_Bootstrap : DataEntity {
 		DataEntity parent_;
 		BuildCodeFunc buildCodeFunc_;
 		Symbol_Type dataType_;
+		Identifier identifier_;
 		bool isCtime_;
 
 }
