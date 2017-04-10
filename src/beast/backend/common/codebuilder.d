@@ -123,7 +123,7 @@ abstract class CodeBuilder : Identifiable {
 
 	public:
 		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue ) {
-			var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( var.ast, true, coreLibrary.enum_.xxctor.assign, initValue ).buildCode( this );
+			var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( var.ast, true, initValue ).buildCode( this );
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {

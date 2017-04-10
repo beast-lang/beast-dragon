@@ -35,10 +35,9 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 
 			// Copy/assign constructor
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
-					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.assign, this ), //
+					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) { //
-						// 0th argument is #Ctor.assign!
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
 
 			// Destructor

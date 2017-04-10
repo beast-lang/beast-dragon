@@ -40,10 +40,10 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 
 			// Copy ctor
 			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
-					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.xxctor.assign, this ), //
+					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
 
 			// Dtor

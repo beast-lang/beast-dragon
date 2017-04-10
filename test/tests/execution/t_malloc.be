@@ -3,7 +3,7 @@ module t_malloc;
 Int? test() {
 	Pointer ptr = malloc( Int.#instanceSize );
 	Int? ref = ptr.to( Int? );
-	ref.#refData.#ctor( #Ctor.assign, 12 );
+	ref.#refData.#ctor( 12 );
 	return ref;
 }
 

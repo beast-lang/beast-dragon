@@ -45,7 +45,6 @@ struct CoreLibrary_Enums {
 		E XXCtor;
 
 		struct XXCtorItems {
-			C assign; /// Assign constructor: #ctor( #Ctor.assign, val ) -> Var x = y
 			C refAssign; /// Ref assign constructor: #ctor( #Ctor.refAssign, val ) -> Var x := y
 		}
 

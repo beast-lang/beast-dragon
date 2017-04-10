@@ -107,7 +107,7 @@ abstract class Symbol_Module : Symbol {
 					return null;
 				}
 
-				override string identificationString_noPrefix() {
+				override string identificationString_noPrefix( ) {
 					return null;
 				}
 

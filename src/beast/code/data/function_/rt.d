@@ -208,11 +208,15 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 				final override string identificationString( ) {
 					//return "%s %s".format( sym_.returnType.tryGetIdentificationString, super.identificationString );
-					return "%s (expression)".format( sym_.returnType.tryGetIdentificationString );
+					return "%s call".format( sym_.dataEntity( MatchLevel.fullMatch, parentInstance_ ).identificationString );
 				}
 
 				final override DataEntity parent( ) {
 					return sym_.dataEntity.parent;
+				}
+
+				final override Symbol symbol() {
+					return sym_;
 				}
 
 				final override AST_Node ast( ) {
