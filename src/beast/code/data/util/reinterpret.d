@@ -1,15 +1,15 @@
 module beast.code.data.util.reinterpret;
 
 import beast.code.data.toolkit;
-import beast.code.data.util.proxy;
 
 /// Data entity that "reinterpret casts" source data entity into different datatype (no data change)
-final class DataEntity_ReinterpretCast : ProxyDataEntity {
+final class DataEntity_ReinterpretCast : DataEntity {
 
 	public:
 		this( DataEntity sourceEntity, Symbol_Type newType, MatchLevel matchLevel = MatchLevel.fullMatch ) {
-			super( sourceEntity, matchLevel );
+			super( matchLevel );
 			newType_ = newType;
+			sourceEntity_ = sourceEntity;
 		}
 
 	public:
@@ -17,7 +17,19 @@ final class DataEntity_ReinterpretCast : ProxyDataEntity {
 			return newType_;
 		}
 
+		override DataEntity parent( ) {
+			return sourceEntity_.parent;
+		}
+
+		override bool isCtime( ) {
+			return sourceEntity_.isCtime;
+		}
+
 	public:
+		override AST_Node ast( ) {
+			return sourceEntity_.ast;
+		}
+
 		override string identification( ) {
 			return "%s.##reinterpretCast( %s )".format( super.identification, newType_.identificationString );
 		}
@@ -26,7 +38,12 @@ final class DataEntity_ReinterpretCast : ProxyDataEntity {
 			return super.outerHash + newType_.outerHash;
 		}
 
+		override void buildCode( CodeBuilder cb ) {
+			sourceEntity_.buildCode( cb );
+		}
+
 	private:
 		Symbol_Type newType_;
+		DataEntity sourceEntity_;
 
 }

@@ -5,6 +5,10 @@ import beast.code.ast.expr.prefix;
 import beast.code.ast.expr.binary;
 import beast.code.ast.expr.parentcomma;
 import beast.code.data.util.reinterpret;
+import beast.code.data.util.btsp;
+import beast.code.data.var.tmplocal;
+import beast.code.data.matchlevel;
+import beast.code.data.util.deref;
 
 final class AST_NewExpression : AST_Expression {
 	alias LowerLevelExpression = AST_PrefixExpression;
@@ -20,9 +24,10 @@ final class AST_NewExpression : AST_Expression {
 			if ( currentToken.matchAndNext( Token.Keyword.new_ ) ) {
 				auto result = new AST_NewExpression;
 
-				auto data = LowerLevelExpression.parse().asNewRightExpression( );
+				auto data = LowerLevelExpression.parse( ).asNewRightExpression( );
 				result.type = data[ 0 ];
 				result.args = data[ 1 ];
+				result.codeLocation = _gd.get( );
 
 				return result;
 			}
@@ -39,12 +44,24 @@ final class AST_NewExpression : AST_Expression {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			Symbol_Type ttype = type.ctExec( coreType.Type ).readType( );
-			Symbol_Type refType = coreType.Reference.referenceTypeOf( ttype );
+			auto refType = coreType.Reference.referenceTypeOf( ttype );
 
 			DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall( this, true, ttype.instanceSizeLiteral );
-			DataEntity ctorCall = new DataEntity_ReinterpretCast( mallocCall, refType ).expectResolveIdentifier( ID!"#ctor" ).resolveCall( args, true, args.items );
 
-			return ctorCall.Overloadset;
+			return new DataEntity_Bootstrap( null, refType, ttype.dataEntity, false, ( cb ) { //
+				// Create a temporary variable
+				auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
+				cb.build_localVariableDefinition( var );
+
+				// Call malloc, store result into the variable
+				coreType.Pointer.copyCtor.dataEntity( MatchLevel.fullMatch, new DataEntity_ReinterpretCast( var, coreType.Pointer ) ).resolveCall( this, true, mallocCall ).buildCode( cb );
+
+				// Call constructor for the referenced value
+				new DataEntity_DereferenceProxy( var, ttype ).expectResolveIdentifier( ID!"#ctor" ).resolveCall( args, true, args.items ).buildCode( cb );
+
+				// Return the variable as a result
+				var.buildCode( cb );
+			} ).Overloadset;
 		}
 
 	protected:

@@ -20,6 +20,7 @@ final class Symbol_BootstrapConstant : Symbol_StaticVariable {
 				block.identifier = identifier.str;
 				block.relatedDataEntity = dataEntity;
 
+				assert( data.sizeof >= dataType.instanceSize );
 				memoryPtr_ = block.startPtr.write( &data, dataType.instanceSize );
 			}
 		}

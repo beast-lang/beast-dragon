@@ -26,11 +26,11 @@ final class Interpreter {
 
 			import beast.core.error.error : stderrMutex;
 
-			debug ( interpreter ) {
+			/*debug ( interpreter ) {
 				stderrMutex.lock( );
 				scope ( exit )
 					stderrMutex.unlock( );
-			}
+			}*/
 
 			ir.executeInstruction( Instruction.I.call, func.iopFuncPtr );
 			ir.run( );
@@ -51,7 +51,7 @@ final class Interpreter {
 			debug ( interpreter ) {
 				import std.stdio : writefln;
 
-				writefln( "\n%s; @%s; %s\n---------------------", execId, currentFrame.instructionPointer - 1, instr.identificationString );
+				writefln( "\n%s; @%s; %s   (#%s)\n---------------------", execId, currentFrame.instructionPointer - 1, instr.identificationString, instr.codeLocation.startLine );
 				execId++;
 			}
 

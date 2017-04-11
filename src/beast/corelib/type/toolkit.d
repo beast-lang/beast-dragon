@@ -18,6 +18,7 @@ public {
 	import beast.code.memory.ptr : MemoryPtr;
 	import beast.corelib.toolkit;
 	import beast.corelib.type.types : CoreLibrary_Types;
+	import beast.code.data.alias_.pptyalias : Symbol_PropertyAlias;
 }
 
 import beast.corelib.const_.enums;

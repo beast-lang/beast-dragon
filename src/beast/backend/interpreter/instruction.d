@@ -238,6 +238,12 @@ InstructionOperand iopBpOffset( size_t offset ) {
 	return result;
 }
 
+InstructionOperand iopRefBpOffset( size_t offset ) {
+	auto result = InstructionOperand( InstructionOperand.Type.refStackRef );
+	result.basePointerOffset = offset;
+	return result;
+}
+
 InstructionOperand iopPtr( MemoryPtr ptr ) {
 	auto result = InstructionOperand( InstructionOperand.Type.heapRef );
 	result.heapLocation = ptr;

@@ -53,6 +53,7 @@ final class Backend_Cpp : Backend {
 				code_memorydecl.formattedWrite( "extern uintptr_t %s[%s];\n", identifier, arraySize );
 				code_memory.formattedWrite( "uintptr_t %s[%s] = { ", identifier, arraySize );
 
+				//assert( ulong.sizeof >= hardwareEnvironment.pointerSize );
 				BigInt data = block.data[ 0 ];
 				auto mem = memoryManager;
 
@@ -70,7 +71,7 @@ final class Backend_Cpp : Backend {
 						data = 0;
 					}
 
-					data += b << ( i * 8 );
+					data += ( cast( ulong ) b ) << ( i * 8 );
 					i++;
 				}
 
@@ -85,6 +86,10 @@ final class Backend_Cpp : Backend {
 
 			auto result = appender!string;
 			result ~= "#define VAL( var, type ) ( *( ( type* )( var ) ) )\n";
+			result ~= "#define TYPEDEF( id, size ) typedef struct { uintptr_t data[ size ]; } id\n";
+			result ~= "#define PARAM( expr, type ) ( ( type* )( expr ) )\n";
+			result ~= "#define DEREF( expr ) ( *( ( uintptr_t ** )( expr ) ) )\n";
+			result ~= "#define OFFSET( expr, offset ) ( ( uintptr_t* ) ( ( ( uint8_t* ) expr ) + offset ) )\n";
 			result ~= "#define CTMEM\n\n";
 			result ~= "#include <stdint.h>\n";
 			result ~= "#include <stdio.h>\n";

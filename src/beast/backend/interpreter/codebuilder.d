@@ -56,6 +56,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 		override void build_offset( ExprFunction expr, size_t offset ) {
 			expr( this );
+
+			if ( offset == 0 )
+				return;
+
 			final switch ( operandResult_.type ) {
 
 			case InstructionOperand.Type.directData:
@@ -69,29 +73,14 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				operandResult_.heapLocation.val += offset;
 				break;
 
-			case InstructionOperand.Type.stackRef: {
-					// Stack offset is not simple either - because it is var based, not memory based, we cannot simply increment it
-					auto varOperand = currentBPOffset_.iopBpOffset;
-					auto ptrSize = hardwareEnvironment.pointerSize;
-
-					addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, ptrSize.iopLiteral );
-					addInstruction( I.stAddr, varOperand, operandResult_ );
-					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
-
-					operandResult_.type = InstructionOperand.Type.refStackRef;
-					operandResult_.basePointerOffset = currentBPOffset_;
-
-					currentBPOffset_++;
-				}
-				break;
-
+			case InstructionOperand.Type.stackRef:
 			case InstructionOperand.Type.refHeapRef:
 			case InstructionOperand.Type.refStackRef: {
 					auto varOperand = currentBPOffset_.iopBpOffset;
 					auto ptrSize = hardwareEnvironment.pointerSize;
 
 					addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, ptrSize.iopLiteral );
-					addInstruction( I.mov, varOperand, operandResult_, ptrSize.iopLiteral );
+					addInstruction( I.stAddr, varOperand, operandResult_ );
 					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
 
 					operandResult_.type = InstructionOperand.Type.refStackRef;
@@ -138,6 +127,24 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				argVars[ i ] = argVar;
 			}
 
+			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
+				assert( parentInstance );
+
+				auto iopOffset = currentBPOffset_.iopLiteral;
+				auto contextPtrIOP = currentBPOffset_.iopBpOffset;
+				currentBPOffset_++;
+
+				addInstruction( I.allocLocal, iopOffset, hardwareEnvironment.pointerSize.iopLiteral );
+				addInstruction( I.markPtr, contextPtrIOP );
+
+				parentInstance.buildCode( this );
+				addInstruction( I.stAddr, contextPtrIOP, operandResult_ );
+			}
+			else {
+				addInstruction( I.skipAlloc, currentBPOffset_.iopLiteral );
+				currentBPOffset_++;
+			}
+
 			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
 				if ( param.isConstValue )
 					continue;
@@ -147,15 +154,6 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				popScope( );
 			}
 
-			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
-				assert( parentInstance );
-				parentInstance.buildCode( this );
-			}
-			else {
-				addInstruction( I.skipAlloc, currentBPOffset_.iopLiteral );
-				currentBPOffset_++;
-			}
-
 			addInstruction( I.call, function_.iopFuncPtr );
 
 			popScope( );
@@ -163,7 +161,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void build_contextPtr( ) {
-			operandResult_ = ( -1 ).iopBpOffset;
+			operandResult_ = ( -1 ).iopRefBpOffset;
 		}
 
 		mixin Build_PrimitiveOperationImpl!( "interpreter", "operandResult_" );
@@ -244,7 +242,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			if ( !result_.data.length )
 				return;
 
-			import std.stdio : writefln;
+			import std.stdio : writefln, stdout;
 			import beast.core.error.error : stderrMutex;
 
 			// uncommenting this causes freezes - dunno why
@@ -255,6 +253,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				writefln( "@%3s   %s", i, instr.identificationString );
 
 			writefln( "\n== END\n" );
+			//stdout.flush();
 			//}
 		}
 

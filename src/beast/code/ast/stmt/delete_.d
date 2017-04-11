@@ -31,20 +31,22 @@ final class AST_DeleteStatement : AST_Statement {
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			const auto __gd = ErrorGuard( codeLocation );
 
-			auto val = expr.buildSemanticTree_single( );
-			auto refType = val.dataType;
+			cb.build_scope( ( cb ) {
+				auto val = expr.buildSemanticTree_single( );
+				auto refType = val.dataType;
 
-			benforce( refType.isReferenceType, E.wrongDeleteExpression, "Delete can only be used on references, not %s".format( refType.identificationString ) );
+				benforce( refType.isReferenceType, E.wrongDeleteExpression, "Delete can only be used on references, not %s".format( refType.identificationString ) );
 
-			auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
-			cb.build_localVariableDefinition( var );
-			cb.build_copyCtor( var, val );
+				auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
+				cb.build_localVariableDefinition( var );
+				cb.build_copyCtor( var, val );
 
-			// Call the destructor on referenced memory
-			var.expectResolveIdentifier( ID!"#refData" ).single.expectResolveIdentifier( ID!"#dtor" ).resolveCall( expr, true ).buildCode( cb );
+				// Call the destructor on referenced memory
+				var.expectResolveIdentifier( ID!"#refData" ).single.expectResolveIdentifier( ID!"#dtor" ).resolveCall( expr, true ).buildCode( cb );
 
-			// And call free
-			coreFunc.free.dataEntity.resolveCall( expr, true, new DataEntity_ReinterpretCast( var, coreType.Pointer ) ).buildCode( cb );
+				// And call free
+				coreFunc.free.dataEntity.resolveCall( expr, true, new DataEntity_ReinterpretCast( var, coreType.Pointer ) ).buildCode( cb );
+			} );
 		}
 
 	protected:

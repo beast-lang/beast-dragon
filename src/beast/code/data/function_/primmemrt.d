@@ -224,8 +224,6 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
-					const auto _gd = ErrorGuard( codeLocation );
-
 					sym_.func_( cb, parentInstance_, arguments_ );
 				}
 

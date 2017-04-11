@@ -90,12 +90,12 @@ abstract class Symbol_Type : Symbol {
 					} //
 					 ) );
 
-			// .addr
+			// .#ddr
 			// TODO: better?
-			mem ~= new Symbol_BootstrapAlias( ID!"addr", //
+			mem ~= new Symbol_BootstrapAlias( ID!"#addr", //
 					( MatchLevel matchLevel, DataEntity inst ) => new DataEntity_Bootstrap( ID!"addr", coreType.Pointer, inst ? inst : dataEntity, inst ? inst.isCtime : true, //
 						( CodeBuilder cb ) { //
-							benforce( inst !is null, E.needThis, "Need this for %s.addr".format( dataEntity.identificationString ) );
+							benforce( inst !is null, E.needThis, "Need this for %s.#addr".format( dataEntity.identificationString ) );
 
 							auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, cb.isCtime );
 							cb.build_localVariableDefinition( var );

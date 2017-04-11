@@ -90,7 +90,6 @@ abstract class Symbol_MemberVariable : Symbol_Variable {
 				override void buildCode( CodeBuilder cb ) {
 					benforce( parentInstance_ !is null, E.needThis, "Need this for %s".format( identificationString ) );
 
-					auto _gd = ErrorGuard( this );
 					cb.build_offset( ( cb ) { parentInstance_.buildCode( cb ); }, sym_.parentThisOffset );
 				}
 

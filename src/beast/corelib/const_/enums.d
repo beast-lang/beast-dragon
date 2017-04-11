@@ -4,6 +4,12 @@ import beast.corelib.toolkit;
 import beast.code.data.var.btspconst;
 import beast.util.decorator;
 import beast.code.data.type.btspenum;
+import beast.code.data.function_.primstcrt;
+import beast.code.memory.ptr;
+import beast.code.data.function_.expandedparameter;
+import beast.code.data.function_.primstcnrt;
+import beast.code.ast.node;
+import beast.code.data.util.reinterpret;
 
 struct CoreLibrary_Enums {
 
@@ -52,6 +58,11 @@ struct CoreLibrary_Enums {
 		XXCtorItems xxctor;
 
 	public:
+		@enum_( "Pointer" )
+		E Null;
+		C null_;
+
+	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			import std.string : chomp;
 			import std.regex : ctRegex, replaceAll;
@@ -94,11 +105,34 @@ struct CoreLibrary_Enums {
 					}
 				}
 			}
+
+			sink( null_ = new C( parent, ID!"null", Null, 0 ) );
 		}
 
 		void initialize2( ) {
 			foreach ( rec; initList_ )
 				rec.baseClass.initialize( rec.items );
+
+			{
+				auto de = Null.dataEntity;
+				auto nullDe = null_.dataEntity;
+
+				Null.initialize( [  //
+						// Implicit cast to pointer
+						new Symbol_PrimitiveStaticRuntimeFunction( ID!"#implicitCast", de, coreType.Pointer, //
+							ExpandedFunctionParameter.bootstrap( coreType.Pointer.dataEntity ), //
+							( cb, args ) {
+								nullDe.buildCode( cb ); //
+							} ), //
+
+						// Implicit cast to any reference type
+						new Symbol_PrimitiveStaticNonRuntimeFunction( ID!"#implicitCast", de, //
+							Symbol_PrimitiveStaticNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finishIf(  //
+							( MemoryPtr type ) { auto tp = type.readType; return tp.isReferenceType ? null : "%s is not a reference type".format( tp.identificationString ); }, // Condition function
+							( AST_Node ast, MemoryPtr type ) => new DataEntity_ReinterpretCast( nullDe, type.readType ) ) ) //
+
+							 ] );
+			}
 
 			initList_ = null;
 		}

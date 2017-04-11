@@ -107,6 +107,7 @@ enum string[ ErrorSeverity ] ErrorSeverityStrings = [ ErrorSeverity.error : "err
 
 /// Returns current location (what location would be reported in an error report)
 CodeLocation getCodeLocation( ) {
+	// TODO: this probably isn't very fast
 	auto msg = scoped!ErrorMessage;
 
 	foreach ( func; context.errorGuardData.stack )

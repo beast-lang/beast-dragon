@@ -97,6 +97,8 @@ abstract class AST_Expression : AST_Statement {
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
+			auto _gd = ErrorGuard( codeLocation );
+
 			cb.build_scope( ( cb ) { //
 				buildSemanticTree_single( ).buildCode( cb );
 			} );

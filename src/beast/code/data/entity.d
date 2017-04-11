@@ -6,6 +6,8 @@ import beast.code.data.decorator.decorator;
 import beast.core.project.codelocation;
 import beast.code.data.callable.match;
 import beast.code.data.type.type;
+import beast.code.data.util.reinterpret;
+import beast.code.data.util.deref;
 
 /// DataEntity stores information about a value: what is its type and how to obtain it (how to build code that obtains it)
 /// It is practically a semantic tree node
@@ -165,8 +167,9 @@ abstract class DataEntity : Identifiable {
 			return Overloadset( );
 		}
 
+	public:
 		/// Enforces that the resulting entity is of dataType targetType (either returns itself or creates a cast call)
-		DataEntity enforceCast( Symbol_Type targetType ) {
+		final DataEntity enforceCast( Symbol_Type targetType ) {
 			if ( dataType == targetType )
 				return this;
 
@@ -177,7 +180,7 @@ abstract class DataEntity : Identifiable {
 		}
 
 		/// Tries to cast to the targetType (or returns itself if already is of targe type). Returns null on failure
-		DataEntity tryCast( Symbol_Type targetType ) {
+		final DataEntity tryCast( Symbol_Type targetType ) {
 			if ( dataType is targetType )
 				return this;
 
@@ -189,6 +192,16 @@ abstract class DataEntity : Identifiable {
 			/// TODO: Implicit cast check
 			/// TODO: alias this check
 			return null;
+		}
+
+		/// Returns data entity representing this data entity reintrerpreted as targetType
+		pragma( inline ) final DataEntity reinterpret( Symbol_Type targetType ) {
+			return new DataEntity_ReinterpretCast( this, targetType );
+		}
+
+		/// Returns data entity representing data entity referenced by the current one (it is assumed that current data entity is of reference type)
+		pragma( inline ) final DataEntity dereference( Symbol_Type targetType ) {
+			return new DataEntity_DereferenceProxy( this, targetType );
 		}
 
 	public:

@@ -77,10 +77,10 @@ struct CallMatchSet {
 	public:
 		/// Can return null when reportErrors is false
 		CallableMatch finish_getMatch( ) {
+			scope_.finish( );
+			
 			if ( matches.length == 0 )
 				return null;
-
-			scope_.finish( );
 
 			// Now find best match
 			CallableMatch bestMatch = matches[ 0 ];

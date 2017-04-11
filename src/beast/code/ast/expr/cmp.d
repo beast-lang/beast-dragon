@@ -206,6 +206,8 @@ final class AST_CmpExpression : AST_Expression {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
+					auto _gd = ErrorGuard( ast_.codeLocation );
+
 					DataEntity leftOperand = baseOperand_;
 					DataEntity result = null;
 

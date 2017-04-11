@@ -86,7 +86,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_typeDefinition( Symbol_Type type ) {
 			try {
 				if ( auto instanceSize = type.instanceSize )
-					typesResult_.formattedWrite( "%stypedef uintptr_t %s[ %s ];\n", tabs, cppIdentifier( type ), ( instanceSize + hardwareEnvironment.pointerSize - 1 ) / hardwareEnvironment.pointerSize );
+					typesResult_.formattedWrite( "%sTYPEDEF( %s, %s );\n", tabs, cppIdentifier( type ), ( instanceSize + hardwareEnvironment.pointerSize - 1 ) / hardwareEnvironment.pointerSize );
 				else
 					typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
 
@@ -116,7 +116,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		override void build_offset( ExprFunction expr, size_t offset ) {
 			expr( this );
-			resultVarName_ = "%s( ( ( uint8_t* ) %s ) + %s )".format( resultVarName_.startsWith( "CTMEM " ) ? "CTMEM " : null, resultVarName_, offset );
+
+			if( offset == 0 )
+				return;
+
+			resultVarName_ = "%sOFFSET( %s, %s )".format( resultVarName_.startsWith( "CTMEM " ) ? "CTMEM " : null, resultVarName_, offset );
 		}
 
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
@@ -126,7 +130,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( function_.returnType !is coreLibrary.type.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
-				resultVarName = resultVarName_;
+				resultVarName = "&%s".format( resultVarName_ );
 			}
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
@@ -137,13 +141,13 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			string[ ] argumentNames;
 			if ( resultVarName )
-				argumentNames ~= "&" ~ resultVarName;
+				argumentNames ~= "PARAM( %s, %s )".format( resultVarName, cppIdentifier( function_.returnType ) );
 
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
 				assert( parentInstance );
 
 				parentInstance.buildCode( this );
-				argumentNames ~= resultVarName_;
+				argumentNames ~= "PARAM( %s, %s )".format( resultVarName_, cppIdentifier( parentInstance.dataType ) );
 			}
 
 			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
@@ -159,7 +163,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				popScope( );
 				codeResult_.formattedWrite( "%s}\n", tabs );
 
-				argumentNames ~= "&" ~ cppIdentifier( argVar );
+				argumentNames ~= "PARAM( &%s, %s )".format( cppIdentifier( argVar ), cppIdentifier( param.dataType ) );
 			}
 
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
@@ -338,7 +342,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.startPtr == ptr )
 				return cppIdentifier( block, true );
 			else
-				return "%s( ( ( uint8_t* ) %s ) + %s )".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ), ptr - block.startPtr );
+				return "%sOFFSET( %s, %s )".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ), ptr - block.startPtr );
 		}
 
 	public:

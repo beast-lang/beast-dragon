@@ -124,17 +124,19 @@ final class AST_VariableDeclaration : AST_Declaration {
 
 	public:
 		void buildConstructor( DataEntity entity, DataEntity valueEntity, CodeBuilder cb ) {
-			auto match = entity.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( this, true );
+			cb.build_scope( ( cb ) {
+				auto match = entity.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( this, true );
 
-			if ( valueEntity ) {
-				// colonAssign calls #ctor( #Ctor.refAssign, value );
-				if ( valueColonAssign )
-					match.arg( coreLibrary.enum_.xxctor.refAssign );
+				if ( valueEntity ) {
+					// colonAssign calls #ctor( #Ctor.refAssign, value );
+					if ( valueColonAssign )
+						match.arg( coreLibrary.enum_.xxctor.refAssign );
 
-				match.arg( valueEntity );
-			}
+					match.arg( valueEntity );
+				}
 
-			match.finish( ).buildCode( cb );
+				match.finish( ).buildCode( cb );
+			} );
 		}
 
 		pragma( inline ) void buildConstructor( DataEntity entity, CodeBuilder cb ) {

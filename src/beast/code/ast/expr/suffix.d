@@ -16,6 +16,8 @@ final class AST_SuffixExpression : AST_Expression {
 		}
 
 		static AST_Expression parse( ) {
+			auto _gd = codeLocationGuard();
+
 			AST_Expression base;
 			AST_SuffixExpressionItem[ ] items;
 
@@ -41,6 +43,7 @@ final class AST_SuffixExpression : AST_Expression {
 				AST_SuffixExpression result = new AST_SuffixExpression;
 				result.base = base;
 				result.items = items;
+				result.codeLocation = _gd.get();
 
 				return result;
 			}

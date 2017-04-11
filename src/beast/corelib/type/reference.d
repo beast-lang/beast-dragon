@@ -5,6 +5,7 @@ import beast.corelib.type.toolkit;
 import beast.util.hash;
 import core.sync.rwmutex;
 import beast.code.hwenv.hwenv;
+import beast.code.data.util.deref;
 
 final class Symbol_Type_Reference : Symbol_StaticClass {
 
@@ -91,18 +92,23 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 							inst.buildCode( cb );
 						} );
 
+				// .isNull
+				mem ~= new Symbol_PropertyAlias( new Symbol_PrimitiveMemberRuntimeFunction( ID!"isNull", this, coreType.Bool, //
+						ExpandedFunctionParameter.bootstrap( ), //
+						( cb, inst, args ) { //
+							coreType.Pointer.opBinary_equals.dataEntity( MatchLevel.fullMatch, inst.reinterpret( coreType.Pointer ) ).resolveCall( null, true, coreEnum.operator.binEq.dataEntity, coreEnum.null_.dataEntity ).buildCode( cb );
+						} ) );
+
 				// Alias for #opAssign
 				mem ~= new Symbol_BootstrapAlias( ID!"#opAssign", //
-						( matchLevel, inst ) => ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#opAssign", matchLevel | MatchLevel.alias_ ) );
+						( matchLevel, inst ) => ( inst ? inst.dereference( baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#opAssign", matchLevel ) );
 
 				// Alias #baseType
-				mem ~= new Symbol_BootstrapAlias( ID!"#baseType", ( matchLevel, parentInstance ) { //
-					return baseType_.dataEntity( matchLevel ).Overloadset;
-				} );
+				mem ~= new Symbol_BootstrapAlias( ID!"#baseType", ( matchLevel, parentInstance ) => baseType_.dataEntity( matchLevel ).Overloadset );
 
-				// #refData for acessing all the reference members
+				// #refData for acessing all the referenced data members
 				mem ~= new Symbol_BootstrapAlias( ID!"#refData", //
-						( matchLevel, inst ) => ( inst ? new ProxyData( inst, baseType_ ) : baseType_.dataEntity( matchLevel ) ).Overloadset );
+						( matchLevel, inst ) => ( inst ? inst.dereference( baseType_ ) : baseType_.dataEntity( matchLevel ) ).Overloadset );
 
 				namespace_.initialize( mem );
 			}
@@ -136,7 +142,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 	protected:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			// We shadow referenced type namespace
-			return baseType_.resolveIdentifier( id, instance ? new ProxyData( instance, baseType_ ) : null, matchLevel );
+			return baseType_.resolveIdentifier( id, instance ? new DataEntity_DereferenceProxy( instance, baseType_ ) : null, matchLevel );
 		}
 
 	private:
@@ -161,44 +167,6 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 
 			private:
 				Symbol_Type_Reference sym_;
-
-		}
-
-		final static class ProxyData : ProxyDataEntity {
-
-			public:
-				this( DataEntity sourceEntity, Symbol_Type baseType ) {
-					super( sourceEntity, MatchLevel.fullMatch );
-					baseType_ = baseType;
-				}
-
-			public:
-				override Symbol_Type dataType( ) {
-					return baseType_;
-				}
-
-			public:
-				override string identification( ) {
-					return "%s.##dereference".format( super.identification );
-				}
-
-				override Hash outerHash( ) {
-					return super.outerHash + baseType_.outerHash;
-				}
-
-			public:
-				override void buildCode( CodeBuilder cb ) {
-					cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, sourceEntity_ );
-				}
-
-			protected:
-				override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
-					// We're overriding this because ProxyDataEntity would redirect this into sourceEntity
-					return Overloadset( );
-				}
-
-			private:
-				Symbol_Type baseType_;
 
 		}
 

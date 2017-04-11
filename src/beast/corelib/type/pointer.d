@@ -4,6 +4,7 @@ import beast.corelib.type.toolkit;
 import beast.code.hwenv.hwenv;
 import beast.code.data.function_.primmemnrt;
 import beast.code.data.util.reinterpret;
+import beast.code.data.util.deref;
 
 final class Symbol_Type_Pointer : Symbol_StaticClass {
 
@@ -26,7 +27,13 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( this ); // a = b
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreLibrary.enum_.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreLibrary.enum_.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( this ); // a == b, a != b
+
+			{
+				auto ops = Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( this ); // a == b, a != b
+				opBinary_equals = ops[ 0 ];
+				opBinary_notEquals = ops[ 1 ];
+				mem ~= ops;
+			}
 
 			// TODO: other comparison
 
@@ -39,12 +46,13 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 					} );
 
 			// Copy ctor
-			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+			copyCtor = new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
 					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
+			mem ~= copyCtor;
 
 			// Dtor
 			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
@@ -61,6 +69,12 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 						( AST_Node, DataEntity inst, MemoryPtr targetType ) => new DataEntity_ReinterpretCast( inst, targetType.readType ) //
 						 ) );
 
+			// .data( Type )
+			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"data", this, //
+					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
+						( AST_Node, DataEntity inst, MemoryPtr targetType ) => new DataEntity_DereferenceProxy( inst, targetType.readType ) //
+					 ) );
+
 			namespace_.initialize( mem );
 		}
 
@@ -76,6 +90,10 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 		override Namespace namespace( ) {
 			return namespace_;
 		}
+
+	public:
+		Symbol_PrimitiveMemberRuntimeFunction copyCtor;
+		Symbol opBinary_equals, opBinary_notEquals;
 
 	private:
 		BootstrapNamespace namespace_;
