@@ -17,6 +17,9 @@ pragma( inline ) string memType( size_t instanceSize ) {
 	case 4:
 		return "uint32_t";
 
+	case 8:
+		return "uint64_t";
+
 	default:
 		return null;
 
@@ -52,7 +55,7 @@ void primitiveOp_memEq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( VAL( %s, %s ) == VAL( %s, %s ) );\n", tabs, arg1, arg2, mt, arg3, mt );
 		else
-			codeResult_.formattedWrite( "%VAL( %s, bool ) = ( memcmp( %s, %s, %s ) == 0 );\n", tabs, arg1, arg2, arg3, t.instanceSize );
+			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( memcmp( %s, %s, %s ) == 0 );\n", tabs, arg1, arg2, arg3, t.instanceSize );
 	}
 }
 
@@ -63,7 +66,7 @@ void primitiveOp_memNeq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( VAL( %s, %s ) != VAL( %s, %s ) );\n", tabs, arg1, arg2, mt, arg3, mt );
 		else
-			codeResult_.formattedWrite( "%VAL( %s, bool ) = ( memcmp( %s, %s, %s ) != 0 );\n", tabs, arg1, arg2, arg3, t.instanceSize );
+			codeResult_.formattedWrite( "%sVAL( %s, bool ) = ( memcmp( %s, %s, %s ) != 0 );\n", tabs, arg1, arg2, arg3, t.instanceSize );
 	}
 }
 
