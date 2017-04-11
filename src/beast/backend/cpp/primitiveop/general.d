@@ -30,7 +30,7 @@ void primitiveOp_memZero( CB cb, T t, Op arg1 ) {
 		if ( string mt = memType( t.instanceSize ) )
 			codeResult_.formattedWrite( "%sVAL( %s, %s ) = 0;\n", tabs, arg1, mt );
 		else
-			codeResult_.formattedWrite( "%smemset( %s, 0, %s );\n", tabs, arg1 );
+			codeResult_.formattedWrite( "%smemset( %s, 0, %s );\n", tabs, arg1, t.instanceSize );
 	}
 }
 
