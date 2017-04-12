@@ -1,0 +1,342 @@
+\documentclass{ExcelAtFIT}
+%\documentclass[czech]{ExcelAtFIT} % when writing in CZECH
+%\documentclass[slovak]{ExcelAtFIT} % when writing in SLOVAK
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%	REVIEW vs. FINAL VERSION
+%--------------------------------------------------------
+
+%   LEAVE this line commented out for the REVIEW VERSIONS
+%   UNCOMMENT this line to get the FINAL VERSION
+%\ExcelFinalCopy
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%	PDF CUSTOMIZATION
+%--------------------------------------------------------
+
+\hypersetup{
+	pdftitle={Paper Title},
+	pdfauthor={Author},
+	pdfkeywords={Keyword1, Keyword2, Keyword3}
+}
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%	ARTICLE INFORMATION
+%--------------------------------------------------------
+
+\ExcelYear{2017}
+
+\PaperTitle{How to Write an Excellent Excel@FIT Paper}
+
+\Authors{Adam Herout*}
+\affiliation{*%
+  \href{mailto:herout@fit.vutbr.cz}{herout@fit.vutbr.cz},
+  \textit{Faculty of Information Technology, Brno University of Technology}}
+%%%%--------------------------------------------------------
+%%%% in case there are multiple authors, use the following fragment instead
+%%%%--------------------------------------------------------
+%\Authors{Jindřich Novák*, Janča Dvořáková**}
+%\affiliation{*%
+%  \href{mailto:xnovak00@stud.fit.vutbr.cz}{xnovak00@stud.fit.vutbr.cz},
+%  \textit{Faculty of Information Technology, Brno University of Technology}}
+%\affiliation{**%
+%  \href{mailto:xdvora00@stud.fit.vutbr.cz}{xdvora00@stud.fit.vutbr.cz},
+%  \textit{Faculty of Information Technology, Brno University of Technology}}
+
+\Keywords{Keyword1 --- Keyword2 --- Keyword3}
+
+\Supplementary{\href{http://youtu.be/S3msCdn3fNM}{Demonstration Video} --- \href{http://excel.fit.vutbr.cz/}{Downloadable Code}}
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%	ABSTRACT and TEASER
+%--------------------------------------------------------
+
+\Abstract{
+What is the problem? What is the topic?, the aim of this paper?
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ullamcorper suscipit euismod. Mauris sed lectus non massa molestie congue. In hac habitasse platea dictumst.}
+%	
+How is the problem solved, the aim achieved (methodology)?
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ullamcorper suscipit euismod. Mauris sed lectus non massa molestie congue. In hac habitasse platea dictumst. Curabitur massa neque, commodo posuere fringilla ut, cursus at dui. Nulla quis purus a justo pellentesque.}
+%	
+What are the specific results? How well is the problem solved?
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ullamcorper suscipit euismod. Mauris sed lectus non massa molestie congue. In hac habitasse platea dictumst.}
+%	
+So what? How useful is this to Science and to the reader?
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ullamcorper suscipit euismod.}
+}
+
+\Teaser{
+	\TeaserImage{placeholder.pdf}
+	\TeaserImage{placeholder.pdf}
+	\TeaserImage{placeholder.pdf}
+}
+
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\begin{document}
+
+\startdocument
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%	ARTICLE CONTENTS
+%--------------------------------------------------------
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\section{Introduction}
+
+\textbf{[Motivation]} What is the raison d'\^{e}tre of your project? Why should anyone care? No general meaningless claims. Make bulletproof arguments for the importance of your work.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sit amet neque vel mi sodales interdum nec a mi. Aliquam eget turpis venenatis, tincidunt purus eget, euismod neque. Nulla et porta tortor, id lobortis turpis. Sed scelerisque sem eget ante interdum, vel volutpat arcu volutpat.}
+
+\textbf{[Problem definition]} What exactly are you solving? What is the core and what is a bonus? What parameters should a proper solution of the problem have? Define the problem precisely and state how its solution should be evaluated.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque non arcu quis nunc efficitur vestibulum. Integer gravida neque suscipit diam porta aliquet. Maecenas porttitor libero ut turpis porttitor, auctor porta ligula rhoncus. Etiam a turpis blandit, eleifend dolor eget, egestas ligula. Nullam sollicitudin pulvinar mi sit amet interdum. Etiam in ultrices ante. Suspendisse potenti. Duis vel nisi eget tellus volutpat tempor. Etiam laoreet magna elit, et sollicitudin lectus tempor sit. Maecenas porttitor libero ut turpis porttitor, auctor porta ligula rhoncus. Etiam a turpis blandit, eleifend dolor eget, egestas ligula.}
+
+\textbf{[Existing solutions]} Discuss existing solutions, be fair in identifying their strengths and weaknesses. Cite important works from the field of your topic. Try to define well what is the \textit{state of the art}. You can include a Section 2 titled ``Background'' or ``Previous Works'' and have the details there and make this paragraph short. Or, you can enlarge this paragraph to a whole page. In many scientific papers, \emph{this} is the most valuable part if it is written properly.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent congue enim eu eros dictum sagittis. Aliquam ligula arcu, gravida at augue et, aliquet condimentum nulla. Morbi a lectus arcu. Nam ac commodo nisi, a accumsan nunc. Nam sed ante vel nulla elementum lobortis. Aliquam sed laoreet risus. Etiam ipsum odio, gravida eget sapien dictum, eleifend aliquet ex. Duis dapibus vitae enim vitae bibendum. Phasellus eget pulvinar massa. Mauris ornare urna. Maecenas porttitor libero ut turpis porttitor, auctor porta ligula rhoncus. Etiam a turpis blandit, eleifend dolor eget, egestas ligula. Nullam sollicitudin pulvinar mi sit amet interdum. Etiam in ultrices ante. Suspendisse potenti. Duis vel nisi eget tellus volutpat tempor. Suspendisse potenti. Duis vel nisi eget tellus volutpat tempor.}
+
+\textbf{[Our solution]} Make a quick outline of your approach -- pitch your solution.  The solution will be described in detail later, but give the reader a very quick overview now.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi laoreet risus a egestas imperdiet. Ut egestas nibh non fermentum vestibulum. Nullam quis eleifend ex, sed maximus nisl. Mauris maximus non dolor id tristique. Nunc pulvinar congue gravida. Nullam lobortis viverra leo sed commodo. Nulla in elit congue, ullamcorper metus non, eleifend risus. Vivamus porttitor, ex nec porttitor pretium, libero turpis ultrices dui, eu efficitur ante ipsum vel justo. Vivamus nec nulla nisi. Aenean quis mauris vitae metus gravida congue.}
+
+\textbf{[Contributions]} Sell your solution. Pinpoint your achievements. Be fair and objective.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sit amet neque vel mi sodales interdum nec a mi. Aliquam eget turpis venenatis, tincidunt purus eget, euismod neque. Nulla et porta tortor, id lobortis turpis. Sed scelerisque sem eget ante interdum, vel volutpat arcu volutpat. Aliquam cursus, dolor a luctus. }
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\section{How To Use This Template}
+\label{sec:HowToUse}
+
+Here will go several sections describing \textbf{your work}. From theoretical background (Section 2), through your own methodology (Section 3), experiments and implementation (Section 4 and possibly 5), to conclusions (Section 6). Instead of such technical content, here in this template we give a few hints how to write the paper.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.7\linewidth]{keep-calm.png}
+	\caption{Good writing is bad writing that was rewritten several times.  Don't worry, start somewhere.}
+	\label{fig:KeepCalm}
+\end{figure}
+
+Here is a list of actions to do first when you want to write an Excel@FIT paper:
+\begin{enumerate}
+	\item Download all the template files (Sec.~\ref{sec:FilesInTemplate}) into a directory. Maybe setup a GIT sync for backup, sharing, and for use from multiple computers.
+	\item Rename \textit{2017-ExcelFIT-ShortName.tex} -- replace ShortName with something that identifies your work and is short enough.  For example: \textit{VehicleBoxes}, \textit{VanishingPoints}, \textit{FastShadows}, \textit{NewProbeTesting}, \textit{CheapDynamicDNS}, \ldots  This ensures that the filename already gives a hint what is in there (\textit{mypaper.pdf} is really stupid).
+	\item Decide the language of your paper.  English is recommended, as it is the language of science and technology.  However, if you want to write in Czech or Slovak, you may.  Use the correct option to the \textit{$\backslash$documentclass} command -- the very first line of the template.  The option may be either \textit{[czech]} or \textit{[slovak]}.
+	\item Insert meta information: \textbf{your name}, \textbf{e-mail}, \textbf{paper title}.  Make sure the year in the top right corner of the document is correct.  Do not hesitate to use ěščřžýáíé in your name -- the \LaTeX{} template is configured to eat UTF8 Unicode.
+	\item Insert teaser images (``image abstract'').  Use as many \textit{$\backslash$TeaserImage} commands as suitable -- three or four will usually be fine for a one-line teaser.  If you absolutely don't have any image showing your work (what kind of work could that be, anyway?!), remove the \textit{$\backslash$Teaser} command.
+	\item Insert references to supplementary material.  That will typically be clickable links to a youtube / vimeo video and to downloadable code, hyperlink to an online demo, or a github repo. If you have anything else relevant, put it in.  If there is no supplementary material (really?!), remove or comment out the \textit{$\backslash$Supplementary} command.
+	\item Keep calm and start writing (Figure~\ref{fig:KeepCalm}).  Some suggestions how to do this are in Section~\ref{sec:HowToWrite}.
+	\item When your paper is accepted to Excel@FIT, uncomment \textit{$\backslash$ExcelFinalCopy} at the beginning of this file.  The line numbers will disappear from the sides of the text and your paper is ready for final publication.
+\end{enumerate}
+
+Jean-Luc Lebrun \cite{Lebrun2011} offers excellent recommendations for the canonical sections of scientific/technical papers.  That is why Abstract, Introduction, and Conclusions in this template are already structured (remove the \textbf{[Bold labels]} in the Introduction and Conclusions, they are there just for your information and should not remain in the paper).  This structure is no more than a recommendation, but divert from it only in cases when you exactly know what you are doing.  The ``phony'' texts (typeset in \phony{gray color}) roughly indicate the lengths of individual parts of these sections.  Replace them with reasonable amounts of text.
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+\subsection{What Files are Here and Why}
+\label{sec:FilesInTemplate}
+
+The template package for Excel@FIT papers contains these files:
+\begin{description}[noitemsep]
+	\item[2017-ExcelFIT-ShortName.tex] This is the template for the main \LaTeX{} file -- this is your paper.  Do yourself a favor and replace \textit{ShortName} in the filename with something meaningful.
+	\item[2017-ExcelFIT-ShortName-bib.bib] You can delete the contents of this file completely and start adding BibTeX references.  It is much easier to use a small editing tool (Section~\ref{sec:UsefulTools}, JabRef) than to format \textit{.bib} file manually.  Rename the file so that \textit{ShortName} is consistent with the previous file (and update the filename in the \textit{.tex} file).
+	\item[ExcelAtFIT.cls] \LaTeX{} class file based on the \emph{Stylish Article}%
+	  \footnote{\url{http://www.latextemplates.com/template/stylish-article}} document class.  Do not modify this file.
+	\item[ExcelAtFIT-logo.pdf] This is the logo on the title page.
+	\item[VUT-FIT-logo.pdf] Another logo on the title page.
+	\item[images/placeholder.pdf] Placeholder image; include it, scale it as needed, then replace it with real content.\\ \includegraphics[height=4em]{placeholder.pdf}
+	\item[images/keep-calm.png] You don't need this file; it is only used in this template to show how to include a \textit{.png} file (Figure~\ref{fig:KeepCalm}).
+\end{description}
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\section{How To Write the Paper --- A Few Hints}
+\label{sec:HowToWrite}
+
+A reasonable way to start writing is sketching the \textbf{abstract} \cite{Herout-Abstract}.  Writing the abstract helps focus on what is important in the paper, what is the contribution, the meaning for the community.  This exercise might take some 20 minutes and it pays back by clearing the key points of the text.  
+In 99\,\% cases it is very reasonable to stick to the abstract structure \cite{Lebrun2011} which is provided in this template.
+
+Once you have the abstract, it should be very clear what is the message of the paper, what is the newly introduced knowledge, what are the proofs of its contribution, etc.  This is the right time to start constructing the \emph{skeleton} of the paper: it's \textbf{comics edition}~\cite{Herout-Comics}.
+This thing is composed of mainly four items:
+\begin{enumerate} [noitemsep]
+	\item \textbf{Sections and subsections.}
+	\item \textbf{Figures and tables.}  At this phase, knowing that ``once there will be a figure about this and that'' is just fine.  That is why we have the \textit{placeholder.pdf} image -- see Figure~\ref{fig:WidePicture}.  If this totally generic image can be replaced by some temporary image which still needs more work, but which is closer to the target version, go ahead. A hand-drawing photographed by a cellphone is perfect at this stage.
+	\item \textbf{Todo's.} In the early comics version, every section is filled by one or more \texttt{$\backslash$todo} commands and nothing else.  A todo in the text might look like: \todo{you should do something}.  Unlike some elaborated todo packages, this simple solution (defined in the template) does not break the page formatting and it is perfectly sufficient.
+	\item \textbf{Phony placeholder texts.}  These help you estimate the proportions of individual sections and subsections and to better aim at the correct paper length. Use \textit{$\backslash$blind\{3\}} to get three paragraphs of beautiful \phony{grey phony text}.
+\end{enumerate}
+One hour is usually enough for creating a nice comics edition of the paper.  No reason to wait, make a copy of the template and start butchering it. 
+
+Having the comics edition usually lubricates the whole writing process.  Now, the paper contains 20 or so todo's -- why not take the easiest one of them and replace it with a few lines of text within 15 minutes or even less.  Writing is no more a scary complex work.
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+\subsection{Images and Tables}
+\label{sec:Images}
+
+Visuals (figures, tables, good equations, section headings) make the skeleton of a properly written paper.  A time-stressed reader should be able to get the idea from only browsing them.  
+Therefore:
+\begin{enumerate}[noitemsep]
+\item \textbf{Make them perfect.}  Cheap and ugly images -- cheap and ugly paper.  Imperfect or shorter text -- who cares?
+\item \textbf{Make them self-contained.}  Be not afraid to have a ten-lines-long caption under an image.  The image plus its caption must make perfect sense by themselves, without reading the text.
+\item \textbf{Make them many.}  EVERY technical idea is better explained by an image.  Two images per page are a moderate start.
+\end{enumerate}
+\LaTeX{} lets you easily insert both vector and raster graphics. It is reasonable to use three formats:
+\begin{description}[noitemsep]
+\item[.pdf] Perfect for vector graphics.  All graphs \textbf{must} be in vector and therefore in .pdf.  Gnuplot, pyplot, Matlab -- they all produce vector graphs in .pdf easily.  Diagrams, system structures, sketches -- all vector graphics.  It's 2017, not 1980 anymore\ldots
+\item[.jpg] Suitable for photos.  \textbf{Never} for plots or screenshots.
+\item[.png] Good for precise raster graphics.  Screenshots, raster plots, raster outputs of programs.  Not for diagrams and plots -- unless it is a one-in-ten-years exception.
+\end{description}
+Caption of a table goes \textbf{before} the table (e.g. Table~\ref{tab:ExampleTable}), just the opposite way than with figures.  There is no logic behind, that's just how it is.
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+\subsection{Sections and Subsections}
+\label{sec:Sections}
+
+It is usually wrong to have subsections in the Introduction; it is always wrong to have them in Conclusions.  In this kind of paper, it is very likely to be wrong to have any subsubsections.
+
+Section headings are the skeleton of the paper -- make them accurate and descriptive.  One-word section titles (apart from Introduction and Conclusions) are typically wrong, because they are not descriptive.  
+``Proposed Method for Running X by Using Y'' is better than ``The Method''.
+``Implemented Application for PQR Communication'' is better than ``Application''.  The outline of all section titles should contain all the keywords relevant for the work.  Just by seeing them, the reader should be able to tell precisely the topic of the paper.  If not, the section headers are wrong (usually too short and generic).
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+\subsection{Keywords}
+\label{sec:Keywords}
+
+Keywords are specified at the top of the document.  
+\begin{enumerate}[noitemsep]
+	\item When making the list of keywords, ask yourself this: ``What should one write to google, so that the right answer would be my paper?''
+	\item Very generic terms (``IT'', ``Graphics'', ``Hardware'') are useless. Narrow terms are fine (``Matrix Code Recognition'', ``Appearance-Based Vehicle Segmentation'', \ldots)
+\end{enumerate}
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\section{Some Useful Tools}
+\label{sec:UsefulTools}
+
+This list is not a list and it is by no means complete.  If you prefer other tools -- cool, stick with them.  If you are just beginning, consider these.
+
+\begin{description}
+	\item[\href{http://miktex.org/download}{MikTeX}] Problem-free \LaTeX{} for Windows; a distribution with perfect automation of package download. Single setup, no more worries.
+	\item[\href{http://texstudio.sourceforge.net/}{TeXstudio}] Portable and opensource GUI for \LaTeX{} writing.  Ctrl+click jumps from pdf to latex and back.  Integrated spellchecker, syntax highlighting, multifile projects, etc.  First, install MikTeX, then TeXstudio.  Ten minutes and you are a \LaTeX{} master.
+	\item[\href{http://jabref.sourceforge.net/download.php}{JabRef}] Nice and simple Java program for managing \textit{.bib} files with references.  Not much to learn -- one window, a straightforward form for editing the entries.
+	\item[\href{https://inkscape.org/en/download/}{InkScape}] Opensource and portable editor of vector files (SVG and -- conveniently -- PDF).  The proper tool for making great drawings for papers -- not the easiest to learn, though.
+	\item[GIT] Great for team collaboration on \LaTeX{} projects, but also helpful to a single author -- for versioning, backup, multi-computer, \ldots
+	\item[\href{http://www.overleaf.com/}{Overleaf}] Online \LaTeX{} editing -- some love it, to others it might seem a little too slow, though\ldots
+\end{description}
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\section{Frequently Used \LaTeX{} Fragments}
+\label{sec:Fragments}
+
+Here goes an example of a table:
+\begin{table}[h]
+	\vskip6pt
+	\caption{Table of Grades}
+	\centering
+	\begin{tabular}{llr}
+		\toprule
+		\multicolumn{2}{c}{Name} \\
+		\cmidrule(r){1-2}
+		First name & Last Name & Grade \\
+		\midrule
+		John & Doe & $7.5$ \\
+		Richard & Miles & $2$ \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:ExampleTable}
+\end{table}
+
+Figure~\ref{fig:WidePicture} shows a wide figure, Figure~\ref{fig:KeepCalm} is a single-column figure with width specified relatively to the column.
+\begin{figure*}[t]\centering % Using \begin{figure*} makes the figure take up the entire width of the page
+  \centering
+  \includegraphics[width=0.8\linewidth,height=1.7in]{placeholder.pdf}\\[1pt]
+  \includegraphics[width=0.2\linewidth]{placeholder.pdf}
+  \includegraphics[width=0.2\linewidth]{placeholder.pdf}
+  \includegraphics[width=0.2\linewidth]{placeholder.pdf}
+  \includegraphics[width=0.2\linewidth]{placeholder.pdf}
+  \caption{Wide Picture.  The whole figure can be composed of several smaller images.  If you want to address individual images in the caption or from the text, use the \textit{subcaption} package.}
+  \label{fig:WidePicture}
+\end{figure*}
+Some mathematics $\cos\pi=-1$ and $\alpha$ in the text%
+\footnote{And some mathematics $\cos\pi=-1$ and $\alpha$ in a footnote.}.
+
+Now, this is an equation:
+\begin{linenomath}
+\begin{equation}
+\cos^3 \theta =\frac{1}{4}\cos\theta+\frac{3}{4}\cos 3\theta
+\label{eq:refname2}
+\end{equation}
+\end{linenomath}
+and here is a bunch of equations aligned horizontally:
+\begin{linenomath}
+\begin{align}
+	3x &= 6y + 12 \\
+	x &= 2y + 4
+\end{align}
+\end{linenomath}
+
+\blind{1}
+
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\section{Conclusions}
+\label{sec:Conclusions}
+
+\textbf{[Paper Summary]} What was the paper about, then? What the reader needs to remember about it?
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae aliquet metus. Sed pharetra vehicula sem ut varius. Aliquam molestie nulla et mauris suscipit, ut commodo nunc mollis.}
+
+\textbf{[Highlights of Results]} Exact numbers. Remind the reader that the paper matters.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed tempus fermentum ipsum at venenatis. Curabitur ultricies, mauris eu ullamcorper mattis, ligula purus dapibus mi, vel dapibus odio nulla et ex. Sed viverra cursus mattis. Suspendisse ornare semper condimentum. Interdum et malesuada fames ac ante ipsum.}
+
+\textbf{[Paper Contributions]} What is the original contribution of this work? Two or three thoughts that one should definitely take home.
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent posuere mattis ante at imperdiet. Cras id tincidunt purus. Aliquam erat volutpat. Morbi non gravida nisi, non iaculis tortor. Quisque at fringilla neque.}
+
+\textbf{[Future Work]} How can other researchers / developers make use of the results of this work?  Do you have further plans with this work? Or anybody else?
+\phony{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse sollicitudin posuere massa, non convallis purus ultricies sit amet. Duis at nisl tincidunt, maximus risus a, aliquet massa. Vestibulum libero odio, condimentum ut ex non, eleifend.}
+
+\section*{Acknowledgements}
+I would like to thank my supervisor X. Y. for his help.
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+%	REFERENCE LIST
+%--------------------------------------------------------
+%--------------------------------------------------------
+\phantomsection
+\bibliographystyle{unsrt}
+\bibliography{2017-ExcelFIT-ShortName-bib}
+
+%--------------------------------------------------------
+%--------------------------------------------------------
+%--------------------------------------------------------
+\end{document}

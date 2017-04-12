@@ -1,0 +1,94 @@
+% !TeX root = 2017-ExcelFIT-Beast.tex
+
+\usepackage{xcolor}
+\usepackage{xparse}
+\usepackage{textcomp}
+\usepackage{float}
+
+\usepackage{environ}
+
+% Better code font
+\usepackage[nottdefault]{sourcecodepro}
+
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{scalefnt}
+\usepackage{needspace}
+
+\usepackage[section]{placeins}
+
+% Code
+\lstset{% 
+	basicstyle=\fontfamily{SourceCodePro-TLF}\selectfont\scalefont{0.8}, 
+	breaklines=true,
+	breakatwhitespace=true,
+	breakautoindent=true,
+	breakindent=5mm,
+	escapeinside=$ $,
+	numbers=left,
+	numberstyle=\fontfamily{SourceCodePro-TLF}\selectfont\scalefont{0.8},
+	numbersep=3mm,
+	tabsize=2,
+	frame=leftline,
+	framesep=2mm,
+	xleftmargin=7mm,
+	literate={-}{{-}}{1},
+	showstringspaces=false,
+}
+
+\lstdefinelanguage{beast}
+{
+	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, do, else, enum, except, extend, finally, for, foreach, function, generic, goto, if, import, in, is, lazy, loop, mixin, module, new, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
+	sensitive=true,
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+	alsoletter={\#}
+}
+\lstnewenvironment{code}[1][]{
+	\lstset{language=beast}
+}{%
+} 
+\newcommand{\inlineCode}[1]{\lstinline[%
+	language=beast,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true,
+	]{#1}}
+
+\lstdefinelanguage{d}
+{
+	morekeywords={catch, const, immutable, struct, class, alias, for, foreach, static, if, debug, release, template, mixin, module, import, while, is, in, scope, switch, this, throw, try, with, else, do, finally, function, delegate, asm, int, uint, short, ushort, long, ulong, byte, ubyte, string, interface, public, private, override, void, new, delete, cast},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+\lstnewenvironment{dcode}[1][]{
+	\lstset{language=d}
+}{%
+} 
+\newcommand{\inlineDCode}[1]{\lstinline[%
+	language=d,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\lstnewenvironment{cppcode}[1][]{
+	\lstset{language=c++}
+}{%
+}
+\newcommand{\inlineCppCode}[1]{\lstinline[%
+	language=c++,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+
+\newcommand{\ctimeNoXSpace}{\inlineCode{@ctime}}
+\newcommand{\ctime}{\ctimeNoXSpace\xspace}
+\newcommand{\nonctime}{non-\inlineCode{@ctime}\xspace}
+
