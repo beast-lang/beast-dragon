@@ -47,7 +47,7 @@ abstract class Symbol_Module : Symbol {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: Module reflection type
-					return coreLibrary.type.Void;
+					return coreType.Void;
 				}
 
 				override bool isCtime( ) {
@@ -61,7 +61,7 @@ abstract class Symbol_Module : Symbol {
 			protected:
 				protected override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
 					// TODO: Copy this to Module core type
-					if ( auto result = sym_.namespace.resolveIdentifier( id, null, matchLevel ) )
+					if ( auto result = sym_.namespace.tryResolveIdentifier( id, null, matchLevel ) )
 						return result;
 
 					return Overloadset( );
@@ -83,7 +83,7 @@ abstract class Symbol_Module : Symbol {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: Maybe better dataType?
-					return coreLibrary.type.Void;
+					return coreType.Void;
 				}
 
 				override bool isCtime( ) {

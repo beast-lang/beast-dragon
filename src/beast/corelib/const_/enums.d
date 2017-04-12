@@ -67,7 +67,7 @@ struct CoreLibrary_Enums {
 			import std.string : chomp;
 			import std.regex : ctRegex, replaceAll;
 
-			auto types = coreLibrary.type;
+			auto types = coreType;
 
 			foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
 				foreach ( attr; __traits( getAttributes, __traits( getMember, this, memName ) ) ) {

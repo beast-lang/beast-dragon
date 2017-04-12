@@ -117,7 +117,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_offset( ExprFunction expr, size_t offset ) {
 			expr( this );
 
-			if( offset == 0 )
+			if ( offset == 0 )
 				return;
 
 			resultVarName_ = "%sOFFSET( %s, %s )".format( resultVarName_.startsWith( "CTMEM " ) ? "CTMEM " : null, resultVarName_, offset );
@@ -127,7 +127,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			//codeResult_.formattedWrite( "%s// Function %s call\n", tabs, function_.tryGetIdentificationString );
 
 			string resultVarName;
-			if ( function_.returnType !is coreLibrary.type.Void ) {
+			if ( function_.returnType !is coreType.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
 				resultVarName = "&%s".format( resultVarName_ );
@@ -204,19 +204,25 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			// Build then branch
 			{
-				pushScope( );
-				thenBranch( this );
-				popScope( );
+				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
+				with ( memoryManager.session ) {
+					pushScope( );
+					thenBranch( this );
+					popScope( );
+				}
 				codeResult_.formattedWrite( "%s}\n", tabs );
 			}
 
 			// Build else branch
 			if ( elseBranch ) {
-				codeResult_.formattedWrite( "%selse {\n", tabs );
-				pushScope( );
-				elseBranch( this );
-				popScope( );
-				codeResult_.formattedWrite( "%s}\n", tabs );
+				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
+				with ( memoryManager.session ) {
+					codeResult_.formattedWrite( "%selse {\n", tabs );
+					pushScope( );
+					elseBranch( this );
+					popScope( );
+					codeResult_.formattedWrite( "%s}\n", tabs );
+				}
 			}
 
 			popScope( );
@@ -228,11 +234,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		override void build_loop( StmtFunction body_ ) {
-			pushScope( ScopeFlags.loop );
-			codeResult_.formattedWrite( "%swhile( true ) {\n", tabs( -1 ) );
-			body_( this );
-			codeResult_.formattedWrite( "%s}\n", tabs( -1 ) );
-			popScope( );
+			// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
+			with ( memoryManager.session ) {
+				pushScope( ScopeFlags.loop );
+				codeResult_.formattedWrite( "%swhile( true ) {\n", tabs( -1 ) );
+				body_( this );
+				codeResult_.formattedWrite( "%s}\n", tabs( -1 ) );
+				popScope( );
+			}
 		}
 
 		override void build_break( size_t scopeIndex ) {
@@ -260,7 +269,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			size_t parameterCount = 0;
 			auto result = appender!string;
 			result.formattedWrite( "void %s( ", cppIdentifier( func ) ); // Return value is passed as a pointer
-			if ( func.returnType !is coreLibrary.type.Void ) {
+			if ( func.returnType !is coreType.Void ) {
 				result.formattedWrite( "%s *result", cppIdentifier( func.returnType ) );
 				parameterCount++;
 			}
@@ -391,7 +400,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	package:
 		pragma( inline ) static void enforceOperandNotCtime( string op ) {
-			benforce( !isOperandCtime( op ), E.protectedMemory, "Cannot write to @ctime variable in runtime" );
+			benforce( !isOperandCtime( op ), E.protectedMemory, "Cannot write to a @ctime variable in runtime" );
 		}
 
 		pragma( inline ) static bool isOperandCtime( string op ) {

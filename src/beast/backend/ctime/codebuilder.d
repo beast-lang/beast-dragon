@@ -57,7 +57,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			// We execute the runtime function using the interpreter
 
 			MemoryPtr result;
-			if ( function_.returnType !is coreLibrary.type.Void ) {
+			if ( function_.returnType !is coreType.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, true );
 				build_localVariableDefinition( resultVar );
 

@@ -27,21 +27,21 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 
 			// TODO: pass to baseClass
 			// Implicit constructor
-			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memZero, inst );
 					} );
 
 			// Copy/assign constructor
-			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
 
 			// Destructor
-			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
+			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.noopDtor, inst );

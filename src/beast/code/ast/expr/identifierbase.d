@@ -52,7 +52,7 @@ final class AST_IdentifierBaseExpression : AST_AtomicExpression {
 				}
 			}
 			else {
-				result = currentScope.recursivelyResolveIdentifier( identifier );
+				result = currentScope.tryRecursivelyResolveIdentifier( identifier );
 
 				benforce( !result.isEmpty, E.unknownIdentifier, "Cannot resolve identifier '%s' in scope '%s'".format( identifier.str, precedingColon ? inferredType.dataEntity.identificationString : currentScope.identificationString ) );
 			}

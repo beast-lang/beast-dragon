@@ -88,7 +88,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: Function types
-					return coreLibrary.type.Void;
+					return coreType.Void;
 				}
 
 				override bool isCtime( ) {

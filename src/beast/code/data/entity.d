@@ -8,10 +8,11 @@ import beast.code.data.callable.match;
 import beast.code.data.type.type;
 import beast.code.data.util.reinterpret;
 import beast.code.data.util.deref;
+import beast.code.data.idcontainer;
 
 /// DataEntity stores information about a value: what is its type and how to obtain it (how to build code that obtains it)
 /// It is practically a semantic tree node
-abstract class DataEntity : Identifiable {
+abstract class DataEntity : IDContainer {
 
 	public:
 		this( MatchLevel matchLevel ) {
@@ -140,27 +141,20 @@ abstract class DataEntity : Identifiable {
 			if ( auto result = _resolveIdentifier_main( id, matchLevel ) )
 				return result;
 
-			if ( auto result = dataType.resolveIdentifier( id, this, matchLevel ) )
+			if ( auto result = dataType.tryResolveIdentifier( id, this, matchLevel ) )
 				return result;
 
 			return Overloadset( );
 		}
 
-		/// Resolves the identifier, throws an error if the overloadset is empty
-		final Overloadset expectResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
-			auto result = tryResolveIdentifier( id, matchLevel );
-			benforce( !result.isEmpty, E.unknownIdentifier, "Could not resolve identifier '%s' for %s".format( id.str, identificationString ) );
-			return result;
-		}
-
 		/// Resolves identifier recursively (looking into parent entities)
 		/// The scope can be used for creating temporary variables
-		final Overloadset recursivelyResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+		final Overloadset tryRecursivelyResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			if ( auto result = tryResolveIdentifier( id, matchLevel ) )
 				return result;
 
 			if ( auto parent = parent ) {
-				if ( auto result = parent.recursivelyResolveIdentifier( id, matchLevel ) )
+				if ( auto result = parent.tryRecursivelyResolveIdentifier( id, matchLevel ) )
 					return result;
 			}
 
@@ -211,18 +205,16 @@ abstract class DataEntity : Identifiable {
 		}
 
 	public:
-		/// Executes the expression in standalone scope and session, returing its value
-		final MemoryPtr ctExec( ) {
-			with ( memoryManager.session ) {
-				scope cb = new CodeBuilder_Ctime;
-				buildCode( cb );
-				return cb.result;
-			}
+		/// Executes the expression at compile time, returns result
+		pragma( inline ) final MemoryPtr ctExec( ) {
+			scope cb = new CodeBuilder_Ctime;
+			buildCode( cb );
+			return cb.result;
 		}
 
 		/// Expects the data to point at Type instance
 		final Symbol_Type ctExec_asType( ) {
-			assert( dataType is coreLibrary.type.Type );
+			assert( dataType is coreType.Type );
 			Symbol_Type type = typeUIDKeeper[ ctExec( ).readPrimitive!size_t ];
 			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
 			return type;

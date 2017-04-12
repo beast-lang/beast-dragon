@@ -43,7 +43,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			VariableDeclarationData declData = new VariableDeclarationData( env );
-			DecorationList decorationList = new DecorationList( decorationList, env.staticMembersParent );
+			DecorationList decorationList = new DecorationList( decorationList );
 
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorationList.apply_variableDeclarationModifier( declData );
@@ -65,7 +65,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 			assert( currentScope );
 
 			VariableDeclarationData declData = new VariableDeclarationData( env );
-			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
+			DecorationList decorations = new DecorationList( decorationList );
 
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorations.apply_variableDeclarationModifier( declData );
@@ -125,7 +125,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 	public:
 		void buildConstructor( DataEntity entity, DataEntity valueEntity, CodeBuilder cb ) {
 			cb.build_scope( ( cb ) {
-				auto match = entity.expectResolveIdentifier( ID!"#ctor" ).CallMatchSet( this, true );
+				auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );
 
 				if ( valueEntity ) {
 					// colonAssign calls #ctor( #Ctor.refAssign, value );

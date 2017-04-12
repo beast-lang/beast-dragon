@@ -85,10 +85,10 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 						we deduce a return type from the first encountered return statement (which sets env.functionReturnType if it was null previously)
 					*/
 					if ( ast_.returnType.isAutoExpression && !staticMemberMerger.isFinished )
-						returnTypeWIP_ = env.functionReturnType ? env.functionReturnType : coreLibrary.type.Void;
+						returnTypeWIP_ = env.functionReturnType ? env.functionReturnType : coreType.Void;
 
 					// returnTypeWIP_ is definitely accessible now (we called returnType before in this function or eventually set the value ourselves)
-					if ( returnTypeWIP_ is coreLibrary.type.Void )
+					if ( returnTypeWIP_ is coreType.Void )
 						cb.build_return( null );
 
 				} );
@@ -113,7 +113,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 			if ( ast_.returnType.isAutoExpression )
 				enforceDone_codeProcessing( );
 			else
-				returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreLibrary.type.Type, parent_.dataEntity ).readType( );
+				returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreType.Type, parent_.dataEntity ).readType( );
 		}
 
 		final void execute_parameterExpanding( ) {

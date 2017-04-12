@@ -21,7 +21,7 @@ struct CoreLibrary_Constants {
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			import std.string : chomp;
 
-			auto types = coreLibrary.type;
+			auto types = coreType;
 
 			foreach ( memName; __traits( derivedMembers, typeof( this ) ) ) {
 				foreach ( attr; __traits( getAttributes, __traits( getMember, this, memName ) ) ) {

@@ -26,10 +26,10 @@ final class AST_AssignExpression : AST_Expression {
 			switch ( op ) {
 
 			case Token.Operator.assign:
-				return new AST_AssignExpression( coreLibrary.enum_.operator.assign, base, LowerLevelExpression.parse( ), _gd.get( ) );
+				return new AST_AssignExpression( ID!"#assign", null, base, LowerLevelExpression.parse( ), _gd.get( ) );
 
 			case Token.Operator.colonAssign:
-				return new AST_AssignExpression( coreLibrary.enum_.operator.refAssign, base, LowerLevelExpression.parse( ), _gd.get( ) );
+				return new AST_AssignExpression( ID!"#refAssign", null, base, LowerLevelExpression.parse( ), _gd.get( ) );
 
 			default:
 				return base;
@@ -38,22 +38,29 @@ final class AST_AssignExpression : AST_Expression {
 		}
 
 	private:
-		this( Symbol operatorConstArg, AST_Expression left, AST_Expression right, CodeLocation loc ) {
-			this.operatorConstArg = operatorConstArg.dataEntity;
+		this( Identifier id, Symbol operatorConstArg, AST_Expression left, AST_Expression right, CodeLocation loc ) {
+			this.operatorConstArg = operatorConstArg ? operatorConstArg.dataEntity : null;
 			this.left = left;
 			this.right = right;
 			this.codeLocation = loc;
+			this.id = id;
 		}
 
 	public:
 		AST_Expression left, right;
 		DataEntity operatorConstArg;
+		Identifier id;
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto __gd = ErrorGuard( codeLocation );
-			
-			return left.buildSemanticTree_single( ).expectResolveIdentifier( ID!"#opAssign" ).resolveCall( this, true, operatorConstArg, right ).Overloadset;
+
+			auto match = left.buildSemanticTree_single( ).expectResolveIdentifier( id ).CallMatchSet( this, true );
+
+			if ( operatorConstArg )
+				match.arg( operatorConstArg );
+
+			return match.arg( right ).finish( ).Overloadset;
 		}
 
 	public:

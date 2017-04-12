@@ -37,7 +37,7 @@ final class AST_Class : AST_Declaration {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			auto declData = new ClassDeclarationData( env );
-			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
+			DecorationList decorations = new DecorationList( decorationList );
 
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorations.apply_classDeclarationModifier( declData );

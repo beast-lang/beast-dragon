@@ -5,6 +5,7 @@ import beast.code.data.decorator.decorator;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.decl.class_;
+import beast.code.ast.expr.decorated;
 
 /// @ctime
 final class Symbol_Decorator_Ctime : Symbol_Decorator {
@@ -33,6 +34,12 @@ final class Symbol_Decorator_Ctime : Symbol_Decorator {
 		}
 
 		override bool apply_classDeclarationModifier( ClassDeclarationData data ) {
+			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
+			data.isCtime = true;
+			return true;
+		}
+
+		override bool apply_expressionDecorator( ExpressionDecorationData data ) {
 			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
 			data.isCtime = true;
 			return true;

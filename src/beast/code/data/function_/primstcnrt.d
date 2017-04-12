@@ -64,7 +64,7 @@ final class Symbol_PrimitiveStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 
 				override Symbol_Type dataType( ) {
 					// TODO: better
-					return coreLibrary.type.Void;
+					return coreType.Void;
 				}
 
 				final override DataEntity parent( ) {

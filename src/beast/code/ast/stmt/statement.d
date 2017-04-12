@@ -8,6 +8,7 @@ import beast.code.ast.stmt.codeblock;
 import beast.code.ast.stmt.while_;
 import beast.code.ast.stmt.break_;
 import beast.code.ast.stmt.delete_;
+import beast.code.ast.expr.decorated;
 
 /// Statement is anything in the function body
 abstract class AST_Statement : AST_Node {
@@ -64,12 +65,14 @@ abstract class AST_Statement : AST_Node {
 
 					return AST_Declaration.parse( _gd, decorationList, expr );
 				}
+				else {
+					if ( decorationList )
+						expr = new AST_DecoratedExpression( decorationList, expr );
 
-				benforce( decorationList is null, E.invalidDecoration, "Decorating expressions is not allowed", ( msg ) { msg.codeLocation = currentToken.codeLocation; } );
-
-				// Otherwise just expression statement
-				currentToken.expectAndNext( Token.Special.semicolon, "semicolon after expression" );
-				return expr;
+					// Otherwise just expression statement
+					currentToken.expectAndNext( Token.Special.semicolon, "semicolon after expression" );
+					return expr;
+				}
 			}
 
 			currentToken.reportSyntaxError( "statement" );

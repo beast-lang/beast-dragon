@@ -50,9 +50,9 @@ abstract class Symbol_Enum : Symbol_Type {
 	protected:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			if ( instance )
-				return baseClass_.resolveIdentifier( id, new DataEntity_ReinterpretCast( instance, baseClass_, MatchLevel.fullMatch ), matchLevel | MatchLevel.baseClass );
+				return baseClass_.tryResolveIdentifier( id, new DataEntity_ReinterpretCast( instance, baseClass_, MatchLevel.fullMatch ), matchLevel | MatchLevel.baseClass );
 
-			return baseClass_.resolveIdentifier( id, null );
+			return baseClass_.tryResolveIdentifier( id, null );
 		}
 
 	private:

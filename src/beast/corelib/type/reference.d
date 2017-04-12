@@ -26,10 +26,9 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 			// Initialize members
 			{
 				Symbol[ ] mem;
-				auto tp = &coreLibrary.type;
 
 				// Implicit constructor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 						ExpandedFunctionParameter.bootstrap( ), //
 						( cb, inst, args ) { //
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
@@ -37,7 +36,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 						} );
 
 				// Copy ctor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 						ExpandedFunctionParameter.bootstrap( this ), //
 						( cb, inst, args ) { //
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
@@ -45,7 +44,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 						} );
 
 				// Ref ctor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, tp.Void, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.refAssign, baseType ), //
 						( cb, inst, args ) { //
 							// arg0 is #Ctor.refAssign!
@@ -54,7 +53,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 						} );
 
 				// Dtor
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreType.Void, //
 						ExpandedFunctionParameter.bootstrap( ), //
 						( cb, inst, args ) { //
 							cb.build_primitiveOperation( BackendPrimitiveOperation.unmarkPtr, inst );
@@ -62,19 +61,19 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 						} );
 
 				// Reference assign refa := refb
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, this ), //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#refAssign", this, coreType.Void, //
+						ExpandedFunctionParameter.bootstrap( this ), //
 						( cb, inst, args ) { //
 							// arg0 is #Ctor.refAssign!
-							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 						} );
 
 				// Reference assign refa := b
-				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", this, tp.Void, //
-						ExpandedFunctionParameter.bootstrap( enm.operator.refAssign, baseType_ ), //
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#refAssign", this, coreType.Void, //
+						ExpandedFunctionParameter.bootstrap( baseType_ ), //
 						( cb, inst, args ) { //
 							// arg0 is #Ctor.refAssign!
-							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 0 ] );
 						} );
 
 				// Implicit cast to base type
@@ -98,10 +97,6 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 						( cb, inst, args ) { //
 							coreType.Pointer.opBinary_equals.dataEntity( MatchLevel.fullMatch, inst.reinterpret( coreType.Pointer ) ).resolveCall( null, true, coreEnum.operator.binEq.dataEntity, coreEnum.null_.dataEntity ).buildCode( cb );
 						} ) );
-
-				// Alias for #opAssign
-				mem ~= new Symbol_BootstrapAlias( ID!"#opAssign", //
-						( matchLevel, inst ) => ( inst ? inst.dereference( baseType_ ) : baseType_.dataEntity( matchLevel ) ).tryResolveIdentifier( ID!"#opAssign", matchLevel ) );
 
 				// Alias #baseType
 				mem ~= new Symbol_BootstrapAlias( ID!"#baseType", ( matchLevel, parentInstance ) => baseType_.dataEntity( matchLevel ).Overloadset );
@@ -142,7 +137,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 	protected:
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			// We shadow referenced type namespace
-			return baseType_.resolveIdentifier( id, instance ? new DataEntity_DereferenceProxy( instance, baseType_ ) : null, matchLevel );
+			return baseType_.tryResolveIdentifier( id, instance ? new DataEntity_DereferenceProxy( instance, baseType_ ) : null, matchLevel );
 		}
 
 	private:
@@ -179,7 +174,7 @@ final class ReferenceTypeManager {
 			mutex_ = new ReadWriteMutex( );
 
 			symbol = new Symbol_BootstrapStaticNonRuntimeFunction( parent, ID!"Reference", //
-					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder.ctArg( coreLibrary.type.Type ).finish( ( ast, MemoryPtr ptr ) { //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder.ctArg( coreType.Type ).finish( ( ast, MemoryPtr ptr ) { //
 						return referenceTypeOf( ptr.readType( ) ).dataEntity; //
 					} //
 					 ) );

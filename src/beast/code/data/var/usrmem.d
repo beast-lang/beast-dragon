@@ -53,7 +53,7 @@ final class Symbol_UserMemberVariable : Symbol_MemberVariable {
 			if ( ast_.dataType.isAutoExpression )
 				berror( E.notImplemented, "Auto member variables not implemented" );
 			else
-				dataTypeWIP_ = ast_.dataType.standaloneCtExec( coreLibrary.type.Type, parent ).readType( );
+				dataTypeWIP_ = ast_.dataType.standaloneCtExec( coreType.Type, parent ).readType( );
 
 			benforce( dataTypeWIP_.instanceSize > 0, E.zeroSizeVariable, "Type '%s' has zero instance size".format( dataTypeWIP_.identificationString ) );
 

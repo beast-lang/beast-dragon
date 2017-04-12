@@ -4,6 +4,7 @@ import beast.code.data.toolkit;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.decl.class_;
+import beast.code.ast.expr.decorated;
 
 /// Base class for all decorator types
 abstract class Symbol_Decorator : Symbol {
@@ -49,6 +50,11 @@ abstract class Symbol_Decorator : Symbol {
 			return false;
 		}
 
+		/// Tries to apply in the expressionDecorator context. Returns true if successful
+		bool apply_expressionDecorator( ExpressionDecorationData data ) {
+			return false;
+		}
+
 	private:
 		DataEntity parent_;
 		DataEntity staticData_;
@@ -65,7 +71,7 @@ abstract class Symbol_Decorator : Symbol {
 			public:
 				override Symbol_Type dataType( ) {
 					// TODO: decorator reflection
-					return coreLibrary.type.Void;
+					return coreType.Void;
 				}
 
 				override bool isCtime( ) {

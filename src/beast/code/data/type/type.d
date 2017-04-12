@@ -47,13 +47,20 @@ abstract class Symbol_Type : Symbol {
 			// T? -> reference
 			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
 					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ast ) { //
-						return coreLibrary.type.Reference.referenceTypeOf( this ).dataEntity; //
+						return coreType.Reference.referenceTypeOf( this ).dataEntity; //
+					} ), //
+					true );
+
+			// T! -> T (for now - future: mutable)
+			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffNot ).finish( ( ast ) { //
+						return this.dataEntity; //
 					} ), //
 					true );
 
 			// Implicit cast to reference
 			if ( !isReferenceType ) {
-				auto refType = coreLibrary.type.Reference.referenceTypeOf( this );
+				auto refType = coreType.Reference.referenceTypeOf( this );
 				// Implicit cast to reference type
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, refType, //
 						ExpandedFunctionParameter.bootstrap( refType.dataEntity ), //
@@ -90,7 +97,7 @@ abstract class Symbol_Type : Symbol {
 					} //
 					 ) );
 
-			// .#ddr
+			// .#addr
 			// TODO: better?
 			mem ~= new Symbol_BootstrapAlias( ID!"#addr", //
 					( MatchLevel matchLevel, DataEntity inst ) => new DataEntity_Bootstrap( ID!"addr", coreType.Pointer, inst ? inst : dataEntity, inst ? inst.isCtime : true, //
@@ -129,43 +136,52 @@ abstract class Symbol_Type : Symbol {
 		}
 
 	public:
-		final Overloadset resolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+		final Overloadset tryResolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			debug assert( initialized_, "Class '%s' not initialized".format( this.tryGetIdentificationString ) );
-			/*import std.stdio;
-
-			writefln( "Resolve %s for %s ( entity %s of type %s )", id.str, identificationString, instance ? instance.identificationString : "#", instance ? instance.dataType.identificationString : "#" );*/
 
 			if ( auto result = _resolveIdentifier_pre( id, instance, matchLevel ) )
 				return result;
 
-			import std.array : appender;
-
-			{
-				auto result = appender!( DataEntity[ ] );
-
-				// baseNamespace_ contains auto-generated members like operator T?, #instanceSize etc
-				result ~= baseNamespace_.resolveIdentifier( id, instance, matchLevel );
-
-				// Add direct members to the overloadset
-				result ~= namespace.resolveIdentifier( id, instance, matchLevel );
-
-				if ( result.data )
-					return Overloadset( result.data );
-			}
+			if ( auto result = tryResolveIdentifier_direct( id, instance, matchLevel ) )
+				return result;
 
 			if ( auto result = _resolveIdentifier_mid( id, instance, matchLevel ) )
 				return result;
 
-			// If this ever needs to be enabled, the reference #opXX fallback function needs to be reworked
-			// (as it would not pass anything to this)
-			// Look in the core.Type
-			/*if ( this !is coreLibrary.type.Type ) {
-				// We don't pass an instance to this because that would cause loop
-				if ( auto result = coreLibrary.type.Type.resolveIdentifier( id, null ) )
-					return result;
-			}*/
-
 			return Overloadset( );
+		}
+
+		/// Resolves the identifier, but doesn't look into aliases n' stuff. Used for calling constructors and destructors
+		final Overloadset tryResolveIdentifier_direct( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+			debug assert( initialized_, "Class '%s' not initialized".format( this.tryGetIdentificationString ) );
+
+			import std.array : appender;
+
+			auto result = appender!( DataEntity[ ] );
+
+			// baseNamespace_ contains auto-generated members like operator T?, #instanceSize etc
+			result ~= baseNamespace_.tryResolveIdentifier( id, instance, matchLevel );
+
+			// Add direct members to the overloadset
+			result ~= namespace.tryResolveIdentifier( id, instance, matchLevel );
+
+			return Overloadset( result.data );
+		}
+
+		final Overloadset expectResolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+			if ( auto result = tryResolveIdentifier( id, instance, matchLevel ) )
+				return result;
+
+			berror( E.unknownIdentifier, "Could not resolve identifier '%s' for %s".format( id.str, identificationString ) );
+			assert( 0 );
+		}
+
+		final Overloadset expectResolveIdentifier_direct( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+			if ( auto result = tryResolveIdentifier_direct( id, instance, matchLevel ) )
+				return result;
+
+			berror( E.unknownIdentifier, "Could not resolve identifier '%s' for %s".format( id.str, identificationString ) );
+			assert( 0 );
 		}
 
 		/// Returns string representing given value of given type (for example bool -> true/false)
@@ -219,7 +235,7 @@ abstract class Symbol_Type : Symbol {
 
 			public:
 				override Symbol_Type dataType( ) {
-					return coreLibrary.type.Type;
+					return coreType.Type;
 				}
 
 				override bool isCtime( ) {

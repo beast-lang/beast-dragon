@@ -66,7 +66,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 	public:
 		/// Returns constructor that zeroes the instance memory
 		static Symbol newPrimitiveCtor( Symbol_Type tp ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp, coreLibrary.type.Void, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memZero, inst );
@@ -75,7 +75,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns copy constructor that copies all data from the source instance
 		static Symbol newPrimitiveCopyCtor( Symbol_Type tp ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp, coreLibrary.type.Void, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", tp, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( tp ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
@@ -84,7 +84,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns destructor that does nothing
 		static Symbol newNoopDtor( Symbol_Type tp ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", tp, coreLibrary.type.Void, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", tp, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.noopDtor, inst );
@@ -93,11 +93,11 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		/// Returns assign operator that does a bit copy
 		static Symbol newPrimitiveAssignOp( Symbol_Type tp ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opAssign", tp, coreLibrary.type.Void, //
-					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.assign, tp ), //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#assign", tp, coreType.Void, //
+					ExpandedFunctionParameter.bootstrap( tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is Operator.assign!
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
 		}
 

@@ -38,7 +38,7 @@ class CoreLibrary {
 
 	public:
 		/// Module where all core stuff is in
-		/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.recursivelyResolveIdentifier
+		/// This module is not "imported" anywhere; instead, lookup in it is hardwired in the Symbol_Module.tryRecursivelyResolveIdentifier
 		Symbol_BootstrapModule module_;
 
 	public:

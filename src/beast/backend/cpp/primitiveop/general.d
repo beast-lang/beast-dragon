@@ -77,9 +77,9 @@ void primitiveOp_noopDtor( CB cb, T t, Op arg1 ) {
 
 void primitiveOp_print( CB cb, T t, Op arg1 ) {
 	with ( cb ) {
-		if ( t is coreLibrary.type.Bool )
+		if ( t is coreType.Bool )
 			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, bool ) );\n", tabs, arg1 );
-		else if ( t is coreLibrary.type.Int32 )
+		else if ( t is coreType.Int32 )
 			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, int32_t ) );\n", tabs, arg1 );
 		else
 			assert( 0, "Print not implemented for " ~ t.identificationString );

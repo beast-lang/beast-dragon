@@ -25,7 +25,6 @@ final class Backend_Cpp : Backend {
 			// Must be done in a thread because of task guards
 			taskManager.imminentIssueJob( { //
 				auto entryModule = project.entryModule.symbol.dataEntity;
-
 				auto _sgd = scopeGuard( new RootDataScope( entryModule ) );
 				entryModule.expectResolveIdentifier( ID!"main" ).resolveCall( null, true ).buildCode( entryFunctionCallCB );
 			} );

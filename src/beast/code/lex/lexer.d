@@ -268,7 +268,7 @@ final class Lexer {
 								// TODO: same-value literal merging
 								if ( wholeNumAccumulator >= int.min && wholeNumAccumulator <= int.max ) {
 									int data = wholeNumAccumulator.toInt;
-									return new Token( new Symbol_Literal( coreLibrary.type.Int32, cast( ubyte[ ] )( cast( void* )&data )[ 0 .. data.sizeof ] ).dataEntity );
+									return new Token( new Symbol_Literal( coreType.Int32, cast( ubyte[ ] )( cast( void* )&data )[ 0 .. data.sizeof ] ).dataEntity );
 								}
 								else
 									berror( E.intLiteralTooBig, "There is no type so far that could contain int value this big" );

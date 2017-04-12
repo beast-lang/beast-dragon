@@ -14,7 +14,7 @@ final class Interpreter {
 
 	public:
 		static void executeFunction( Symbol_RuntimeFunction func, MemoryPtr resultPtr, MemoryPtr ctxPtr, MemoryPtr[ ] args ) {
-			assert( resultPtr.isNull == ( func.returnType is coreLibrary.type.Void ) );
+			assert( resultPtr.isNull == ( func.returnType is coreType.Void ) );
 			assert( args.length == func.parameters.length );
 
 			auto ir = scoped!Interpreter;

@@ -9,21 +9,30 @@ import beast.code.data.scope_.root;
 import beast.code.ast.expr.assign;
 import std.typecons : Tuple;
 import beast.code.ast.expr.parentcomma;
+import beast.code.ast.expr.decorated;
 
 abstract class AST_Expression : AST_Statement {
 	alias LowerLevelExpression = AST_AssignExpression;
 
 	public:
 		static bool canParse( ) {
-			return LowerLevelExpression.canParse;
+			return LowerLevelExpression.canParse || AST_DecorationList.canParse;
 		}
 
 		static AST_Expression parse( bool parseDeclarations = true ) {
 			auto _gd = codeLocationGuard( );
+
+			AST_DecorationList decorationList;
+			if ( AST_DecorationList.canParse )
+				decorationList = AST_DecorationList.parse( );
+
 			auto result = LowerLevelExpression.parse( );
 
 			if ( parseDeclarations && result.isPrefixExpression && currentToken == Token.Type.identifier )
-				return AST_VariableDeclarationExpression.parse( _gd, null, result );
+				result = AST_VariableDeclarationExpression.parse( _gd, null, result );
+
+			if ( decorationList )
+				result = new AST_DecoratedExpression( decorationList, result );
 
 			return result;
 		}

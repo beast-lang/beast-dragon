@@ -34,7 +34,7 @@ final class AST_FunctionDeclaration : AST_Declaration {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			FunctionDeclarationData declData = new FunctionDeclarationData( env );
-			DecorationList decorations = new DecorationList( decorationList, env.staticMembersParent );
+			DecorationList decorations = new DecorationList( decorationList );
 
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorations.apply_functionDeclarationModifier( declData );

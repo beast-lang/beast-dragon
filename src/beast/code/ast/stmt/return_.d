@@ -41,9 +41,9 @@ final class AST_ReturnStatement : AST_Statement {
 				}
 			}
 			else if ( !env.functionReturnType )
-				env.functionReturnType = coreLibrary.type.Void;
+				env.functionReturnType = coreType.Void;
 			else
-				benforce( env.functionReturnType is coreLibrary.type.Void, E.missingReturnExpression, "Missing return value of type '%s'".format( env.functionReturnType.identificationString ) );
+				benforce( env.functionReturnType is coreType.Void, E.missingReturnExpression, "Missing return value of type '%s'".format( env.functionReturnType.identificationString ) );
 
 			cb.build_return( result );
 		}

@@ -1,13 +1,13 @@
 module beast.code.data.scope_.scope_;
 
 import beast.code.data.toolkit;
-import beast.util.identifiable;
 import beast.code.data.var.local;
+import beast.code.data.idcontainer;
 
 /// DatScope is basically a namespace for data entities (the "Namespace" class stores symbols) - it is a namespace with a context
 /// DataScope is not responsible for calling destructors or constructors - destructors are handled by a codebuilder
 /// Scope is expected to be accessed from one context only
-abstract class DataScope : Identifiable {
+abstract class DataScope : IDContainer {
 
 	protected:
 		this( DataEntity parentEntity ) {
@@ -67,7 +67,7 @@ abstract class DataScope : Identifiable {
 		}
 
 	public:
-		Overloadset resolveIdentifier( Identifier id ) {
+		Overloadset tryResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			debug assert( context.jobId == jobId_ );
 
 			if ( auto result = id in groupedNamedVariables_ )
@@ -75,8 +75,6 @@ abstract class DataScope : Identifiable {
 
 			return Overloadset( );
 		}
-
-		abstract Overloadset recursivelyResolveIdentifier( Identifier id );
 
 	public:
 		debug final size_t jobId( ) {

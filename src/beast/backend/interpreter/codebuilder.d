@@ -103,7 +103,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			InstructionOperand operandResult;
 
-			if ( function_.returnType !is coreLibrary.type.Void ) {
+			if ( function_.returnType !is coreType.Void ) {
 				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
 				build_localVariableDefinition( returnVar );
 				operandResult = operandResult_;

@@ -22,7 +22,7 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 			super.initialize( );
 
 			Symbol[ ] mem;
-			auto tp = &coreLibrary.type;
+			auto tp = &coreType;
 
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( this ); // a = b
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreLibrary.enum_.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
@@ -38,7 +38,7 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 			// TODO: other comparison
 
 			// Implicit constructor
-			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
@@ -46,16 +46,15 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 					} );
 
 			// Copy ctor
-			copyCtor = new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreLibrary.type.Void, //
+			mem ~= copyCtor = new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
-			mem ~= copyCtor;
 
 			// Dtor
-			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreLibrary.type.Void, //
+			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.unmarkPtr, inst );

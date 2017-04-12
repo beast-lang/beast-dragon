@@ -7,6 +7,8 @@ import beast.core.project.module_;
 import beast.code.data.codenamespace.namespace;
 import beast.code.data.codenamespace.user;
 import beast.code.ast.decl.env;
+import beast.code.data.scope_.scope_;
+import beast.code.data.scope_.root;
 
 /// User (programmer) defined module
 final class Symbol_UserModule : Symbol_Module {

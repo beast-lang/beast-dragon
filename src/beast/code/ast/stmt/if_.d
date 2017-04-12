@@ -37,7 +37,7 @@ final class AST_IfStatement : AST_Statement {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			cb.build_if(  //
-					condition.buildSemanticTree_singleExpect( coreLibrary.type.Bool ), //
+					condition.buildSemanticTree_singleExpect( coreType.Bool ), //
 					( CodeBuilder cb ) => thenBranch.buildStatementCode( env, cb ), //
 					elseBranch ? ( CodeBuilder cb ) => elseBranch.buildStatementCode( env, cb ) : null  //
 					 );

@@ -28,11 +28,11 @@ final class LocalDataScope : DataScope {
 		}
 
 	public:
-		final override Overloadset recursivelyResolveIdentifier( Identifier id ) {
-			if ( auto result = resolveIdentifier( id ) )
+		final Overloadset tryRecursivelyResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+			if ( auto result = tryResolveIdentifier( id, matchLevel ) )
 				return result;
 
-			if ( auto result = parentScope_.recursivelyResolveIdentifier( id ) )
+			if ( auto result = parentScope_.tryRecursivelyResolveIdentifier( id, matchLevel ) )
 				return result;
 
 			return Overloadset( );

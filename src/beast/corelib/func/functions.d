@@ -19,23 +19,21 @@ struct CoreLibrary_Functions {
 
 	public:
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
-			auto tp = &coreLibrary.type;
-
 			sink( printBool = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
-					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
+					coreType.Void, ExpandedFunctionParameter.bootstrap( coreType.Bool ), //
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
 					} ) );
 			sink( printInt = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
-					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Int32 ), //
+					coreType.Void, ExpandedFunctionParameter.bootstrap( coreType.Int32 ), //
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
 					} ) );
 
 			sink( malloc = new Symbol_PrimitiveStaticRuntimeFunction( ID!"malloc", parent, //
-					tp.Pointer, ExpandedFunctionParameter.bootstrap( tp.Size ), //
+					coreType.Pointer, ExpandedFunctionParameter.bootstrap( coreType.Size ), //
 					( cb, args ) { //
-						auto result = new DataEntity_TmpLocalVariable( tp.Pointer, cb.isCtime );
+						auto result = new DataEntity_TmpLocalVariable( coreType.Pointer, cb.isCtime );
 						cb.build_localVariableDefinition( result );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, result );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.malloc, result, args[ 0 ] );
@@ -44,13 +42,13 @@ struct CoreLibrary_Functions {
 						result.buildCode( cb );
 					} ) );
 			sink( free = new Symbol_PrimitiveStaticRuntimeFunction( ID!"free", parent, //
-					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Pointer ), //
+					coreType.Void, ExpandedFunctionParameter.bootstrap( coreType.Pointer ), //
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.free, args[ 0 ] );
 					} ) );
 
 			sink( assert_ = new Symbol_PrimitiveStaticRuntimeFunction( ID!"assert", parent, //
-					tp.Void, ExpandedFunctionParameter.bootstrap( tp.Bool ), //
+					coreType.Void, ExpandedFunctionParameter.bootstrap( coreType.Bool ), //
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.assert_, args[ 0 ] );
 					} ) );

@@ -6,12 +6,17 @@ import beast.code.ast.expr.parentcomma;
 import beast.code.data.callable.match;
 import beast.code.data.scope_.local;
 import beast.code.ast.expr.expression;
+import std.range : isInputRange, ElementType;
 
 struct Overloadset {
 
 	public:
 		this( DataEntity[ ] data ) {
 			this.data = data;
+		}
+
+		this( Range )( Range data ) if ( isInputRange!Range ) {
+			this.data = data.array;
 		}
 
 		this( DataEntity entity ) {

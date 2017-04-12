@@ -12,5 +12,5 @@ alias Op = MemoryPtr;
 pragma( inline ) void checkMemoryNotCtime( string arg ) {
 	import std.algorithm : startsWith;
 
-	benforce( !arg.startsWith( "CTMEM" ), E.protectedMemory, "Cannot write to ctime variable at runtime" );
+	benforce( !arg.startsWith( "CTMEM" ), E.protectedMemory, "Cannot write to a @ctime variable at runtime" );
 }

@@ -7,17 +7,16 @@ import beast.code.ast.decl.function_;
 import beast.code.ast.decoration;
 import beast.code.data.decorator.decorator;
 import beast.code.ast.decl.class_;
+import beast.code.ast.expr.decorated;
+import beast.code.data.idcontainer;
+import beast.code.ast.decl.env;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
 final class DecorationList {
 
 	public:
-		this( AST_DecorationList list, DataEntity context ) {
+		this( AST_DecorationList list ) {
 			import std.array : appender;
-
-			assert( context, "null context" );
-
-			context_ = context;
 
 			// Group all decorations to an array
 			{
@@ -55,8 +54,12 @@ final class DecorationList {
 
 		Symbol_Type apply_typeWrapper( Symbol_Type originalType ) {
 			// originalType is passed by reference
-			standardDecoratorProcedure!"typeWrapper"( context_, originalType );
+			standardDecoratorProcedure!"typeWrapper"( currentScope, originalType );
 			return originalType;
+		}
+
+		void apply_expressionDecorator( ExpressionDecorationData data ) {
+			standardDecoratorProcedure!"expressionDecorator"( currentScope, data );
 		}
 
 	public:
@@ -67,7 +70,7 @@ final class DecorationList {
 		}
 
 	private:
-		void standardDecoratorProcedure( string applyFunctionName, Args... )( DataEntity context, auto ref Args args ) {
+		void standardDecoratorProcedure( string applyFunctionName, Args... )( IDContainer context, auto ref Args args ) {
 			// Right decorators have higher priority
 			foreach_reverse ( ref Record rec; list_ ) {
 				// If the record has already resolved decorator, just try applying the decorator in the context
@@ -77,7 +80,7 @@ final class DecorationList {
 				}
 
 				// Otherwise try resolving the decorator
-				foreach ( decorator; context.recursivelyResolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
+				foreach ( decorator; context.tryRecursivelyResolveIdentifier( rec.decoration.decoratorIdentifier ).filter_decoratorsOnly ) {
 					// If the decorator is appliable in given context, mark the given decorator as resolved
 					if ( __traits( getMember, decorator, "apply_" ~ applyFunctionName )( args ) ) {
 						rec.decorator = decorator;
@@ -89,7 +92,6 @@ final class DecorationList {
 
 	private:
 		Record[ ] list_;
-		DataEntity context_;
 
 	private:
 		static struct Record {

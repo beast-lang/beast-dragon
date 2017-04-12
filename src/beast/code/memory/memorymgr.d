@@ -9,6 +9,11 @@ import beast.util.uidgen;
 import std.container.rbtree : RedBlackTree;
 import std.algorithm.searching : until;
 
+debug ( memory ) {
+	import std.stdio : writefln;
+	import core.runtime : defaultTraceHandler;
+}
+
 /// MemoryManager is in charge of all @ctime-allocated memory
 __gshared MemoryManager memoryManager;
 
@@ -83,6 +88,9 @@ final class MemoryManager {
 			assert( result.startPtr.val !in context.sessionMemoryBlocks );
 			context.sessionMemoryBlocks[ result.startPtr.val ] = result;
 
+			debug ( memory )
+				writefln( "ALLOC %s (%s bytes)\n%s\n", result.startPtr, bytes, defaultTraceHandler.toString );
+
 			return result;
 		}
 
@@ -126,6 +134,9 @@ final class MemoryManager {
 						// We also have to unmark pointers in the block
 						context.sessionPointers.removeKey( pointersInSessionBlock( block ) );
 
+						debug ( memory )
+							writefln( "FREE %s\n%s\n", ptr, defaultTraceHandler.toString );
+
 						return;
 					}
 					else
@@ -164,8 +175,8 @@ final class MemoryManager {
 
 			MemoryBlock block = findMemoryBlock( ptr );
 
-			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
-			benforce( block.session == context.session, E.protectedMemory, "Cannot write to memory block owned by a different session" );
+			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
+			benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session" );
 			benforce( ptr + data.length <= block.endPtr, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
 			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
 

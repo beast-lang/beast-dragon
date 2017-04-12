@@ -271,7 +271,7 @@ void main() {
 		\grAltLn \kwd{?} | \kwd{!} \\
 \end{grammar}
 
-\subsection{Operator precedence}
+\subsection{Operator precedence} \label{opPrecedence}
 \begin{centeredRefTabular}{P{1.5cm} | c | c | p{6cm} | c}
 	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
 	
@@ -351,7 +351,7 @@ void main() {
 		& \inlineCode{x = y} & \inlineCode{assign} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
 		& \inlineCode{x := y} & \inlineCode{refAssign} & Reference assignment & \\
 		\cline{2-5}
-		& \inlineCode{x += y} & \inlineCode{binPlus} & \multirow{12}{*}{Various assignments} & \multirow{12}{*}{NOCH} \\
+		& \inlineCode{x += y} & \inlineCode{binPlus} & \multirow{12}{*}{Op assign operators} & \multirow{12}{*}{NOCH} \\
 		& \inlineCode{x -= y} & \inlineCode{binMinus} && \\
 		& \inlineCode{x *= y} & \inlineCode{binMult} && \\
 		& \inlineCode{x /= y} & \inlineCode{binDiv} && \\
@@ -780,7 +780,7 @@ Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
 	\item Resolve and call \inlineCode{x.#opPrefix( op )} (or error).
 \end{enumerate}
 
-\subsection{Binary (and assign) operators}
+\subsection{Binary operators}
 Consider expression
 \begin{code}
 	x + y
@@ -796,6 +796,48 @@ Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operan
 \end{enumerate}
 
 Every binary operator has a record in the \inlineCode{Operator} enum.
+
+\subsection{Assign operator}
+Consider expression
+\begin{code}
+	x = y
+\end{code}
+
+Here, the \inlineCode{x} is the left operand and \inlineCode{y} is the right operand.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#assign( y )}.
+\end{enumerate}
+
+\subsection{Ref assign operator}
+Consider expression
+\begin{code}
+	x := y
+\end{code}
+
+Here, the \inlineCode{x} is the left operand and \inlineCode{y} is the right operand.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#refAssign( y )}.
+\end{enumerate}
+
+\subsection{Operator assign operator}
+Consider expression
+\begin{code}
+	x |= y
+\end{code}
+
+Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operand and \inlineCode{|=} is the operator. There is a corresponding \inlineCode{Operator} enum item for each op assign operator (see \ref{opPrecedence}) in the \inlineCode{binXX} format. This enum item corresponds with the \inlineCode{op} mentioned in the behavior paragraph below.
+
+\paragraph{Behavior}
+\begin{enumerate}
+	\item Check if the operand overloadset contains only one record (or error).
+	\item Resolve and call \inlineCode{x.#opAssign( op, y )}.
+\end{enumerate}
 
 \subsection{The '\inlineCode{x .. y}' (range) operator}
 This operator is almost equivalent to \inlineCode{Range( x.#type )( x, y )}, except it infers the Range type from expected parameter type if possible.
@@ -1449,6 +1491,8 @@ class FunctionMetadata {
 \section{Random thoughts scrapbook}
 \begin{code}
 auto max( auto x, x.#type y ) = ( x > y ) ? x : y;
+
+write( "Asd \(varx) and \(vary)" );
 
 T!? #new( @ctime Type T ) {
 	return malloc( T.#size ).to( T!? );

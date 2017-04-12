@@ -24,7 +24,7 @@ final class ExpandedFunctionParameter : Identifiable {
 				assert( !decl.dataType.isAutoExpression, "Cannot expand auto parameter" );
 
 				result.identifier = decl.identifier.identifier;
-				result.dataType = decl.dataType.ctExec( coreLibrary.type.Type ).readType( );
+				result.dataType = decl.dataType.ctExec( coreType.Type ).readType( );
 
 				// TODO: add to scope (to make param definitions like ( Bool x, x.#type y ) work)
 			}

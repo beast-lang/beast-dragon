@@ -123,11 +123,15 @@ abstract class CodeBuilder : Identifiable {
 
 	public:
 		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue ) {
-			var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( var.ast, true, initValue ).buildCode( this );
+			// We don't call var.tryResolveIdentifier because of Type variables
+			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
+			var.dataType.expectResolveIdentifier_direct( ID!"#ctor", var ).resolveCall( var.ast, true, initValue ).buildCode( this );
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {
-			var.expectResolveIdentifier( ID!"#dtor" ).resolveCall( null, true ).buildCode( var.isCtime ? scoped!CodeBuilder_Ctime : this );
+			// We don't call var.tryResolveIdentifier because of Type variables
+			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
+			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( var.isCtime ? scoped!CodeBuilder_Ctime : this );
 		}
 
 	protected:

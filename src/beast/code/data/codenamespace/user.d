@@ -25,9 +25,9 @@ final class UserNamespace : Namespace {
 			return super.members;
 		}
 
-		override Overloadset resolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
+		override Overloadset tryResolveIdentifier( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			enforceDone_membersObtaining( );
-			return super.resolveIdentifier( id, instance, matchLevel );
+			return super.tryResolveIdentifier( id, instance, matchLevel );
 		}
 
 	private:
