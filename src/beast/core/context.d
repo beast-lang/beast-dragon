@@ -10,6 +10,7 @@ import beast.core.task.worker;
 import beast.code.data.scope_.scope_;
 import std.container.rbtree;
 import beast.code.memory.ptr : MemoryPtr;
+import beast.util.uidgen;
 
 /// General project-related data
 __gshared Project project;
@@ -17,7 +18,12 @@ __gshared Project project;
 /// TaskManager is in charge of parallelism and work planning
 __gshared TaskManager taskManager;
 
-class ContextData {
+final class ContextData {
+
+	public:
+		size_t session( ) {
+			return sessionData.id;
+		}
 
 	public:
 		/// Currently working lexer
@@ -25,25 +31,10 @@ class ContextData {
 
 	public:
 		/// Id of the current job (task)
-		size_t jobId;
+		UIDGenerator.I jobId;
 
-		/// Sessions separate code executing into logical units. It is not possible to write to memory of other sessions.
-		/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
-		size_t session;
-
-		/// Sessions can be nested (they're absolutely independent though); last session in the stack is saved in the session variable for speed up
-		size_t[ ] sessionStack;
-
-		/// List of all memory blocks allocated in the current session (mapped by src ptr)
-		MemoryBlock[ size_t ] sessionMemoryBlocks;
-
-		/// Memory blocks allocated by the sessions in the stack
-		MemoryBlock[ size_t ][ ] sessionMemoryBlockStack;
-
-		/// Pointers created in the current session
-		RedBlackTree!MemoryPtr sessionPointers;
-
-		RedBlackTree!MemoryPtr[] sessionPointersStack;
+		SessionData sessionData;
+		SessionData[ ] sessionDataStack;
 
 	public:
 		/// This is to prevent passing scopes aroung all the time
@@ -65,6 +56,19 @@ class ContextData {
 		/// TaskContext of the current running task
 		TaskContext taskContext;
 		ErrorGuardData errorGuardData;
+
+	public:
+		struct SessionData {
+			/// Sessions separate code executing into logical units. It is not possible to write to memory of other sessions.
+			/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
+			UIDGenerator.I id;
+
+			/// List of all memory blocks allocated in the current session (mapped by src ptr)
+			MemoryBlock[ size_t ] memoryBlocks;
+
+			/// Pointers created in the current session
+			RedBlackTree!MemoryPtr pointers;
+		}
 
 }
 

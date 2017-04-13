@@ -7,6 +7,7 @@ import beast.code.data.function_.expandedparameter;
 import core.memory : GC;
 import core.atomic : atomicOp;
 import beast.code.memory.memorymgr;
+import beast.util.uidgen;
 
 /// Block of interpreter memory
 final class MemoryBlock {
@@ -31,10 +32,11 @@ final class MemoryBlock {
 		}
 
 	public:
-		this( MemoryPtr startPtr, size_t size ) {
+		this( MemoryPtr startPtr, size_t size, UIDGenerator.I allocId ) {
 			this.startPtr = startPtr;
 			this.endPtr = startPtr + size;
 			this.size = size;
+			this.allocId = allocId;
 
 			assert( context.session, "You need a session to be able to allocate" );
 			this.session = context.session;
@@ -111,6 +113,8 @@ final class MemoryBlock {
 		}
 
 	public:
+		/// Number unique to each allocation
+		const UIDGenerator.I allocId;
 		/// First byte that belongs to the block
 		const MemoryPtr startPtr;
 		/// First byte that doesn't belong to the block
@@ -118,7 +122,7 @@ final class MemoryBlock {
 		/// Size of the block
 		const size_t size;
 		/// Session the current block was initialized in
-		const size_t session;
+		const UIDGenerator.I session;
 		/// Flags of the block. Do not change after first write!
 		Flags flags;
 		/// Flags that can be modified asynchronously (atomic or write only)
@@ -131,6 +135,6 @@ final class MemoryBlock {
 
 		/// This is for checking if there was reading from a different thread before write
 		debug bool wasReadOutsideContext;
-		debug size_t jobId;
+		debug UIDGenerator.I jobId;
 
 }

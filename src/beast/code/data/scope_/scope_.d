@@ -3,6 +3,7 @@ module beast.code.data.scope_.scope_;
 import beast.code.data.toolkit;
 import beast.code.data.var.local;
 import beast.code.data.idcontainer;
+import beast.util.uidgen;
 
 /// DatScope is basically a namespace for data entities (the "Namespace" class stores symbols) - it is a namespace with a context
 /// DataScope is not responsible for calling destructors or constructors - destructors are handled by a codebuilder
@@ -77,7 +78,7 @@ abstract class DataScope : IDContainer {
 		}
 
 	public:
-		debug final size_t jobId( ) {
+		debug final UIDGenerator.I jobId( ) {
 			return jobId_;
 		}
 
@@ -87,7 +88,7 @@ abstract class DataScope : IDContainer {
 		DataEntity_LocalVariable[ ] localVariables_;
 		Overloadset[ Identifier ] groupedNamedVariables_;
 
-		debug size_t jobId_;
+		debug UIDGenerator.I jobId_;
 		debug bool isFinished_;
 
 	package:

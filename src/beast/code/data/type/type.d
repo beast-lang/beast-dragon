@@ -30,7 +30,7 @@ abstract class Symbol_Type : Symbol {
 			typeUID_ = typeUIDKeeper( this );
 
 			with ( memoryManager.session ) {
-				MemoryBlock block = memoryManager.allocBlock( size_t.sizeof );
+				MemoryBlock block = memoryManager.allocBlock( UIDGenerator.I.sizeof );
 				block.identifier = "%s_typeid".format( identifier.str );
 				block.markDoNotGCAtSessionEnd( );
 				ctimeValue_ = block.startPtr.writePrimitive( typeUID_ );
@@ -122,7 +122,7 @@ abstract class Symbol_Type : Symbol {
 		}
 
 		/// Each type has uniquie UID in the project (differs each compiler run)
-		final size_t typeUID( ) {
+		final UIDGenerator.I typeUID( ) {
 			return typeUID_;
 		}
 
@@ -220,7 +220,7 @@ abstract class Symbol_Type : Symbol {
 		MemoryPtr ctimeValue_;
 		/// Namespace containing implicit/default types for a type (implicit operators, reflection functions etc)
 		BootstrapNamespace baseNamespace_;
-		size_t typeUID_;
+		UIDGenerator.I typeUID_;
 		DataEntity instanceSizeLiteralWIP_;
 
 	protected:

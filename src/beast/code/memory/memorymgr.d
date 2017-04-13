@@ -8,6 +8,7 @@ import beast.code.hwenv.hwenv;
 import beast.util.uidgen;
 import std.container.rbtree : RedBlackTree;
 import std.algorithm.searching : until;
+import beast.core.context;
 
 debug ( memory ) {
 	import std.stdio : writefln;
@@ -53,7 +54,7 @@ final class MemoryManager {
 				// First, we try inserting the new block between currently existing memory blocks
 				foreach ( i, block; mmap_ ) {
 					if ( endPtr + bytes <= block.startPtr ) {
-						result = new MemoryBlock( endPtr, bytes );
+						result = new MemoryBlock( endPtr, bytes, allocIDGenerator_( ) );
 
 						mmap_.insertInPlace( i, result );
 						//mmap_ = mmap_[ 0 .. i ] ~ result ~ mmap_[ i .. $ ];
@@ -72,7 +73,7 @@ final class MemoryManager {
 
 					assert( mmap_.length == 0 || mmap_[ $ - 1 ].endPtr == endPtr );
 
-					result = new MemoryBlock( endPtr, bytes );
+					result = new MemoryBlock( endPtr, bytes, allocIDGenerator_( ) );
 					mmap_ ~= result;
 				}
 
@@ -85,8 +86,8 @@ final class MemoryManager {
 				}
 			}
 
-			assert( result.startPtr.val !in context.sessionMemoryBlocks );
-			context.sessionMemoryBlocks[ result.startPtr.val ] = result;
+			assert( result.startPtr.val !in context.sessionData.memoryBlocks );
+			context.sessionData.memoryBlocks[ result.startPtr.val ] = result;
 
 			debug ( memory )
 				writefln( "ALLOC %s (%s bytes)\n%s\n", result.startPtr, bytes, defaultTraceHandler.toString );
@@ -128,11 +129,11 @@ final class MemoryManager {
 
 						mmap_ = mmap_[ 0 .. i ] ~ mmap_[ i + 1 .. $ ];
 
-						assert( block.startPtr.val in context.sessionMemoryBlocks );
-						context.sessionMemoryBlocks.remove( block.startPtr.val );
+						assert( block.startPtr.val in context.sessionData.memoryBlocks );
+						context.sessionData.memoryBlocks.remove( block.startPtr.val );
 
 						// We also have to unmark pointers in the block
-						context.sessionPointers.removeKey( pointersInSessionBlock( block ) );
+						context.sessionData.pointers.removeKey( pointersInSessionBlock( block ) );
 
 						debug ( memory )
 							writefln( "FREE %s\n%s\n", ptr, defaultTraceHandler.toString );
@@ -232,17 +233,17 @@ final class MemoryManager {
 		void markAsPointer( const MemoryPtr ptr ) {
 			debug assert( !finished_ );
 
-			// context.sessionPointers is per-context and context can be acessed from one thread only, so we don't need mutexes
+			// context.sessionData.pointers is per-context and context can be acessed from one thread only, so we don't need mutexes
 			benforce( ptr.val % hardwareEnvironment.pointerSize == 0, E.unalignedMemory, "Pointers must be memory-aligned" );
-			benforce( ptr !in context.sessionPointers, E.corruptMemory, "Corrupt memory: dual initialization of a pointer" );
-			context.sessionPointers.insert( ptr );
+			benforce( ptr !in context.sessionData.pointers, E.corruptMemory, "Corrupt memory: dual initialization of a pointer" );
+			context.sessionData.pointers.insert( ptr );
 		}
 
 		void unmarkAsPointer( const MemoryPtr ptr ) {
 			debug assert( !finished_ );
 
-			benforce( ptr in context.sessionPointers, E.corruptMemory, "Corrupt memory: destroying unexisting pointer" );
-			context.sessionPointers.removeKey( ptr );
+			benforce( ptr in context.sessionData.pointers, E.corruptMemory, "Corrupt memory: destroying unexisting pointer" );
+			context.sessionData.pointers.removeKey( ptr );
 		}
 
 		/// Returns if given memory has been marked as pointer previously
@@ -269,7 +270,7 @@ final class MemoryManager {
 		/// Works only for blocks allocated by current session
 		auto pointersInSessionBlock( MemoryBlock block ) {
 			assert( block.session == context.session );
-			return context.sessionPointers.upperBound( block.startPtr - 1 ).until!( x => x >= block.endPtr );
+			return context.sessionData.pointers.upperBound( block.startPtr - 1 ).until!( x => x >= block.endPtr );
 		}
 
 	public:
@@ -277,16 +278,10 @@ final class MemoryManager {
 			debug assert( !finished_ );
 			static __gshared UIDGenerator sessionUIDGen;
 
-			size_t session = sessionUIDGen( );
+			UIDGenerator.I session = sessionUIDGen( );
 
-			context.sessionMemoryBlockStack ~= context.sessionMemoryBlocks;
-			context.sessionMemoryBlocks = null;
-
-			context.sessionStack ~= context.session;
-			context.session = session;
-
-			context.sessionPointersStack ~= context.sessionPointers;
-			context.sessionPointers = new RedBlackTree!MemoryPtr;
+			context.sessionDataStack ~= context.sessionData;
+			context.sessionData = ContextData.SessionData( session, null, new RedBlackTree!MemoryPtr );
 
 			debug synchronized ( this )
 				activeSessions_[ session ] = context.jobId;
@@ -301,7 +296,7 @@ final class MemoryManager {
 			{
 				MemoryBlock[ ] list;
 
-				foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
+				foreach ( MemoryBlock block; context.sessionData.memoryBlocks ) {
 					if ( block.isDoNotGCAtSessionEnd )
 						list ~= block;
 				}
@@ -327,7 +322,7 @@ final class MemoryManager {
 				}
 
 				// We have to copy blocks to be deleted, because sessionMemoryBlocks shrinks as blocks are freed
-				foreach ( MemoryBlock block; context.sessionMemoryBlocks ) {
+				foreach ( MemoryBlock block; context.sessionData.memoryBlocks ) {
 					if ( !block.isDoNotGCAtSessionEnd ) {
 						debug ( gc )
 							writefln( "endsession cleanup %s", block.startPtr );
@@ -354,22 +349,14 @@ final class MemoryManager {
 			}
 
 			synchronized ( pointerListMutex_.writer )
-				pointerList_.insert( context.sessionPointers[ ] );
+				pointerList_.insert( context.sessionData.pointers[ ] );
 
-			if ( context.sessionStack.length ) {
-				context.session = context.sessionStack[ $ - 1 ];
-				context.sessionStack.length--;
-
-				context.sessionPointers = context.sessionPointersStack[ $ - 1 ];
-				context.sessionPointersStack.length--;
-
-				context.sessionMemoryBlocks = context.sessionMemoryBlockStack[ $ - 1 ];
-				context.sessionMemoryBlockStack.length--;
+			if ( context.sessionDataStack.length ) {
+				context.sessionData = context.sessionDataStack[ $ - 1 ];
+				context.sessionDataStack.length--;
 			}
-			else {
-				context.session = 0;
-				debug context.sessionMemoryBlocks = null;
-			}
+			else
+				context.sessionData = ContextData.SessionData( );
 		}
 
 		/// Utility function for use with with( memoryManager.session ) { xxx } - calls startSession on beginning and endSession on end
@@ -379,7 +366,7 @@ final class MemoryManager {
 					memoryManager.endSession( );
 				}
 
-				debug size_t prevSession, newSession;
+				debug UIDGenerator.I prevSession, newSession;
 
 			}
 
@@ -475,12 +462,14 @@ final class MemoryManager {
 		/// Sorted array of memory blocks
 		MemoryBlock[ ] mmap_; // TODO: Better implementation
 		/// Map of session id -> jobId
-		debug static __gshared size_t[ size_t ] activeSessions_;
+		debug static __gshared UIDGenerator.I[ UIDGenerator.I ] activeSessions_;
+
+		UIDGenerator allocIDGenerator_;
 
 		ReadWriteMutex blockListMutex_, pointerListMutex_;
 
 		/// List of addresses that contain pointers
-		/// Data are first stored in context.sessionPointers, to this list, they're added after session end
+		/// Data are first stored in context.sessionData.pointers, to this list, they're added after session end
 		RedBlackTree!MemoryPtr pointerList_;
 
 }

@@ -2,6 +2,7 @@ module beast.corelib.type.type;
 
 import beast.corelib.type.toolkit;
 import beast.code.data.type.stcclass;
+import beast.util.uidgen;
 
 /// Type 'Type' -- typeof all classes etc.
 /// The root of all good and evil in Beast.
@@ -50,7 +51,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 		}
 
 		override size_t instanceSize( ) {
-			return size_t.sizeof;
+			return UIDGenerator.I.sizeof;
 		}
 
 		override Namespace namespace( ) {

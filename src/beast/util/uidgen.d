@@ -8,13 +8,17 @@ import core.atomic : atomicOp;
 struct UIDGenerator {
 
 	public:
+		alias I = uint;
+
+	public:
 		/// Generates the UID and returns it
-		size_t opCall( ) {
+		pragma( inline ) I opCall( ) {
+			assert( counter_ != 0, "UIDGen overflow" );
 			return counter_.atomicOp!"+="( 1 );
 		}
 
 	private:
-		shared size_t counter_;
+		shared I counter_ = 1;
 
 }
 
@@ -23,13 +27,16 @@ struct UIDGenerator {
 struct UIDKeeper( Type ) if ( is( Type == class ) || is( Type == interface ) ) {
 
 	public:
+		alias I = UIDGenerator.I;
+
+	public:
 		void initialize( ) {
 			mutex = new Mutex;
 		}
 
 	public:
 		/// Generates the UID, assigns it with the object and returns it
-		size_t opCall( Type obj ) {
+		I opCall( Type obj ) {
 			synchronized ( mutex ) {
 				counter++;
 				map[ counter ] = obj;
@@ -38,7 +45,7 @@ struct UIDKeeper( Type ) if ( is( Type == class ) || is( Type == interface ) ) {
 		}
 
 		/// Return object asssigned with the UID or null
-		Type opIndex( size_t uid ) {
+		Type opIndex( uint uid ) {
 			synchronized ( mutex ) {
 				if ( auto result = uid in map )
 					return *result;
@@ -48,8 +55,8 @@ struct UIDKeeper( Type ) if ( is( Type == class ) || is( Type == interface ) ) {
 		}
 
 	private:
-		size_t counter;
-		Type[ size_t ] map;
+		I counter = 1;
+		Type[ I ] map;
 		Mutex mutex;
 
 }

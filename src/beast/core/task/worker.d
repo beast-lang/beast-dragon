@@ -3,6 +3,7 @@ module beast.core.task.worker;
 import core.thread : Thread;
 import beast.core.context;
 import beast.core.task.context;
+import beast.util.uidgen;
 
 final class Worker {
 
@@ -10,14 +11,14 @@ final class Worker {
 		static Worker current;
 
 	package:
-		this( size_t id ) {
+		this( UIDGenerator.I id ) {
 			thread_ = new Thread( &run );
 			thread_.start( );
 			id_ = id;
 		}
 
 	public:
-		size_t id( ) {
+		UIDGenerator.I id( ) {
 			return id_;
 		}
 
@@ -28,7 +29,7 @@ final class Worker {
 
 	private:
 		Thread thread_;
-		size_t id_;
+		UIDGenerator.I id_;
 
 	private:
 		void run( ) {

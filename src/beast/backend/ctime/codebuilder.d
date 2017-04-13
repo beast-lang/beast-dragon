@@ -3,6 +3,7 @@ module beast.backend.ctime.codebuilder;
 import beast.backend.toolkit;
 import beast.code.data.scope_.local;
 import beast.backend.interpreter.interpreter;
+import beast.util.uidgen;
 
 /// "CodeBuilder" that executes data at compile time
 /// Because of its result caching, always use each instance of this codebuilder in one task context only!
@@ -117,7 +118,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		}
 
 	package:
-		debug size_t jobId_;
+		debug UIDGenerator.I jobId_;
 		MemoryPtr result_;
 
 }
