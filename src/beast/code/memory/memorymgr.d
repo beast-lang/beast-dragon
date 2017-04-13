@@ -281,7 +281,7 @@ final class MemoryManager {
 			UIDGenerator.I session = sessionUIDGen( );
 
 			context.sessionDataStack ~= context.sessionData;
-			context.sessionData = ContextData.SessionData( session, null, new RedBlackTree!MemoryPtr );
+			context.sessionData = new ContextData.SessionData( session );
 
 			debug synchronized ( this )
 				activeSessions_[ session ] = context.jobId;
@@ -356,7 +356,7 @@ final class MemoryManager {
 				context.sessionDataStack.length--;
 			}
 			else
-				context.sessionData = ContextData.SessionData( );
+				context.sessionData = null;
 		}
 
 		/// Utility function for use with with( memoryManager.session ) { xxx } - calls startSession on beginning and endSession on end

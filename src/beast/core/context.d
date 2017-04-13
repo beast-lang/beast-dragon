@@ -21,7 +21,7 @@ __gshared TaskManager taskManager;
 final class ContextData {
 
 	public:
-		size_t session( ) {
+		pragma( inline ) auto session( ) {
 			return sessionData.id;
 		}
 
@@ -58,16 +58,25 @@ final class ContextData {
 		ErrorGuardData errorGuardData;
 
 	public:
-		struct SessionData {
-			/// Sessions separate code executing into logical units. It is not possible to write to memory of other sessions.
-			/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
-			UIDGenerator.I id;
+		final static class SessionData {
 
-			/// List of all memory blocks allocated in the current session (mapped by src ptr)
-			MemoryBlock[ size_t ] memoryBlocks;
+			public:
+				this( UIDGenerator.I id ) {
+					this.id = id;
+					pointers = new RedBlackTree!MemoryPtr;
+				}
 
-			/// Pointers created in the current session
-			RedBlackTree!MemoryPtr pointers;
+			public:
+				/// Sessions separate code executing into logical units. It is not possible to write to memory of other sessions.
+				/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
+				UIDGenerator.I id;
+
+				/// List of all memory blocks allocated in the current session (mapped by src ptr)
+				MemoryBlock[ size_t ] memoryBlocks;
+
+				/// Pointers created in the current session
+				RedBlackTree!MemoryPtr pointers;
+
 		}
 
 }
