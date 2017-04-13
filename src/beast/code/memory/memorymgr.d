@@ -367,7 +367,6 @@ final class MemoryManager {
 				}
 
 				debug UIDGenerator.I prevSession, newSession;
-
 			}
 
 			debug auto prevSession = context.session;

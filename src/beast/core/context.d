@@ -22,7 +22,7 @@ final class ContextData {
 
 	public:
 		pragma( inline ) auto session( ) {
-			return sessionData.id;
+			return sessionData ? sessionData.id : 0;
 		}
 
 	public:
@@ -77,8 +77,16 @@ final class ContextData {
 				/// Pointers created in the current session
 				RedBlackTree!MemoryPtr pointers;
 
-				MemoryBlock[] newAllocations;
-				MemoryBlock[] newFrees;
+			public:
+				// FOLLOWING VARIABLES ARE USED TO TRACJ @ctime DATA CHANGES IN NON-@ctime FUNCTIONS:
+
+				/// Newly allocated blocks since the last check
+				MemoryBlock[ ] newAllocations;
+
+				/// Newly freed blocks since the last check
+				MemoryBlock[ ] newFrees;
+
+				/// Memory blocks whose data has changed since the last check
 				RedBlackTree!MemoryBlock changedMemoryBlocks;
 
 		}
