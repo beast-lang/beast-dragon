@@ -183,7 +183,6 @@ abstract class DataEntity : IDContainer {
 				return castCall;
 			}
 
-			/// TODO: Implicit cast check
 			/// TODO: alias this check
 			return null;
 		}

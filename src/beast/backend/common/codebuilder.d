@@ -129,12 +129,60 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {
+			string id = var.identificationString;
+			bool isCtime = var.isCtime;
+
 			// We don't call var.tryResolveIdentifier because of Type variables
 			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
-			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( var.isCtime ? scoped!CodeBuilder_Ctime : this );
+			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( var.isCtime ? new CodeBuilder_Ctime : this );
+			
+			if( var.isCtime )
+				mirrorBlockDeallocation( var.memoryBlock );
 		}
 
 	protected:
+		/// Mirrors @ctime changes into the runtime code
+		final void mirrorCtimeChanges( ) {
+			foreach ( block; context.sessionData.changedMemoryBlocks ) {
+				// We ignore memory blocks that are runtime
+				if ( block.isRuntime )
+					continue;
+
+				// If the block has been both allocated and deallocated between two mirorrings, it should not appear in the list (implemented in memorymgr.free)
+				assert( !block.flag( MemoryBlock.SharedFlag.allocated | MemoryBlock.SharedFlag.freed ) );
+				assert( block.flag( MemoryBlock.SharedFlag.changed ) );
+
+				if( block.flag( MemoryBlock.SharedFlag.allocated ) )
+					mirrorBlockAllocation( block );
+				else if( block.flag( MemoryBlock.SharedFlag.freed ) )
+					mirrorBlockDeallocation( block );
+				else
+					mirrorBlockDataChange( block );
+
+				block.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.allocated, false );
+			}
+
+			context.sessionData.changedMemoryBlocks.clear( );
+		}
+
+		/// Trashes unmirrored ctime changes - used when there was an error during the compilation
+		final void trashCtimeChanges( ) {
+			context.sessionData.changedMemoryBlocks.clear( );
+		}
+
+		void mirrorBlockAllocation( MemoryBlock block ) {
+
+		}
+
+		void mirrorBlockDataChange( MemoryBlock block ) {
+
+		}
+
+		void mirrorBlockDeallocation( MemoryBlock block ) {
+
+		}
+
+	public:
 		/// Creates a new scope (scopes are stored on a stack)
 		/// CodeBuilder scopes are used for destructor generating
 		void pushScope( ScopeFlags flags = ScopeFlags.none ) {

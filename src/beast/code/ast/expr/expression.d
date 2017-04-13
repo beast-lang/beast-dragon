@@ -122,7 +122,7 @@ abstract class AST_Expression : AST_Statement {
 		final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
 			const auto __gd = ErrorGuard( codeLocation );
 
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto _s = new RootDataScope( parent );
 				auto _sgd = _s.scopeGuard;
 

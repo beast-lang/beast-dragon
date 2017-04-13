@@ -24,9 +24,11 @@ final class Backend_Cpp : Backend {
 
 			// Must be done in a thread because of task guards
 			taskManager.imminentIssueJob( { //
-				auto entryModule = project.entryModule.symbol.dataEntity;
-				auto _sgd = scopeGuard( new RootDataScope( entryModule ) );
-				entryModule.expectResolveIdentifier( ID!"main" ).resolveCall( null, true ).buildCode( entryFunctionCallCB );
+				with ( memoryManager.session( SessionPolicy.watchCtChanges ) ) {
+					auto entryModule = project.entryModule.symbol.dataEntity;
+					auto _sgd = scopeGuard( new RootDataScope( entryModule ) );
+					entryModule.expectResolveIdentifier( ID!"main" ).resolveCall( null, true ).buildCode( entryFunctionCallCB );
+				}
 			} );
 
 			// Process memory
@@ -96,6 +98,9 @@ final class Backend_Cpp : Backend {
 			result ~= "#include <stdlib.h>\n";
 			result ~= "#include <assert.h>\n";
 			result ~= "\n";
+			result ~= "uintptr_t *ctimeStack[ 1024 * 1024 ];\n";
+			result ~= "size_t ctimeStackSize = 0;\n";
+			result ~= "\n";
 
 			result ~= "// TYPES\n";
 			foreach ( cb; codebuilders_ )
@@ -117,7 +122,11 @@ final class Backend_Cpp : Backend {
 			// Main function
 			{
 				result ~= "int main() {\n";
-				result ~= "if( sizeof( void* ) != %s ) { fprintf( stderr, \"Beast compiler considered pointer size %s but C compiler used %%s\", sizeof(void*) ); exit( -1 ); }\n".format( hardwareEnvironment.pointerSize, hardwareEnvironment.pointerSize );
+				result ~= "\tsize_t ctimeStackBP = ctimeStackSize;\n";
+				result ~= "\tif( sizeof( void* ) != %s ) {\n".format( hardwareEnvironment.pointerSize );
+				result ~= "\t\tfprintf( stderr, \"Beast compiler considered pointer size %s but C compiler used %%s\", sizeof(void*) );\n".format( hardwareEnvironment.pointerSize );
+				result ~= "\t\texit( -1 );\n";
+				result ~= "\t}\n";
 
 				foreach ( cb; initCodebuilders_ ) {
 					assert( !cb.code_types );

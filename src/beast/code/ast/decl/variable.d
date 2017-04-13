@@ -102,8 +102,18 @@ final class AST_VariableDeclaration : AST_Declaration {
 						valueEntity = value.buildSemanticTree_singleInfer( var.dataType );
 				}
 
-				cb.build_localVariableDefinition( var );
-				buildConstructor( var, valueEntity, declData.isCtime ? scoped!CodeBuilder_Ctime : cb );
+				if ( declData.isCtime ) {
+					auto varCb = scoped!CodeBuilder_Ctime;
+					varCb.build_localVariableDefinition( var );
+					buildConstructor( var, valueEntity, varCb );
+					
+					cb.addToScope( var );
+
+				} else {
+					cb.build_localVariableDefinition( var );
+					buildConstructor( var, valueEntity, cb );
+				}
+
 				currentScope.addLocalVariable( var );
 			}
 		}

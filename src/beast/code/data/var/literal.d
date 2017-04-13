@@ -13,7 +13,7 @@ final class Symbol_Literal : Symbol_StaticVariable {
 
 			dataType_ = dataType;
 
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto block = memoryManager.allocBlock( dataType.instanceSize );
 				id_ = Identifier( "lit_%#x".format( block.startPtr.val ) );
 

@@ -73,7 +73,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 		void execute_memoryAllocation( ) {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto _s = new RootDataScope( parent );
 				auto _sgd = _s.scopeGuard;
 
@@ -92,11 +92,11 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 				// We allocate a memory block
 				MemoryBlock block = memoryManager.allocBlock( dataTypeWIP_.instanceSize );
-				block.markDoNotGCAtSessionEnd();
+				block.markDoNotGCAtSessionEnd( );
 				block.relatedDataEntity = dataEntity;
 				block.identifier = identifier.str;
 				memoryPtrWIP_ = block.startPtr;
-				
+
 				// We can't use this.dataEntity because that would cause a dependency loop (as we would require memoryPtr for this in it)
 				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataTypeWIP_ );
 
@@ -109,7 +109,9 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 					// Otherwise, we add it to the init block
 					project.backend.buildInitCode( ( CodeBuilder cb ) { //
-						ast_.buildConstructor( substEntity, valueEntity, cb );
+						with ( memoryManager.session( SessionPolicy.watchCtChanges ) ) {
+							ast_.buildConstructor( substEntity, valueEntity, cb );
+						}
 					} );
 				}
 

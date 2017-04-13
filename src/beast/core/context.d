@@ -11,6 +11,7 @@ import beast.code.data.scope_.scope_;
 import std.container.rbtree;
 import beast.code.memory.ptr : MemoryPtr;
 import beast.util.uidgen;
+import beast.code.memory.memorymgr;
 
 /// General project-related data
 __gshared Project project;
@@ -19,6 +20,9 @@ __gshared Project project;
 __gshared TaskManager taskManager;
 
 final class ContextData {
+
+	public:
+		alias ChangedMemoryBlocks = RedBlackTree!MemoryBlock;
 
 	public:
 		pragma( inline ) auto session( ) {
@@ -61,9 +65,26 @@ final class ContextData {
 		final static class SessionData {
 
 			public:
-				this( UIDGenerator.I id ) {
+				this( UIDGenerator.I id, SessionPolicy policy ) {
 					this.id = id;
+					this.policy = policy;
+
 					pointers = new RedBlackTree!MemoryPtr;
+
+					ContextData.ChangedMemoryBlocks changedMemoryBlocks;
+
+					// If it is the context policy to watch compile time variable changes, we create it a dedicated container (this applies for function bodies)
+					if ( policy == SessionPolicy.watchCtChanges )
+						changedMemoryBlocks = new ContextData.ChangedMemoryBlocks( );
+
+					// If the policy is to inherit, we inherit the watch container from parent session (this applies for local scopes)
+					else if ( policy == SessionPolicy.inheritCtChangesWatcher ) {
+						assert( context.sessionData );
+						changedMemoryBlocks = context.sessionData.changedMemoryBlocks;
+					}
+					// Otherwise, the container is null -> saves are not changes (applies to static variables)
+
+					this.changedMemoryBlocks = changedMemoryBlocks;
 				}
 
 			public:
@@ -77,17 +98,11 @@ final class ContextData {
 				/// Pointers created in the current session
 				RedBlackTree!MemoryPtr pointers;
 
-			public:
-				// FOLLOWING VARIABLES ARE USED TO TRACJ @ctime DATA CHANGES IN NON-@ctime FUNCTIONS:
+				SessionPolicy policy;
 
-				/// Newly allocated blocks since the last check
-				MemoryBlock[ ] newAllocations;
-
-				/// Newly freed blocks since the last check
-				MemoryBlock[ ] newFrees;
-
-				/// Memory blocks whose data has changed since the last check
-				RedBlackTree!MemoryBlock changedMemoryBlocks;
+				/// Memory blocks whose data has changed (freed/malloced/writtento) since the last check
+				/// If null then don't track changes
+				ChangedMemoryBlocks changedMemoryBlocks;
 
 		}
 

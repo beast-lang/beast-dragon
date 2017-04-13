@@ -9,8 +9,6 @@ import beast.core.error.error;
 import beast.code.lex.identifier;
 import std.algorithm.searching : startsWith;
 
-// TODO: Asynchronous proxy definition handler
-
 class CodeBuilder_Cpp : CodeBuilder {
 	public enum tab = "\t";
 
@@ -46,7 +44,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			addToScope( var );
 
-			resultVarName_ = cppIdentifier( var );
+			resultVarName_ = cppIdentifier( var.memoryBlock );
 			codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( var.dataType ), resultVarName_ );
 		}
 
@@ -58,6 +56,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 				labelHash_ = func.outerHash;
 				pushScope( );
+
+				codeResult_.formattedWrite( "%ssize_t ctimeStackBP = ctimeStackSize;\n", tabs );
 
 				auto prevFunc = currentFunction;
 				currentFunction = func;
@@ -72,10 +72,13 @@ class CodeBuilder_Cpp : CodeBuilder {
 				codeResult_.formattedWrite( "%s}\n\n", tabs );
 
 				currentFunction = prevFunc;
+				mirrorCtimeChanges( );
 
 				debug resultVarName_ = null;
 			}
 			catch ( BeastErrorException exc ) {
+				trashCtimeChanges( );
+
 				string errStr = "\n// ERROR BUILDING %s\n".format( func.tryGetIdentificationString );
 				codeResult_ ~= errStr;
 				typesResult_ ~= errStr;
@@ -102,6 +105,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	public: // Expression related build commands
 		override void build_memoryAccess( MemoryPtr pointer ) {
+			mirrorCtimeChanges( );
+
 			MemoryBlock block = pointer.block;
 			block.markReferenced( );
 
@@ -163,7 +168,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				popScope( );
 				codeResult_.formattedWrite( "%s}\n", tabs );
 
-				argumentNames ~= "PARAM( &%s, %s )".format( cppIdentifier( argVar ), cppIdentifier( param.dataType ) );
+				argumentNames ~= "PARAM( &%s, %s )".format( cppIdentifier( argVar.memoryBlock ), cppIdentifier( param.dataType ) );
 			}
 
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
@@ -205,7 +210,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			// Build then branch
 			{
 				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
-				with ( memoryManager.session ) {
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
 					pushScope( );
 					thenBranch( this );
 					popScope( );
@@ -216,7 +221,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			// Build else branch
 			if ( elseBranch ) {
 				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
-				with ( memoryManager.session ) {
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
 					codeResult_.formattedWrite( "%selse {\n", tabs );
 					pushScope( );
 					elseBranch( this );
@@ -235,7 +240,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		override void build_loop( StmtFunction body_ ) {
 			// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
 				pushScope( ScopeFlags.loop );
 				codeResult_.formattedWrite( "%swhile( true ) {\n", tabs( -1 ) );
 				body_( this );
@@ -259,6 +264,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				build_copyCtor( new DataEntity_Result( currentFunction, returnValue.dataType ), returnValue );
 
 			generateScopesExit( );
+			mirrorCtimeChanges( );
 			codeResult_.formattedWrite( "%sreturn;\n", tabs );
 
 			debug resultVarName_ = null;
@@ -299,42 +305,33 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 	public:
-		static string cppIdentifier( DataEntity_LocalVariable var ) {
-			return "_%s_%s".format( var.outerHash.str, var.identifier ? safeIdentifier( var.identifier.str ) : "tmp" );
-		}
-
 		static string cppIdentifier( Symbol sym ) {
 			return "_%s_%s".format( sym.outerHash.str, sym.identifier ? safeIdentifier( sym.identifier.str ) : "tmp" );
 		}
 
-		static string cppIdentifier( DataEntity e ) {
-			if ( e.identifier )
-				return "_%s_%s".format( e.outerHash.str, safeIdentifier( e.identifier.str ) );
-			else
-				return "_%s_tmp".format( e.outerHash.str );
-		}
-
+		/// Cpp identifier for a parameter
 		static string cppParamIdentifier( size_t index, Identifier id ) {
 			return "_p%s_%s".format( index, safeIdentifier( id.str ) );
 		}
 
 		static string cppIdentifier( MemoryBlock block, bool addrOf = false ) {
-			string addrOfStr = addrOf ? "&" : "";
-
 			if ( block.flag( MemoryBlock.Flag.functionParameter ) )
 				return cppParamIdentifier( block.relatedDataEntity.asFunctionParameter_index, block.relatedDataEntity.identifier );
 
 			if ( block.flag( MemoryBlock.Flag.result ) )
 				return "result";
 
+			else if ( !block.isRuntime && !block.isStatic )
+				return "%sctimeStack[ ctimeStackBP + %s ]".format( addrOf ? "" : "*", block.bpOffset );
+
 			else if ( block.identifier )
-				return "%s_%#x_%s".format( addrOfStr, block.startPtr.val, safeIdentifier( block.identifier ) );
+				return "%s_%#x_%s".format( addrOf ? "&" : "", block.startPtr.val, safeIdentifier( block.identifier ) );
 
 			else if ( block.relatedDataEntity )
-				return addrOfStr ~ cppIdentifier( block.relatedDataEntity );
+				return "%s%s_%s".format( addrOf ? "&" : "", block.relatedDataEntity.outerHash.str, block.relatedDataEntity.identifier ? block.relatedDataEntity.identifier.str : "tmp" );
 
 			else
-				return "%s_%#x".format( addrOfStr, block.startPtr.val );
+				return "%s_%#x".format( addrOf ? "&" : "", block.startPtr.val );
 		}
 
 		static string safeIdentifier( string id ) {
@@ -380,7 +377,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( flags & ScopeFlags.continuable )
 				codeResult_.formattedWrite( "slbl_%s:\n", labelHash_.str );
 
-			additionalScopeData_ ~= AdditionalScopeData( labelHash_ );
+			additionalScopeData_ ~= AdditionalScopeData( labelHash_, false, ctimeStackOffset_ );
 		}
 
 		override void popScope( bool generateDestructors = true ) {
@@ -389,13 +386,39 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			super.popScope( generateDestructors );
 
+			mirrorCtimeChanges( );
+
 			if ( additionalScopeData_[ $ - 1 ].requiresEndLabelConstruction )
 				codeResult_.formattedWrite( "elbl_%s:\n", additionalScopeData_[ $ - 1 ].hash.str );
+
+			{
+				size_t prevCtimeStackOffset = ctimeStackOffset_;
+				ctimeStackOffset_ = additionalScopeData_[ $ - 1 ].ctimeStackOffset;
+				if ( prevCtimeStackOffset != ctimeStackOffset_ )
+					codeResult_.formattedWrite( "%sctimeStackSize = ctimeStackBP + %s;\n", tabs, ctimeStackOffset_ );
+			}
 
 			additionalScopeData_.length--;
 			tabOffset_--;
 
 			resultVarName_ = result;
+		}
+
+	protected:
+		override void mirrorBlockAllocation( MemoryBlock block ) {
+			codeResult_.formattedWrite( "%s%s = (uintptr_t*) malloc( %s );\n", tabs, cppIdentifier( block, true ), block.size );
+			mirrorBlockDataChange( block );
+		}
+
+		override void mirrorBlockDataChange( MemoryBlock block ) {
+			codeResult_.formattedWrite( "%s{\n", tabs );
+			codeResult_.formattedWrite( "%sstatic uint8_t _ctData[ %s ] = { %s };\n", tabs( 1 ), block.size, block.data[ 0 .. block.size ].map!( x => "%#x".format( x ) ).joiner( ", " ) );
+			codeResult_.formattedWrite( "%smemcpy( %s, _ctData, %s );\n", tabs( 1 ), cppIdentifier( block, true ), block.size );
+			codeResult_.formattedWrite( "%s}\n", tabs );
+		}
+
+		override void mirrorBlockDeallocation( MemoryBlock block ) {
+			codeResult_.formattedWrite( "%sfree( %s );\n", tabs, cppIdentifier( block, true ) );
 		}
 
 	package:
@@ -420,6 +443,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		Appender!string codeResult_, declarationsResult_, typesResult_; /// Identifier of a variable representing result of last build expression
 		size_t tabOffset_; /// Accumulator for optimized tabs output
 		string tabsString_;
+		size_t ctimeStackOffset_;
 
 	package:
 		/// Variable name representing last build expression
@@ -435,6 +459,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		struct AdditionalScopeData {
 			Hash hash;
 			bool requiresEndLabelConstruction;
+			size_t ctimeStackOffset;
 		}
 
 }

@@ -52,7 +52,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 
 			/// If the expression needs expectedType to be parsed, parse it with current parameter type as expected
 			if ( !entity ) {
-				with ( memoryManager.session ) {
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
 					entity = expression.buildSemanticTree_singleInfer( expectedType, isOnlyOverloadOption_ );
 
 					if ( !entity ) {

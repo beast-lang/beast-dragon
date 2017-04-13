@@ -54,7 +54,7 @@ final class ExpandedFunctionParameter : Identifiable {
 				else static if ( is( Arg : DataEntity ) ) {
 					param.dataType = arg.dataType;
 
-					with ( memoryManager.session ) {
+					with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 						auto _s = new RootDataScope( null );
 						auto _sgd = _s.scopeGuard;
 

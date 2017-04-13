@@ -79,7 +79,7 @@ pragma( inline ):
 	}
 
 	void op_malloc( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
-		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT ) );
+		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated ) );
 
 		debug ( interpreter )
 			writefln( "malloc( %s ) (=%s) => %s", op2.readSizeT, op1.readMemoryPtr, op1 );

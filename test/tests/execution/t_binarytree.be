@@ -161,6 +161,20 @@ Bool test( Bool print ) {
 
 @ctime auto ctTest = test( false );
 
+BinaryTree? generateTree() {
+	BinaryTree? result := new BinaryTree();
+	result.insert( 1 );
+	result.insert( 2 );
+	result.insert( 3 );
+	result.insert( 4 );
+	result.insert( 5 );
+	return result;
+}
+
+@ctime BinaryTree? ctTree = generateTree();
+
 Void main() {
 	test( true );
+
+	ctTree.recursivePrint(); //! stdout: 12345
 }

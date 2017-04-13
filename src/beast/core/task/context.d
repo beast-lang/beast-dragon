@@ -81,7 +81,7 @@ final class TaskContext {
 			assert( context.taskContext is this );
 
 			contextData_ = context;
-			context = ContextData.init;
+			context = null;
 
 			Fiber.yield( );
 
@@ -128,7 +128,7 @@ final class TaskContext {
 				}
 
 				job_ = null;
-				contextData_ = ContextData.init;
+				contextData_ = null;
 			}
 			catch ( Throwable t ) {
 				stderr.writeln( "UNCAUGHT EXCEPTION: ", t.toString );

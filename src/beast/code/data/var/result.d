@@ -10,7 +10,7 @@ final class DataEntity_Result : DataEntity_LocalVariable {
 	public:
 		this( Symbol_RuntimeFunction func, Symbol_Type dataType ) {
 			super( dataType, false, MemoryBlock.Flag.result );
-			interpreterBpOffset = -2 - func.parameters.length;
+			memoryBlock.bpOffset = -2 - func.parameters.length;
 		}
 
 	public:

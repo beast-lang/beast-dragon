@@ -21,7 +21,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
 			taskManager.delayedIssueJob( { enforceDone_parameterExpanding( ); } );
 
-			decorationList_.enforceAllResolved(); // TODO: move somewhere else eventually
+			decorationList_.enforceAllResolved( ); // TODO: move somewhere else eventually
 		}
 
 		override Identifier identifier( ) {
@@ -56,7 +56,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( cb.isCtime ? SessionPolicy.doNotWatchCtChanges : SessionPolicy.watchCtChanges ) ) {
 				auto _gd = ErrorGuard( codeLocation );
 				auto _s = new RootDataScope( staticData_ );
 				auto _sgd = _s.scopeGuard;
@@ -113,7 +113,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 		final void execute_parameterExpanding( ) {
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto _s = new RootDataScope( parent_ );
 				auto _sgd = _s.scopeGuard;
 

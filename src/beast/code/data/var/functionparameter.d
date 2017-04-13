@@ -18,7 +18,7 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 			// Return value is before function parameters
 			// Even expanded parameters take up some space
 
-			interpreterBpOffset = -param.index - 2;
+			memoryBlock.bpOffset = -param.index - 2;
 		}
 
 	public:
@@ -32,7 +32,7 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 
 	public:
 		override size_t asFunctionParameter_index( ) {
-			return -interpreterBpOffset - 2;
+			return -memoryBlock.bpOffset - 2;
 		}
 
 	private:

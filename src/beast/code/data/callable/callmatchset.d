@@ -41,7 +41,7 @@ struct CallMatchSet {
 			argumentEntities ~= entity;
 
 			foreach ( match; matches ) {
-				with ( memoryManager.session )
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) )
 					match.matchNextArgument( null, entity, dataType );
 			}
 
@@ -60,7 +60,7 @@ struct CallMatchSet {
 			argumentEntities ~= entity;
 
 			foreach ( match; matches ) {
-				with ( memoryManager.session )
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) )
 					match.matchNextArgument( expr, entity, dataType );
 			}
 
@@ -78,7 +78,7 @@ struct CallMatchSet {
 		/// Can return null when reportErrors is false
 		CallableMatch finish_getMatch( ) {
 			scope_.finish( );
-			
+
 			if ( matches.length == 0 )
 				return null;
 
@@ -134,9 +134,9 @@ struct CallMatchSet {
 			return bestMatch;
 		}
 
-		pragma( inline ) DataEntity finish() {
-			if( auto result = finish_getMatch() )
-				return result.toDataEntity();
+		pragma( inline ) DataEntity finish( ) {
+			if ( auto result = finish_getMatch( ) )
+				return result.toDataEntity( );
 			else
 				return null;
 		}

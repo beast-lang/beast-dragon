@@ -89,6 +89,10 @@ final class MemoryManager {
 			assert( result.startPtr.val !in context.sessionData.memoryBlocks );
 			context.sessionData.memoryBlocks[ result.startPtr.val ] = result;
 
+			// result.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.allocated ); no need - done in memoryblock constructor
+			if ( auto chbl = context.sessionData.changedMemoryBlocks )
+				chbl.insert( result );
+
 			debug ( memory )
 				writefln( "ALLOC %s (%s bytes)\n%s\n", result.startPtr, bytes, defaultTraceHandler.toString );
 
@@ -134,6 +138,15 @@ final class MemoryManager {
 
 						// We also have to unmark pointers in the block
 						context.sessionData.pointers.removeKey( pointersInSessionBlock( block ) );
+
+						block.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.freed );
+						if ( auto chbl = context.sessionData.changedMemoryBlocks ) {
+							// If the block was both allocated and dealllocated between two change checks, we don't need to have it in the change list at all
+							if ( block.flag( MemoryBlock.SharedFlag.allocated ) )
+								chbl.removeKey( block );
+							else
+								chbl.insert( block );
+						}
 
 						debug ( memory )
 							writefln( "FREE %s\n%s\n", ptr, defaultTraceHandler.toString );
@@ -191,6 +204,10 @@ final class MemoryManager {
 
 			// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
+
+			block.setFlags( MemoryBlock.SharedFlag.changed );
+			if ( auto chbl = context.sessionData.changedMemoryBlocks )
+				chbl.insert( block );
 		}
 
 		/// "Reads" given amount of bytes from memory and returns pointer to them (it doesn't actually read, just does some checks)
@@ -274,14 +291,14 @@ final class MemoryManager {
 		}
 
 	public:
-		void startSession( ) {
+		void startSession( SessionPolicy policy ) {
 			debug assert( !finished_ );
 			static __gshared UIDGenerator sessionUIDGen;
 
 			UIDGenerator.I session = sessionUIDGen( );
 
 			context.sessionDataStack ~= context.sessionData;
-			context.sessionData = new ContextData.SessionData( session );
+			context.sessionData = new ContextData.SessionData( session, policy );
 
 			debug synchronized ( this )
 				activeSessions_[ session ] = context.jobId;
@@ -291,6 +308,8 @@ final class MemoryManager {
 			debug assert( !finished_ );
 
 			debug ( gc ) import std.stdio : writefln;
+
+			assert( context.sessionData.policy != SessionPolicy.watchCtChanges || context.sessionData.changedMemoryBlocks.empty, "There are unmirrored changes left!" );
 
 			// "GC" cleanup blocks at session end
 			{
@@ -323,7 +342,7 @@ final class MemoryManager {
 
 				// We have to copy blocks to be deleted, because sessionMemoryBlocks shrinks as blocks are freed
 				foreach ( MemoryBlock block; context.sessionData.memoryBlocks ) {
-					if ( !block.isDoNotGCAtSessionEnd ) {
+					if ( !block.isDoNotGCAtSessionEnd || block.isLocal ) {
 						debug ( gc )
 							writefln( "endsession cleanup %s", block.startPtr );
 
@@ -332,8 +351,6 @@ final class MemoryManager {
 					else {
 						debug ( gc )
 							writefln( "endsession keep %s", block.startPtr );
-
-						assert( !block.isLocal );
 					}
 				}
 
@@ -360,7 +377,7 @@ final class MemoryManager {
 		}
 
 		/// Utility function for use with with( memoryManager.session ) { xxx } - calls startSession on beginning and endSession on end
-		auto session( ) {
+		auto session( SessionPolicy policy ) {
 			static struct Result {
 				~this( ) {
 					memoryManager.endSession( );
@@ -370,7 +387,7 @@ final class MemoryManager {
 			}
 
 			debug auto prevSession = context.session;
-			startSession( );
+			startSession( policy );
 
 			debug {
 				return Result( prevSession, context.session );
@@ -471,4 +488,10 @@ final class MemoryManager {
 		/// Data are first stored in context.sessionData.pointers, to this list, they're added after session end
 		RedBlackTree!MemoryPtr pointerList_;
 
+}
+
+enum SessionPolicy {
+	watchCtChanges,
+	inheritCtChangesWatcher,
+	doNotWatchCtChanges
 }

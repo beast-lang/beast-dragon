@@ -15,7 +15,7 @@ public {
 	import beast.code.data.var.tmplocal : DataEntity_TmpLocalVariable;
 	import beast.code.lex.identifier : ID;
 	import beast.code.memory.block : MemoryBlock;
-	import beast.code.memory.memorymgr : memoryManager;
+	import beast.code.memory.memorymgr : memoryManager, SessionPolicy;
 	import beast.code.memory.ptr : MemoryPtr;
 	import beast.corelib.corelib : coreLibrary, coreConst, coreEnum, coreType, coreFunc;
 	import beast.toolkit;

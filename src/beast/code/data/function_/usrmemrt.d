@@ -56,7 +56,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( cb.isCtime ? SessionPolicy.doNotWatchCtChanges : SessionPolicy.watchCtChanges ) ) {
 				auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_, cb.isCtime );
 
 				auto _gd = ErrorGuard( codeLocation );
@@ -117,7 +117,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 		final void execute_parameterExpanding( ) {
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto _s = new RootDataScope( parent_.dataEntity );
 				auto _sgd = _s.scopeGuard;
 

@@ -29,7 +29,7 @@ abstract class Symbol_Type : Symbol {
 		this( ) {
 			typeUID_ = typeUIDKeeper( this );
 
-			with ( memoryManager.session ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				MemoryBlock block = memoryManager.allocBlock( UIDGenerator.I.sizeof );
 				block.identifier = "%s_typeid".format( identifier.str );
 				block.markDoNotGCAtSessionEnd( );
@@ -77,6 +77,7 @@ abstract class Symbol_Type : Symbol {
 
 			// .to( XX )
 			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"to", this, //
+					// TODO: Accept additional arguments (pass them to cast functions)
 					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
 						( AST_Node, DataEntity inst, MemoryPtr targetType ) { //
 						DataEntity targetTypeEntity = targetType.readType.dataEntity;

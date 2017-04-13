@@ -25,7 +25,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	public:
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
-			var.interpreterBpOffset = currentBPOffset_;
+			var.memoryBlock.bpOffset = currentBPOffset_;
 			addToScope( var );
 
 			addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, var.dataType.instanceSize.iopLiteral );
@@ -46,11 +46,19 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			// Function MUST have a return instruction (for user functions, they're added automatically when return type is void)
 			addInstruction( I.noReturnError, func.iopFuncPtr );
 			popScope( false );
+
+			mirrorCtimeChanges();
 		}
 
 	public:
 		override void build_memoryAccess( MemoryPtr pointer ) {
+			mirrorCtimeChanges();
+
 			MemoryBlock block = pointer.block;
+
+			/// Prevent the memory block being GC collected at session end - it might be used in function execution
+			block.markDoNotGCAtSessionEnd( );
+
 			operandResult_ = block.isLocal ? block.relatedDataEntity.asLocalVariable_interpreterBpOffset.iopBpOffset : pointer.iopPtr;
 		}
 
@@ -188,22 +196,28 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			// Build then branch
 			InstructionPtr thenJmpInstr;
 			{
-				pushScope( );
-				thenBranch( this );
-				popScope( );
+				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
+					pushScope( );
+					thenBranch( this );
+					popScope( );
 
-				if ( elseBranch )
-					thenJmpInstr = addInstruction( I.jmp, iopPlaceholder );
+					if ( elseBranch )
+						thenJmpInstr = addInstruction( I.jmp, iopPlaceholder );
+				}
 			}
 
 			setInstructionOperand( condJmpInstr, 0, jumpTarget );
 
 			// Build else branch
 			if ( elseBranch ) {
-				pushScope( );
-				elseBranch( this );
-				popScope( );
-				setInstructionOperand( thenJmpInstr, 0, jumpTarget );
+				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
+				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
+					pushScope( );
+					elseBranch( this );
+					popScope( );
+					setInstructionOperand( thenJmpInstr, 0, jumpTarget );
+				}
 			}
 
 			popScope( );
@@ -213,9 +227,14 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void build_loop( StmtFunction body_ ) {
 			pushScope( ScopeFlags.loop );
 			auto jt = jumpTarget( );
-			pushScope( );
-			body_( this );
-			popScope( );
+
+			// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
+			with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
+				pushScope( );
+				body_( this );
+				popScope( );
+			}
+
 			addInstruction( I.jmp, jt );
 			popScope( );
 		}
@@ -283,11 +302,13 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			additionalScopeData_ ~= AdditionalScopeData( currentBPOffset_ );
 		}
 
-		override void popScope( bool generateDestructors = true ) {
+		override void popScope( bool generateDestructors = true ) {			
 			// Result might be f-ked around because of destructors
 			auto result = operandResult_;
 
 			super.popScope( generateDestructors );
+
+			mirrorCtimeChanges();
 
 			// "Link" break jumps that jump after scope exit
 			if ( auto jmps = additionalScopeData_[ $ - 1 ].breakJumps ) {
