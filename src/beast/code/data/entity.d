@@ -215,7 +215,7 @@ abstract class DataEntity : IDContainer {
 		/// Expects the data to point at Type instance
 		final Symbol_Type ctExec_asType( ) {
 			assert( dataType is coreType.Type );
-			Symbol_Type type = typeUIDKeeper[ ctExec( ).readPrimitive!size_t ];
+			Symbol_Type type = typeUIDKeeper[ ctExec( ).readPrimitive!( typeUIDKeeper.I ) ];
 			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
 			return type;
 		}

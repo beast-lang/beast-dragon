@@ -77,6 +77,10 @@ final class ContextData {
 				/// Pointers created in the current session
 				RedBlackTree!MemoryPtr pointers;
 
+				MemoryBlock[] newAllocations;
+				MemoryBlock[] newFrees;
+				RedBlackTree!MemoryBlock changedMemoryBlocks;
+
 		}
 
 }

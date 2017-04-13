@@ -55,7 +55,7 @@ struct MemoryPtr {
 	public:
 		/// Interprets the value as a Type variable
 		Symbol_Type readType( ) const {
-			Symbol_Type type = typeUIDKeeper[ readPrimitive!size_t ];
+			Symbol_Type type = typeUIDKeeper[ readPrimitive!( typeUIDKeeper.I ) ];
 			benforce( type !is null, E.invalidPointer, "Variable does not point to a valid type" );
 			return type;
 		}

@@ -113,6 +113,11 @@ final class MemoryBlock {
 		}
 
 	public:
+		int opCmp( const MemoryBlock other ) const {
+			return startPtr.opCmp( other.startPtr );
+		}
+
+	public:
 		/// Number unique to each allocation
 		const UIDGenerator.I allocId;
 		/// First byte that belongs to the block
