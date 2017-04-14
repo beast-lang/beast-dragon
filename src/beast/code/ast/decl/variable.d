@@ -71,17 +71,22 @@ final class AST_VariableDeclaration : AST_Declaration {
 			decorations.apply_variableDeclarationModifier( declData );
 
 			if ( declData.isStatic ) {
-				// No buildConstructor for static variables - that is handled in the Symbol_UserStaticVariable.memoryAllocation
-				if ( env.staticMemberMerger && env.staticMemberMerger.isFinished( ) )
-					currentScope.addEntity( env.staticMemberMerger.getRecord( this ) );
+				Symbol var;
 
+				// No buildConstructor for static variables - that is handled in the Symbol_UserStaticVariable.memoryAllocation
+				if ( env.staticMemberMerger && env.staticMemberMerger.isFinished( ) ) {
+					var = env.staticMemberMerger.getRecord( this );
+					// TODO: merging matches types
+					// TODO: static variables in functions colaborate with local @ctime variables
+				}
 				else {
-					Symbol_UserStaticVariable var = new Symbol_UserStaticVariable( this, decorations, declData );
-					currentScope.addEntity( var );
+					var = new Symbol_UserStaticVariable( this, decorations, declData );
 
 					if ( env.staticMemberMerger )
 						env.staticMemberMerger.addRecord( this, var );
 				}
+
+				currentScope.addEntity( var );
 			}
 			else {
 				assert( !env.parentType );
@@ -103,13 +108,14 @@ final class AST_VariableDeclaration : AST_Declaration {
 				}
 
 				if ( declData.isCtime ) {
-					auto varCb = scoped!CodeBuilder_Ctime;
-					varCb.build_localVariableDefinition( var );
-					buildConstructor( var, valueEntity, varCb );
-					
+					// We don't want the non-ctime codebuilder to create a definition for the variable (that is handled in mirroring for now)
+					buildConstructor( var, valueEntity, scoped!CodeBuilder_Ctime );
+
+					// Add the variable to scope, so the destructor is generated on scope exit
 					cb.addToScope( var );
 
-				} else {
+				}
+				else {
 					cb.build_localVariableDefinition( var );
 					buildConstructor( var, valueEntity, cb );
 				}

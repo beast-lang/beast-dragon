@@ -12,6 +12,7 @@ import std.container.rbtree;
 import beast.code.memory.ptr : MemoryPtr;
 import beast.util.uidgen;
 import beast.code.memory.memorymgr;
+import std.typecons : Typedef;
 
 /// General project-related data
 __gshared Project project;
@@ -23,6 +24,7 @@ final class ContextData {
 
 	public:
 		alias ChangedMemoryBlocks = RedBlackTree!MemoryBlock;
+		alias NewMemoryBlocks = Typedef!( MemoryBlock[ ] );
 
 	public:
 		pragma( inline ) auto session( ) {
@@ -74,13 +76,16 @@ final class ContextData {
 					ContextData.ChangedMemoryBlocks changedMemoryBlocks;
 
 					// If it is the context policy to watch compile time variable changes, we create it a dedicated container (this applies for function bodies)
-					if ( policy == SessionPolicy.watchCtChanges )
-						changedMemoryBlocks = new ContextData.ChangedMemoryBlocks( );
+					if ( policy == SessionPolicy.watchCtChanges ) {
+						changedMemoryBlocks = new ChangedMemoryBlocks( );
+						newMemoryBlocks = new NewMemoryBlocks( );
 
+					}
 					// If the policy is to inherit, we inherit the watch container from parent session (this applies for local scopes)
 					else if ( policy == SessionPolicy.inheritCtChangesWatcher ) {
 						assert( context.sessionData );
 						changedMemoryBlocks = context.sessionData.changedMemoryBlocks;
+						newMemoryBlocks = context.sessionData.newMemoryBlocks;
 					}
 					// Otherwise, the container is null -> saves are not changes (applies to static variables)
 
@@ -103,6 +108,7 @@ final class ContextData {
 				/// Memory blocks whose data has changed (freed/malloced/writtento) since the last check
 				/// If null then don't track changes
 				ChangedMemoryBlocks changedMemoryBlocks;
+				NewMemoryBlocks* newMemoryBlocks;
 
 		}
 

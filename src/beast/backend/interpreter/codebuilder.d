@@ -47,7 +47,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			addInstruction( I.noReturnError, func.iopFuncPtr );
 			popScope( false );
 
-			mirrorCtimeChanges();
+			trashCtimeChanges();
 		}
 
 	public:
@@ -265,7 +265,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			import beast.core.error.error : stderrMutex;
 
 			// uncommenting this causes freezes - dunno why
-			//synchronized ( stderrMutex ) {
+			synchronized ( stderrMutex ) {
 			writefln( "\n== BEGIN CODE %s\n", desc );
 
 			foreach ( i, instr; result_.data )
@@ -273,7 +273,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			writefln( "\n== END\n" );
 			//stdout.flush();
-			//}
+			}
 		}
 
 	package:
@@ -307,8 +307,6 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			auto result = operandResult_;
 
 			super.popScope( generateDestructors );
-
-			mirrorCtimeChanges();
 
 			// "Link" break jumps that jump after scope exit
 			if ( auto jmps = additionalScopeData_[ $ - 1 ].breakJumps ) {

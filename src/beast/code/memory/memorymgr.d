@@ -9,6 +9,7 @@ import beast.util.uidgen;
 import std.container.rbtree : RedBlackTree;
 import std.algorithm.searching : until;
 import beast.core.context;
+import beast.core.error.error : wereErrors;
 
 debug ( memory ) {
 	import std.stdio : writefln;
@@ -90,8 +91,10 @@ final class MemoryManager {
 			context.sessionData.memoryBlocks[ result.startPtr.val ] = result;
 
 			// result.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.allocated ); no need - done in memoryblock constructor
-			if ( auto chbl = context.sessionData.changedMemoryBlocks )
+			if ( auto chbl = context.sessionData.changedMemoryBlocks ) {
 				chbl.insert( result );
+				*context.sessionData.newMemoryBlocks ~= result;
+			}
 
 			debug ( memory )
 				writefln( "ALLOC %s (%s bytes)\n%s\n", result.startPtr, bytes, defaultTraceHandler.toString );
@@ -139,14 +142,12 @@ final class MemoryManager {
 						// We also have to unmark pointers in the block
 						context.sessionData.pointers.removeKey( pointersInSessionBlock( block ) );
 
-						block.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.freed );
 						if ( auto chbl = context.sessionData.changedMemoryBlocks ) {
 							// If the block was both allocated and dealllocated between two change checks, we don't need to have it in the change list at all
-							if ( block.flag( MemoryBlock.SharedFlag.allocated ) )
-								chbl.removeKey( block );
-							else
+							if ( !block.flag( MemoryBlock.SharedFlag.changed ) )
 								chbl.insert( block );
 						}
+						block.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.freed );
 
 						debug ( memory )
 							writefln( "FREE %s\n%s\n", ptr, defaultTraceHandler.toString );
@@ -205,9 +206,10 @@ final class MemoryManager {
 			// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
 
-			block.setFlags( MemoryBlock.SharedFlag.changed );
-			if ( auto chbl = context.sessionData.changedMemoryBlocks )
-				chbl.insert( block );
+			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
+				block.setFlags( MemoryBlock.SharedFlag.changed );
+				context.sessionData.changedMemoryBlocks.insert( block );
+			}
 		}
 
 		/// "Reads" given amount of bytes from memory and returns pointer to them (it doesn't actually read, just does some checks)
@@ -254,6 +256,12 @@ final class MemoryManager {
 			benforce( ptr.val % hardwareEnvironment.pointerSize == 0, E.unalignedMemory, "Pointers must be memory-aligned" );
 			benforce( ptr !in context.sessionData.pointers, E.corruptMemory, "Corrupt memory: dual initialization of a pointer" );
 			context.sessionData.pointers.insert( ptr );
+
+			auto block = ptr.block;
+			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
+				block.setFlags( MemoryBlock.SharedFlag.changed );
+				context.sessionData.changedMemoryBlocks.insert( block );
+			}
 		}
 
 		void unmarkAsPointer( const MemoryPtr ptr ) {
@@ -261,6 +269,12 @@ final class MemoryManager {
 
 			benforce( ptr in context.sessionData.pointers, E.corruptMemory, "Corrupt memory: destroying unexisting pointer" );
 			context.sessionData.pointers.removeKey( ptr );
+
+			auto block = ptr.block;
+			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
+				block.setFlags( MemoryBlock.SharedFlag.changed );
+				context.sessionData.changedMemoryBlocks.insert( block );
+			}
 		}
 
 		/// Returns if given memory has been marked as pointer previously
@@ -282,7 +296,7 @@ final class MemoryManager {
 			return pointerList_.upperBound( block.startPtr - 1 ).until!( x => x >= block.endPtr );
 		}
 
-	protected:
+	public:
 		/// Returns range of MemoryPtr s - pointer in given block
 		/// Works only for blocks allocated by current session
 		auto pointersInSessionBlock( MemoryBlock block ) {
@@ -309,7 +323,7 @@ final class MemoryManager {
 
 			debug ( gc ) import std.stdio : writefln;
 
-			assert( context.sessionData.policy != SessionPolicy.watchCtChanges || context.sessionData.changedMemoryBlocks.empty, "There are unmirrored changes left!" );
+			assert( wereErrors || context.sessionData.policy != SessionPolicy.watchCtChanges || context.sessionData.changedMemoryBlocks.empty, "There are unmirrored changes left!" );
 
 			// "GC" cleanup blocks at session end
 			{

@@ -71,9 +71,15 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 			MemoryPtr ctx;
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
+				auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, true, "ctx" );
+				build_localVariableDefinition( var );
+				super.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
+
 				assert( parentInstance );
 				parentInstance.buildCode( this );
-				ctx = result_;
+
+				var.memoryPtr.writeMemoryPtr( result_ );
+				ctx = var.memoryPtr;
 			}
 
 			MemoryPtr[ ] args;

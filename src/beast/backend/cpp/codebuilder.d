@@ -72,13 +72,13 @@ class CodeBuilder_Cpp : CodeBuilder {
 				codeResult_.formattedWrite( "%s}\n\n", tabs );
 
 				currentFunction = prevFunc;
-				mirrorCtimeChanges( );
+
+				// We don't care about any compile time changes that happened - they should all be mirrored on the return; call
+				trashCtimeChanges( );
 
 				debug resultVarName_ = null;
 			}
 			catch ( BeastErrorException exc ) {
-				trashCtimeChanges( );
-
 				string errStr = "\n// ERROR BUILDING %s\n".format( func.tryGetIdentificationString );
 				codeResult_ ~= errStr;
 				typesResult_ ~= errStr;
@@ -328,10 +328,21 @@ class CodeBuilder_Cpp : CodeBuilder {
 				return "%s_%#x_%s".format( addrOf ? "&" : "", block.startPtr.val, safeIdentifier( block.identifier ) );
 
 			else if ( block.relatedDataEntity )
-				return "%s%s_%s".format( addrOf ? "&" : "", block.relatedDataEntity.outerHash.str, block.relatedDataEntity.identifier ? block.relatedDataEntity.identifier.str : "tmp" );
+				return "%s_%s_%s".format( addrOf ? "&" : "", block.relatedDataEntity.outerHash.str, block.relatedDataEntity.identifier ? block.relatedDataEntity.identifier.str : "tmp" );
 
 			else
 				return "%s_%#x".format( addrOf ? "&" : "", block.startPtr.val );
+		}
+
+		static string blockDesc( MemoryBlock block ) {
+			if ( block.identifier )
+				return "%s %s".format( block.startPtr, safeIdentifier( block.identifier ) );
+
+			else if ( block.relatedDataEntity )
+				return "%s %s".format( block.startPtr, block.relatedDataEntity.identifier ? block.relatedDataEntity.identifier.str : "tmp" );
+
+			else
+				return "%s tmp".format( block.startPtr );
 		}
 
 		static string safeIdentifier( string id ) {
@@ -386,8 +397,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			super.popScope( generateDestructors );
 
-			mirrorCtimeChanges( );
-
 			if ( additionalScopeData_[ $ - 1 ].requiresEndLabelConstruction )
 				codeResult_.formattedWrite( "elbl_%s:\n", additionalScopeData_[ $ - 1 ].hash.str );
 
@@ -406,18 +415,38 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	protected:
 		override void mirrorBlockAllocation( MemoryBlock block ) {
+			debug assert( block.session == context.session );
+
+			block.bpOffset = ctimeStackOffset_;
+			codeResult_.formattedWrite( "%s// alloc %s\n", tabs, blockDesc( block ) );
 			codeResult_.formattedWrite( "%s%s = (uintptr_t*) malloc( %s );\n", tabs, cppIdentifier( block, true ), block.size );
-			mirrorBlockDataChange( block );
+			codeResult_.formattedWrite( "%sctimeStackSize ++;\n", tabs );
+			ctimeStackOffset_++;
 		}
 
 		override void mirrorBlockDataChange( MemoryBlock block ) {
+			debug assert( block.session == context.session );
+
+			immutable string id = cppIdentifier( block, true );
+
 			codeResult_.formattedWrite( "%s{\n", tabs );
+			codeResult_.formattedWrite( "%s// update %s\n", tabs( 1 ), blockDesc( block ) );
 			codeResult_.formattedWrite( "%sstatic uint8_t _ctData[ %s ] = { %s };\n", tabs( 1 ), block.size, block.data[ 0 .. block.size ].map!( x => "%#x".format( x ) ).joiner( ", " ) );
-			codeResult_.formattedWrite( "%smemcpy( %s, _ctData, %s );\n", tabs( 1 ), cppIdentifier( block, true ), block.size );
+			codeResult_.formattedWrite( "%smemcpy( %s, _ctData, %s );\n", tabs( 1 ), id, block.size );
+
+			// Update pointers
+			foreach ( ptr; memoryManager.pointersInSessionBlock( block ) ) {
+				assert( ptr.val >= block.startPtr.val && ptr.val <= block.endPtr.val - hardwareEnvironment.pointerSize );
+				codeResult_.formattedWrite( "%sVAL( %s, void* ) = %s;\n", tabs( 1 ), id, memoryPtrIdentifier( ptr.readMemoryPtr ) );
+			}
+
 			codeResult_.formattedWrite( "%s}\n", tabs );
 		}
 
 		override void mirrorBlockDeallocation( MemoryBlock block ) {
+			debug assert( block.session == context.session );
+
+			codeResult_.formattedWrite( "%s// free %s\n", tabs, blockDesc( block ) );
 			codeResult_.formattedWrite( "%sfree( %s );\n", tabs, cppIdentifier( block, true ) );
 		}
 

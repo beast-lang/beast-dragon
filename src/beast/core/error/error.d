@@ -150,7 +150,7 @@ void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string me
 			stderr.writeln( defaultTraceHandler.toString );
 	}
 
-	if ( msg.severity == ErrorSeverity.error )
+	if ( msg.severity == ErrorSeverity.error ) 
 		throw new BeastErrorException( message, file, line );
 }
 

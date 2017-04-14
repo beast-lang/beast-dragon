@@ -135,27 +135,49 @@ abstract class CodeBuilder : Identifiable {
 			// We don't call var.tryResolveIdentifier because of Type variables
 			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
 			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( var.isCtime ? new CodeBuilder_Ctime : this );
-			
-			if( var.isCtime )
+
+			if ( var.isCtime ) {
+				mirrorCtimeChanges( );
 				mirrorBlockDeallocation( var.memoryBlock );
+			}
 		}
 
 	protected:
 		/// Mirrors @ctime changes into the runtime code
 		final void mirrorCtimeChanges( ) {
+			if ( this.isCtime )
+				return;
+
+			foreach ( block; *context.sessionData.newMemoryBlocks ) {
+				// We ignore memory blocks that are runtime
+				if ( block.isRuntime )
+					continue;
+
+				assert( block.flag( MemoryBlock.SharedFlag.allocated ) );
+
+				// If the block has been both allocated and deallocated between two mirorrings, ignore it completely
+				if ( block.flag( MemoryBlock.SharedFlag.freed ) )
+					continue;
+
+				mirrorBlockAllocation( block );
+			}
+
 			foreach ( block; context.sessionData.changedMemoryBlocks ) {
 				// We ignore memory blocks that are runtime
 				if ( block.isRuntime )
 					continue;
 
-				// If the block has been both allocated and deallocated between two mirorrings, it should not appear in the list (implemented in memorymgr.free)
-				assert( !block.flag( MemoryBlock.SharedFlag.allocated | MemoryBlock.SharedFlag.freed ) );
+				// If the block has been both allocated and deallocated between two mirorrings, ignore it completely
+				if ( block.flag( MemoryBlock.SharedFlag.allocated | MemoryBlock.SharedFlag.freed ) )
+					continue;
+
 				assert( block.flag( MemoryBlock.SharedFlag.changed ) );
 
-				if( block.flag( MemoryBlock.SharedFlag.allocated ) )
-					mirrorBlockAllocation( block );
-				else if( block.flag( MemoryBlock.SharedFlag.freed ) )
-					mirrorBlockDeallocation( block );
+				if ( block.flag( MemoryBlock.SharedFlag.freed ) ) {
+					// We don't mirror destruction of local variables - those are handled in scope exit destructors
+					if ( !block.flag( MemoryBlock.Flag.local ) )
+						mirrorBlockDeallocation( block );
+				}
 				else
 					mirrorBlockDataChange( block );
 
@@ -163,6 +185,7 @@ abstract class CodeBuilder : Identifiable {
 			}
 
 			context.sessionData.changedMemoryBlocks.clear( );
+			context.sessionData.newMemoryBlocks.length = 0;
 		}
 
 		/// Trashes unmirrored ctime changes - used when there was an error during the compilation
@@ -195,7 +218,12 @@ abstract class CodeBuilder : Identifiable {
 			if ( generateDestructors )
 				generateScopeExit( scopeStack_[ $ - 1 ] );
 
+			// Free memory allocated by local variables
+			foreach_reverse ( var; scopeStack_[ $ - 1 ].variables )
+				memoryManager.free( var.memoryBlock );
+
 			scopeStack_.length--;
+			mirrorCtimeChanges( );
 		}
 
 		/// Generates destructors for all the scope

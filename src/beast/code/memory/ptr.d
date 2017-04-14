@@ -19,7 +19,7 @@ struct MemoryPtr {
 
 	public:
 		/// Returns memory block corresponding to this pointer
-		MemoryBlock block( ) {
+		MemoryBlock block( ) const {
 			return memoryManager.findMemoryBlock( this );
 		}
 

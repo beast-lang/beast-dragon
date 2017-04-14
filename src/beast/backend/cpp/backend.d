@@ -58,13 +58,15 @@ final class Backend_Cpp : Backend {
 				BigInt data = block.data[ 0 ];
 				auto mem = memoryManager;
 
-				size_t nextPtr = memoryManager.nextPointer( block.startPtr - 1 ).val - block.startPtr.val + hardwareEnvironment.pointerSize;
+				MemoryPtr nextPtr = memoryManager.nextPointer( block.startPtr - 1 );
+				size_t nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
 				size_t i = 1;
 				foreach ( b; block.data[ 1 .. block.size ] ) {
 					if ( i % hardwareEnvironment.pointerSize == 0 ) {
-						if ( i == nextPtr ) {
-							code_memory.formattedWrite( "(uintptr_t) %s, ", CodeBuilder_Cpp.memoryPtrIdentifier( ( block.startPtr + i - hardwareEnvironment.pointerSize ).readMemoryPtr ) );
-							nextPtr = memoryManager.nextPointer( block.startPtr + i - 1 ).val - block.startPtr.val + hardwareEnvironment.pointerSize;
+						if ( i == nextPtrOffset ) {
+							code_memory.formattedWrite( "(uintptr_t) %s, ", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
+							nextPtr = memoryManager.nextPointer( block.startPtr + i - 1 );
+							nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
 						}
 						else
 							code_memory.formattedWrite( "0x%x, ", data );
@@ -76,8 +78,8 @@ final class Backend_Cpp : Backend {
 					i++;
 				}
 
-				if ( i == nextPtr )
-					code_memory.formattedWrite( "(uintptr_t) %s };\n", CodeBuilder_Cpp.memoryPtrIdentifier( ( block.startPtr + i - hardwareEnvironment.pointerSize ).readMemoryPtr ) );
+				if ( i == nextPtrOffset )
+					code_memory.formattedWrite( "(uintptr_t) %s };\n", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
 				else
 					code_memory.formattedWrite( "0x%x };\n", data );
 			}

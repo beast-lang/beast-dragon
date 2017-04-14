@@ -6,6 +6,7 @@ import beast.util.hash;
 import core.sync.rwmutex;
 import beast.code.hwenv.hwenv;
 import beast.code.data.util.deref;
+import beast.code.data.util.direct;
 
 final class Symbol_Type_Reference : Symbol_StaticClass {
 
@@ -101,9 +102,13 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 				// Alias #baseType
 				mem ~= new Symbol_BootstrapAlias( ID!"#baseType", ( matchLevel, parentInstance ) => baseType_.dataEntity( matchLevel ).Overloadset );
 
-				// #refData for acessing all the referenced data members
-				mem ~= new Symbol_BootstrapAlias( ID!"#refData", //
+				// #data for acessing all the referenced data members
+				mem ~= new Symbol_BootstrapAlias( ID!"#data", //
 						( matchLevel, inst ) => ( inst ? inst.dereference( baseType_ ) : baseType_.dataEntity( matchLevel ) ).Overloadset );
+
+				// #reference for acessing only the REFERENCE data members (useful when you need to call #ctor or so)
+				/*mem ~= new Symbol_BootstrapAlias( ID!"#reference", //
+						( matchLevel, inst ) => new DataEntity_DirectProxy( inst ? inst.dereference( baseType_ ) : baseType_.dataEntity( matchLevel ) ).Overloadset );*/
 
 				namespace_.initialize( mem );
 			}
