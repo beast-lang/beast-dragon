@@ -31,8 +31,10 @@ abstract class AST_Expression : AST_Statement {
 			if ( parseDeclarations && result.isPrefixExpression && currentToken == Token.Type.identifier )
 				result = AST_VariableDeclarationExpression.parse( _gd, null, result );
 
-			if ( decorationList )
+			if ( decorationList ) {
 				result = new AST_DecoratedExpression( decorationList, result );
+				result.codeLocation = _gd.get( );
+			}
 
 			return result;
 		}
@@ -109,6 +111,7 @@ abstract class AST_Expression : AST_Statement {
 			auto _gd = ErrorGuard( codeLocation );
 
 			cb.build_scope( ( cb ) { //
+				string nm = typeid(this).toString;
 				buildSemanticTree_single( ).buildCode( cb );
 			} );
 		}

@@ -321,7 +321,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.flag( MemoryBlock.Flag.result ) )
 				return "result";
 
-			else if ( !block.isRuntime && !block.isStatic )
+			else if ( !block.isRuntime && !block.isStatic && block.session == context.session )
 				return "%sctimeStack[ ctimeStackBP + %s ]".format( addrOf ? "" : "*", block.bpOffset );
 
 			else if ( block.identifier )
@@ -352,6 +352,9 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		static string memoryPtrIdentifier( MemoryPtr ptr ) {
+			if( ptr.isNull )
+				return "CTMEM 0";
+
 			MemoryBlock block = ptr.block;
 			block.markReferenced( );
 

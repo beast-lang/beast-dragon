@@ -145,7 +145,7 @@ abstract class CodeBuilder : Identifiable {
 	protected:
 		/// Mirrors @ctime changes into the runtime code
 		final void mirrorCtimeChanges( ) {
-			if ( this.isCtime )
+			if ( this.isCtime || !context.sessionData.changedMemoryBlocks )
 				return;
 
 			foreach ( block; *context.sessionData.newMemoryBlocks ) {

@@ -1,4 +1,4 @@
-module t_staticcall.be;
+module t_staticcall;
 
 Void main() {
 

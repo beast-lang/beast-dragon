@@ -91,4 +91,6 @@ Void main() {
 ```
 
 # News
+__14.04.2017__: @ctime variables now work in runtime functions and are properly mirrored! (the subsystem has to be implemented for interpreter yet). See test/ctime/t_basicmirroring.
+
 __04.04.2017__: We have classes now! Constructors are not generated automatically, so you have to do ```Void #ctor() { mem1.#ctor(); mem2.#ctor(); }```

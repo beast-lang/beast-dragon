@@ -163,11 +163,11 @@ Bool test( Bool print ) {
 
 BinaryTree? generateTree() {
 	BinaryTree? result := new BinaryTree();
-	result.insert( 1 );
-	result.insert( 2 );
-	result.insert( 3 );
 	result.insert( 4 );
+	result.insert( 1 );
+	result.insert( 3 );
 	result.insert( 5 );
+	result.insert( 2 );
 	return result;
 }
 

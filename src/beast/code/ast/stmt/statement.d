@@ -66,8 +66,10 @@ abstract class AST_Statement : AST_Node {
 					return AST_Declaration.parse( _gd, decorationList, expr );
 				}
 				else {
-					if ( decorationList )
+					if ( decorationList ) {
 						expr = new AST_DecoratedExpression( decorationList, expr );
+						expr.codeLocation = _gd.get( );
+					}
 
 					// Otherwise just expression statement
 					currentToken.expectAndNext( Token.Special.semicolon, "semicolon after expression" );

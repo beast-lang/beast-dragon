@@ -339,13 +339,18 @@ final class MemoryManager {
 					list.length--;
 
 					auto pointersInBlock = pointersInSessionBlock( block );
-					assert( ( !block.isLocal && !block.isRuntime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
+					assert( wereErrors || ( !block.isLocal && !block.isRuntime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
 
 					foreach ( ptr; pointersInBlock ) {
-						debug ( gc )
-							writefln( "endsession pointer at %s (=%s)", ptr, ptr.readMemoryPtr );
+						MemoryPtr ptrptr = ptr.readMemoryPtr;
 
-						MemoryBlock block2 = ptr.readMemoryPtr.block;
+						debug ( gc )
+							writefln( "endsession pointer at %s (=%s)", ptr, ptrptr );
+
+						if ( ptrptr.isNull )
+							continue;
+
+						MemoryBlock block2 = ptrptr.block;
 						if ( block2.isDoNotGCAtSessionEnd )
 							continue;
 
@@ -437,7 +442,12 @@ final class MemoryManager {
 					list.length--;
 
 					foreach ( ptr; pointersInBlock( block ) ) {
-						MemoryBlock block2 = ptr.readMemoryPtr.block;
+						MemoryPtr ptrptr = ptr.readMemoryPtr;
+
+						if( ptrptr.isNull )
+							continue;
+
+						MemoryBlock block2 = ptrptr.block;
 
 						if ( block2.isReferenced )
 							continue;

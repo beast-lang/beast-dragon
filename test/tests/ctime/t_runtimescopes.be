@@ -1,4 +1,4 @@
-module test;
+module t_runtimescopes;
 
 class C {
 	Void #ctor() {
