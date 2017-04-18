@@ -159,7 +159,7 @@ struct CallMatchSet {
 				if ( arg is null )
 					args ~= "#inferred#";
 				else if ( arg.isCtime )
-					args ~= "%s = %s".format( arg.dataType.identificationString, arg.dataType.valueIdentificationString( arg.ctExec ) );
+					args ~= "%s = %s".format( arg.dataType.identificationString, arg.valueIdentificationString );
 				else
 					args ~= "%s".format( arg.dataType.identificationString );
 			}

@@ -33,6 +33,10 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 			return returnTypeWIP_;
 		}
 
+		override Symbol_Type contextType( ) {
+			return parent_;
+		}
+
 		override ExpandedFunctionParameter[ ] parameters( ) {
 			enforceDone_parameterExpanding( );
 			return expandedParametersWIP_;

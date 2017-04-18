@@ -74,7 +74,13 @@ abstract class DataEntity : IDContainer {
 
 		/// Executes the dataEntity at ctime and returns string describing its value
 		pragma( inline ) final string valueIdentificationString( ) {
-			return dataType.valueIdentificationString( ctExec( ) );
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
+				auto ctexec = ctExec( );
+				auto result = dataType.valueIdentificationString( ctexec.value );
+				ctexec.destroy();
+
+				return result;
+			}
 		}
 
 		/// AST node related with the entity, can be null
@@ -195,18 +201,25 @@ abstract class DataEntity : IDContainer {
 
 	public:
 		/// Executes the expression at compile time, returns result
-		pragma( inline ) final MemoryPtr ctExec( ) {
-			scope cb = new CodeBuilder_Ctime;
+		/// parentCodeBuilder needs to know what @ctime variables were created so it can mirror them
+		pragma( inline ) final CTExecResult ctExec( ) {
+			auto cb = new CodeBuilder_Ctime;
 			buildCode( cb );
 			return cb.result;
 		}
 
 		/// Expects the data to point at Type instance
-		final Symbol_Type ctExec_asType( ) {
-			assert( dataType is coreType.Type );
-			Symbol_Type type = typeUIDKeeper[ ctExec( ).readPrimitive!( typeUIDKeeper.I ) ];
-			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
-			return type;
+		final Symbol_Type standaloneCtExec_asType( ) {
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
+				assert( dataType is coreType.Type );
+
+				auto ctexec = ctExec( );
+				Symbol_Type type = typeUIDKeeper[ ctexec.value.readPrimitive!( typeUIDKeeper.I ) ];
+				ctexec.destroy( );
+
+				benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
+				return type;
+			}
 		}
 
 	protected:

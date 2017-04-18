@@ -21,7 +21,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 	public:
 		/// Result of the last "built" (read "executed") code
-		MemoryPtr result( ) {
+		CTExecResult result( ) {
 			debug {
 				// assert( result_ ); Executing a code can return void
 				assert( context.jobId == jobId_, "CodeBuilder used in multiple threads (created in %s, current %s)".format( jobId_, context.jobId ) );
@@ -32,7 +32,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 				}
 			}
 
-			return result_;
+			return CTExecResult( this );
 		}
 
 	public:
@@ -128,5 +128,38 @@ final class CodeBuilder_Ctime : CodeBuilder {
 	package:
 		debug UIDGenerator.I jobId_;
 		MemoryPtr result_;
+
+}
+
+struct CTExecResult {
+
+	public:
+		pragma( inline ) MemoryPtr value( ) {
+			return codeBuilder_.result_;
+		}
+
+		/// Keeps the result so it is never destroyed
+		pragma( inline ) void keep( ) {
+
+		}
+
+		/// Keeps the result so it is never destroyed
+		pragma( inline ) MemoryPtr keepValue( ) {
+			keep( );
+			return value( );
+		}
+
+		/// Destroys the result
+		pragma( inline ) void destroy( ) {
+			codeBuilder_.popScope( );
+		}
+
+		/// Returns list of local variables in whose the result is stored in (destroying them destroys the result)
+		pragma( inline ) DataEntity_LocalVariable[ ] scopeVariables( ) {
+			return codeBuilder_.scopeItems;
+		}
+
+	private:
+		CodeBuilder_Ctime codeBuilder_;
 
 }

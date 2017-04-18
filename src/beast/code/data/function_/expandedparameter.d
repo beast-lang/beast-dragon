@@ -24,7 +24,7 @@ final class ExpandedFunctionParameter : Identifiable {
 				assert( !decl.dataType.isAutoExpression, "Cannot expand auto parameter" );
 
 				result.identifier = decl.identifier.identifier;
-				result.dataType = decl.dataType.ctExec( coreType.Type ).readType( );
+				result.dataType = decl.dataType.standaloneCtExec_asType( );
 
 				// TODO: add to scope (to make param definitions like ( Bool x, x.#type y ) work)
 			}
@@ -33,7 +33,7 @@ final class ExpandedFunctionParameter : Identifiable {
 				DataEntity constVal = expr.buildSemanticTree_single( );
 
 				result.dataType = constVal.dataType;
-				result.constValue = constVal.ctExec( );
+				result.constValue = constVal.ctExec( ).keepValue;
 			}
 
 			assert( result.dataType );
@@ -58,7 +58,7 @@ final class ExpandedFunctionParameter : Identifiable {
 						auto _s = new RootDataScope( null );
 						auto _sgd = _s.scopeGuard;
 
-						param.constValue = arg.ctExec( );
+						param.constValue = arg.ctExec( ).keepValue;
 
 						_s.finish( );
 						assert( _s.itemCount <= 1 );

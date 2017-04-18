@@ -11,7 +11,7 @@ import beast.backend.common.primitiveop;
 final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	public:
-		alias PrimitiveFunc = void delegate( CodeBuilder cb, DataEntity [] args );
+		alias PrimitiveFunc = void delegate( CodeBuilder cb, DataEntity[ ] args );
 
 	public:
 		this( Identifier identifier, DataEntity parent, Symbol_Type returnType, ExpandedFunctionParameter[ ] parameters, PrimitiveFunc func ) {
@@ -30,6 +30,10 @@ final class Symbol_PrimitiveStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 		override Symbol_Type returnType( ) {
 			return returnType_;
+		}
+
+		override Symbol_Type contextType( ) {
+			return null;
 		}
 
 		override ExpandedFunctionParameter[ ] parameters( ) {

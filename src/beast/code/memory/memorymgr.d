@@ -162,7 +162,7 @@ final class MemoryManager {
 			berror( E.invalidMemoryOperation, "Cannot free - memory with this pointer is not allocated (%#x)".format( ptr.val ) );
 		}
 
-		void free( MemoryBlock block ) {
+		pragma( inline ) void free( MemoryBlock block ) {
 			free( block.startPtr );
 		}
 

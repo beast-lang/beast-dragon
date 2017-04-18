@@ -71,7 +71,9 @@ abstract class Symbol_Enum : Symbol_Type {
 				if ( !entity.isCtime || entity.dataType !is this )
 					continue;
 
-				valueAAWIP_[ readToUint( entity.ctExec ) ] = mem;
+				auto ctexec = entity.ctExec;
+				valueAAWIP_[ readToUint( ctexec.value ) ] = mem;
+				ctexec.destroy( );
 			}
 		}
 

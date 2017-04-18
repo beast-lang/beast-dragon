@@ -34,6 +34,10 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			return returnType_;
 		}
 
+		override Symbol_Type contextType( ) {
+			return parent_;
+		}
+
 		override ExpandedFunctionParameter[ ] parameters( ) {
 			return parameters_;
 		}

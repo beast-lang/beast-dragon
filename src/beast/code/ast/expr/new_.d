@@ -43,10 +43,11 @@ final class AST_NewExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto __gd = ErrorGuard( codeLocation );
 
-			Symbol_Type ttype = type.ctExec( coreType.Type ).readType( );
-			auto refType = coreType.Reference.referenceTypeOf( ttype );
+			auto ctexec = type.ctExec( coreType.Type );
+			Symbol_Type ttype = ctexec.value.readType( );
+			ctexec.destroy();
 
-			DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall( this, true, ttype.instanceSizeLiteral );
+			auto refType = coreType.Reference.referenceTypeOf( ttype );
 
 			return new DataEntity_Bootstrap( null, refType, ttype.dataEntity, false, ( cb ) { //
 				// Create a temporary variable
@@ -54,6 +55,7 @@ final class AST_NewExpression : AST_Expression {
 				cb.build_localVariableDefinition( var );
 
 				// Call malloc, store result into the variable
+				DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall( this, true, ttype.instanceSizeLiteral );
 				coreType.Pointer.copyCtor.dataEntity( MatchLevel.fullMatch, new DataEntity_ReinterpretCast( var, coreType.Pointer ) ).resolveCall( this, true, mallocCall ).buildCode( cb );
 
 				// Call constructor for the referenced value

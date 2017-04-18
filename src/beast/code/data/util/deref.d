@@ -31,12 +31,6 @@ final static class DataEntity_DereferenceProxy : ProxyDataEntity {
 			cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, sourceEntity_ );
 		}
 
-	protected:
-		override Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
-			// We're overriding this because ProxyDataEntity would redirect this into sourceEntity
-			return Overloadset( );
-		}
-
 	private:
 		Symbol_Type baseType_;
 

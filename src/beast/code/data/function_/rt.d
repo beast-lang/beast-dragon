@@ -23,6 +23,9 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 	public:
 		abstract Symbol_Type returnType( );
 
+		/// Type of required contextPtr (null for static functions)
+		abstract Symbol_Type contextType();
+
 		abstract ExpandedFunctionParameter[ ] parameters( );
 
 		final InterpreterCodeBlock interpreterCode( ) {

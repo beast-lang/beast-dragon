@@ -80,7 +80,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 			return result;
 		}
 
-		final MatchLevel matchCtimeArgument( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType, ref MemoryPtr value ) {
+		final MatchLevel matchCtimeArgument( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType, ref CTExecResult ctexec ) {
 			MatchLevel result = MatchLevel.fullMatch;
 
 			result |= matchStandardArgument( expression, entity, dataType, expectedType );
@@ -92,20 +92,20 @@ abstract class SeriousCallableMatch : CallableMatch {
 				return MatchLevel.noMatch;
 			}
 
-			value = entity.ctExec( );
+			ctexec = entity.ctExec( );
 
 			return result;
 		}
 
 		final MatchLevel matchConstValue( AST_Expression expression, ref DataEntity entity, ref Symbol_Type dataType, Symbol_Type expectedType, MemoryPtr requiredValue ) {
 			MatchLevel result = MatchLevel.fullMatch;
-			MemoryPtr value;
+			CTExecResult ctexec;
 
-			result |= matchCtimeArgument( expression, entity, dataType, expectedType, value );
+			result |= matchCtimeArgument( expression, entity, dataType, expectedType, ctexec );
 			if ( result == MatchLevel.noMatch )
 				return MatchLevel.noMatch;
 
-			if ( !value.dataEquals( requiredValue, expectedType.instanceSize ) ) {
+			if ( !ctexec.value.dataEquals( requiredValue, expectedType.instanceSize ) ) {
 				errorStr = "argument %s value mismatch".format( argumentIndex_ + 1 );
 				return MatchLevel.noMatch;
 			}

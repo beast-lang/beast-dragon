@@ -111,12 +111,13 @@ abstract class AST_Expression : AST_Statement {
 			auto _gd = ErrorGuard( codeLocation );
 
 			cb.build_scope( ( cb ) { //
-				string nm = typeid(this).toString;
+				string nm = typeid( this ).toString;
 				buildSemanticTree_single( ).buildCode( cb );
 			} );
 		}
 
-		final MemoryPtr ctExec( Symbol_Type expectedType ) {
+		final CTExecResult ctExec( Symbol_Type expectedType ) {
+			const auto __gd = ErrorGuard( codeLocation );
 			return buildSemanticTree_singleExpect( expectedType ).ctExec( );
 		}
 
@@ -129,16 +130,21 @@ abstract class AST_Expression : AST_Statement {
 				auto _s = new RootDataScope( parent );
 				auto _sgd = _s.scopeGuard;
 
-				MemoryPtr result = ctExec( expectedType );
+				CTExecResult ctexec = ctExec( expectedType );
+				ctexec.keep( );
 
 				_s.finish( );
 				assert( _s.itemCount <= 1, "StandaloneCtExec scope has %s items".format( _s.itemCount ) );
 
 				// No cleanup build - bulit variables remain (should be only one)
-				return result;
+				return ctexec.value;
 			}
 
 			assert( 0 );
+		}
+
+		pragma( inline ) final Symbol_Type standaloneCtExec_asType( ) {
+			return buildSemanticTree_singleExpect( coreType.Type ).standaloneCtExec_asType( );
 		}
 
 }

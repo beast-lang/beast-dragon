@@ -177,11 +177,11 @@ mixin template BuilderCommon( ) {
 	/// Match single const-value parameter of value data (doesn't add any parameters to obtainFunc)
 	auto constArg( )( Symbol sym ) {
 		auto data = sym.dataEntity;
-		return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec );
+		return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec.keepValue );
 	}
 
 	/// Match single argument of any type
-	auto auto_( )() {
+	auto auto_( )( ) {
 		return Builder_Auto!( typeof( this ) )( this );
 	}
 
@@ -263,13 +263,13 @@ struct Builder_CtimeParameter( Parent ) {
 	alias Params = TypeTuple!( MemoryPtr );
 
 	MatchLevel matchArgument( SeriousCallableMatch match, AST_Expression expression, DataEntity entity, Symbol_Type dataType, ref Params params, ref bool nextFactoryItem ) {
-		MemoryPtr value;
+		CTExecResult ctexec;
 
-		auto result = match.matchCtimeArgument( expression, entity, dataType, type_, value );
+		auto result = match.matchCtimeArgument( expression, entity, dataType, type_, ctexec );
 		if ( result == MatchLevel.noMatch )
 			return MatchLevel.noMatch;
 
-		params[ 0 ] = value;
+		params[ 0 ] = ctexec.keepValue;
 		return result;
 	}
 

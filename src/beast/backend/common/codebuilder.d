@@ -3,6 +3,8 @@ module beast.backend.common.codebuilder;
 import beast.backend.toolkit;
 import beast.util.identifiable;
 import beast.backend.ctime.codebuilder : CodeBuilder_Ctime;
+import beast.util.uidgen;
+import std.algorithm.searching : all;
 
 /// Root class for building code with any backend
 abstract class CodeBuilder : Identifiable {
@@ -13,6 +15,12 @@ abstract class CodeBuilder : Identifiable {
 
 		/// When called, StmtFunction should build expression using provided codebuilder		
 		alias ExprFunction = void delegate( CodeBuilder cb );
+
+	public:
+		this( ) {
+			scopeStack_ ~= Scope( 0 );
+			debug scopeStack_[ $ - 1 ].session = context.session;
+		}
 
 	public:
 		bool isCtime( ) {
@@ -208,6 +216,7 @@ abstract class CodeBuilder : Identifiable {
 		/// CodeBuilder scopes are used for destructor generating
 		void pushScope( ScopeFlags flags = ScopeFlags.none ) {
 			scopeStack_ ~= Scope( scopeStack_.length, flags );
+			debug scopeStack_[ $ - 1 ].session = context.session;
 		}
 
 		/// Destroys the last scope
@@ -231,7 +240,15 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		final void addToScope( DataEntity_LocalVariable var ) {
+			assert( var.memoryBlock.session == scopeStack_[ $ - 1 ].session, "Local variable created in different session cannot be added to a scope" );
+
 			scopeStack_[ $ - 1 ].variables ~= var;
+		}
+
+		final void addToScope( DataEntity_LocalVariable[ ] vars ) {
+			assert( vars.all!( x => x.memoryBlock.session == scopeStack_[ $ - 1 ].session ), "Local variable created in different session cannot be added to a scope" );
+
+			scopeStack_[ $ - 1 ].variables ~= vars;
 		}
 
 		final DataEntity_LocalVariable[ ] scopeItems( ) {
@@ -245,7 +262,7 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 	protected:
-		Scope[ ] scopeStack_ = [ Scope( 0 ) ];
+		Scope[ ] scopeStack_;
 
 	protected:
 		struct Scope {
@@ -253,6 +270,7 @@ abstract class CodeBuilder : Identifiable {
 			size_t index;
 			ScopeFlags flags;
 			DataEntity_LocalVariable[ ] variables;
+			debug UIDGenerator.I session;
 		}
 
 		enum ScopeFlags {

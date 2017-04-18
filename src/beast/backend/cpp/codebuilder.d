@@ -275,7 +275,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				if ( parameterCount )
 					result ~= ", ";
 
-				result.formattedWrite( "%s *context", cppIdentifier( func.dataEntity.parent.ctExec.readType ) );
+				result.formattedWrite( "%s *context", cppIdentifier( func.contextType ) );
 				parameterCount++;
 			}
 
@@ -394,12 +394,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( additionalScopeData_[ $ - 1 ].requiresEndLabelConstruction )
 				codeResult_.formattedWrite( "elbl_%s:\n", additionalScopeData_[ $ - 1 ].hash.str );
 
-			{
-				size_t prevCtimeStackOffset = ctimeStackOffset_;
-				ctimeStackOffset_ = additionalScopeData_[ $ - 1 ].ctimeStackOffset;
-				if ( prevCtimeStackOffset != ctimeStackOffset_ )
-					codeResult_.formattedWrite( "%sctimeStackSize = ctimeStackBP + %s;\n", tabs, ctimeStackOffset_ );
-			}
+			ctimeStackOffset_ = additionalScopeData_[ $ - 1 ].ctimeStackOffset;
 
 			additionalScopeData_.length--;
 			tabOffset_--;

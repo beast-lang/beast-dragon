@@ -73,7 +73,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 				return opRefAssign.dataEntity( matchLevel, instance ).Overloadset;
 
 			if ( instance ) {
-				Symbol_Type type = instance.ctExec_asType( );
+				Symbol_Type type = instance.standaloneCtExec_asType( );
 
 				if ( auto result = type.tryResolveIdentifier( id, null, matchLevel ) )
 					return result;

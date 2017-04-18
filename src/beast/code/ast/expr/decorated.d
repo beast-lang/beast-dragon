@@ -33,6 +33,8 @@ final class AST_DecoratedExpression : AST_Expression {
 
 			if ( decoData.isCtime )
 				result = result.map!( x => cast( DataEntity ) new DataEntity_CtExecProxy( x ) ).Overloadset;
+			else
+				assert( 0, "Ctime is the only decorator for expressions so far, so this should not happen" );
 
 			return result;
 		}
