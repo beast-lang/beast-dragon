@@ -68,7 +68,7 @@ final class Symbol_PrimitiveMemberNonRuntimeFunction : Symbol_NonRuntimeFunction
 				}
 
 				final override DataEntity parent( ) {
-					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
+					return sym_.parent_.dataEntity;
 				}
 
 				final override bool isCtime( ) {

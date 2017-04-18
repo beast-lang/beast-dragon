@@ -18,6 +18,10 @@ final static class DataEntity_CtExecProxy : ProxyDataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
-			cb.build_memoryAccess( sourceEntity_.ctExec() );
+			auto result = sourceEntity_.ctExec();
+
+			// Result might be void -> no memory access
+			if( result )
+				cb.build_memoryAccess( result );
 		}
 }

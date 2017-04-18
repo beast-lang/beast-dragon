@@ -21,13 +21,17 @@ void primitiveOp_dereference( CB cb, T t, Op arg1 ) {
 			operandResult_.type = InstructionOperand.Type.refStackRef;
 			break;
 
+		case InstructionOperand.Type.ctStackRef:
+			operandResult_.type = InstructionOperand.Type.refCtStackRef;
+			break;
+
 		case InstructionOperand.Type.refHeapRef: // If the operands are references, we have to dereference them first (store the address into local variable)
 		case InstructionOperand.Type.refStackRef:
+		case InstructionOperand.Type.refCtStackRef:
 			addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, hardwareEnvironment.pointerSize.iopLiteral );
 			addInstruction( I.mov, currentBPOffset_.iopBpOffset, operandResult_, hardwareEnvironment.pointerSize.iopLiteral );
 
-			operandResult_.type = InstructionOperand.Type.refStackRef;
-			operandResult_.basePointerOffset = currentBPOffset_;
+			operandResult_ = currentBPOffset_.iopRefBpOffset;
 
 			currentBPOffset_++;
 			break;

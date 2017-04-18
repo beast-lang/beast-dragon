@@ -26,11 +26,6 @@ abstract class DataEntity : IDContainer {
 		/// Parent of the current data entity, is used in recursive identifier resolution
 		abstract DataEntity parent( );
 
-		/// Symbol if we call .dataEntity on returns this DataEntity (or same type)
-		Symbol symbol( ) {
-			return null;
-		}
-
 		/// Specifies priority of this entity among overloading
 		final MatchLevel matchLevel( ) {
 			return overloadMatch_;
@@ -48,11 +43,6 @@ abstract class DataEntity : IDContainer {
 		/// If the data entity represents a parameter, returns its index
 		size_t asFunctionParameter_index( ) {
 			assert( 0, identificationString ~ " is not a parameter" );
-		}
-
-		/// If the data entity represents a local variable, returns its base pointer offset for interpreter
-		size_t asLocalVariable_interpreterBpOffset( ) {
-			assert( 0, identificationString ~ " is not a local variable" );
 		}
 
 	public:

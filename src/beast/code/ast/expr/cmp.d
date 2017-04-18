@@ -62,12 +62,10 @@ final class AST_CmpExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto __gd = ErrorGuard( codeLocation );
 
-			// Now building semantic tree for this requires rather complicated approach - as we are subsituting results with temporary variables (we have to do that in buildCode :/)
 			DataEntity baseOperand = base.buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
 
 			DataEntity leftOperand = baseOperand;
 			DataEntity result = null;
-			ProcessedItem[ ] pitems;
 
 			// If errorOnInferrationFailure is false then result might be null (inferration failure)
 			if ( !baseOperand )
@@ -75,28 +73,36 @@ final class AST_CmpExpression : AST_Expression {
 
 			auto binAnd = coreLibrary.enum_.operator.binAnd.dataEntity;
 
-			foreach ( item; items ) {
-				ProcessedItem pitem;
-				pitem.operand = item.expr.buildSemanticTree_single( );
-				pitem.operandCtor = pitem.operand.expectResolveIdentifier( ID!"#ctor" ).resolveCall( item.expr, true, pitem.operand ).symbol;
-				pitem.cmpFunction = prepareResolveBinaryOperation( item.expr, leftOperand, pitem.operand, cmpOperatorEnumConst( item.op ).dataEntity, item.op );
+			foreach ( item; items[ 0 .. $ - 1 ] ) {
+				DataEntity rightExpr = item.expr.buildSemanticTree_single( );
+				auto var = new DataEntity_TmpLocalVariable( rightExpr.dataType, rightExpr.isCtime );
+				auto varCtor = var.getCopyCtor( rightExpr );
 
-				assert( pitem.operandCtor );
+				auto cmpResult = resolveBinaryOperation( item.expr, leftOperand, var, cmpOperatorEnumConst( item.op ).dataEntity, item.op );
+				auto data = new Data( this, leftOperand, var, varCtor, cmpResult );
 
-				DataEntity tmpCmpFunction = pitem.cmpFunction( leftOperand, pitem.operand );
-				if ( result ) {
-					pitem.andFunction = prepareResolveBinaryOperation( item.expr, result, tmpCmpFunction, binAnd, Token.Operator.logAnd );
-					result = pitem.andFunction( result, tmpCmpFunction );
-					pitem.dataType = result.dataType;
-				}
+				if ( result )
+					result = resolveBinaryOperation( item.expr, result, data, binAnd, Token.Operator.logAnd );
 				else
-					result = tmpCmpFunction;
+					result = data;
 
-				pitems ~= pitem;
-				leftOperand = pitem.operand;
+				leftOperand = var;
 			}
 
-			return new Data( this, baseOperand, pitems, result.dataType, result.isCtime ).Overloadset;
+			// We don't need to save last operand to a variable
+			{
+				auto item = items[ $ - 1 ];
+
+				DataEntity rightExpr = item.expr.buildSemanticTree_single( );
+				auto cmpResult = resolveBinaryOperation( item.expr, leftOperand, rightExpr, cmpOperatorEnumConst( item.op ).dataEntity, item.op );
+
+				if( result )
+					result = resolveBinaryOperation( item.expr, result, cmpResult, binAnd, Token.Operator.logAnd );
+				else
+					result = cmpResult;
+			}
+
+			return result.Overloadset;
 		}
 
 	protected:
@@ -168,95 +174,53 @@ final class AST_CmpExpression : AST_Expression {
 			descending = ascending << 1 // > >= ==
 		}
 
-		struct ProcessedItem {
-			DataEntity operand;
-			Symbol operandCtor;
-			Symbol_Type dataType;
-			DataEntity delegate( DataEntity, DataEntity ) cmpFunction, andFunction;
-		}
-
 		final class Data : DataEntity {
 
 			public:
-				this( AST_CmpExpression ast, DataEntity baseOperand, ProcessedItem[ ] processedItems, Symbol_Type dataType, bool isCtime ) {
+				this( AST_CmpExpression ast, DataEntity leftOperand, DataEntity_TmpLocalVariable operandVar, DataEntity operandCtor, DataEntity cmpFunctionResult ) {
 					super( MatchLevel.fullMatch );
 					ast_ = ast;
-					baseOperand_ = baseOperand;
-					processedItems_ = processedItems;
-					dataType_ = dataType;
-					isCtime_ = isCtime;
+					operandVar_ = operandVar;
+					operandCtor_ = operandCtor;
+					cmpFunctionResult_ = cmpFunctionResult;
+					leftOperand_ = leftOperand;
 				}
 
 			public:
 				override Symbol_Type dataType( ) {
-					return dataType_;
+					return cmpFunctionResult_.dataType;
 				}
 
 				override DataEntity parent( ) {
-					return baseOperand_;
+					return leftOperand_;
 				}
 
 				override bool isCtime( ) {
-					return isCtime_;
+					return cmpFunctionResult_.isCtime;
 				}
 
 				override AST_Node ast( ) {
 					return ast_;
 				}
 
-			public:
+			protected:
 				override void buildCode( CodeBuilder cb ) {
 					auto _gd = ErrorGuard( ast_.codeLocation );
 
-					DataEntity leftOperand = baseOperand_;
-					DataEntity result = null;
+					// Define the variable
+					cb.build_localVariableDefinition( operandVar_ );
 
-					auto item = processedItems_[ 0 ];
+					// Call the constructor
+					operandCtor_.buildCode( cb );
 
-					assert( processedItems_.length );
-					if ( processedItems_.length == 1 )
-						item.cmpFunction( leftOperand, item.operand ).buildCode( cb );
-
-					else {
-						auto item2 = processedItems_[ 1 ];
-
-						auto var = new DataEntity_TmpLocalVariable( item.operand.dataType, cb.isCtime );
-						cb.build_localVariableDefinition( var );
-						item.operandCtor.dataEntity( MatchLevel.fullMatch, var ).resolveCall( item.operand.ast, true, item.operand ).buildCode( cb );
-
-						item2.andFunction( item.cmpFunction( leftOperand, var ), new Data( ast_, var, processedItems_[ 1 .. $ ], item2.dataType, isCtime ) ).buildCode( cb );
-					}
-					/*
-					foreach ( item; processedItems_[ 0 .. $ - 1 ] ) {
-						auto var = new DataEntity_TmpLocalVariable( item.operand.dataType, cb.isCtime );
-						cb.build_localVariableDefinition( var );
-
-						// We have pre-resolved ctor from the buildSemanticTree
-						item.operandCtor.dataEntity( MatchLevel.fullMatch, var ).startCallMatch( item.operand.ast, true, MatchLevel.fullMatch ).arg( coreLibrary.enum_.xxctor.assign.dataEntity ).arg( item.operand ).finish( ).toDataEntity( ).buildCode( cb );
-
-						DataEntity cmpResult = item.cmpFunction( leftOperand, var );
-						result = result ? item.andFunction( result, cmpResult ) : cmpResult;
-
-						leftOperand = var;
-					}
-
-					// We don't need to save last right operand to a tmp variable
-					{
-						auto item = processedItems_[ $ - 1 ];
-						DataEntity cmpResult = item.cmpFunction( leftOperand, item.operand );
-						result = result ? item.andFunction( result, cmpResult ) : cmpResult;
-					}
-
-					assert( result );
-					result.buildCode( cb );*/
+					// Call the comparison function
+					cmpFunctionResult_.buildCode( cb );
 				}
 
 			private:
-				Symbol_Type dataType_;
-				bool isCtime_;
 				AST_CmpExpression ast_;
-				DataEntity baseOperand_;
-				ProcessedItem[ ] processedItems_;
+				DataEntity_TmpLocalVariable operandVar_;
+				DataEntity operandCtor_, cmpFunctionResult_, leftOperand_;
 
 		}
 

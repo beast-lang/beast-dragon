@@ -34,6 +34,42 @@ pragma( inline ):
 			writefln( "skipalloc BP+%s", ir.stack.length - 1 );
 	}
 
+	void op_malloc( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
+		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated ) );
+
+		debug ( interpreter )
+			writefln( "malloc( %s ) (=%s) => %s", op2.readSizeT, op1.readMemoryPtr, op1 );
+	}
+
+	void op_free( Interpreter ir, MemoryPtr op1 ) {
+		memoryManager.free( op1.readMemoryPtr );
+
+		debug ( interpreter )
+			writefln( "free( %s (=%s) )", op1, op1.readMemoryPtr );
+	}
+
+	// CT STACK
+	void op_allocCt( Interpreter ir, size_t offset, size_t bytes ) {
+		// Compile-times stack should never be smaller by more than one item (because of previous ct variables)
+		assert( ir.ctStack.length == offset );
+
+		ir.ctStack ~= memoryManager.alloc( bytes );
+
+		debug ( interpreter )
+			writefln( "ctalloc( %s ) (=%s) => CT+%s", bytes, ir.ctStack[ offset ], offset );
+	}
+
+	void op_freeCt( Interpreter ir, size_t offset ) {
+		assert( offset < ir.ctStack.length );
+		assert( !ir.ctStack[ offset ].isNull );
+
+		memoryManager.free( ir.ctStack[ offset ] );
+		debug ir.ctStack[ offset ] = MemoryPtr( );
+
+		debug ( interpreter )
+			writefln( "freeCt( CT+%s (=%s) )", offset, ir.ctStack[ offset ] );
+	}
+
 	// MEMORY OPERATIONS
 	void op_mov( Interpreter ir, MemoryPtr op1, MemoryPtr op2, size_t bytes ) {
 		op1.write( op2, bytes );
@@ -76,18 +112,4 @@ pragma( inline ):
 
 		debug ( interpreter )
 			writefln( "unmark %s", op1 );
-	}
-
-	void op_malloc( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
-		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated ) );
-
-		debug ( interpreter )
-			writefln( "malloc( %s ) (=%s) => %s", op2.readSizeT, op1.readMemoryPtr, op1 );
-	}
-
-	void op_free( Interpreter ir, MemoryPtr op1 ) {
-		memoryManager.free( op1.readMemoryPtr );
-
-		debug ( interpreter )
-			writefln( "free( %s (=%s) )", op1, op1.readMemoryPtr );
 	}

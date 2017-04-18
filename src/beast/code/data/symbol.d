@@ -96,10 +96,6 @@ abstract class SymbolRelatedDataEntity : DataEntity {
 			return symbol_.identifier;
 		}
 
-		final override Symbol symbol( ) {
-			return symbol_;
-		}
-
 		final override AST_Node ast( ) {
 			return symbol_.ast;
 		}

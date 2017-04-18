@@ -4,7 +4,7 @@ import beast.backend.interpreter.op.toolkit;
 
 //debug = interpreter;
 
-debug( interpreter ) {
+debug ( interpreter ) {
 	import std.stdio : writefln;
 }
 
@@ -35,14 +35,14 @@ pragma( inline ):
 			auto ptr = ir.stack[ i ];
 
 			if ( !ptr.isNull ) {
-				debug( interpreter )
+				debug ( interpreter )
 					writefln( "free BP+%s (%#x)", i, ptr.val );
 
 				memoryManager.free( ptr );
 
 			}
 			else
-				debug( interpreter )
+				debug ( interpreter )
 					writefln( "free BP+%s (null)", i );
 		}
 
@@ -55,6 +55,7 @@ pragma( inline ):
 			callStack ~= currentFrame;
 
 			currentFrame.basePointer = ir.stack.length;
+			currentFrame.baseCtPointer = ir.ctStack.length;
 			currentFrame.sourceBytecode = func.interpreterCode.bytecode;
 			currentFrame.instructionPointer = 0;
 
@@ -68,6 +69,9 @@ pragma( inline ):
 			assert( callStack.length );
 
 			op_popScope( ir, 0 );
+
+			// Cleanup CT stack
+			ir.ctStack.length = ir.currentFrame.baseCtPointer;
 
 			currentFrame = callStack[ $ - 1 ];
 			callStack.length--;

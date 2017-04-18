@@ -115,15 +115,23 @@ final class Interpreter {
 				return op.heapLocation;
 
 			case InstructionOperand.Type.stackRef:
-				assert( currentFrame.basePointer + op.basePointerOffset < stack.length, "Variable not on stack" );
+				assert( currentFrame.basePointer + op.basePointerOffset < stack.length, "Variable not on the stack" );
 				return stack[ currentFrame.basePointer + op.basePointerOffset ];
+
+			case InstructionOperand.Type.ctStackRef:
+				assert( currentFrame.baseCtPointer + op.basePointerOffset < ctStack.length, "Variable not on the @ctime stack" );
+				return ctStack[ currentFrame.baseCtPointer + op.basePointerOffset ];
 
 			case InstructionOperand.Type.refHeapRef:
 				return op.heapLocation.readMemoryPtr;
 
 			case InstructionOperand.Type.refStackRef:
-				assert( currentFrame.basePointer + op.basePointerOffset < stack.length, "Variable not on stack" );
+				assert( currentFrame.basePointer + op.basePointerOffset < stack.length, "Variable not on the stack" );
 				return stack[ currentFrame.basePointer + op.basePointerOffset ].readMemoryPtr;
+
+			case InstructionOperand.Type.refCtStackRef:
+				assert( currentFrame.baseCtPointer + op.basePointerOffset < ctStack.length, "Variable not on the @ctime stack" );
+				return ctStack[ currentFrame.baseCtPointer + op.basePointerOffset ].readMemoryPtr;
 
 			default:
 				assert( 0, "Invalid operand type '%s', expected memoryPtr".format( op.type ) );
@@ -173,6 +181,8 @@ final class Interpreter {
 		StackFrame currentFrame;
 		/// Stack of local variables
 		MemoryPtr[ ] stack;
+		/// Stack of ctime-mirrored variables
+		MemoryPtr[ ] ctStack;
 		debug ( interpreter ) size_t execId;
 
 		RFlag flagsRegister;
@@ -189,6 +199,7 @@ final class Interpreter {
 		alias JumpTarget = Typedef!( size_t, 0, "beast.interpreter.jumpTarget" );
 		struct StackFrame {
 			size_t basePointer;
+			size_t baseCtPointer;
 
 			/// Bytecode that is currently interpreted (functions have separate bytecodes)
 			Instruction[ ] sourceBytecode;

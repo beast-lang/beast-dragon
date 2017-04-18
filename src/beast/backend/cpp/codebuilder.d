@@ -106,17 +106,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 	public: // Expression related build commands
 		override void build_memoryAccess( MemoryPtr pointer ) {
 			mirrorCtimeChanges( );
-
-			MemoryBlock block = pointer.block;
-			block.markReferenced( );
-
-			if ( block.startPtr == pointer )
-				resultVarName_ = cppIdentifier( block, true );
-			else
-				resultVarName_ = "( ( ( uint8_t* ) %s ) + %s )".format( cppIdentifier( block, true ), pointer - block.startPtr );
-
-			if ( !block.isRuntime )
-				resultVarName_ = "CTMEM " ~ resultVarName_;
+			resultVarName_ = memoryPtrIdentifier( pointer );
 		}
 
 		override void build_offset( ExprFunction expr, size_t offset ) {
@@ -171,6 +161,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				argumentNames ~= "PARAM( &%s, %s )".format( cppIdentifier( argVar.memoryBlock ), cppIdentifier( param.dataType ) );
 			}
 
+			codeResult_.formattedWrite( "%sctimeStackSize = ctimeStackBP + %s;\n", tabs, ctimeStackOffset_ );
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
 			popScope( );
@@ -352,7 +343,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		static string memoryPtrIdentifier( MemoryPtr ptr ) {
-			if( ptr.isNull )
+			if ( ptr.isNull )
 				return "CTMEM 0";
 
 			MemoryBlock block = ptr.block;
@@ -360,7 +351,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			string result;
 			if ( block.startPtr == ptr )
-				return cppIdentifier( block, true );
+				return "%s%s".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ) );
 			else
 				return "%sOFFSET( %s, %s )".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ), ptr - block.startPtr );
 		}
@@ -420,10 +411,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void mirrorBlockAllocation( MemoryBlock block ) {
 			debug assert( block.session == context.session );
 
+			assert( !block.bpOffset );
 			block.bpOffset = ctimeStackOffset_;
 			codeResult_.formattedWrite( "%s// alloc %s\n", tabs, blockDesc( block ) );
 			codeResult_.formattedWrite( "%s%s = (uintptr_t*) malloc( %s );\n", tabs, cppIdentifier( block, true ), block.size );
-			codeResult_.formattedWrite( "%sctimeStackSize ++;\n", tabs );
 			ctimeStackOffset_++;
 		}
 

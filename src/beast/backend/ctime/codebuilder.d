@@ -23,11 +23,13 @@ final class CodeBuilder_Ctime : CodeBuilder {
 		/// Result of the last "built" (read "executed") code
 		MemoryPtr result( ) {
 			debug {
-				assert( result_ );
-				assert( context.jobId == jobId_ );
+				// assert( result_ ); Executing a code can return void
+				assert( context.jobId == jobId_, "CodeBuilder used in multiple threads (created in %s, current %s)".format( jobId_, context.jobId ) );
 
-				auto block = memoryManager.findMemoryBlock( result_ );
-				assert( block && !block.isRuntime );
+				debug if ( result_ ) {
+					auto block = memoryManager.findMemoryBlock( result_ );
+					assert( block && !block.isRuntime );
+				}
 			}
 
 			return result_;

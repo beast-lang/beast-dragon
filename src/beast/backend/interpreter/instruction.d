@@ -23,6 +23,10 @@ struct Instruction {
 			call, /// (function : func) Function call (arguments are passed on the stack in order [RETURN VALUE] [OP3] [OP2] [OP1] [CONTEXT PTR - always (even if null)])
 			ret, /// () returns from a function call
 
+			// CT STACK
+			allocCt, /// (ctOffset: dd, bytes: dd) Allocates memory on a compile-time stack
+			freeCt, /// (ctOffset: dd) Frees memory on a compile-time stack
+
 			// COMPARISON
 			bitsCmp, /// (op1: ptr, op2: ptr, bytes: dd) Bit compares two operands and stores result into INTERNAL FLAGS (use cmpXX instructions)
 			cmpEq, /// (target: ptr) Stores bool into target stating whether previous comparison resulted x == y
@@ -162,9 +166,11 @@ struct InstructionOperand {
 
 			heapRef, /// Direct pointer to a memory
 			stackRef, /// Offset from base pointer
+			ctStackRef, /// Offset from ct base pointer
 
 			refHeapRef, /// Reference in a static memory
 			refStackRef, /// Reference on a stack
+			refCtStackRef, /// Reference on a ct stack
 
 			directData,
 			functionPtr,
@@ -207,12 +213,21 @@ struct InstructionOperand {
 					return bpo >= 0 ? "BP+%s".format( bpo ) : "BP-%s".format( -bpo );
 				}
 
+			case Type.ctStackRef: {
+					int bpo = cast( int ) basePointerOffset;
+					return bpo >= 0 ? "CT+%s".format( bpo ) : "CT-%s".format( -bpo );
+				}
+
 			case Type.refHeapRef:
 				return "#%#x".format( heapLocation.val );
 
 			case Type.refStackRef: {
 					int bpo = cast( int ) basePointerOffset;
 					return bpo >= 0 ? "#BP+%s".format( bpo ) : "#BP-%s".format( -bpo );
+				}
+			case Type.refCtStackRef: {
+					int bpo = cast( int ) basePointerOffset;
+					return bpo >= 0 ? "#CT+%s".format( bpo ) : "#CT-%s".format( -bpo );
 				}
 
 			case Type.directData:
@@ -232,36 +247,44 @@ struct InstructionOperand {
 
 }
 
-InstructionOperand iopBpOffset( size_t offset ) {
-	auto result = InstructionOperand( InstructionOperand.Type.stackRef );
-	result.basePointerOffset = offset;
-	return result;
-}
+pragma( inline ) {
+	InstructionOperand iopBpOffset( size_t offset ) {
+		auto result = InstructionOperand( InstructionOperand.Type.stackRef );
+		result.basePointerOffset = offset;
+		return result;
+	}
 
-InstructionOperand iopRefBpOffset( size_t offset ) {
-	auto result = InstructionOperand( InstructionOperand.Type.refStackRef );
-	result.basePointerOffset = offset;
-	return result;
-}
+	InstructionOperand iopRefBpOffset( size_t offset ) {
+		auto result = InstructionOperand( InstructionOperand.Type.refStackRef );
+		result.basePointerOffset = offset;
+		return result;
+	}
 
-InstructionOperand iopPtr( MemoryPtr ptr ) {
-	auto result = InstructionOperand( InstructionOperand.Type.heapRef );
-	result.heapLocation = ptr;
-	return result;
-}
+	InstructionOperand iopCtOffset( size_t offset ) {
+		auto result = InstructionOperand( InstructionOperand.Type.ctStackRef );
+		result.basePointerOffset = offset;
+		return result;
+	}
 
-InstructionOperand iopLiteral( size_t data ) {
-	auto result = InstructionOperand( InstructionOperand.Type.directData );
-	result.directData = data;
-	return result;
-}
+	InstructionOperand iopPtr( MemoryPtr ptr ) {
+		auto result = InstructionOperand( InstructionOperand.Type.heapRef );
+		result.heapLocation = ptr;
+		return result;
+	}
 
-InstructionOperand iopFuncPtr( Symbol_RuntimeFunction func ) {
-	auto result = InstructionOperand( InstructionOperand.Type.functionPtr );
-	result.functionPtr = func;
-	return result;
-}
+	InstructionOperand iopLiteral( size_t data ) {
+		auto result = InstructionOperand( InstructionOperand.Type.directData );
+		result.directData = data;
+		return result;
+	}
 
-InstructionOperand iopPlaceholder( ) {
-	return InstructionOperand( InstructionOperand.Type.placeholder );
+	InstructionOperand iopFuncPtr( Symbol_RuntimeFunction func ) {
+		auto result = InstructionOperand( InstructionOperand.Type.functionPtr );
+		result.functionPtr = func;
+		return result;
+	}
+
+	InstructionOperand iopPlaceholder( ) {
+		return InstructionOperand( InstructionOperand.Type.placeholder );
+	}
 }

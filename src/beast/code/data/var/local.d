@@ -58,15 +58,18 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			return "%s %s".format( dataType.tryGetIdentificationString, identificationString_noPrefix );
 		}
 
-	public:
 		override void buildCode( CodeBuilder cb ) {
 			cb.build_memoryAccess( memoryPtr );
 		}
 
 	public:
-		override size_t asLocalVariable_interpreterBpOffset( ) {
-			return memoryBlock_.bpOffset;
+		/// Return data entity representing copy constructor call for given variable
+		final DataEntity getCopyCtor( DataEntity initValue ) {
+			// We don't call var.tryResolveIdentifier because of Type variables
+			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
+			return dataType.expectResolveIdentifier_direct( ID!"#ctor", this ).resolveCall( ast, true, initValue );
 		}
+		
 
 	protected:
 		Symbol_Type dataType_;

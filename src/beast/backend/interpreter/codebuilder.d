@@ -25,6 +25,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	public:
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
+			assert( !var.memoryBlock.bpOffset );
+
 			var.memoryBlock.bpOffset = currentBPOffset_;
 			addToScope( var );
 
@@ -47,24 +49,21 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			addInstruction( I.noReturnError, func.iopFuncPtr );
 			popScope( false );
 
-			trashCtimeChanges();
+			trashCtimeChanges( );
 		}
 
 	public:
 		override void build_memoryAccess( MemoryPtr pointer ) {
-			mirrorCtimeChanges();
-
-			MemoryBlock block = pointer.block;
-
-			/// Prevent the memory block being GC collected at session end - it might be used in function execution
-			block.markDoNotGCAtSessionEnd( );
-
-			operandResult_ = block.isLocal ? block.relatedDataEntity.asLocalVariable_interpreterBpOffset.iopBpOffset : pointer.iopPtr;
+			mirrorCtimeChanges( );
+			build_memoryAccess_noMirrorCtimeChanges( pointer );
 		}
 
 		override void build_offset( ExprFunction expr, size_t offset ) {
 			expr( this );
+			build_offset( offset );
+		}
 
+		final void build_offset( size_t offset ) {
 			if ( offset == 0 )
 				return;
 
@@ -82,8 +81,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				break;
 
 			case InstructionOperand.Type.stackRef:
+			case InstructionOperand.Type.ctStackRef:
 			case InstructionOperand.Type.refHeapRef:
 			case InstructionOperand.Type.refStackRef: {
+			case InstructionOperand.Type.refCtStackRef:
 					auto varOperand = currentBPOffset_.iopBpOffset;
 					auto ptrSize = hardwareEnvironment.pointerSize;
 
@@ -91,8 +92,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 					addInstruction( I.stAddr, varOperand, operandResult_ );
 					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
 
-					operandResult_.type = InstructionOperand.Type.refStackRef;
-					operandResult_.basePointerOffset = currentBPOffset_;
+					operandResult_ = currentBPOffset_.iopRefBpOffset;
 
 					currentBPOffset_++;
 				}
@@ -266,14 +266,62 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			// uncommenting this causes freezes - dunno why
 			synchronized ( stderrMutex ) {
-			writefln( "\n== BEGIN CODE %s\n", desc );
+				writefln( "\n== BEGIN CODE %s\n", desc );
 
-			foreach ( i, instr; result_.data )
-				writefln( "@%3s   %s", i, instr.identificationString );
+				foreach ( i, instr; result_.data )
+					writefln( "@%3s   %s", i, instr.identificationString );
 
-			writefln( "\n== END\n" );
-			//stdout.flush();
+				writefln( "\n== END\n" );
+				//stdout.flush();
 			}
+		}
+
+	protected:
+		override void mirrorBlockAllocation( MemoryBlock block ) {
+			debug assert( block.session == context.session );
+
+			assert( !block.bpOffset );
+			block.bpOffset = currentCTOffset_;
+			addInstruction( I.allocCt, currentCTOffset_.iopLiteral, block.size.iopLiteral );
+			currentCTOffset_++;
+		}
+
+		override void mirrorBlockDataChange( MemoryBlock block ) {
+			debug assert( block.session == context.session );
+
+			MemoryBlock data = block.duplicate( MemoryBlock.Flag.interpreter | MemoryBlock.Flag.dynamicallyAllocated | MemoryBlock.Flag.doNotMirrorChanges );
+			data.markDoNotGCAtSessionEnd( );
+
+			debug ( interpreter ) {
+				import std.stdio : writefln;
+
+				writefln( "Mirror %s %s (CT+%s) (pointers %s) (%s) dup %s", block.startPtr, block.data[ 0 .. block.size ], block.bpOffset, memoryManager.pointersInSessionBlock( block ), block.identificationString, data.startPtr );
+			}
+
+			auto blockOperand = block.bpOffset.iopCtOffset;
+			auto ptrSize = hardwareEnvironment.pointerSize.iopLiteral;
+
+			// Prevent from block being destroyed at session end
+			block.markDoNotGCAtSessionEnd( );
+
+			// Update the local @ctime block
+			addInstruction( I.mov, blockOperand, data.startPtr.iopPtr, block.size.iopLiteral );
+
+			// Update pointers
+			foreach ( ptr; memoryManager.pointersInSessionBlock( block ) ) {
+				assert( ptr.val >= block.startPtr.val && ptr.val <= block.endPtr.val - hardwareEnvironment.pointerSize );
+
+				operandResult_ = blockOperand;
+				build_offset( ptr.val - block.startPtr.val );
+				auto target = operandResult_;
+
+				build_memoryAccess_noMirrorCtimeChanges( ptr.readMemoryPtr );
+				addInstruction( I.stAddr, target, operandResult_, ptrSize );
+			}
+		}
+
+		override void mirrorBlockDeallocation( MemoryBlock block ) {
+			addInstruction( I.freeCt, block.bpOffset.iopLiteral );
 		}
 
 	package:
@@ -302,7 +350,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			additionalScopeData_ ~= AdditionalScopeData( currentBPOffset_ );
 		}
 
-		override void popScope( bool generateDestructors = true ) {			
+		override void popScope( bool generateDestructors = true ) {
 			// Result might be f-ked around because of destructors
 			auto result = operandResult_;
 
@@ -326,14 +374,36 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			super.generateScopeExit( scope_ );
 
 			size_t targetBPOffset = additionalScopeData_[ scope_.index ].bpOffset;
+
 			if ( targetBPOffset < currentBPOffset_ )
 				addInstruction( I.popScope, targetBPOffset.iopLiteral );
+		}
+
+	protected:
+		final void build_memoryAccess_noMirrorCtimeChanges( MemoryPtr pointer ) {
+			MemoryBlock block = pointer.block;
+
+			/// Prevent the memory block being GC collected at session end - it might be used in function execution
+			block.markDoNotGCAtSessionEnd( );
+
+			operandResult_ = memoryBlockOperand( block );
+			if ( block.startPtr != pointer )
+				build_offset( pointer.val - block.startPtr.val );
+		}
+
+		final InstructionOperand memoryBlockOperand( MemoryBlock block ) {
+			if ( !block.isRuntime && block.session == context.session )
+				return block.bpOffset.iopCtOffset;
+			else if ( block.isLocal )
+				return block.bpOffset.iopBpOffset;
+			else
+				return block.startPtr.iopPtr;
 		}
 
 	package:
 		Appender!( Instruction[ ] ) result_;
 		InstructionOperand operandResult_;
-		size_t currentBPOffset_;
+		size_t currentBPOffset_, currentCTOffset_;
 
 	private:
 		Symbol_RuntimeFunction currentFunction_;

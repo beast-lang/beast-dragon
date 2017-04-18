@@ -219,8 +219,8 @@ final class MemoryManager {
 			// Either the session the block was created in is no longer active (-> the block cannot be changed anymore), or the session belongs to the same task context as current session (meaning it is the same session or a derived one)
 			// Other cases should not happen
 			debug synchronized ( this ) {
-				debug assert( block.session !in activeSessions_ || activeSessions_[ block.session ] == context.jobId );
-				assert( !( block.flags & MemoryBlock.Flag.local ) || block.session == context.session, "Local memory block is accessed from a different session" );
+				debug assert( block.session !in activeSessions_ || activeSessions_[ block.session ] == context.jobId, "Block read from session %s can still be modified in its constructor session %s".format( context.session, block.session ) );
+				assert( !block.isLocal || block.session == context.session, "Local memory block is accessed from a different session" );
 			}
 
 			benforce( ptr + bytes <= block.endPtr, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );

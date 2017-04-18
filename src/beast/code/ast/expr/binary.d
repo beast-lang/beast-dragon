@@ -49,29 +49,3 @@ DataEntity resolveBinaryOperation( AST_Node ast, DataEntity left, DataEntity rig
 			 ) );
 	assert( 0 );
 }
-
-/// Prepares binary operation resolution, but you can afterwards provide different operands (of the same type tho)
-DataEntity delegate( DataEntity, DataEntity ) prepareResolveBinaryOperation( AST_Node ast, DataEntity left, DataEntity right, DataEntity binXX, Token.Operator op ) {
-	import std.range : chain;
-
-	// First we try left.#opBinary( binXX, rightExpr )
-	CallMatchSet leftCall = left.tryResolveIdentifier( ID!"#opBinary" ).CallMatchSet( ast, false ).arg( binXX ).arg( right );
-	if ( auto result = leftCall.finish_getMatch( ) ) {
-		Symbol sym = result.sourceDataEntity.symbol;
-		assert( sym );
-		return ( l, r ) => sym.dataEntity( MatchLevel.fullMatch, l ).startCallMatch( ast, true, MatchLevel.fullMatch ).arg( binXX ).arg( r ).finish( ).toDataEntity( );
-	}
-
-	CallMatchSet rightCall = right.tryResolveIdentifier( ID!"#opBinaryR" ).CallMatchSet( ast, false ).arg( binXX ).arg( left );
-	if ( auto result = rightCall.finish_getMatch( ) ) {
-		Symbol sym = result.sourceDataEntity.symbol;
-		assert( sym );
-		return ( l, r ) => sym.dataEntity( MatchLevel.fullMatch, r ).startCallMatch( ast, true, MatchLevel.fullMatch ).arg( binXX ).arg( l ).finish( ).toDataEntity( );
-	}
-
-	berror( E.cannotResolve, "Cannot resolve %s %s %s:%s".format(  //
-			left.dataType.identificationString, Token.operatorStr[ op ], right.dataType.identificationString, //
-			chain( leftCall.matches, rightCall.matches ).map!( x => "\n\t%s:\n\t\t%s\n".format( x.sourceDataEntity.identificationString, x.errorStr ) ).joiner //
-			 ) );
-	assert( 0 );
-}

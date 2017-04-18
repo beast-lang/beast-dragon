@@ -123,9 +123,7 @@ abstract class CodeBuilder : Identifiable {
 
 	public:
 		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue ) {
-			// We don't call var.tryResolveIdentifier because of Type variables
-			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
-			var.dataType.expectResolveIdentifier_direct( ID!"#ctor", var ).resolveCall( var.ast, true, initValue ).buildCode( this );
+			var.getCopyCtor( initValue ).buildCode( this );
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {
@@ -150,7 +148,7 @@ abstract class CodeBuilder : Identifiable {
 
 			foreach ( block; *context.sessionData.newMemoryBlocks ) {
 				// We ignore memory blocks that are runtime
-				if ( block.isRuntime )
+				if ( block.isRuntime || block.flag( MemoryBlock.Flag.doNotMirrorChanges ) )
 					continue;
 
 				assert( block.flag( MemoryBlock.SharedFlag.allocated ) );
@@ -164,7 +162,7 @@ abstract class CodeBuilder : Identifiable {
 
 			foreach ( block; context.sessionData.changedMemoryBlocks ) {
 				// We ignore memory blocks that are runtime
-				if ( block.isRuntime )
+				if ( block.isRuntime || block.flag( MemoryBlock.Flag.doNotMirrorChanges ) )
 					continue;
 
 				// If the block has been both allocated and deallocated between two mirorrings, ignore it completely

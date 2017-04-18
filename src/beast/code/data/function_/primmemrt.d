@@ -172,8 +172,8 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 			public:
-				override DataEntity parent( ) {
-					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
+				final override DataEntity parent( ) {
+					return sym_.parent_.dataEntity;
 				}
 
 				override string identificationString_noPrefix( ) {

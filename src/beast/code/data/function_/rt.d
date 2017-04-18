@@ -215,10 +215,6 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					return sym_.dataEntity.parent;
 				}
 
-				final override Symbol symbol() {
-					return sym_;
-				}
-
 				final override AST_Node ast( ) {
 					return ast_;
 				}

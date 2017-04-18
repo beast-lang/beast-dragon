@@ -142,8 +142,8 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 				}
 
 			public:
-				override DataEntity parent( ) {
-					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
+				final override DataEntity parent( ) {
+					return sym_.parent_.dataEntity;
 				}
 
 				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
