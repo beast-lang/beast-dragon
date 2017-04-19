@@ -52,7 +52,7 @@
 %--------------------------------------------------------
 
 \Abstract{
-	This paper introduces a new compiled, imperative, object-oriented, C-family programming language, particularly inspired by C++ and D. Most notably, the language implements a new concept called \textit{code hatching} (also a subject of this paper) that unifies templating, compile-time function execution, reflection and generally metaprogramming. The project also includes a proof-of-concept compiler (more precisely transcompiler to C) called Dragon that demonstrates core elements of the language (downloadable from the Git repository).
+	This paper introduces a new compiled, imperative, object-oriented, C-family programming language, particularly inspired by C++ and D. Most notably, the language implements a new concept called \textit{code hatching} (also a subject of this paper) that unifies templating, compile-time function execution, reflection and generally metaprogramming. The project also includes a proof-of-concept compiler (more precisely transcompiler to C) called Dragon that demonstrates core elements of the language and code hatching concept (downloadable from the Git repository).
 }
 
 \Teaser{
@@ -88,37 +88,40 @@ As a C++ alternative, the language provides syntax and functionality similar to 
 	\item Instead of header/source files, Beast has modules with importing system similar to D or Java.
 	\item Beast variables are const-by-default. As C++ had the \inlineCppCode{const} keyword to mark variables constant, Beast has the \inlineCode{Type!} suffix operator to make variables not constant.
 	\item References and pointers are designed differently. In Beast, references are rebindable and can be used in most cases where C++ pointer would be used. Only when pointer arithmetic is needed, Beast pointers have to be used.
-	\item The \inlineCode{#} symbol is valid for identifiers. It is used as a prefix symbol for reflection or compiler related properties and functions such as \\\inlineCode{variable.#type}, \inlineCode{code.#instanceSize} or \\\inlineCode{var.#implicitCast( TargetType )}.
+	\item The \inlineCode{#} symbol is valid for identifiers. It is used as a prefix symbol for reflection or compiler-related properties and functions such as \\\inlineCode{variable.#type}, \inlineCode{Type.#instanceSize} or \\\inlineCode{var.#implicitCast( TargetType )}.
 \end{itemize}
 
 There are many smaller changes; those are (or will be) documented in the language reference and bachelor thesis text (both downloadable from the Git repository).
 
-The main innovation of Beast is its \textit{code hatching} concept, which unifies formerly more or less standalone concepts of templates, compile-time function execution (CTFE), compile-time reflection and metaprogramming generally (conditional compilation, etc.). It blurs borders between standard and templated functions, between code and \textit{metacode} (in C++, an example of metacode would be preprocessor directives or template declarations).
+The main innovation of Beast is its \textit{code hatching} concept, which unifies formerly standalone concepts of templates, compile-time function execution (CTFE), compile-time reflection and metaprogramming generally (conditional compilation, etc.). The concept blurs borders between standard and templated functions, between code and \textit{metacode} (in C++, an example of metacode would be preprocessor directives or template declarations).
 
-The D programming language, which Beast is inspired by the most, offers all of the functionality mentioned above, however the concepts are implemented rather in a standalone way. Code hatching concept brings improvement in the following aspects:
+The D programming language, which Beast is inspired by the most, offers all of the functionality mentioned above, however the concepts are implemented rather in the standalone way. Code hatching brings improvement to the following aspects:
 \begin{enumerate}
-	\item D has a separate argument list similarly to C++ (the syntax is \inlineDCode{!(args)} instead of \inlineCppCode{<args>}, the \inlineDCode{!} is omitted in declarations), making compile-time parameters clearly separated from runtime ones. Functions that differ only in one parameter being compile-time (template) or not have an extensively different syntax.
-	
-	 \begin{figure}[h]
-	 	\begin{dcode}
-// D code
-void format( Args ... )( string fmt, Args args ) { ... }
-void format( string fmt, Args ... )( Args args ) { ... }
-
-void main() {
-	auto rt = format( "%s, %i worlds", "hello", 5 );
-		
-	auto ct = format!( "%s, %i worlds" )( "hello", 5 );
-}
-	 	\end{dcode}
-	 	\caption{Usage of the \inlineDCode{format} function in the D programming language (similar to \inlineCppCode{sprintf} in C). Second \inlineDCode{format} definition and function call accepts the \inlineDCode{fmt} string as a template parameter, resulting in the code for string formatting being generated at compile time.}
- 		\label{fig:dFormat}
-	 \end{figure}
+	\item D has a dedicated template argument list similar to C++ (the syntax is \inlineDCode{!(args)} instead of \inlineCppCode{<args>} and the \inlineDCode{!} is omitted in declarations), making compile-time parameters clearly separated from runtime ones. Functions that differ only in one parameter being compile-time (template) or not have an extensively different syntax.
  
  	Beast has one common parameter list for runtime and compile-time parameters, resulting in zero syntax difference between runtime and com\-pile-time parameters. It is even possible to use parameters in a single function declaration to work both as runtime or compile-time depending on the context -- if the provided argument can be evaluated at compile time, it is considered a template parameter, otherwise it is considered to be runtime.
- 
- 	\begin{figure}[h]
- 	 	\begin{code}
+
+	\item The D programming language does not have mutable compile-time variables, which makes solving some problems impossible with iteration, forcing programmers to use recursion (or mixins), which often results in a hardly-readable code. Beast supports mutable compile-time variables.
+\end{enumerate}
+
+\begin{figure}[h]
+	\begin{dcode}
+		// D code
+		void format( Args ... )( string fmt, Args args ) { ... }
+		void format( string fmt, Args ... )( Args args ) { ... }
+		
+		void main() {
+			auto rt = format( "%s, %i worlds", "hello", 5 );
+			
+			auto ct = format!( "%s, %i worlds" )( "hello", 5 );
+		}
+	\end{dcode}
+	\caption{Usage of the \inlineDCode{format} function in the D programming language (similar to \inlineCppCode{sprintf} in C). Second \inlineDCode{format} definition and function call accept the \inlineDCode{fmt} string as a template parameter, resulting in the string formatting code being generated at compile time.}
+	\label{fig:dFormat}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{code}
 String format( @autoctime string fmt, auto arg ... ) { ... }
 
 Void main() {
@@ -126,13 +129,12 @@ Void main() {
 	
 	auto ct = format( "%s, %i worlds", "hello", 5 );
 }
-	 	\end{code}
-	 	\caption{Beast code corresponding to D code in figure \ref{fig:dFormat}. In the first \inlineCode{format} function call, the \inlineCode{fmt} argument cannot be evaluated at compile time, resulting in it being considered a runtime parameter. In the second function call, the argument can be evaluated at compile time, making it being treated as \ctime (compile-time, template), resulting in the code for string formatting being generated at compile time.}
-	\end{figure}
+	\end{code}
+	\caption{Beast code corresponding to D code in Figure \ref{fig:dFormat}. In the first \inlineCode{format} function call, the \inlineCode{fmt} argument cannot be evaluated at compile time, resulting in it being considered a runtime parameter. In the second function call, the argument can be evaluated at compile time, resulting in it being treated as \ctime (compile-time, template) and in string formatting code being generated at compile time.}
+\end{figure}
 
-	\item The D programming language does not have mutable compile-time variables. This makes solving some problems impossible with iteration, forcing programmers to use recursion (or mixins), which often results in a hardly-readable code.
-	\begin{figure}[h]
-		\begin{dcode}
+\begin{figure}[h]
+	\begin{dcode}
 // D code
 template memberTypes1( Type ) {
 	alias memberTypes1 = helper!( __traits( allMembers, Type ) );
@@ -151,37 +153,37 @@ template memberTypes1( Type ) {
 template memberTypes2( Type ) {
 	mixin( {
 		string[] result;
+		
 		foreach( memberName; __traits( allMembers, Type ) )
-			result ~= "typeof( __traits( getMember, Type, %s ) )".format( memberName );	
+			result ~=
+				"typeof( __traits( getMember, Type, %s ) )"
+				.format( memberName );	
 		
 		return "TypeTuple!( %s )".format( result.joiner( ", " ) );
 	}() );
 }
-		\end{dcode}
-		\caption{Two approaches of writing a 'function' returning a \inlineDCode{TypeTuple} (compile-time analogy to an array) of types of members of given type \inlineDCode{Type} in the D programming language. First approach uses recursion, second one mixins.}
-		\label{fig:dMemberTypes}
-	\end{figure}
+	\end{dcode}
+	\caption{Two approaches of writing a 'function' returning a \inlineDCode{TypeTuple} (compile-time analogy to an array) of types of members of given type \inlineDCode{Type} in the D programming language. First approach uses recursion, second one mixins.}
+	\label{fig:dMemberTypes}
+\end{figure}
 
-	\begin{figure}[h]
-		\begin{code}
+\begin{figure}[h]
+	\begin{code}
 @ctime Type[] memberTypes( Type T ) {
 	Type[]! result;
 	
 	foreach( auto member; T.#members )
-		result ~= member.#type;
+	result ~= member.#type;
 	
 	return result;
 }
-		\end{code}
-		\caption{Beast function corresponding to D 'functions' from figure \ref{fig:dMemberTypes}. The function returns array of types of members of given type \inlineCode{T}.}
-	\end{figure}
-	
- 
-\end{enumerate}
+	\end{code}
+	\caption{Beast function corresponding to D 'functions' from Figure \ref{fig:dMemberTypes}. The function returns array of types of members of given type \inlineCode{T}.}
+\end{figure}
 
 \section{Principles of code hatching}
 
-The code hatching concept is based on a simple idea -- having a classifier for variables whose value is deducible during compile time. In Beast, those variables are classified using the \inlineCode{@ctime} decorator -- for example \inlineCode{@ctime Int x;} Local \ctime variables can be mutable; because Beast declarations are not processed linearly as they are written in a source code, order of evaluation of expressions modifying static \ctime variables could not be decided; that means that static \ctime variables cannot be mutable.
+The code hatching concept is based on a simple idea -- having a classifier for variables whose value is deducible during compile time. In Beast, those variables are classified using the \inlineCode{@ctime} decorator (usage \inlineCode{@ctime Int x;}). Local \ctime variables can be mutable; because Beast declarations are not processed in order as they are declared in source code, order of evaluation of expressions modifying static \ctime variables cannot be decided; that means that static \ctime variables cannot be mutable. All \ctime variable manipulations are evaluated at compile time.
 
 \ctime variables can also be included within a standard code (although their mutation can never depend on \nonctime variables or inputs).
 
@@ -199,7 +201,7 @@ Void main() {
 	\caption{Example of mixing \ctime and \nonctime variables in Beast}
 \end{figure}
 
-Concept of variables completely evaluable at compile time brings a possibility of having \ctime type variables. As a consequence class and generally type definitions are considered \ctime constant variables (thus first-class citizens).
+Concept of variables completely evaluable at compile time brings a possibility of having \ctime type variables. As a consequence, class and generally type definitions can be considered \ctime constant variables (thus first-class citizens).
 
 \begin{figure}[h]
 	\begin{code}
@@ -213,7 +215,7 @@ Void main() {
 	\caption{Example of using type variables in Beast}
 \end{figure}
 
-Having type variables, templates can now be considered functions with \ctime parameters. Class templates become functions returning a type. With \ctime variables, generics, instead of being a standalone concept, become a natural part of the language.
+Having type variables, templates can be viewed as functions with \ctime parameters, for example class templates can be viewed functions returning a type. With \ctime variables, generics, instead of being a standalone concept, become a natural part of the language.
 
 \begin{figure}[h]
 	\begin{code}
@@ -239,12 +241,12 @@ The \inlineCode{@ctime} decorator can also be used on more syntactical construct
 	\item \ctime branching statements (\inlineCode{if}, \inlineCode{while}, \inlineCode{for}, etc.) are performed at compile time (not their bodies, just branch unwrapping).
 	\item \ctime functions are always executed at compile time and all their parameters are \ctime.
 	\item \ctime expressions are always evaluated at compile time.
-	\item \ctime classes can only be constructed at compile time (for instance, \inlineCode{Type} is a \ctime class)
+	\item \ctime class instances can only exist as \ctime variables (for instance, \inlineCode{Type} is a \ctime class)
 \end{itemize}
 
-To make code hatching concept work, it is necessary to ensure that \ctime variables are truly evaluable at compile time. That is realized by the following rules. Their deduction is in author's bachelor thesis \cite{MyThesis} (downloadable from the Github repository).
+To make code hatching concept work, it is necessary to ensure that \ctime variables are truly evaluable at compile time. That is realized by the following rules. Their deduction can be found in author's bachelor thesis \cite{MyThesis} (downloadable from the Github repository).
 \begin{enumerate}
-	\item \ctime variables cannot be data-dependent on \nonctime variables:
+	\item \ctime variables cannot be data-dependent on \nonctime variables.
 	\begin{enumerate}
 		\item Data of \nonctime variables cannot be assigned into \ctime variables.
 		\item It is not possible to change \ctime variables declared in a different runtime scope; for example it is not possible to change \ctime variables from a \nonctime if body if they were declared outside it.
@@ -261,24 +263,27 @@ To make code hatching concept work, it is necessary to ensure that \ctime variab
 	\begin{code}
 Void main() {
 	@ctime if( true )
-		println( "Yay!" );
+		println( "Hello, %s!".format( "world" ) );
 	else
 		println( "Nay! );
 		
 	@ctime for( Int! x = 0; x < 3; x ++ )
 		print( x );
+		
+	print( @ctime "Goodbye, %s!".format( "world" ) );
 }
 
 // Is processed into:
 Void main() {
-	println( "Yay!" );
+	println( "Hello, %s!".format( "world" ) );
 	print( 0 );
 	print( 1 );
 	print( 2 );
+	print( "Goodbye, world!" );
 }
 	\end{code}
 	\label{fig:yayNayCode}
-	\caption{Example of \ctime branch statements in Beast}
+	\caption{Example usage of the \ctime decorator in Beast}
 \end{figure}
 
 \begin{comment}
@@ -364,9 +369,9 @@ This text briefly describes all key components necessary to implement the code h
 \end{comment} 
 
 \section{Existing solutions}
-Beast is inspired by the D Programming Language \cite{DLang} that also has vast metaprogramming and compile-time execution capabilities. However in D, compile-time constants cannot be mutable. Although code can be executed at compile time, there are no type variables, so working with types usually ends up in definition of recursive templates.
+Beast is inspired by the D Programming Language \cite{DLang}. Differences of Beast are described above in this paper.
 
-Among imperative compiled languages, there are no other well established programming languages with such metaprogramming capabilities. However, recently several new programming language projects introducing compile-time capabilities emerged -- for example Nim \cite{NimLang}, Crystal \cite{CrystalLang}, Ante \cite{AnteLang} or Zig \cite{ZigLang}. From the list, Zig is the most similar language to Beast. Author of this paper was not aware of existence of Zig when he was designing Beast and code hatching concept.
+Among imperative compiled languages, there are no other well-established programming languages with such metaprogramming capabilities. However, recently several new programming language projects introducing compile-time capabilities emerged -- for example Nim \cite{NimLang}, Crystal \cite{CrystalLang}, Ante \cite{AnteLang} or Zig \cite{ZigLang}. From the list, Zig is the most similar language to Beast. Author of Beast and code hatching concept was not aware of existence of Zig during the language design, so the two languages emerged independently.
 
 \section*{Acknowledgements}
 I would like to thank my supervisor, Zbyněk Křivka, for his supervision, and Stefan Koch (on the internet known as UplinkCoder) for the time he spent chatting with me about this project.
