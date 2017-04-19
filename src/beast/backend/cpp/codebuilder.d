@@ -37,15 +37,15 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		/// When building an expression, result of the expression is stored into given variable
 		string resultVarName( ) {
-			return resultVarName_;
+			return result_;
 		}
 
 	public: // Declaration related build commands
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
 			addToScope( var );
 
-			resultVarName_ = cppIdentifier( var.memoryBlock );
-			codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( var.dataType ), resultVarName_ );
+			result_ = cppIdentifier( var.memoryBlock );
+			codeResult_.formattedWrite( "%s%s %s;\n", tabs, cppIdentifier( var.dataType ), result_ );
 		}
 
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
@@ -76,7 +76,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				// We don't care about any compile time changes that happened - they should all be mirrored on the return; call
 				trashCtimeChanges( );
 
-				debug resultVarName_ = null;
+				debug result_ = null;
 			}
 			catch ( BeastErrorException exc ) {
 				string errStr = "\n// ERROR BUILDING %s\n".format( func.tryGetIdentificationString );
@@ -93,7 +93,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				else
 					typesResult_.formattedWrite( "%stypedef void %s;\n", tabs, cppIdentifier( type ) );
 
-				debug resultVarName_ = null;
+				debug result_ = null;
 			}
 			catch ( BeastErrorException exc ) {
 				string errStr = "\n// ERROR BUILDING %s\n".format( type.tryGetIdentificationString );
@@ -106,7 +106,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 	public: // Expression related build commands
 		override void build_memoryAccess( MemoryPtr pointer ) {
 			mirrorCtimeChanges( );
-			resultVarName_ = memoryPtrIdentifier( pointer );
+			result_ = memoryPtrIdentifier( pointer );
 		}
 
 		override void build_offset( ExprFunction expr, size_t offset ) {
@@ -115,7 +115,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( offset == 0 )
 				return;
 
-			resultVarName_ = "%sOFFSET( %s, %s )".format( resultVarName_.startsWith( "CTMEM " ) ? "CTMEM " : null, resultVarName_, offset );
+			result_ = "%sOFFSET( %s, %s )".format( result_.startsWith( "CTMEM " ) ? "CTMEM " : null, result_, offset );
 		}
 
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
@@ -125,7 +125,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( function_.returnType !is coreType.Void ) {
 				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false, "result" );
 				build_localVariableDefinition( resultVar );
-				resultVarName = "&%s".format( resultVarName_ );
+				resultVarName = "&%s".format( result_ );
 			}
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
@@ -142,7 +142,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				assert( parentInstance );
 
 				parentInstance.buildCode( this );
-				argumentNames ~= "PARAM( %s, %s )".format( resultVarName_, cppIdentifier( parentInstance.dataType ) );
+				argumentNames ~= "PARAM( %s, %s )".format( result_, cppIdentifier( parentInstance.dataType ) );
 			}
 
 			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
@@ -168,14 +168,14 @@ class CodeBuilder_Cpp : CodeBuilder {
 			_s.finish( );
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
-			resultVarName_ = resultVarName;
+			result_ = resultVarName;
 		}
 
 		override void build_contextPtr( ) {
-			resultVarName_ = "context";
+			result_ = "context";
 		}
 
-		mixin Build_PrimitiveOperationImpl!( "cpp", "resultVarName_" );
+		mixin Build_PrimitiveOperationImpl!( "cpp", "result_" );
 
 	public: // Statement related build commands
 		override void build_scope( StmtFunction body_ ) {
@@ -195,7 +195,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			{
 				condition( this );
-				codeResult_.formattedWrite( "%sif( VAL( %s, bool ) ) {\n", tabs, resultVarName_ );
+				codeResult_.formattedWrite( "%sif( VAL( %s, bool ) ) {\n", tabs, result_ );
 			}
 
 			// Build then branch
@@ -226,7 +226,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
 
-			debug resultVarName_ = null;
+			debug result_ = null;
 		}
 
 		override void build_loop( StmtFunction body_ ) {
@@ -258,7 +258,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			mirrorCtimeChanges( );
 			codeResult_.formattedWrite( "%sreturn;\n", tabs );
 
-			debug resultVarName_ = null;
+			debug result_ = null;
 		}
 
 	protected:
@@ -387,7 +387,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		override void popScope( bool generateDestructors = true ) {
 			// Result might be f-ked around because of destructors
-			auto result = resultVarName_;
+			auto result = result_;
 
 			super.popScope( generateDestructors );
 
@@ -399,7 +399,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			additionalScopeData_.length--;
 			tabOffset_--;
 
-			resultVarName_ = result;
+			result_ = result;
 		}
 
 	protected:
@@ -465,7 +465,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	package:
 		/// Variable name representing last build expression
-		string resultVarName_;
+		string result_;
 
 	private:
 		Symbol_RuntimeFunction currentFunction;

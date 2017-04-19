@@ -20,7 +20,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		final InterpreterCodeBlock result( ) {
-			return new InterpreterCodeBlock( result_.data );
+			return new InterpreterCodeBlock( resultCode_.data );
 		}
 
 	public:
@@ -31,7 +31,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			addToScope( var );
 
 			addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, var.dataType.instanceSize.iopLiteral );
-			operandResult_ = currentBPOffset_.iopBpOffset;
+			result_ = currentBPOffset_.iopBpOffset;
 
 			currentBPOffset_++;
 		}
@@ -67,17 +67,17 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			if ( offset == 0 )
 				return;
 
-			final switch ( operandResult_.type ) {
+			final switch ( result_.type ) {
 
 			case InstructionOperand.Type.directData:
 			case InstructionOperand.Type.functionPtr:
 			case InstructionOperand.Type.jumpTarget:
 			case InstructionOperand.Type.placeholder:
 			case InstructionOperand.Type.unused:
-				assert( 0, "Cannot offset operand %s".format( operandResult_.identificationString ) );
+				assert( 0, "Cannot offset operand %s".format( result_.identificationString ) );
 
 			case InstructionOperand.Type.heapRef:
-				operandResult_.heapLocation.val += offset;
+				result_.heapLocation.val += offset;
 				break;
 
 			case InstructionOperand.Type.stackRef:
@@ -89,10 +89,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 					auto ptrSize = hardwareEnvironment.pointerSize;
 
 					addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, ptrSize.iopLiteral );
-					addInstruction( I.stAddr, varOperand, operandResult_ );
+					addInstruction( I.stAddr, varOperand, result_ );
 					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
 
-					operandResult_ = currentBPOffset_.iopRefBpOffset;
+					result_ = currentBPOffset_.iopRefBpOffset;
 
 					currentBPOffset_++;
 				}
@@ -114,7 +114,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			if ( function_.returnType !is coreType.Void ) {
 				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
 				build_localVariableDefinition( returnVar );
-				operandResult = operandResult_;
+				operandResult = result_;
 			}
 
 			pushScope( );
@@ -146,7 +146,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				addInstruction( I.markPtr, contextPtrIOP );
 
 				parentInstance.buildCode( this );
-				addInstruction( I.stAddr, contextPtrIOP, operandResult_ );
+				addInstruction( I.stAddr, contextPtrIOP, result_ );
 			}
 			else {
 				addInstruction( I.skipAlloc, currentBPOffset_.iopLiteral );
@@ -165,14 +165,14 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			addInstruction( I.call, function_.iopFuncPtr );
 
 			popScope( );
-			operandResult_ = operandResult;
+			result_ = operandResult;
 		}
 
 		override void build_contextPtr( ) {
-			operandResult_ = ( -1 ).iopRefBpOffset;
+			result_ = ( -1 ).iopRefBpOffset;
 		}
 
-		mixin Build_PrimitiveOperationImpl!( "interpreter", "operandResult_" );
+		mixin Build_PrimitiveOperationImpl!( "interpreter", "result_" );
 
 	public:
 		override void build_scope( StmtFunction body_ ) {
@@ -190,7 +190,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			InstructionPtr condJmpInstr;
 			{
 				condition( this );
-				condJmpInstr = addInstruction( I.jmpFalse, iopPlaceholder, operandResult_ );
+				condJmpInstr = addInstruction( I.jmpFalse, iopPlaceholder, result_ );
 			}
 
 			// Build then branch
@@ -258,7 +258,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	public:
 		void debugPrintResult( string desc ) {
-			if ( !result_.data.length )
+			if ( !resultCode_.data.length )
 				return;
 
 			import std.stdio : writefln, stdout;
@@ -268,7 +268,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			synchronized ( stderrMutex ) {
 				writefln( "\n== BEGIN CODE %s\n", desc );
 
-				foreach ( i, instr; result_.data )
+				foreach ( i, instr; resultCode_.data )
 					writefln( "@%3s   %s", i, instr.identificationString );
 
 				writefln( "\n== END\n" );
@@ -311,12 +311,12 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			foreach ( ptr; memoryManager.pointersInSessionBlock( block ) ) {
 				assert( ptr.val >= block.startPtr.val && ptr.val <= block.endPtr.val - hardwareEnvironment.pointerSize );
 
-				operandResult_ = blockOperand;
+				result_ = blockOperand;
 				build_offset( ptr.val - block.startPtr.val );
-				auto target = operandResult_;
+				auto target = result_;
 
 				build_memoryAccess_noMirrorCtimeChanges( ptr.readMemoryPtr );
-				addInstruction( I.stAddr, target, operandResult_, ptrSize );
+				addInstruction( I.stAddr, target, result_, ptrSize );
 			}
 		}
 
@@ -327,20 +327,20 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 	package:
 		/// Adds instruction, returns it's ID (index)
 		pragma( inline ) InstructionPtr addInstruction( I i, InstructionOperand op1 = InstructionOperand( ), InstructionOperand op2 = InstructionOperand( ), InstructionOperand op3 = InstructionOperand( ) ) {
-			result_ ~= Instruction( i, op1, op2, op3 );
-			return result_.data.length - 1;
+			resultCode_ ~= Instruction( i, op1, op2, op3 );
+			return resultCode_.data.length - 1;
 		}
 
 		/// Updates instruction operand via it's ID (index)
 		pragma( inline ) void setInstructionOperand( InstructionPtr instruction, size_t operandId, InstructionOperand set ) {
-			assert( result_.data[ instruction ].op[ operandId ].type == InstructionOperand.Type.placeholder, "You can only update placeholder operands" );
-			result_.data[ instruction ].op[ operandId ] = set;
+			assert( resultCode_.data[ instruction ].op[ operandId ].type == InstructionOperand.Type.placeholder, "You can only update placeholder operands" );
+			resultCode_.data[ instruction ].op[ operandId ] = set;
 		}
 
 		/// Returns operand representing a next instruction jump target
 		pragma( inline ) InstructionOperand jumpTarget( ) {
 			InstructionOperand result = InstructionOperand( InstructionOperand.Type.jumpTarget );
-			result.jumpTarget = result_.data.length;
+			result.jumpTarget = resultCode_.data.length;
 			return result;
 		}
 
@@ -352,7 +352,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 		override void popScope( bool generateDestructors = true ) {
 			// Result might be f-ked around because of destructors
-			auto result = operandResult_;
+			auto result = result_;
 
 			super.popScope( generateDestructors );
 
@@ -366,7 +366,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			currentBPOffset_ = additionalScopeData_[ $ - 1 ].bpOffset;
 			additionalScopeData_.length--;
 
-			operandResult_ = result;
+			result_ = result;
 		}
 
 	protected:
@@ -386,7 +386,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			/// Prevent the memory block being GC collected at session end - it might be used in function execution
 			block.markDoNotGCAtSessionEnd( );
 
-			operandResult_ = memoryBlockOperand( block );
+			result_ = memoryBlockOperand( block );
 			if ( block.startPtr != pointer )
 				build_offset( pointer.val - block.startPtr.val );
 		}
@@ -401,8 +401,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 	package:
-		Appender!( Instruction[ ] ) result_;
-		InstructionOperand operandResult_;
+		Appender!( Instruction[ ] ) resultCode_;
+		InstructionOperand result_;
 		size_t currentBPOffset_, currentCTOffset_;
 
 	private:

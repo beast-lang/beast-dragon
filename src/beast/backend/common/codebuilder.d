@@ -299,20 +299,7 @@ abstract class CodeBuilder : Identifiable {
 
 						static if ( __traits( hasMember, mixin( "beast.backend.%s.primitiveop".format( packageName ) ), "primitiveOp_%s".format( opStr ) ) ) {
 							mixin( "alias func = beast.backend.%s.primitiveop.primitiveOp_%s;".format( packageName, opStr ) );
-							alias params = Parameters!func;
-
-							static if ( params.length == 1 )
-								result ~= "{ beast.backend.%s.primitiveop.primitiveOp_%s( this ); break; }\n".format( packageName, opStr );
-							else static if ( params.length == 2 )
-								result ~= "{ assert( argT, \"argT is null %s %s\" ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT ); break; }\n".format( packageName, opStr, packageName, opStr );
-							else static if ( params.length == 3 )
-								result ~= "{ assert( argT, \"argT is null %s %s\" ); assert( arg1, \"arg1 is null %s %s\" ); arg1( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, %s ); break; }\n".format( packageName, opStr, packageName, opStr, packageName, opStr, resultVar );
-							else static if ( params.length == 4 )
-								result ~= "{ assert( argT, \"argT is null %s %s\" ); assert( arg1, \"arg1 is null %s %s\" ); assert( arg2, \"arg2 is null %s %s\" ); arg1( this ); auto arg1v = %s; arg2( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, %s ); break; }\n".format( packageName,
-									opStr, packageName, opStr, packageName, opStr, resultVar, packageName, opStr, resultVar );
-							else static if ( params.length == 5 )
-								result ~= "{ assert( argT, \"argT is null %s %s\" ); assert( arg1, \"arg1 is null %s %s\" ); assert( arg2, \"arg2 is null %s %s\" ); assert( arg3, \"arg3 is null %s %s\" ); arg1( this ); auto arg1v = %s; arg2( this ); auto arg2v = %s; arg3( this ); beast.backend.%s.primitiveop.primitiveOp_%s( this, argT, arg1v, arg2v, %s ); break; }\n"
-									.format( packageName, opStr, packageName, opStr, packageName, opStr, packageName, opStr, resultVar, resultVar, packageName, opStr, resultVar );
+							result ~= "{ primitiveOp_%s!( beast.backend.%s.primitiveop.primitiveOp_%s, packageName, \"%s\" )( argT, arg1, arg2, arg3 ); break; }\n".format( Parameters!func.length, packageName, opStr, opStr );
 						}
 						else
 							result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );
@@ -321,6 +308,53 @@ abstract class CodeBuilder : Identifiable {
 					result ~= "}\n";
 					return result.data;
 				}( ) );
+			}
+
+			private pragma( inline ) {
+				void primitiveOp_1( alias func, string packageName, string opStr )( Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+					func( this );
+				}
+
+				void primitiveOp_2( alias func, string packageName, string opStr )( Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+					assert( argT, "argT is null %s %s".format( packageName, opStr ) );
+					func( this, argT );
+				}
+
+				void primitiveOp_3( alias func, string packageName, string opStr )( Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+					assert( argT, "argT is null %s %s".format( packageName, opStr ) );
+					assert( arg1, "arg1 is null %s %s".format( packageName, opStr ) );
+
+					arg1( this );
+					func( this, argT, result_ );
+				}
+
+				void primitiveOp_4( alias func, string packageName, string opStr )( Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+					assert( argT, "argT is null %s %s".format( packageName, opStr ) );
+					assert( arg1, "arg1 is null %s %s".format( packageName, opStr ) );
+					assert( arg2, "arg2 is null %s %s".format( packageName, opStr ) );
+
+					arg1( this );
+					auto arg1v = result_;
+
+					arg2( this );
+					func( this, argT, arg1v, result_ );
+				}
+
+				void primitiveOp_5( alias func, string packageName, string opStr )( Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
+					assert( argT, "argT is null %s %s".format( packageName, opStr ) );
+					assert( arg1, "arg1 is null %s %s".format( packageName, opStr ) );
+					assert( arg2, "arg2 is null %s %s".format( packageName, opStr ) );
+					assert( arg3, "arg3 is null %s %s".format( packageName, opStr ) );
+
+					arg1( this );
+					auto arg1v = result_;
+
+					arg2( this );
+					auto arg2v = result_;
+
+					arg3( this );
+					func( this, argT, arg1v, arg2v, result_ );
+				}
 			}
 		}
 
