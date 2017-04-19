@@ -52,7 +52,7 @@
 %--------------------------------------------------------
 
 \Abstract{
-	This paper introduces a new compiled, imperative, object-oriented, C-family programming language, particularly inspired by C++ and D. Most notably, the language implements a new concept called \textit{code hatching} (also a subject of this paper) that unifies templating, compile-time function execution, reflection and generally metaprogramming. The project also includes a proof-of-concept compiler (more precisely transcompiler to C) called Dragon that demonstrates core elements of the language and code hatching concept (downloadable from the Git repository).
+	This paper introduces a new compiled, imperative, object-oriented, C-family programming language, particularly inspired by C++ and D. Most notably, the language implements a new concept called \textit{code hatching} (also a subject of this paper) that unifies templating, compile-time function execution, reflection and metaprogramming in general. The project also includes a proof-of-concept compiler (more precisely transcompiler to C) called Dragon that demonstrates core elements of the language and the code hatching concept (downloadable from the Git repository).
 }
 
 \Teaser{
@@ -86,14 +86,14 @@ There are two ways of how to approach introducing Beast -- either it can be refe
 As a C++ alternative, the language provides syntax and functionality similar to C++, but adds features designed to increase coding comfort, code readability and safety. The most notable changes are:
 \begin{itemize}
 	\item Instead of header/source files, Beast has modules with importing system similar to D or Java.
-	\item Beast variables are const-by-default. As C++ had the \inlineCppCode{const} keyword to mark variables constant, Beast has the \inlineCode{Type!} suffix operator to make variables not constant.
-	\item References and pointers are designed differently. In Beast, references are rebindable and can be used in most cases where C++ pointer would be used. Only when pointer arithmetic is needed, Beast pointers have to be used.
+	\item Beast variables are const-by-default. As C++ has the \inlineCppCode{const} keyword to mark variables constant, Beast has the \inlineCode{Type!} suffix operator to make variables not constant.
+	\item References and pointers are designed differently. In Beast, references are rebindable and can be used in most cases where C++ pointers would be used. Only when pointer arithmetic is needed, Beast pointers have to be used.
 	\item The \inlineCode{#} symbol is valid for identifiers. It is used as a prefix symbol for reflection or compiler-related properties and functions such as \\\inlineCode{variable.#type}, \inlineCode{Type.#instanceSize} or \\\inlineCode{var.#implicitCast( TargetType )}.
 \end{itemize}
 
 There are many smaller changes; those are (or will be) documented in the language reference and bachelor thesis text (both downloadable from the Git repository).
 
-The main innovation of Beast is its \textit{code hatching} concept, which unifies formerly standalone concepts of templates, compile-time function execution (CTFE), compile-time reflection and metaprogramming generally (conditional compilation, etc.). The concept blurs borders between standard and templated functions, between code and \textit{metacode} (in C++, an example of metacode would be preprocessor directives or template declarations).
+The main innovation of Beast is its \textit{code hatching} concept, which unifies formerly standalone concepts of templates, compile-time function execution (CTFE), compile-time reflection and metaprogramming in general (conditional compilation, etc.). The concept blurs borders between standard and templated functions, between code and \textit{metacode} (in C++, an example of metacode would be preprocessor directives or template declarations).
 
 The D programming language, which Beast is inspired by the most, offers all of the functionality mentioned above, however the concepts are implemented rather in the standalone way. Code hatching brings improvement to the following aspects:
 \begin{enumerate}
@@ -201,7 +201,7 @@ Void main() {
 	\caption{Example of mixing \ctime and \nonctime variables in Beast}
 \end{figure}
 
-Concept of variables completely evaluable at compile time brings a possibility of having \ctime type variables. As a consequence, class and generally type definitions can be considered \ctime constant variables (thus first-class citizens).
+Concept of variables completely evaluable at compile time brings a possibility of having type variables (only \ctime, runtime type variables cannot be effectively done in compiled, statically typed languages). As a consequence, class and type definitions in general can be considered \ctime constant variables (thus first-class citizens).
 
 \begin{figure}[h]
 	\begin{code}
@@ -244,7 +244,7 @@ The \inlineCode{@ctime} decorator can also be used on more syntactical construct
 	\item \ctime class instances can only exist as \ctime variables (for instance, \inlineCode{Type} is a \ctime class)
 \end{itemize}
 
-To make code hatching concept work, it is necessary to ensure that \ctime variables are truly evaluable at compile time. That is realized by the following rules. Their deduction can be found in author's bachelor thesis \cite{MyThesis} (downloadable from the Github repository).
+To make the code hatching concept work, it is necessary to ensure that \ctime variables are truly evaluable at compile time. That is realized by the following rules. Their deduction can be found in author's bachelor thesis \cite{MyThesis} (downloadable from the Github repository).
 \begin{enumerate}
 	\item \ctime variables cannot be data-dependent on \nonctime variables.
 	\begin{enumerate}
@@ -371,7 +371,7 @@ This text briefly describes all key components necessary to implement the code h
 \section{Existing solutions}
 Beast is inspired by the D Programming Language \cite{DLang}. Differences of Beast are described above in this paper.
 
-Among imperative compiled languages, there are no other well-established programming languages with such metaprogramming capabilities. However, recently several new programming language projects introducing compile-time capabilities emerged -- for example Nim \cite{NimLang}, Crystal \cite{CrystalLang}, Ante \cite{AnteLang} or Zig \cite{ZigLang}. From the list, Zig is the most similar language to Beast. Author of Beast and code hatching concept was not aware of existence of Zig during the language design, so the two languages emerged independently.
+Among imperative compiled languages, there are no other well-established programming languages with such metaprogramming capabilities. However, recently several new programming language projects introducing compile-time capabilities emerged -- for example Nim \cite{NimLang}, Crystal \cite{CrystalLang}, Ante \cite{AnteLang} or Zig \cite{ZigLang}. From the list, Zig is the most similar language to Beast. Author of Beast and the code hatching concept was not aware of existence of Zig during the language design, so the two languages emerged independently.
 
 \section*{Acknowledgements}
 I would like to thank my supervisor, Zbyněk Křivka, for his supervision, and Stefan Koch (on the internet known as UplinkCoder) for the time he spent chatting with me about this project.
@@ -400,7 +400,7 @@ class C {
 @public:
 	// Operator overloading, constant-value parameters
 	Int #opBinary(
-		Operator.binaryPlus,
+		Operator.binPlus,
 		Int other
 		)
 	{

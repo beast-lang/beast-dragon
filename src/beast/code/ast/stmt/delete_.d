@@ -35,7 +35,7 @@ final class AST_DeleteStatement : AST_Statement {
 				auto val = expr.buildSemanticTree_single( );
 				auto refType = val.dataType;
 
-				benforce( refType.isReferenceType, E.wrongDeleteExpression, "Delete can only be used on references, not %s".format( refType.identificationString ) );
+				benforce( refType.isReferenceType !is null, E.referenceTypeRequired, "Delete can only be used on references, not %s".format( refType.identificationString ) );
 
 				auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
 				cb.build_localVariableDefinition( var );

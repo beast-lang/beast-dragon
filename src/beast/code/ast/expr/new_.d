@@ -43,9 +43,21 @@ final class AST_NewExpression : AST_Expression {
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
 			const auto __gd = ErrorGuard( codeLocation );
 
-			auto ctexec = type.ctExec( coreType.Type );
-			Symbol_Type ttype = ctexec.value.readType( );
-			ctexec.destroy();
+			Symbol_Type ttype;
+
+			if ( auto autoExpr = type.isAutoExpression ) {
+				benforce( inferredType !is null, E.cannotInfer, "Cannot infer type in new auto expression" );
+
+				auto refInferredType = inferredType.isReferenceType;
+				benforce( refInferredType !is null, E.referenceTypeRequired, "Inferred type %s is not a reference type".format( inferredType.identificationString ) );
+
+				ttype = refInferredType.baseType;
+			}
+			else {
+				auto ctexec = type.ctExec( coreType.Type );
+				ttype = ctexec.value.readType( );
+				ctexec.destroy( );
+			}
 
 			auto refType = coreType.Reference.referenceTypeOf( ttype );
 

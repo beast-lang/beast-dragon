@@ -135,8 +135,12 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 		}
 
 	public:
-		override bool isReferenceType( ) {
-			return true;
+		override Symbol_Type_Reference isReferenceType( ) {
+			return this;
+		}
+
+		Symbol_Type baseType() {
+			return baseType_;
 		}
 
 	protected:

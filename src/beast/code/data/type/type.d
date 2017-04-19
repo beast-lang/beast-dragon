@@ -17,6 +17,7 @@ import std.range : chain;
 import beast.backend.common.primitiveop;
 import beast.code.data.util.btsp;
 import beast.code.data.var.btspconst;
+import beast.corelib.type.reference : Symbol_Type_Reference;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -192,8 +193,8 @@ abstract class Symbol_Type : Symbol {
 
 	public:
 		/// Returns if the type is reference type (X?)
-		bool isReferenceType( ) {
-			return false;
+		Symbol_Type_Reference isReferenceType( ) {
+			return null;
 		}
 
 	protected:

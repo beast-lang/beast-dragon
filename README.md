@@ -46,6 +46,8 @@ Source file extension: `.be`
 
 Please note that this code describes what the language should be able to do when done, not what it can do now.
 
+For currently compilable code, se tests in ```test/tests```. Compiling (```dub build``` in the ```test``` directory) and running (```./testsuite``` in the ```bin``` directory) the testsuite generates commands required for running each test (commands are in log files in the ```test/log``` directory).
+
 ```beast
 class C {
 
@@ -53,19 +55,19 @@ class C {
   Int! x; // Int! == mutable Int
 
 @public:
-  Int #opBinary( Operator.binaryPlus, Int other ) { // Operator overloading, constant-value parameters
+  Int #opBinary( Operator.binPlus, Int other ) { // Operator overloading, constant-value parameters
     return x + other;
   }
 
 }
 
 enum Enum {
-	a, b, c;
-	
-	// Enum member functions
-	Enum invertedValue() {
-		return c - this;	
-	}
+  a, b, c;
+
+  // Enum member functions
+  Enum invertedValue() {
+    return c - this;
+  }
 }
 
 String foo( Enum e, @ctime Type T ) { // T is a 'template' parameter
@@ -78,7 +80,7 @@ Void main() {
   T x = 3;
 
   T = C;
-  T!? c := new C(); // C!? - reference to a mutable object, := reference assignment operator
+  T!? c := new auto(); // C!? - reference to a mutable object, := reference assignment operator
   c.x = 5;
 
   // Compile-time function execution, :XXX accessor that looks in parameter type
