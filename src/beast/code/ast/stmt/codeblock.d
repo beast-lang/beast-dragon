@@ -36,7 +36,6 @@ final class AST_CodeBlockStatement : AST_Statement {
 	public:
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			const auto __gd = ErrorGuard( codeLocation );
-			auto _sgd = new LocalDataScope( ).scopeGuard;
 
 			auto decoList = scoped!DecorationList( decorationList );
 			auto decoData = scoped!StatementDecorationData( );
@@ -47,8 +46,10 @@ final class AST_CodeBlockStatement : AST_Statement {
 			if ( decoData.isCtime )
 				cb = new CodeBuilder_Ctime( );
 
-			foreach ( stmt; subStatements )
-				stmt.buildStatementCode( env, cb );
+			cb.build_scope( ( cb ) {
+				foreach ( stmt; subStatements )
+					stmt.buildStatementCode( env, cb );
+			} ).inLocalDataScope;
 		}
 
 	public:

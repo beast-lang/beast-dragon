@@ -1,4 +1,4 @@
-module t_simpleif;
+module t_simpleif; //! run
 
 Bool test() {
 	if( false ) {

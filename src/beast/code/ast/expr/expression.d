@@ -119,29 +119,9 @@ abstract class AST_Expression : AST_Statement {
 			return buildSemanticTree_singleExpect( expectedType ).ctExec( );
 		}
 
-		/// Executes the expression in standalone scope and session, returing its value
-		/// The scope the ctExec creates is never destroyed
-		final MemoryPtr standaloneCtExec( Symbol_Type expectedType, DataEntity parent ) {
+		pragma( inline ) final Symbol_Type ctExec_asType( ) {
 			const auto __gd = ErrorGuard( codeLocation );
-
-			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto _s = new RootDataScope( parent );
-				auto _sgd = _s.scopeGuard;
-
-				CTExecResult ctexec = ctExec( expectedType );
-				ctexec.keep( );
-
-				assert( _s.itemCount <= 1, "StandaloneCtExec scope has %s items".format( _s.itemCount ) );
-
-				// No cleanup build - bulit variables remain (should be only one)
-				return ctexec.value;
-			}
-
-			assert( 0 );
-		}
-
-		pragma( inline ) final Symbol_Type standaloneCtExec_asType( ) {
-			return buildSemanticTree_singleExpect( coreType.Type ).standaloneCtExec_asType( );
+			return buildSemanticTree_singleExpect( coreType.Type ).ctExec_asType( );
 		}
 
 }

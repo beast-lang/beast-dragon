@@ -27,7 +27,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 			const auto _gd = ErrorGuard( this );
 
 			// Deduce data type
-			Symbol_Type dataType = typeExpression.standaloneCtExec_asType( ).inLocalDataScope;
+			Symbol_Type dataType = typeExpression.ctExec_asType( ).inLocalDataScope;
 
 			this( identifier, dataType, decorationList, data );
 		}

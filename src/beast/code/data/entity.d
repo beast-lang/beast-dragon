@@ -77,7 +77,7 @@ abstract class DataEntity : IDContainer {
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto ctexec = ctExec( );
 				auto result = dataType.valueIdentificationString( ctexec.value );
-				ctexec.destroy();
+				ctexec.destroy( );
 
 				return result;
 			}
@@ -209,17 +209,15 @@ abstract class DataEntity : IDContainer {
 		}
 
 		/// Expects the data to point at Type instance
-		final Symbol_Type standaloneCtExec_asType( ) {
-			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				assert( dataType is coreType.Type );
+		final Symbol_Type ctExec_asType( ) {
+			assert( dataType is coreType.Type );
 
-				auto ctexec = ctExec( );
-				Symbol_Type type = typeUIDKeeper[ ctexec.value.readPrimitive!( typeUIDKeeper.I ) ];
-				ctexec.destroy( );
+			auto ctexec = ctExec( );
+			Symbol_Type type = typeUIDKeeper[ ctexec.value.readPrimitive!( typeUIDKeeper.I ) ];
+			ctexec.destroy( );
 
-				benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
-				return type;
-			}
+			benforce( type !is null, E.invalidPointer, "'%s' does not point to a valid type".format( identificationString ) );
+			return type;
 		}
 
 	protected:

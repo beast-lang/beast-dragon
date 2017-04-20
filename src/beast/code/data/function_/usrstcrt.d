@@ -113,7 +113,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			if ( ast_.returnType.isAutoExpression )
 				enforceDone_codeProcessing( );
 			else
-				returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreType.Type, parent_ ).readType( );
+				returnTypeWIP_ = ast_.returnType.ctExec_asType.inRootDataScope( parent_ ).inStandaloneSession;
 		}
 
 		final void execute_parameterExpanding( ) {

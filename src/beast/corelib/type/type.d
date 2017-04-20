@@ -3,6 +3,7 @@ module beast.corelib.type.type;
 import beast.corelib.type.toolkit;
 import beast.code.data.type.stcclass;
 import beast.util.uidgen;
+import beast.code.memory.memorymgr;
 
 /// Type 'Type' -- typeof all classes etc.
 /// The root of all good and evil in Beast.
@@ -73,7 +74,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 				return opRefAssign.dataEntity( matchLevel, instance ).Overloadset;
 
 			if ( instance ) {
-				Symbol_Type type = instance.standaloneCtExec_asType( );
+				Symbol_Type type = instance.ctExec_asType.inStandaloneSession;
 
 				if ( auto result = type.tryResolveIdentifier( id, null, matchLevel ) )
 					return result;

@@ -124,6 +124,27 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			popScope( );
 		}
 
+		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
+			pushScope( );
+
+			condition( this );
+			bool result = result_.readPrimitive!bool;
+
+			if ( result ) {
+				pushScope( );
+				thenBranch( this );
+				popScope( );
+			}
+			else if ( elseBranch ) {
+				pushScope( );
+				elseBranch( this );
+				popScope( );
+			}
+
+			popScope( );
+			result_ = MemoryPtr( );
+		}
+
 	public:
 		override void popScope( bool generateDestructors = true ) {
 			// Result might be f-ked around because of destructors

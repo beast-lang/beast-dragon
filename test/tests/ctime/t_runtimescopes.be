@@ -14,7 +14,7 @@ class C {
 
 Void main() {
 	@ctime Int! i;
-		if( true ) {
+	if( true ) {
 		@ctime C! c;
 		print( c.ref );
 		@ctime c.ref = 10;

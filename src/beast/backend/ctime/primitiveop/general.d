@@ -19,6 +19,14 @@ void primitiveOp_memCpy( CB cb, T t, Op arg1, Op arg2 ) {
 		writefln( "CTIME memcpy %s => %s, %s (%s)", arg2, arg1, t.instanceSize, arg1.read( t.instanceSize ) );
 }
 
+void primitiveOp_memEq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+	arg1.writePrimitive( arg2.read( t.instanceSize ) == arg3.read( t.instanceSize ) );
+}
+
+void primitiveOp_memNeq( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+	arg1.writePrimitive( arg2.read( t.instanceSize ) != arg3.read( t.instanceSize ) );
+}
+
 void primitiveOp_noopDtor( CB cb ) {
 	// Do. absolutely. nothing
 }

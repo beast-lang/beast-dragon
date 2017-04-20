@@ -117,7 +117,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 			if ( ast_.returnType.isAutoExpression )
 				enforceDone_codeProcessing( );
 			else
-				returnTypeWIP_ = ast_.returnType.standaloneCtExec( coreType.Type, parent_.dataEntity ).readType( );
+				returnTypeWIP_ = ast_.returnType.ctExec_asType.inRootDataScope( parent_.dataEntity ).inStandaloneSession;
 		}
 
 		final void execute_parameterExpanding( ) {
