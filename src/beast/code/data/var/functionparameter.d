@@ -7,9 +7,12 @@ import beast.code.data.function_.expandedparameter;
 final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 
 	public:
-		this( ExpandedFunctionParameter param ) {
+		this( ExpandedFunctionParameter param, bool isCtime ) {
 			assert( param.identifier );
-			super( param.dataType, param.isConstValue, MemoryBlock.Flag.functionParameter );
+			assert( !param.isConstValue );
+
+			super( param.dataType );
+			allocate_( isCtime, MemoryBlock.Flag.functionParameter );
 
 			param_ = param;
 
@@ -33,6 +36,12 @@ final class DataEntity_FunctionParameter : DataEntity_LocalVariable {
 	public:
 		override size_t asFunctionParameter_index( ) {
 			return -memoryBlock.bpOffset - 2;
+		}
+
+	public:
+		override void allocate( bool isCtime ) {
+			// Allocation is done in constructor
+			assert( 0 );
 		}
 
 	private:

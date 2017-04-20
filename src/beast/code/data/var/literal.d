@@ -14,7 +14,7 @@ final class Symbol_Literal : Symbol_StaticVariable {
 			dataType_ = dataType;
 
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto block = memoryManager.allocBlock( dataType.instanceSize );
+				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.ctime );
 				id_ = Identifier( "lit_%#x".format( block.startPtr.val ) );
 
 				block.markDoNotGCAtSessionEnd( );

@@ -18,7 +18,7 @@ pragma( inline ):
 		const size_t stackOffset = ir.currentFrame.basePointer + bpOffset;
 
 		assert( stackOffset == ir.stack.length, "AllocLocal offset mismatch %s expected %s got".format( ir.stack.length, stackOffset ) );
-		ir.stack ~= memoryManager.alloc( bytes );
+		ir.stack ~= memoryManager.alloc( bytes, MemoryBlock.Flag.ctime ); // TODO: separate memory block type to prevent writing to ctime-mirrored data
 
 		debug ( interpreter )
 			writefln( "alloc BP+%s (SP+%s) (%#x)", bpOffset, ir.stack.length - 1, ir.stack[ $ - 1 ].val );
@@ -35,7 +35,7 @@ pragma( inline ):
 	}
 
 	void op_malloc( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
-		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated ) );
+		op1.writeMemoryPtr( memoryManager.alloc( op2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated | MemoryBlock.Flag.ctime ) );
 
 		debug ( interpreter )
 			writefln( "malloc( %s ) (=%s) => %s", op2.readSizeT, op1.readMemoryPtr, op1 );
@@ -53,7 +53,7 @@ pragma( inline ):
 		// Compile-times stack should never be smaller by more than one item (because of previous ct variables)
 		assert( ir.ctStack.length == offset );
 
-		ir.ctStack ~= memoryManager.alloc( bytes );
+		ir.ctStack ~= memoryManager.alloc( bytes, MemoryBlock.Flag.ctime );
 
 		debug ( interpreter )
 			writefln( "ctalloc( %s ) (=%s) => CT+%s", bytes, ir.ctStack[ offset ], offset );

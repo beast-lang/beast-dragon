@@ -20,6 +20,8 @@ final static class DataEntity_CtExecProxy : ProxyDataEntity {
 		override void buildCode( CodeBuilder cb ) {
 			auto ctexec = sourceEntity_.ctExec( );
 
+			benforce!( ErrorSeverity.warning )( !cb.isCtime, E.duplicitModification, "@ctime is redundant" );
+
 			// Add local variables that resulted from building ctexec to the current scope so their destruction gets mirrored when the scope ends
 			cb.addToScope( ctexec.scopeVariables );
 

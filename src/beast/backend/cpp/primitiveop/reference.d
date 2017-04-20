@@ -8,10 +8,6 @@ void primitiveOp_getAddr( CB cb, T t, Op arg1, Op arg2 ) {
 	cb.codeResult_.formattedWrite( "%sVAL( %s, void* ) = %s;\n", cb.tabs, arg1, arg2 );
 }
 
-void primitiveOp_dereference( CB cb, T t, Op arg1 ) {
-	cb.result_ = cb.inheritCtime( "DEREF( %s )".format( arg1 ), arg1 );
-}
-
 void primitiveOp_markPtr( CB cb, T t, Op arg1 ) {
 	// Do nothing - this is ctime stuff
 }

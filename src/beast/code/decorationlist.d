@@ -10,6 +10,7 @@ import beast.code.ast.decl.class_;
 import beast.code.ast.expr.decorated;
 import beast.code.data.idcontainer;
 import beast.code.ast.decl.env;
+import beast.code.ast.stmt.statement;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
 final class DecorationList {
@@ -60,6 +61,10 @@ final class DecorationList {
 
 		void apply_expressionDecorator( ExpressionDecorationData data ) {
 			standardDecoratorProcedure!"expressionDecorator"( currentScope, data );
+		}
+
+		void apply_statementDecorator( StatementDecorationData data ) {
+			standardDecoratorProcedure!"statementDecorator"( currentScope, data );
 		}
 
 	public:

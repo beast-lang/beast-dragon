@@ -88,9 +88,8 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 				// Implicit cast to base type
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, baseType_, //
 						ExpandedFunctionParameter.bootstrap( baseType_.dataEntity ), //
-						( cb, inst, args ) { //
-							cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, inst );
-						} );
+						( cb, inst, args ) => cb.build_dereference( &inst.buildCode ) //
+						 );
 
 				// Implicit cast to pointer
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, coreType.Pointer, //

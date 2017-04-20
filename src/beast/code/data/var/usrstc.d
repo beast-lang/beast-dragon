@@ -87,10 +87,11 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 					enforceDone_typeDeduction( );
 
 				// We allocate a memory block
-				MemoryBlock block = memoryManager.allocBlock( dataTypeWIP_.instanceSize );
+				MemoryBlock block = memoryManager.allocBlock( dataTypeWIP_.instanceSize, isCtime_ ? MemoryBlock.Flags.ctime : MemoryBlock.Flags.noFlag );
 				block.markDoNotGCAtSessionEnd( );
 				block.relatedDataEntity = dataEntity;
 				block.identifier = identifier.str;
+
 				memoryPtrWIP_ = block.startPtr;
 
 				// We can't use this.dataEntity because that would cause a dependency loop (as we would require memoryPtr for this in it)
@@ -104,8 +105,6 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 						ast_.buildConstructor( substEntity, ast_.value, scoped!CodeBuilder_Ctime( ) );
 				}
 				else {
-					block.flags |= MemoryBlock.Flag.runtime;
-
 					// Otherwise, we add it to the init block
 					project.backend.buildInitCode( ( CodeBuilder cb ) { //
 						with ( memoryManager.session( SessionPolicy.watchCtChanges ) ) {

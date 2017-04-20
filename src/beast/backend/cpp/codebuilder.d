@@ -42,6 +42,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 	public: // Declaration related build commands
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
+			var.allocate( false );
 			addToScope( var );
 
 			result_ = cppIdentifier( var.memoryBlock );
@@ -59,7 +60,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 				codeResult_.formattedWrite( "%ssize_t ctimeStackBP = ctimeStackSize;\n", tabs );
 
-				auto prevFunc = currentFunction;
+				assert( !currentFunction );
+				assert( !ctimeStackOffset_ );
 				currentFunction = func;
 
 				body_( this );
@@ -70,8 +72,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 				popScope( false );
 
 				codeResult_.formattedWrite( "%s}\n\n", tabs );
-
-				currentFunction = prevFunc;
 
 				// We don't care about any compile time changes that happened - they should all be mirrored on the return; call
 				trashCtimeChanges( );
@@ -123,7 +123,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			string resultVarName;
 			if ( function_.returnType !is coreType.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, false, "result" );
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, "result" );
 				build_localVariableDefinition( resultVar );
 				resultVarName = "&%s".format( result_ );
 			}
@@ -148,7 +148,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				if ( param.isConstValue )
 					continue;
 
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false, "arg%s".format( i + 1 ) );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, "arg%s".format( i + 1 ) );
 				build_localVariableDefinition( argVar );
 
 				codeResult_.formattedWrite( "%s{\n", tabs );
@@ -171,6 +171,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 		override void build_contextPtr( ) {
 			result_ = "context";
+		}
+
+		override void build_dereference( ExprFunction arg ) {
+			arg( this );
+			result_ = inheritCtime( "DEREF( %s )".format( result_ ), result_ );
 		}
 
 		mixin Build_PrimitiveOperationImpl!( "cpp", "result_" );
@@ -245,8 +250,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_return( DataEntity returnValue ) {
 			assert( currentFunction );
 
-			if ( returnValue )
-				build_copyCtor( new DataEntity_Result( currentFunction, returnValue.dataType ), returnValue );
+			if ( returnValue ) {
+				auto resultVar = new DataEntity_Result( currentFunction, false, returnValue.dataType );
+				build_copyCtor( resultVar, returnValue );
+			}
 
 			generateScopesExit( );
 			mirrorCtimeChanges( );
@@ -306,7 +313,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.flag( MemoryBlock.Flag.result ) )
 				return "result";
 
-			else if ( !block.isRuntime && !block.isStatic && block.session == context.session )
+			else if ( block.isCtime && !block.isStatic && block.session == context.session )
 				return "%sctimeStack[ ctimeStackBP + %s ]".format( addrOf ? "" : "*", block.bpOffset );
 
 			else if ( block.identifier )
@@ -376,7 +383,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( flags & ScopeFlags.continuable )
 				codeResult_.formattedWrite( "slbl_%s:\n", labelHash_.str );
 
-			additionalScopeData_ ~= AdditionalScopeData( labelHash_, false, ctimeStackOffset_ );
+			additionalScopeData_ ~= AdditionalScopeData( labelHash_, false );
 		}
 
 		override void popScope( bool generateDestructors = true ) {
@@ -387,8 +394,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			if ( additionalScopeData_[ $ - 1 ].requiresEndLabelConstruction )
 				codeResult_.formattedWrite( "elbl_%s:\n", additionalScopeData_[ $ - 1 ].hash.str );
-
-			ctimeStackOffset_ = additionalScopeData_[ $ - 1 ].ctimeStackOffset;
 
 			additionalScopeData_.length--;
 			tabOffset_--;
@@ -471,7 +476,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		struct AdditionalScopeData {
 			Hash hash;
 			bool requiresEndLabelConstruction;
-			size_t ctimeStackOffset;
 		}
 
 }

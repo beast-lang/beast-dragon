@@ -31,7 +31,7 @@ final class MemoryManager {
 		}
 
 	public:
-		MemoryBlock allocBlock( size_t bytes ) {
+		MemoryBlock allocBlock( size_t bytes, MemoryBlock.Flags flags ) {
 			import std.array : insertInPlace;
 
 			debug assert( !finished_ );
@@ -55,7 +55,7 @@ final class MemoryManager {
 				// First, we try inserting the new block between currently existing memory blocks
 				foreach ( i, block; mmap_ ) {
 					if ( endPtr + bytes <= block.startPtr ) {
-						result = new MemoryBlock( endPtr, bytes, allocIDGenerator_( ) );
+						result = new MemoryBlock( endPtr, bytes, allocIDGenerator_( ), flags );
 
 						mmap_.insertInPlace( i, result );
 						//mmap_ = mmap_[ 0 .. i ] ~ result ~ mmap_[ i .. $ ];
@@ -74,7 +74,7 @@ final class MemoryManager {
 
 					assert( mmap_.length == 0 || mmap_[ $ - 1 ].endPtr == endPtr );
 
-					result = new MemoryBlock( endPtr, bytes, allocIDGenerator_( ) );
+					result = new MemoryBlock( endPtr, bytes, allocIDGenerator_( ), flags );
 					mmap_ ~= result;
 				}
 
@@ -102,19 +102,12 @@ final class MemoryManager {
 			return result;
 		}
 
-		MemoryBlock allocBlock( size_t bytes, MemoryBlock.Flags flags ) {
-			MemoryBlock result = allocBlock( bytes );
-			result.flags |= flags;
-			return result;
-		}
-
-		MemoryPtr alloc( size_t bytes ) {
-			return allocBlock( bytes ).startPtr;
+		MemoryPtr alloc( size_t bytes, MemoryBlock.Flags flags ) {
+			return allocBlock( bytes, flags ).startPtr;
 		}
 
 		MemoryPtr alloc( size_t bytes, MemoryBlock.Flags flags, string identifier = null ) {
-			MemoryBlock result = allocBlock( bytes );
-			result.flags |= flags;
+			MemoryBlock result = allocBlock( bytes, flags );
 			result.identifier = identifier;
 			return result.startPtr;
 		}
@@ -193,7 +186,7 @@ final class MemoryManager {
 			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 			benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session" );
 			benforce( ptr + data.length <= block.endPtr, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
-			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
+			benforce( block.isCtime, E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
 
 			debug synchronized ( this ) {
 				debug assert( block.session in activeSessions_ );
@@ -207,8 +200,8 @@ final class MemoryManager {
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
 
 			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
-				block.setFlags( MemoryBlock.SharedFlag.changed );
 				context.sessionData.changedMemoryBlocks.insert( block );
+				block.setFlags( MemoryBlock.SharedFlag.changed );
 			}
 		}
 
@@ -224,7 +217,7 @@ final class MemoryManager {
 			}
 
 			benforce( ptr + bytes <= block.endPtr, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
-			benforce( !( block.flags & MemoryBlock.Flag.runtime ), E.runtimeMemoryManipulation, "Cannnot read from runtime memory (%s)".format( block.identificationString ) );
+			benforce( block.isCtime, E.runtimeMemoryManipulation, "Cannnot read from runtime memory (%s)".format( block.identificationString ) );
 
 			debug if ( context.jobId != block.jobId )
 				block.wasReadOutsideContext = true;
@@ -339,7 +332,7 @@ final class MemoryManager {
 					list.length--;
 
 					auto pointersInBlock = pointersInSessionBlock( block );
-					assert( wereErrors || ( !block.isLocal && !block.isRuntime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
+					assert( wereErrors || ( !block.isLocal && block.isCtime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
 
 					foreach ( ptr; pointersInBlock ) {
 						MemoryPtr ptrptr = ptr.readMemoryPtr;
@@ -444,7 +437,7 @@ final class MemoryManager {
 					foreach ( ptr; pointersInBlock( block ) ) {
 						MemoryPtr ptrptr = ptr.readMemoryPtr;
 
-						if( ptrptr.isNull )
+						if ( ptrptr.isNull )
 							continue;
 
 						MemoryBlock block2 = ptrptr.block;

@@ -66,18 +66,22 @@ final class AST_NewExpression : AST_Expression {
 			}
 
 			auto refType = coreType.Reference.referenceTypeOf( ttype );
+		
+			auto var = new DataEntity_TmpLocalVariable( refType );
+			
+			DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall( this, true, ttype.instanceSizeLiteral );
+			DataEntity refCtorCall = coreType.Pointer.copyCtor.dataEntity( MatchLevel.fullMatch, var.reinterpret( coreType.Pointer ) ).resolveCall( this, true, mallocCall );
+			DataEntity varCtorCall = var.dereference( ttype ).expectResolveIdentifier( ID!"#ctor" ).resolveCall( args, true, args.items );
 
 			return new DataEntity_Bootstrap( null, refType, ttype.dataEntity, false, ( cb ) { //
-				// Create a temporary variable
-				auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
+				// Define the reference variable
 				cb.build_localVariableDefinition( var );
 
-				// Call malloc, store result into the variable
-				DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall( this, true, ttype.instanceSizeLiteral );
-				coreType.Pointer.copyCtor.dataEntity( MatchLevel.fullMatch, new DataEntity_ReinterpretCast( var, coreType.Pointer ) ).resolveCall( this, true, mallocCall ).buildCode( cb );
+				// Call malloc, construct the reference
+				refCtorCall.buildCode( cb );
 
 				// Call constructor for the referenced value
-				new DataEntity_DereferenceProxy( var, ttype ).expectResolveIdentifier( ID!"#ctor" ).resolveCall( args, true, args.items ).buildCode( cb );
+				varCtorCall.buildCode( cb );
 
 				// Return the variable as a result
 				var.buildCode( cb );

@@ -28,7 +28,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 				debug if ( result_ ) {
 					auto block = memoryManager.findMemoryBlock( result_ );
-					assert( block && !block.isRuntime );
+					assert( block && block.isCtime );
 				}
 			}
 
@@ -37,6 +37,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 	public:
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
+			var.allocate( true );
 			addToScope( var );
 		}
 
@@ -45,7 +46,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			debug assert( context.jobId == jobId_ );
 
 			MemoryBlock b = memoryManager.findMemoryBlock( pointer );
-			benforce( !b.isRuntime, E.valueNotCtime, "Variable %s is not ctime".format( b.identificationString ) );
+			benforce( b.isCtime, E.valueNotCtime, "Variable %s is not ctime".format( b.identificationString ) );
 
 			result_ = pointer;
 		}
@@ -61,7 +62,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 			MemoryPtr result;
 			if ( function_.returnType !is coreType.Void ) {
-				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType, true );
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType );
 				build_localVariableDefinition( resultVar );
 
 				result = resultVar.memoryPtr;
@@ -71,8 +72,9 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 			MemoryPtr ctx;
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
-				auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, true, "ctx" );
+				auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, "ctx" );
 				build_localVariableDefinition( var );
+
 				super.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
 
 				assert( parentInstance );
@@ -84,9 +86,12 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 			MemoryPtr[ ] args;
 			foreach ( i, param; function_.parameters ) {
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, true );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType );
 				build_localVariableDefinition( argVar );
+
+				pushScope( );
 				build_copyCtor( argVar, arguments[ i ] );
+				popScope( );
 
 				args ~= argVar.memoryPtr;
 			}
@@ -96,6 +101,18 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			popScope( );
 
 			result_ = result;
+		}
+
+		override void build_dereference( ExprFunction arg ) {
+			arg( this );
+
+			debug ( ctime ) {
+				import std.stdio : writefln;
+
+				writefln( "CTIME dereference %s (=%s)", result_, result_.readMemoryPtr );
+			}
+
+			result_ = result_.readMemoryPtr;
 		}
 
 		mixin Build_PrimitiveOperationImpl!( "ctime", "result_" );

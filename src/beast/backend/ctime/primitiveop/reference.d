@@ -12,13 +12,6 @@ void primitiveOp_getAddr( CB cb, T t, Op arg1, Op arg2 ) {
 		writefln( "CTIME getAddr @%s => %s", arg2, arg1 );
 }
 
-void primitiveOp_dereference( CB cb, T t, Op arg1 ) {
-	cb.result_ = arg1.readMemoryPtr;
-
-	debug ( ctime )
-		writefln( "CTIME dereference %s (=%s)", arg1, cb.result_ );
-}
-
 void primitiveOp_markPtr( CB cb, T t, Op arg1 ) {
 	memoryManager.markAsPointer( arg1 );
 

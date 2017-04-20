@@ -28,7 +28,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
 			// Deduce data type
 			Symbol_Type dataType = typeExpression.standaloneCtExec_asType( ).inLocalDataScope;
-			
+
 			this( identifier, dataType, decorationList, data );
 		}
 
@@ -37,7 +37,7 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
 			benforce( dataType.instanceSize > 0, E.zeroSizeVariable, "Variable %s of type %s has zero size".format( identifier_.str, dataType.identificationString ) );
 
-			super( dataType, data.isCtime );
+			super( dataType );
 
 			decorationList.enforceAllResolved( );
 		}
@@ -49,6 +49,12 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
 		final override AST_Node ast( ) {
 			return ast_;
+		}
+
+	public:
+		override void allocate( bool isCtime ) {
+			allocate_( isCtime, MemoryBlock.Flags.noFlag );
+			memoryBlock_.identifier = identifier_.str;
 		}
 
 	private:

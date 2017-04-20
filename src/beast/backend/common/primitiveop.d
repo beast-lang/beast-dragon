@@ -29,7 +29,6 @@ enum BackendPrimitiveOperation {
 	markPtr, /// (arg1) Marks given memory as a pointer (used for compile-time stuff)
 	unmarkPtr, /// (arg1) Unmarks given memory as a pointer
 	getAddr, /// (&arg2 > arg1) Stores reference (pointer) to given expression into given variable
-	dereference, /// (*arg1) Returns (reference to) data referenced by given variable
 	malloc, /// (malloc( size_t arg2 ) => arg1 Mallocates n bytes and saves the pointer to arg1
 	free, /// free( arg1 ) Frees memory referenced by arg1
 

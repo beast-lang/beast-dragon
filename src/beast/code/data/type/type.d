@@ -31,7 +31,7 @@ abstract class Symbol_Type : Symbol {
 			typeUID_ = typeUIDKeeper( this );
 
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				MemoryBlock block = memoryManager.allocBlock( UIDGenerator.I.sizeof );
+				MemoryBlock block = memoryManager.allocBlock( UIDGenerator.I.sizeof, MemoryBlock.Flag.ctime );
 				block.identifier = "%s_typeid".format( identifier.str );
 				block.markDoNotGCAtSessionEnd( );
 				ctimeValue_ = block.startPtr.writePrimitive( typeUID_ );
@@ -66,7 +66,7 @@ abstract class Symbol_Type : Symbol {
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, refType, //
 						ExpandedFunctionParameter.bootstrap( refType.dataEntity ), //
 						( cb, inst, args ) { //
-							auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
+							auto var = new DataEntity_TmpLocalVariable( refType );
 							cb.build_localVariableDefinition( var );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, var, inst );
@@ -106,7 +106,7 @@ abstract class Symbol_Type : Symbol {
 						( CodeBuilder cb ) { //
 							benforce( inst !is null, E.needThis, "Need this for %s.#addr".format( dataEntity.identificationString ) );
 
-							auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, cb.isCtime );
+							auto var = new DataEntity_TmpLocalVariable( coreType.Pointer );
 							cb.build_localVariableDefinition( var );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, var, inst );

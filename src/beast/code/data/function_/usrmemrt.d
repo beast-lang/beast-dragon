@@ -71,8 +71,10 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 				cb.build_functionDefinition( this, ( cb ) { //
 					foreach ( param; parameters ) {
-						if ( param.identifier )
-							_s.addLocalVariable( new DataEntity_FunctionParameter( param ) );
+						if ( param.identifier ) {
+							auto fparam = new DataEntity_FunctionParameter( param, cb.isCtime );
+							_s.addLocalVariable( fparam );
+						}
 					}
 
 					scope env = DeclarationEnvironment.newFunctionBody( );

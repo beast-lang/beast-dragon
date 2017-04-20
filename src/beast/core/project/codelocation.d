@@ -53,6 +53,11 @@ struct CodeLocation {
 			string file( ) {
 				return source.absoluteFilePath;
 			}
+
+			string content( ) {
+				assert( source );
+				return source.content[ startPos .. endPos ];
+			}
 		}
 
 	public:

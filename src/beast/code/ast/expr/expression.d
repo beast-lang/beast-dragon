@@ -109,11 +109,9 @@ abstract class AST_Expression : AST_Statement {
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			auto _gd = ErrorGuard( codeLocation );
+			string content = codeLocation.content;
 
-			cb.build_scope( ( cb ) { //
-				string nm = typeid( this ).toString;
-				buildSemanticTree_single( ).buildCode( cb );
-			} );
+			cb.build_scope( &buildSemanticTree_single( ).buildCode );
 		}
 
 		final CTExecResult ctExec( Symbol_Type expectedType ) {

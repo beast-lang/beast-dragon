@@ -6,26 +6,19 @@ abstract class DataEntity_LocalVariable : DataEntity {
 	mixin TaskGuard!"outerHashObtaining";
 
 	public:
-		this( Symbol_Type dataType, bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags = MemoryBlock.Flag.noFlag ) {
+		this( Symbol_Type dataType ) {
 			super( MatchLevel.fullMatch );
 
 			assert( dataType.instanceSize != 0, "DataType %s instanceSize 0".format( dataType.identificationString ) );
 			assert( currentScope, "Initializing local variable outside scope" );
 
 			dataType_ = dataType;
-			isCtime_ = isCtime;
 			scope__ = currentScope;
 
 			assert( parent );
 			assert( dataType );
 
 			debug assert( context.jobId == scope__.jobId );
-
-			memoryBlock_ = memoryManager.allocBlock( dataType_.instanceSize, MemoryBlock.Flag.local | additionalMemoryBlockFlags );
-			memoryBlock_.relatedDataEntity = this;
-
-			if ( !isCtime_ )
-				memoryBlock_.flags |= MemoryBlock.Flag.runtime;
 		}
 
 	public:
@@ -34,14 +27,17 @@ abstract class DataEntity_LocalVariable : DataEntity {
 		}
 
 		final override bool isCtime( ) {
-			return isCtime_;
+			assert( memoryBlock_, "Memory not yet allocated" );
+			return memoryBlock_.isCtime;
 		}
 
 		final MemoryPtr memoryPtr( ) {
+			assert( memoryBlock_, "Memory not yet allocated" );
 			return memoryBlock_.startPtr;
 		}
 
 		final MemoryBlock memoryBlock( ) {
+			assert( memoryBlock_, "Memory not yet allocated" );
 			return memoryBlock_;
 		}
 
@@ -55,11 +51,16 @@ abstract class DataEntity_LocalVariable : DataEntity {
 		}
 
 		override string identificationString( ) {
-			return "%s %s".format( dataType.tryGetIdentificationString, identificationString_noPrefix );
+			return "%s%s %s".format( isCtime ? "@ctime " : null, dataType.tryGetIdentificationString, identificationString_noPrefix );
 		}
 
 		override void buildCode( CodeBuilder cb ) {
 			cb.build_memoryAccess( memoryPtr );
+		}
+
+	public:
+		void allocate( bool isCtime ) {
+			allocate_( isCtime, MemoryBlock.Flag.noFlag );
 		}
 
 	public:
@@ -69,14 +70,21 @@ abstract class DataEntity_LocalVariable : DataEntity {
 			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
 			return dataType.expectResolveIdentifier_direct( ID!"#ctor", this ).resolveCall( ast, true, initValue );
 		}
-		
+
+	protected:
+		/// Allocates memory for the variable (this is called in CodeBuilder.build_localVariableDefinition)
+		final pragma( inline ) void allocate_( bool isCtime, MemoryBlock.Flags additionalMemoryBlockFlags ) {
+			assert( !memoryBlock_, "Already allocated" );
+
+			memoryBlock_ = memoryManager.allocBlock( dataType_.instanceSize, MemoryBlock.Flag.local | additionalMemoryBlockFlags | ( isCtime ? MemoryBlock.Flag.ctime : MemoryBlock.Flags.noFlag ) );
+			memoryBlock_.relatedDataEntity = this;
+		}
 
 	protected:
 		Symbol_Type dataType_;
 		DataScope scope__;
 		MemoryBlock memoryBlock_;
 		Hash outerHashWIP_;
-		bool isCtime_;
 
 	private:
 		void execute_outerHashObtaining( ) {

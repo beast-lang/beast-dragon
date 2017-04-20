@@ -33,7 +33,7 @@ struct CoreLibrary_Functions {
 			sink( malloc = new Symbol_PrimitiveStaticRuntimeFunction( ID!"malloc", parent, //
 					coreType.Pointer, ExpandedFunctionParameter.bootstrap( coreType.Size ), //
 					( cb, args ) { //
-						auto result = new DataEntity_TmpLocalVariable( coreType.Pointer, cb.isCtime );
+						auto result = new DataEntity_TmpLocalVariable( coreType.Pointer );
 						cb.build_localVariableDefinition( result );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, result );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.malloc, result, args[ 0 ] );

@@ -62,7 +62,7 @@ abstract class Symbol_StaticVariable : Symbol_Variable {
 				}
 
 				override string identificationString( ) {
-					return "%s %s".format( sym_.dataType.tryGetIdentificationString, identificationString_noPrefix );
+					return "%s%s %s".format( isCtime ? "@ctime " : null, sym_.dataType.tryGetIdentificationString, identificationString_noPrefix );
 				}
 
 			public:

@@ -15,7 +15,7 @@ final class Symbol_BootstrapConstant : Symbol_StaticVariable {
 			identififer_ = identifier;
 
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto block = memoryManager.allocBlock( dataType.instanceSize );
+				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.ctime );
 				block.markDoNotGCAtSessionEnd( );
 				block.identifier = identifier.str;
 				block.relatedDataEntity = dataEntity;

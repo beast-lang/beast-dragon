@@ -95,7 +95,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 
 				DataEntity valueEntity;
 				DataEntity_UserLocalVariable var;
-				CodeBuilder ctorCb = cb;
+				CodeBuilder varCb = cb;
 
 				if ( dataType.isAutoExpression ) {
 					benforce( value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( currentScope.identificationString, identifier.str ) );
@@ -106,23 +106,20 @@ final class AST_VariableDeclaration : AST_Declaration {
 				else
 					var = new DataEntity_UserLocalVariable( this, decorations, declData );
 
-				if ( declData.isCtime ) {
-					// We don't want the non-ctime codebuilder to create a definition for the variable (that is handled in mirroring for now)
-					ctorCb = new CodeBuilder_Ctime;
+				if ( declData.isCtime )
+					varCb = new CodeBuilder_Ctime;
 
-					// Add the variable to scope, so the destructor is generated on scope exit
-					cb.addToScope( var );
-				}
-				else {
-					cb.build_localVariableDefinition( var );
-				}
-
+				varCb.build_localVariableDefinition( var );
 				if ( valueEntity )
-					buildConstructor( var, valueEntity, ctorCb );
+					buildConstructor( var, valueEntity, varCb );
 				else
-					buildConstructor( var, value, ctorCb );
+					buildConstructor( var, value, varCb );
 
 				currentScope.addLocalVariable( var );
+
+				// If the variable is @ctime, add it also to the nonctime codebuilder scope so it can get destroyed on scope exit
+				if ( declData.isCtime )
+					cb.addToScope( var );
 			}
 		}
 

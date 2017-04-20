@@ -25,9 +25,9 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 	public:
 		override void build_localVariableDefinition( DataEntity_LocalVariable var ) {
-			assert( !var.memoryBlock.bpOffset );
-
+			var.allocate( false );
 			var.memoryBlock.bpOffset = currentBPOffset_;
+
 			addToScope( var );
 
 			addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, var.dataType.instanceSize.iopLiteral );
@@ -38,6 +38,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 		override void build_functionDefinition( Symbol_RuntimeFunction func, StmtFunction body_ ) {
 			assert( currentBPOffset_ == 0 );
+			assert( currentCTOffset_ == 0 );
 			assert( !currentFunction_ );
 
 			currentFunction_ = func;
@@ -112,8 +113,9 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			InstructionOperand operandResult;
 
 			if ( function_.returnType !is coreType.Void ) {
-				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType, false );
+				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType );
 				build_localVariableDefinition( returnVar );
+
 				operandResult = result_;
 			}
 
@@ -129,7 +131,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 					continue;
 				}
 
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, false );
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType );
 				build_localVariableDefinition( argVar );
 
 				argVars[ i ] = argVar;
@@ -170,6 +172,40 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 		override void build_contextPtr( ) {
 			result_ = ( -1 ).iopRefBpOffset;
+		}
+
+		override void build_dereference( ExprFunction arg ) {
+			arg( this );
+
+			switch ( result_.type ) {
+
+			case InstructionOperand.Type.heapRef: // If the operands are not already references, we simply make them into references
+				result_.type = InstructionOperand.Type.refHeapRef;
+				break;
+
+			case InstructionOperand.Type.stackRef:
+				result_.type = InstructionOperand.Type.refStackRef;
+				break;
+
+			case InstructionOperand.Type.ctStackRef:
+				result_.type = InstructionOperand.Type.refCtStackRef;
+				break;
+
+			case InstructionOperand.Type.refHeapRef: // If the operands are references, we have to dereference them first (store the address into local variable)
+			case InstructionOperand.Type.refStackRef:
+			case InstructionOperand.Type.refCtStackRef:
+				addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, hardwareEnvironment.pointerSize.iopLiteral );
+				addInstruction( I.mov, currentBPOffset_.iopBpOffset, result_, hardwareEnvironment.pointerSize.iopLiteral );
+
+				result_ = currentBPOffset_.iopRefBpOffset;
+
+				currentBPOffset_++;
+				break;
+
+			default:
+				assert( 0, "Invalid operand type" );
+
+			}
 		}
 
 		mixin Build_PrimitiveOperationImpl!( "interpreter", "result_" );
@@ -245,8 +281,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void build_return( DataEntity returnValue ) {
 			assert( currentFunction_ );
 
-			if ( returnValue )
-				build_copyCtor( new DataEntity_Result( currentFunction_, returnValue.dataType ), returnValue );
+			if ( returnValue ) {
+				auto resultVar = new DataEntity_Result( currentFunction_, false, returnValue.dataType );
+				build_copyCtor( resultVar, returnValue );
+			}
 
 			generateScopesExit( );
 			addInstruction( I.ret );
@@ -285,7 +323,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void mirrorBlockDataChange( MemoryBlock block ) {
 			debug assert( block.session == context.session );
 
-			MemoryBlock data = block.duplicate( MemoryBlock.Flag.interpreter | MemoryBlock.Flag.dynamicallyAllocated | MemoryBlock.Flag.doNotMirrorChanges );
+			MemoryBlock data = block.duplicate( MemoryBlock.Flag.ctime | MemoryBlock.Flag.dynamicallyAllocated | MemoryBlock.Flag.doNotMirrorChanges );
 			data.markDoNotGCAtSessionEnd( );
 
 			debug ( interpreter ) {

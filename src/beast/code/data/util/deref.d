@@ -28,7 +28,7 @@ final static class DataEntity_DereferenceProxy : ProxyDataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
-			cb.build_primitiveOperation( BackendPrimitiveOperation.dereference, sourceEntity_ );
+			cb.build_dereference( &sourceEntity_.buildCode );
 		}
 
 	private:

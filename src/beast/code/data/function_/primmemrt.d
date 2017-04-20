@@ -111,7 +111,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
-						auto var = new DataEntity_TmpLocalVariable( tp, cb.isCtime );
+						auto var = new DataEntity_TmpLocalVariable( tp );
 						cb.build_localVariableDefinition( var );
 						cb.build_primitiveOperation( operation, var, inst, args[ 1 ] );
 
@@ -126,7 +126,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
-						auto var = new DataEntity_TmpLocalVariable( returnType, cb.isCtime );
+						auto var = new DataEntity_TmpLocalVariable( returnType );
 						cb.build_localVariableDefinition( var );
 						cb.build_primitiveOperation( operation, tp, var, inst, args[ 1 ] );
 
@@ -141,7 +141,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binEq, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
-						auto var = new DataEntity_TmpLocalVariable( coreType.Bool, cb.isCtime );
+						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 						cb.build_localVariableDefinition( var );
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, inst, args[ 1 ] );
 
@@ -152,7 +152,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binNeq, tp ), //
 						( cb, inst, args ) { //
 							// 0th arg is operator
-							auto var = new DataEntity_TmpLocalVariable( coreType.Bool, cb.isCtime );
+							auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 							cb.build_localVariableDefinition( var );
 							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, inst, args[ 1 ] );
 

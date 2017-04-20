@@ -2,6 +2,9 @@ module beast.code.ast.stmt.codeblock;
 
 import beast.code.ast.toolkit;
 import beast.code.data.scope_.local;
+import beast.code.decorationlist;
+import beast.code.ast.stmt.statement;
+import beast.backend.ctime.codebuilder;
 
 final class AST_CodeBlockStatement : AST_Statement {
 
@@ -34,6 +37,15 @@ final class AST_CodeBlockStatement : AST_Statement {
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			const auto __gd = ErrorGuard( codeLocation );
 			auto _sgd = new LocalDataScope( ).scopeGuard;
+
+			auto decoList = scoped!DecorationList( decorationList );
+			auto decoData = scoped!StatementDecorationData( );
+
+			decoList.apply_statementDecorator( decoData );
+			decoList.enforceAllResolved( );
+
+			if ( decoData.isCtime )
+				cb = new CodeBuilder_Ctime( );
 
 			foreach ( stmt; subStatements )
 				stmt.buildStatementCode( env, cb );

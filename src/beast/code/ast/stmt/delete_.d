@@ -37,7 +37,7 @@ final class AST_DeleteStatement : AST_Statement {
 
 				benforce( refType.isReferenceType !is null, E.referenceTypeRequired, "Delete can only be used on references, not %s".format( refType.identificationString ) );
 
-				auto var = new DataEntity_TmpLocalVariable( refType, cb.isCtime );
+				auto var = new DataEntity_TmpLocalVariable( refType );
 				cb.build_localVariableDefinition( var );
 				cb.build_copyCtor( var, val );
 

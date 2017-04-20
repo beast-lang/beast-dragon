@@ -86,3 +86,10 @@ abstract class AST_Statement : AST_Node {
 		abstract void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb );
 
 }
+
+final class StatementDecorationData {
+
+	public:
+		bool isCtime;
+
+}

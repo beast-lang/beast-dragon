@@ -60,6 +60,11 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
+		/// Builds access to a memory referenced by given pointer arg
+		void build_dereference( ExprFunction arg ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
 		/// Builds access to context ptr
 		void build_contextPtr( ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
@@ -308,6 +313,9 @@ abstract class CodeBuilder : Identifiable {
 					result ~= "}\n";
 					return result.data;
 				}( ) );
+
+				// Primitive operations aren't supposed to have "results"
+				result_ = result_.init;
 			}
 
 			private pragma( inline ) {

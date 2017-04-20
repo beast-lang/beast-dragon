@@ -75,7 +75,7 @@ final class AST_CmpExpression : AST_Expression {
 
 			foreach ( item; items[ 0 .. $ - 1 ] ) {
 				DataEntity rightExpr = item.expr.buildSemanticTree_single( );
-				auto var = new DataEntity_TmpLocalVariable( rightExpr.dataType, rightExpr.isCtime );
+				auto var = new DataEntity_TmpLocalVariable( rightExpr.dataType );
 				auto varCtor = var.getCopyCtor( rightExpr );
 
 				auto cmpResult = resolveBinaryOperation( item.expr, leftOperand, var, cmpOperatorEnumConst( item.op ).dataEntity, item.op );
