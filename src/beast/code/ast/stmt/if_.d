@@ -38,8 +38,8 @@ final class AST_IfStatement : AST_Statement {
 
 			cb.build_if(  //
 					condition.buildSemanticTree_singleExpect( coreType.Bool ), //
-					( CodeBuilder cb ) => thenBranch.buildStatementCode( env, cb ), //
-					elseBranch ? ( CodeBuilder cb ) => elseBranch.buildStatementCode( env, cb ) : null  //
+					( CodeBuilder cb ) => thenBranch.buildStatementCode( env, cb ).inLocalDataScope, //
+					elseBranch ? ( CodeBuilder cb ) => elseBranch.buildStatementCode( env, cb ).inLocalDataScope : null  //
 					 );
 		}
 

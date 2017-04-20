@@ -8,7 +8,7 @@ public {
 	import beast.code.data.callable.matchset : CallMatchSet;
 	import beast.code.data.type.type : Symbol_Type;
 	import beast.code.data.entity : DataEntity;
-	import beast.code.data.scope_.scope_ : DataScope, currentScope, scopeGuard;
+	import beast.code.data.scope_.scope_ : DataScope, currentScope, scopeGuard, inLocalDataScope, inRootDataScope;
 	import beast.core.error.guard : ErrorGuard;
 	import beast.corelib.corelib : coreLibrary, coreConst, coreEnum, coreType, coreFunc;
 	import beast.core.task.guard : TaskGuard;

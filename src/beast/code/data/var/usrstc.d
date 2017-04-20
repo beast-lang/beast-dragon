@@ -74,8 +74,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 			const auto _gd = ErrorGuard( ast_.dataType.codeLocation );
 
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto _s = new RootDataScope( parent );
-				auto _sgd = _s.scopeGuard;
+				auto _sgd = new RootDataScope( parent ).scopeGuard;
 
 				DataEntity valueEntity;
 				if ( ast_.dataType.isAutoExpression ) {
@@ -84,11 +83,8 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 					valueEntity = ast_.value.buildSemanticTree_single( );
 					dataTypeWIP_ = valueEntity.dataType;
 				}
-				else {
+				else
 					enforceDone_typeDeduction( );
-					if ( ast_.value )
-						valueEntity = ast_.value.buildSemanticTree_singleInfer( dataTypeWIP_ );
-				}
 
 				// We allocate a memory block
 				MemoryBlock block = memoryManager.allocBlock( dataTypeWIP_.instanceSize );
@@ -102,7 +98,10 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 
 				if ( isCtime_ ) {
 					// If the variable is ctime, we execute the constructor in ctime
-					ast_.buildConstructor( substEntity, valueEntity, scoped!CodeBuilder_Ctime( ) );
+					if ( valueEntity )
+						ast_.buildConstructor( substEntity, valueEntity, scoped!CodeBuilder_Ctime( ) );
+					else
+						ast_.buildConstructor( substEntity, ast_.value, scoped!CodeBuilder_Ctime( ) );
 				}
 				else {
 					block.flags |= MemoryBlock.Flag.runtime;
@@ -110,12 +109,13 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 					// Otherwise, we add it to the init block
 					project.backend.buildInitCode( ( CodeBuilder cb ) { //
 						with ( memoryManager.session( SessionPolicy.watchCtChanges ) ) {
-							ast_.buildConstructor( substEntity, valueEntity, cb );
+							if ( valueEntity )
+								ast_.buildConstructor( substEntity, valueEntity, cb );
+							else
+								ast_.buildConstructor( substEntity, ast_.value, cb ).inRootDataScope( parent );
 						}
 					} );
 				}
-
-				_s.finish( );
 			}
 		}
 

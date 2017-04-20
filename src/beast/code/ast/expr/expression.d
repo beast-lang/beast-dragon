@@ -133,7 +133,6 @@ abstract class AST_Expression : AST_Statement {
 				CTExecResult ctexec = ctExec( expectedType );
 				ctexec.keep( );
 
-				_s.finish( );
 				assert( _s.itemCount <= 1, "StandaloneCtExec scope has %s items".format( _s.itemCount ) );
 
 				// No cleanup build - bulit variables remain (should be only one)

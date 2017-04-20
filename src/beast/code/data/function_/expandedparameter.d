@@ -60,7 +60,6 @@ final class ExpandedFunctionParameter : Identifiable {
 
 						param.constValue = arg.ctExec( ).keepValue;
 
-						_s.finish( );
 						assert( _s.itemCount <= 1 );
 					}
 				}

@@ -44,6 +44,14 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 						} );
 
+				// Ref copy ctor
+				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
+						ExpandedFunctionParameter.bootstrap( enm.xxctor.refAssign, this ), //
+						( cb, inst, args ) { //
+							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+						} );
+
 				// Ref ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.refAssign, baseType ), //
@@ -139,7 +147,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 			return this;
 		}
 
-		Symbol_Type baseType() {
+		Symbol_Type baseType( ) {
 			return baseType_;
 		}
 

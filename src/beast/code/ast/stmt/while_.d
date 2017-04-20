@@ -1,6 +1,7 @@
 module beast.code.ast.stmt.while_;
 
 import beast.code.ast.toolkit;
+import beast.code.data.scope_.local;
 
 final class AST_WhileStatement : AST_Statement {
 
@@ -34,6 +35,8 @@ final class AST_WhileStatement : AST_Statement {
 			const auto __gd = ErrorGuard( codeLocation );
 
 			cb.build_loop( ( CodeBuilder cb ) { //
+				auto _sgd = new LocalDataScope( ).scopeGuard;
+
 				cb.build_if(  //
 					condition.buildSemanticTree_singleExpect( coreType.Bool ).expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( condition, true, coreLibrary.enum_.operator.preNot ), //
 					( CodeBuilder cb ) { //

@@ -9,5 +9,5 @@ Void err1() {
 }
 
 Void err2() {
-	Int i = new auto(); //! error: referenceTypeRequired
+	Int i = new auto(); //! error: noMatchingOverload
 }

@@ -130,8 +130,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			codeResult_.formattedWrite( "%s{\n", tabs );
 
-			auto _s = new LocalDataScope( );
-			auto _sgd = _s.scopeGuard;
+			auto _sgd = new LocalDataScope( ).scopeGuard;
 			pushScope( );
 
 			string[ ] argumentNames;
@@ -165,7 +164,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
 			popScope( );
-			_s.finish( );
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
 			result_ = resultVarName;
@@ -189,9 +187,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			codeResult_.formattedWrite( "%s{\n", tabs );
 			pushScope( );
-
-			auto _s = new LocalDataScope( );
-			auto _sgd = _s.scopeGuard; // Build the condition
 
 			{
 				condition( this );
@@ -222,7 +217,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 			}
 
 			popScope( );
-			_s.finish( );
 
 			codeResult_.formattedWrite( "%s}\n", tabs );
 

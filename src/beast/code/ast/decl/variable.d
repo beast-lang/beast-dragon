@@ -64,6 +64,8 @@ final class AST_VariableDeclaration : AST_Declaration {
 			const auto __gd = ErrorGuard( codeLocation );
 			assert( currentScope );
 
+			// TODO: the code needs cleanup
+
 			VariableDeclarationData declData = new VariableDeclarationData( env );
 			DecorationList decorations = new DecorationList( decorationList );
 
@@ -93,6 +95,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 
 				DataEntity valueEntity;
 				DataEntity_UserLocalVariable var;
+				CodeBuilder ctorCb = cb;
 
 				if ( dataType.isAutoExpression ) {
 					benforce( value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format( currentScope.identificationString, identifier.str ) );
@@ -100,25 +103,24 @@ final class AST_VariableDeclaration : AST_Declaration {
 					valueEntity = value.buildSemanticTree_single;
 					var = new DataEntity_UserLocalVariable( identifier, valueEntity.dataType, decorations, declData );
 				}
-				else {
+				else
 					var = new DataEntity_UserLocalVariable( this, decorations, declData );
-
-					if ( value )
-						valueEntity = value.buildSemanticTree_singleInfer( var.dataType );
-				}
 
 				if ( declData.isCtime ) {
 					// We don't want the non-ctime codebuilder to create a definition for the variable (that is handled in mirroring for now)
-					buildConstructor( var, valueEntity, scoped!CodeBuilder_Ctime );
+					ctorCb = new CodeBuilder_Ctime;
 
 					// Add the variable to scope, so the destructor is generated on scope exit
 					cb.addToScope( var );
-
 				}
 				else {
 					cb.build_localVariableDefinition( var );
-					buildConstructor( var, valueEntity, cb );
 				}
+
+				if ( valueEntity )
+					buildConstructor( var, valueEntity, ctorCb );
+				else
+					buildConstructor( var, value, ctorCb );
 
 				currentScope.addLocalVariable( var );
 			}
@@ -139,6 +141,22 @@ final class AST_VariableDeclaration : AST_Declaration {
 		}
 
 	public:
+		void buildConstructor( DataEntity entity, AST_Expression value, CodeBuilder cb ) {
+			cb.build_scope( ( cb ) {
+				auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );
+
+				if ( value ) {
+					// colonAssign calls #ctor( #Ctor.refAssign, value );
+					if ( valueColonAssign )
+						match.arg( coreLibrary.enum_.xxctor.refAssign );
+
+					match.arg( value );
+				}
+
+				match.finish( ).buildCode( cb );
+			} );
+		}
+
 		void buildConstructor( DataEntity entity, DataEntity valueEntity, CodeBuilder cb ) {
 			cb.build_scope( ( cb ) {
 				auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );

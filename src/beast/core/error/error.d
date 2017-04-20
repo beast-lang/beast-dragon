@@ -65,7 +65,7 @@ enum E {
 	ctAssertFail, /// Assert failed at compile-time execution
 	ctStackOverflow, /// Exceeded maximum call recursion in the interpreter
 
-	// OVERLOADSETS:
+	// RESOLVING/OVERLOADSETS:
 	noMatchingOverload, /// No overload matches given parameters
 	ambiguousResolution, /// Multiple overloads match given parameters
 	unknownIdentifier, /// Identifier was not found (either recursively or not)

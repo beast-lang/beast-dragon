@@ -184,9 +184,6 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void build_if( ExprFunction condition, StmtFunction thenBranch, StmtFunction elseBranch ) {
 			pushScope( );
 
-			auto _s = new LocalDataScope( );
-			auto _sgd = _s.scopeGuard; // Build the condition
-
 			InstructionPtr condJmpInstr;
 			{
 				condition( this );
@@ -221,7 +218,6 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			}
 
 			popScope( );
-			_s.finish( );
 		}
 
 		override void build_loop( StmtFunction body_ ) {

@@ -26,7 +26,7 @@ final class Backend_Cpp : Backend {
 			taskManager.imminentIssueJob( { //
 				with ( memoryManager.session( SessionPolicy.watchCtChanges ) ) {
 					auto entryModule = project.entryModule.symbol.dataEntity;
-					auto _sgd = scopeGuard( new RootDataScope( entryModule ) );
+					auto _sgd = new RootDataScope( entryModule ).scopeGuard;
 					entryModule.expectResolveIdentifier( ID!"main" ).resolveCall( null, true ).buildCode( entryFunctionCallCB );
 				}
 			} );

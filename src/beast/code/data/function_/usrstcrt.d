@@ -92,8 +92,6 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 						cb.build_return( null );
 
 				} );
-
-				_s.finish( );
 			}
 		}
 
@@ -118,14 +116,10 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 		final void execute_parameterExpanding( ) {
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto _s = new RootDataScope( parent_ );
-				auto _sgd = _s.scopeGuard;
+				auto _sgd = new RootDataScope( parent_ ).scopeGuard;
 
 				foreach ( i, expr; ast_.parameterList.items )
 					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr, i );
-
-				_s.finish( );
-				// Do not cleanup the scope - it can and will be used
 			}
 		}
 

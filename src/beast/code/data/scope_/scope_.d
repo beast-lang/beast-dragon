@@ -4,6 +4,8 @@ import beast.code.data.toolkit;
 import beast.code.data.var.local;
 import beast.code.data.idcontainer;
 import beast.util.uidgen;
+import beast.code.data.scope_.local;
+import beast.code.data.scope_.root;
 
 /// DatScope is basically a namespace for data entities (the "Namespace" class stores symbols) - it is a namespace with a context
 /// DataScope is not responsible for calling destructors or constructors - destructors are handled by a codebuilder
@@ -103,29 +105,36 @@ DataScope currentScope( ) {
 	return context.currentScope;
 }
 
-ScopeGuard scopeGuard( DataScope scope_ ) {
-	return ScopeGuard( scope_ );
-}
-
-private struct ScopeGuard {
-
-	public:
-		this( DataScope scope_ ) {
-			context.scopeStack ~= context.currentScope;
-			context.currentScope = scope_;
-
-			debug this.scope_ = scope_;
-		}
-
+auto scopeGuard( DataScope scope_, bool finish = true ) {
+	struct Result {
 		~this( ) {
-			debug assert( context.currentScope is scope_ );
-			assert( context.scopeStack.length );
+			assert( context.currentScope is scope_ );
+
+			if ( finish )
+				scope_.finish( );
 
 			context.currentScope = context.scopeStack[ $ - 1 ];
 			context.scopeStack.length--;
 		}
 
-	private:
-		debug DataScope scope_;
+		DataScope scope_;
+		bool finish;
+	}
 
+	context.scopeStack ~= context.currentScope;
+	context.currentScope = scope_;
+
+	return Result( scope_, finish );
+}
+
+/// Executes given function in a new local data scope
+pragma( inline ) auto inLocalDataScope( T )( lazy T dg ) {
+	auto _gd = new LocalDataScope( ).scopeGuard;
+	return dg( );
+}
+
+/// Executes given function in a new root data scope
+pragma( inline ) auto inRootDataScope( T )( lazy T dg, DataEntity parent ) {
+	auto _gd = new RootDataScope( parent ).scopeGuard;
+	return dg( );
 }

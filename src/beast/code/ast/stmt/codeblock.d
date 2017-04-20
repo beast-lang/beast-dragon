@@ -1,6 +1,7 @@
 module beast.code.ast.stmt.codeblock;
 
 import beast.code.ast.toolkit;
+import beast.code.data.scope_.local;
 
 final class AST_CodeBlockStatement : AST_Statement {
 
@@ -32,7 +33,8 @@ final class AST_CodeBlockStatement : AST_Statement {
 	public:
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			const auto __gd = ErrorGuard( codeLocation );
-			
+			auto _sgd = new LocalDataScope( ).scopeGuard;
+
 			foreach ( stmt; subStatements )
 				stmt.buildStatementCode( env, cb );
 		}

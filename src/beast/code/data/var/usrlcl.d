@@ -6,7 +6,6 @@ import beast.code.decorationlist;
 import beast.code.ast.decl.variable;
 import beast.code.ast.expr.vardecl;
 import beast.code.ast.expr.expression;
-import beast.code.data.scope_.local;
 
 final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
@@ -27,23 +26,15 @@ final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 		private this( Identifier id, AST_Expression typeExpression, DecorationList decorationList, VariableDeclarationData data ) {
 			const auto _gd = ErrorGuard( this );
 
-			Symbol_Type dataType;
 			// Deduce data type
-			{
-				auto _s = new LocalDataScope( );
-				auto _sgd = _s.scopeGuard;
-
-				dataType = typeExpression.standaloneCtExec_asType( );
-
-				_s.finish( );
-			}
-
+			Symbol_Type dataType = typeExpression.standaloneCtExec_asType( ).inLocalDataScope;
+			
 			this( identifier, dataType, decorationList, data );
 		}
 
 		this( Identifier id, Symbol_Type dataType, DecorationList decorationList, VariableDeclarationData data ) {
 			identifier_ = id;
-			
+
 			benforce( dataType.instanceSize > 0, E.zeroSizeVariable, "Variable %s of type %s has zero size".format( identifier_.str, dataType.identificationString ) );
 
 			super( dataType, data.isCtime );

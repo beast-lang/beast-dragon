@@ -76,6 +76,7 @@ String foo( Enum e, @ctime Type T ) { // T is a 'template' parameter
 }
 
 Void main() {
+	// @ctime variables are evaluated at compile time
   @ctime Type T! = Int; // Type variables!
   T x = 3;
 

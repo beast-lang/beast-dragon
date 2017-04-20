@@ -141,7 +141,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 			protected:
 				override MatchLevel _matchNextArgument( AST_Expression expression, DataEntity entity, Symbol_Type dataType ) {
-					auto _sgd = scope_.scopeGuard;
+					auto _sgd = scope_.scopeGuard( false );
 					MatchLevel result = MatchLevel.fullMatch;
 
 					if ( argumentIndex_ >= sym_.parameters.length ) {

@@ -12,7 +12,7 @@ struct CallMatchSet {
 	public:
 		this( Overloadset overloadset, AST_Node ast, bool reportErrors = true, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			scope_ = new LocalDataScope( );
-			auto _sgd = scope_.scopeGuard;
+			auto _sgd = scope_.scopeGuard( false );
 
 			this.reportErrors = reportErrors;
 
@@ -35,7 +35,7 @@ struct CallMatchSet {
 
 	public:
 		ref CallMatchSet arg( T : DataEntity )( T entity ) {
-			auto _sgd = scope_.scopeGuard;
+			auto _sgd = scope_.scopeGuard( false );
 
 			Symbol_Type dataType = entity.dataType;
 			argumentEntities ~= entity;
@@ -53,7 +53,7 @@ struct CallMatchSet {
 		}
 
 		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
-			auto _sgd = scope_.scopeGuard;
+			auto _sgd = scope_.scopeGuard( false );
 
 			DataEntity entity = expr.buildSemanticTree_single( false );
 			Symbol_Type dataType = entity ? entity.dataType : null;
@@ -128,7 +128,7 @@ struct CallMatchSet {
 			benforce( bestMatchCount == 1, E.ambiguousResolution, //
 					"Ambiguous overload resolution for arguments %s:%s".format(  //
 						argumentListIdentificationString, //
-						matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\n\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, x.matchLevel ) ).joiner, //
+						matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\n\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, cast( int ) x.matchLevel ) ).joiner, //
 						 ) );
 
 			return bestMatch;

@@ -67,8 +67,6 @@ final class CodeBuilder_Ctime : CodeBuilder {
 				result = resultVar.memoryPtr;
 			}
 
-			auto _s = new LocalDataScope( );
-			auto _sgd = _s.scopeGuard;
 			pushScope( );
 
 			MemoryPtr ctx;
@@ -96,7 +94,6 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			Interpreter.executeFunction( function_, result, ctx, args );
 
 			popScope( );
-			_s.finish( );
 
 			result_ = result;
 		}

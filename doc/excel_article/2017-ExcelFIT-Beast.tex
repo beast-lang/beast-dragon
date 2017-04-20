@@ -81,13 +81,13 @@
 %--------------------------------------------------------
 \section{Introduction}
 
-There are two ways of how to approach introducing Beast -- either it can be referred as a programming language designed to provide a better alternative for C++ programmers or as a programming language that implements the code catching concept, which introduces vast metaprogramming and compile-time computing possibilities.
+There are two ways of how to approach introducing Beast -- either it can be referred as a programming language designed to provide a better alternative for C++ programmers or as a programming language that implements the code hatching concept, which introduces vast metaprogramming and compile-time computing possibilities.
 
 As a C++ alternative, the language provides syntax and functionality similar to C++, but adds features designed to increase coding comfort, code readability and safety. The most notable changes are:
 \begin{itemize}
 	\item Instead of header/source files, Beast has modules with importing system similar to D or Java.
 	\item Beast variables are const-by-default. As C++ has the \inlineCppCode{const} keyword to mark variables constant, Beast has the \inlineCode{Type!} suffix operator to make variables not constant.
-	\item References and pointers are designed differently. In Beast, references are rebindable and can be used in most cases where C++ pointers would be used. Only when pointer arithmetic is needed, Beast pointers have to be used.
+	\item References and pointers are designed differently. In Beast, references are rebindable and can be used in most cases where C++ pointers would be used. Beast pointers are to be used only when pointer arithmetic is needed (or double indirection, as there cannot be references of references).
 	\item The \inlineCode{#} symbol is valid for identifiers. It is used as a prefix symbol for reflection or compiler-related properties and functions such as \\\inlineCode{variable.#type}, \inlineCode{Type.#instanceSize} or \\\inlineCode{var.#implicitCast( TargetType )}.
 \end{itemize}
 
@@ -429,7 +429,7 @@ Void main() {
 	T x = 3;
 	
 	T = C;
-	T!? c := new C(); // C!? - reference to a mutable object, := reference assignment operator
+	T!? c := new auto(); // C!? - reference to a mutable object, := reference assignment operator
 	c.x = 5;
 	
 	// Compile-time function execution, :XXX accessor that looks in parameter type

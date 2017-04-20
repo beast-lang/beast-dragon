@@ -46,10 +46,16 @@ final class AST_NewExpression : AST_Expression {
 			Symbol_Type ttype;
 
 			if ( auto autoExpr = type.isAutoExpression ) {
-				benforce( inferredType !is null, E.cannotInfer, "Cannot infer type in new auto expression" );
+				if ( !inferredType ) {
+					benforce( !errorOnInferrationFailure, E.cannotInfer, "Cannot infer type in new auto expression" );
+					return Overloadset( );
+				}
 
 				auto refInferredType = inferredType.isReferenceType;
-				benforce( refInferredType !is null, E.referenceTypeRequired, "Inferred type %s is not a reference type".format( inferredType.identificationString ) );
+				if ( !refInferredType ) {
+					benforce( !errorOnInferrationFailure, E.referenceTypeRequired, "Inferred type %s is not a reference type".format( inferredType.identificationString ) );
+					return Overloadset( );
+				}
 
 				ttype = refInferredType.baseType;
 			}
