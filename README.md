@@ -44,9 +44,7 @@ Source file extension: `.be`
 
 ## Sample code
 
-Please note that this code describes what the language should be able to do when done, not what it can do now.
-
-For currently compilable code, se tests in ```test/tests```. Compiling (```dub build``` in the ```test``` directory) and running (```./testsuite``` in the ```bin``` directory) the testsuite generates commands required for running each test (commands are in log files in the ```test/log``` directory).
+Please note that this code describes what the language should be able to do when done, not what it can do now. For currently compilable code, ses tests in ```test/tests```. Compiling (```dub build``` in the ```test``` directory) and running (```./testsuite``` in the ```bin``` directory) the testsuite generates commands required for running each test (commands are in log files in the ```test/log``` directory).
 
 ```beast
 class C {

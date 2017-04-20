@@ -292,27 +292,29 @@ abstract class CodeBuilder : Identifiable {
 			override void build_primitiveOperation( BackendPrimitiveOperation op, Symbol_Type argT = null, ExprFunction arg1 = null, ExprFunction arg2 = null, ExprFunction arg3 = null ) {
 				mixin( "static import beast.backend.%s.primitiveop;".format( packageName ) );
 
-				mixin( ( ) { //
-					import std.array : appender;
-					import std.traits : Parameters;
+				//build_scope( ( cb ) {
+					mixin( { //
+						import std.array : appender;
+						import std.traits : Parameters;
 
-					auto result = appender!string;
-					result ~= "final switch( op ) {\n";
+						auto result = appender!string;
+						result ~= "final switch( op ) {\n";
 
-					foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
-						result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
+						foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
+							result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
 
-						static if ( __traits( hasMember, mixin( "beast.backend.%s.primitiveop".format( packageName ) ), "primitiveOp_%s".format( opStr ) ) ) {
-							mixin( "alias func = beast.backend.%s.primitiveop.primitiveOp_%s;".format( packageName, opStr ) );
-							result ~= "{ primitiveOp_%s!( beast.backend.%s.primitiveop.primitiveOp_%s, packageName, \"%s\" )( argT, arg1, arg2, arg3 ); break; }\n".format( Parameters!func.length, packageName, opStr, opStr );
+							static if ( __traits( hasMember, mixin( "beast.backend.%s.primitiveop".format( packageName ) ), "primitiveOp_%s".format( opStr ) ) ) {
+								mixin( "alias func = beast.backend.%s.primitiveop.primitiveOp_%s;".format( packageName, opStr ) );
+								result ~= "{ primitiveOp_%s!( beast.backend.%s.primitiveop.primitiveOp_%s, packageName, \"%s\" )( argT, arg1, arg2, arg3 ); break; }\n".format( Parameters!func.length, packageName, opStr, opStr );
+							}
+							else
+								result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );
 						}
-						else
-							result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );
-					}
 
-					result ~= "}\n";
-					return result.data;
-				}( ) );
+						result ~= "}\n";
+						return result.data;
+					}( ) );
+				//} ).inLocalDataScope;
 
 				// Primitive operations aren't supposed to have "results"
 				result_ = result_.init;
