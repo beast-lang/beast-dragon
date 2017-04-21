@@ -116,7 +116,7 @@ final class MemoryBlock {
 		}
 
 		pragma( inline ) bool flag( SharedFlag flag ) {
-			return ( atomicLoad( sharedFlags_ ) & flag ) == flag;
+			return ( sharedFlags & flag ) == flag;
 		}
 
 		pragma( inline ) auto sharedFlags( ) {
@@ -129,7 +129,7 @@ final class MemoryBlock {
 
 		pragma( inline ) void setFlags( SharedFlag flag, bool set ) {
 			if ( set )
-				atomicOp!"|="( sharedFlags_, flag );
+				setFlags( flag );
 			else
 				atomicOp!"&="( sharedFlags_, ~flag );
 		}

@@ -23,7 +23,7 @@ __gshared TaskManager taskManager;
 final class ContextData {
 
 	public:
-		alias ChangedMemoryBlocks = RedBlackTree!MemoryBlock;
+		alias ChangedMemoryBlocks = Typedef!( MemoryBlock[ ] );
 		alias NewMemoryBlocks = Typedef!( MemoryBlock[ ] );
 
 	public:
@@ -73,8 +73,6 @@ final class ContextData {
 
 					pointers = new RedBlackTree!MemoryPtr;
 
-					ContextData.ChangedMemoryBlocks changedMemoryBlocks;
-
 					// If it is the context policy to watch compile time variable changes, we create it a dedicated container (this applies for function bodies)
 					if ( policy == SessionPolicy.watchCtChanges ) {
 						changedMemoryBlocks = new ChangedMemoryBlocks( );
@@ -88,8 +86,6 @@ final class ContextData {
 						newMemoryBlocks = context.sessionData.newMemoryBlocks;
 					}
 					// Otherwise, the container is null -> saves are not changes (applies to static variables)
-
-					this.changedMemoryBlocks = changedMemoryBlocks;
 				}
 
 			public:
@@ -107,7 +103,7 @@ final class ContextData {
 
 				/// Memory blocks whose data has changed (freed/malloced/writtento) since the last check
 				/// If null then don't track changes
-				ChangedMemoryBlocks changedMemoryBlocks;
+				ChangedMemoryBlocks* changedMemoryBlocks;
 				NewMemoryBlocks* newMemoryBlocks;
 
 		}

@@ -110,16 +110,13 @@ final class AST_VariableDeclaration : AST_Declaration {
 					varCb = new CodeBuilder_Ctime;
 
 				varCb.build_localVariableDefinition( var );
+				
 				if ( valueEntity )
 					buildConstructor( var, valueEntity, varCb );
 				else
 					buildConstructor( var, value, varCb );
 
 				currentScope.addLocalVariable( var );
-
-				// If the variable is @ctime, add it also to the nonctime codebuilder scope so it can get destroyed on scope exit
-				if ( declData.isCtime )
-					cb.addToScope( var );
 			}
 		}
 

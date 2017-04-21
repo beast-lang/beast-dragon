@@ -29,6 +29,11 @@ struct CoreLibrary_Functions {
 					( cb, args ) { //
 						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
 					} ) );
+			sink( printInt = new Symbol_PrimitiveStaticRuntimeFunction( ID!"print", parent, //
+					coreType.Void, ExpandedFunctionParameter.bootstrap( coreType.Int64 ), //
+					( cb, args ) { //
+						cb.build_primitiveOperation( BackendPrimitiveOperation.print, args[ 0 ] );
+					} ) );
 
 			sink( malloc = new Symbol_PrimitiveStaticRuntimeFunction( ID!"malloc", parent, //
 					coreType.Pointer, ExpandedFunctionParameter.bootstrap( coreType.Size ), //

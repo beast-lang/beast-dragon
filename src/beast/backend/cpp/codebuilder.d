@@ -56,7 +56,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				codeResult_.formattedWrite( "%s%s {\n", tabs, proto );
 
 				labelHash_ = func.outerHash;
-				pushScope( );
+				pushScope( ScopeFlags.sessionRoot );
 
 				codeResult_.formattedWrite( "%ssize_t ctimeStackBP = ctimeStackSize;\n", tabs );
 
@@ -202,7 +202,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			{
 				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
 				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
-					pushScope( );
+					pushScope( ScopeFlags.sessionRoot );
 					thenBranch( this );
 					popScope( );
 				}
@@ -214,7 +214,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
 				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
 					codeResult_.formattedWrite( "%selse {\n", tabs );
-					pushScope( );
+					pushScope( ScopeFlags.sessionRoot );
 					elseBranch( this );
 					popScope( );
 					codeResult_.formattedWrite( "%s}\n", tabs );
@@ -231,7 +231,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_loop( StmtFunction body_ ) {
 			// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
 			with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
-				pushScope( ScopeFlags.loop );
+				pushScope( ScopeFlags.loop | ScopeFlags.sessionRoot );
 				codeResult_.formattedWrite( "%swhile( true ) {\n", tabs( -1 ) );
 				body_( this );
 				codeResult_.formattedWrite( "%s}\n", tabs( -1 ) );
@@ -354,7 +354,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			if ( block.startPtr == ptr )
 				return "%s%s".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ) );
 			else
-				return "%sOFFSET( %s, %s )".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ), ptr - block.startPtr );
+				return "%sOFFSET( %s, %s )".format( block.isRuntime ? null : "CTMEM ", cppIdentifier( block, true ), ptr.val - block.startPtr.val );
 		}
 
 	public:
@@ -425,7 +425,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			// Update pointers
 			foreach ( ptr; memoryManager.pointersInSessionBlock( block ) ) {
 				assert( ptr.val >= block.startPtr.val && ptr.val <= block.endPtr.val - hardwareEnvironment.pointerSize );
-				codeResult_.formattedWrite( "%sVAL( %s, void* ) = %s;\n", tabs( 1 ), id, memoryPtrIdentifier( ptr.readMemoryPtr ) );
+				codeResult_.formattedWrite( "%sVAL( %s, void* ) = %s;\n", tabs( 1 ), memoryPtrIdentifier( ptr ), memoryPtrIdentifier( ptr.readMemoryPtr ) );
 			}
 
 			codeResult_.formattedWrite( "%s}\n", tabs );

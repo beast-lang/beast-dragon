@@ -4,7 +4,7 @@ import beast.backend.toolkit;
 import beast.util.identifiable;
 import beast.backend.ctime.codebuilder : CodeBuilder_Ctime;
 import beast.util.uidgen;
-import std.algorithm.searching : all;
+import std.algorithm.searching : all, canFind;
 
 /// Root class for building code with any backend
 abstract class CodeBuilder : Identifiable {
@@ -140,17 +140,9 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {
-			string id = var.identificationString;
-			bool isCtime = var.isCtime;
-
 			// We don't call var.tryResolveIdentifier because of Type variables
 			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
-			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( var.isCtime ? new CodeBuilder_Ctime : this );
-
-			if ( var.isCtime ) {
-				mirrorCtimeChanges( );
-				mirrorBlockDeallocation( var.memoryBlock );
-			}
+			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( this );
 		}
 
 	protected:
@@ -159,12 +151,16 @@ abstract class CodeBuilder : Identifiable {
 			if ( this.isCtime || !context.sessionData.changedMemoryBlocks )
 				return;
 
-			foreach ( block; *context.sessionData.newMemoryBlocks ) {
+			auto changedMemoryBlocks = *context.sessionData.changedMemoryBlocks;
+			auto newMemoryBlocks = *context.sessionData.newMemoryBlocks;
+
+			foreach ( block; newMemoryBlocks ) {
 				// We ignore memory blocks that are runtime
+				// Also we ignore blocks with "doNotMirrorChanges" flag (those are for example memory blocks that store data for mirroring)
 				if ( block.isRuntime || block.flag( MemoryBlock.Flag.doNotMirrorChanges ) )
 					continue;
 
-				assert( block.flag( MemoryBlock.SharedFlag.allocated ) );
+				assert( block.flag( MemoryBlock.SharedFlag.allocated ) && block.flag( MemoryBlock.SharedFlag.changed ) );
 
 				// If the block has been both allocated and deallocated between two mirorrings, ignore it completely
 				if ( block.flag( MemoryBlock.SharedFlag.freed ) )
@@ -173,8 +169,9 @@ abstract class CodeBuilder : Identifiable {
 				mirrorBlockAllocation( block );
 			}
 
-			foreach ( block; context.sessionData.changedMemoryBlocks ) {
+			foreach ( block; changedMemoryBlocks ) {
 				// We ignore memory blocks that are runtime
+				// Also we ignore blocks with "doNotMirrorChanges" flag (those are for example memory blocks that store data for mirroring)
 				if ( block.isRuntime || block.flag( MemoryBlock.Flag.doNotMirrorChanges ) )
 					continue;
 
@@ -184,24 +181,22 @@ abstract class CodeBuilder : Identifiable {
 
 				assert( block.flag( MemoryBlock.SharedFlag.changed ) );
 
-				if ( block.flag( MemoryBlock.SharedFlag.freed ) ) {
-					// We don't mirror destruction of local variables - those are handled in scope exit destructors
-					if ( !block.flag( MemoryBlock.Flag.local ) )
-						mirrorBlockDeallocation( block );
-				}
+				if ( block.flag( MemoryBlock.SharedFlag.freed ) )
+					mirrorBlockDeallocation( block );
 				else
 					mirrorBlockDataChange( block );
 
 				block.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.allocated, false );
 			}
 
-			context.sessionData.changedMemoryBlocks.clear( );
+			context.sessionData.changedMemoryBlocks.length = 0;
 			context.sessionData.newMemoryBlocks.length = 0;
 		}
 
 		/// Trashes unmirrored ctime changes - used when there was an error during the compilation
 		final void trashCtimeChanges( ) {
-			context.sessionData.changedMemoryBlocks.clear( );
+			context.sessionData.changedMemoryBlocks.length = 0;
+			context.sessionData.newMemoryBlocks.length = 0;
 		}
 
 		void mirrorBlockAllocation( MemoryBlock block ) {
@@ -264,6 +259,24 @@ abstract class CodeBuilder : Identifiable {
 		void generateScopeExit( ref Scope scope_ ) {
 			foreach_reverse ( var; scope_.variables )
 				build_dtor( var );
+
+			if ( scope_.flags & ScopeFlags.sessionRoot ) {
+				assert( !this.isCtime );
+
+				foreach ( block; context.sessionData.memoryBlocks.byValue ) {
+					// We ignore memory blocks that are runtime
+					// Also we ignore blocks with "doNotMirrorChanges" flag (those are for example memory blocks that store data for mirroring)
+					if ( block.isRuntime || block.flag( MemoryBlock.Flag.doNotMirrorChanges ) )
+						continue;
+
+					// If the block allocation was not mirrored yet (mirroring would clear the flag), we don't need to mirror deletion
+					if ( block.flag( MemoryBlock.SharedFlag.allocated ) )
+						continue;
+
+					mirrorBlockDeallocation( block );
+				}
+			}
+
 		}
 
 	protected:
@@ -284,6 +297,9 @@ abstract class CodeBuilder : Identifiable {
 			/// Whether it is possible to use continue statement on the scope
 			continuable = breakableWithoutLabel << 1,
 
+			/// The scope is session root scope - exiting it would also exit a session
+			sessionRoot = continuable << 1,
+
 			none = 0,
 			loop = breakableWithoutLabel | continuable,
 		}
@@ -293,27 +309,27 @@ abstract class CodeBuilder : Identifiable {
 				mixin( "static import beast.backend.%s.primitiveop;".format( packageName ) );
 
 				//build_scope( ( cb ) {
-					mixin( { //
-						import std.array : appender;
-						import std.traits : Parameters;
+				mixin( { //
+					import std.array : appender;
+					import std.traits : Parameters;
 
-						auto result = appender!string;
-						result ~= "final switch( op ) {\n";
+					auto result = appender!string;
+					result ~= "final switch( op ) {\n";
 
-						foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
-							result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
+					foreach ( opStr; __traits( derivedMembers, BackendPrimitiveOperation ) ) {
+						result ~= "case BackendPrimitiveOperation.%s:\n".format( opStr );
 
-							static if ( __traits( hasMember, mixin( "beast.backend.%s.primitiveop".format( packageName ) ), "primitiveOp_%s".format( opStr ) ) ) {
-								mixin( "alias func = beast.backend.%s.primitiveop.primitiveOp_%s;".format( packageName, opStr ) );
-								result ~= "{ primitiveOp_%s!( beast.backend.%s.primitiveop.primitiveOp_%s, packageName, \"%s\" )( argT, arg1, arg2, arg3 ); break; }\n".format( Parameters!func.length, packageName, opStr, opStr );
-							}
-							else
-								result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );
+						static if ( __traits( hasMember, mixin( "beast.backend.%s.primitiveop".format( packageName ) ), "primitiveOp_%s".format( opStr ) ) ) {
+							mixin( "alias func = beast.backend.%s.primitiveop.primitiveOp_%s;".format( packageName, opStr ) );
+							result ~= "{ primitiveOp_%s!( beast.backend.%s.primitiveop.primitiveOp_%s, packageName, \"%s\" )( argT, arg1, arg2, arg3 ); break; }\n".format( Parameters!func.length, packageName, opStr, opStr );
 						}
+						else
+							result ~= "assert( 0, \"primitiveOp %s is not implemented for codebuilder.%s\" );\n".format( opStr, packageName );
+					}
 
-						result ~= "}\n";
-						return result.data;
-					}( ) );
+					result ~= "}\n";
+					return result.data;
+				}( ) );
 				//} ).inLocalDataScope;
 
 				// Primitive operations aren't supposed to have "results"

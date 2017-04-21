@@ -189,11 +189,6 @@ struct CTExecResult {
 			codeBuilder_.popScope( );
 		}
 
-		/// Returns list of local variables in whose the result is stored in (destroying them destroys the result)
-		pragma( inline ) DataEntity_LocalVariable[ ] scopeVariables( ) {
-			return codeBuilder_.scopeItems;
-		}
-
 	private:
 		CodeBuilder_Ctime codeBuilder_;
 

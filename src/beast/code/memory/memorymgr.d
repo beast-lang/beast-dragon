@@ -13,7 +13,6 @@ import beast.core.error.error : wereErrors;
 
 debug ( memory ) {
 	import std.stdio : writefln;
-	import core.runtime : defaultTraceHandler;
 }
 
 /// MemoryManager is in charge of all @ctime-allocated memory
@@ -92,12 +91,12 @@ final class MemoryManager {
 
 			// result.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.allocated ); no need - done in memoryblock constructor
 			if ( auto chbl = context.sessionData.changedMemoryBlocks ) {
-				chbl.insert( result );
+				*chbl ~= result;
 				*context.sessionData.newMemoryBlocks ~= result;
 			}
 
 			debug ( memory )
-				writefln( "ALLOC %s (%s bytes)\n%s\n", result.startPtr, bytes, defaultTraceHandler.toString );
+				writefln( "ALLOC %s (%s bytes)\n", result.startPtr, bytes );
 
 			return result;
 		}
@@ -130,6 +129,7 @@ final class MemoryManager {
 						mmap_ = mmap_[ 0 .. i ] ~ mmap_[ i + 1 .. $ ];
 
 						assert( block.startPtr.val in context.sessionData.memoryBlocks );
+						assert( !block.flag( MemoryBlock.SharedFlag.freed ) );
 						context.sessionData.memoryBlocks.remove( block.startPtr.val );
 
 						// We also have to unmark pointers in the block
@@ -138,12 +138,12 @@ final class MemoryManager {
 						if ( auto chbl = context.sessionData.changedMemoryBlocks ) {
 							// If the block was both allocated and dealllocated between two change checks, we don't need to have it in the change list at all
 							if ( !block.flag( MemoryBlock.SharedFlag.changed ) )
-								chbl.insert( block );
+								*chbl ~= block;
 						}
 						block.setFlags( MemoryBlock.SharedFlag.changed | MemoryBlock.SharedFlag.freed );
 
 						debug ( memory )
-							writefln( "FREE %s\n%s\n", ptr, defaultTraceHandler.toString );
+							writefln( "FREE %s\n", ptr );
 
 						return;
 					}
@@ -200,7 +200,7 @@ final class MemoryManager {
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
 
 			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
-				context.sessionData.changedMemoryBlocks.insert( block );
+				*context.sessionData.changedMemoryBlocks ~= block;
 				block.setFlags( MemoryBlock.SharedFlag.changed );
 			}
 		}
@@ -253,7 +253,7 @@ final class MemoryManager {
 			auto block = ptr.block;
 			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
 				block.setFlags( MemoryBlock.SharedFlag.changed );
-				context.sessionData.changedMemoryBlocks.insert( block );
+				*context.sessionData.changedMemoryBlocks ~= block;
 			}
 		}
 
@@ -266,7 +266,7 @@ final class MemoryManager {
 			auto block = ptr.block;
 			if ( context.sessionData.changedMemoryBlocks && !block.flag( MemoryBlock.SharedFlag.changed ) ) {
 				block.setFlags( MemoryBlock.SharedFlag.changed );
-				context.sessionData.changedMemoryBlocks.insert( block );
+				*context.sessionData.changedMemoryBlocks ~= block;
 			}
 		}
 
@@ -316,7 +316,7 @@ final class MemoryManager {
 
 			debug ( gc ) import std.stdio : writefln;
 
-			assert( wereErrors || context.sessionData.policy != SessionPolicy.watchCtChanges || context.sessionData.changedMemoryBlocks.empty, "There are unmirrored changes left!" );
+			assert( wereErrors || context.sessionData.policy != SessionPolicy.watchCtChanges || context.sessionData.changedMemoryBlocks.length == 0, "There are unmirrored changes left!" );
 
 			// "GC" cleanup blocks at session end
 			{
@@ -332,7 +332,8 @@ final class MemoryManager {
 					list.length--;
 
 					auto pointersInBlock = pointersInSessionBlock( block );
-					assert( wereErrors || ( !block.isLocal && block.isCtime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
+					// This doesn't apply anymore, because @ctime variable destructors aren't called anymore (because it's impossible)
+					// assert( wereErrors || ( !block.isLocal && block.isCtime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
 
 					foreach ( ptr; pointersInBlock ) {
 						MemoryPtr ptrptr = ptr.readMemoryPtr;

@@ -39,6 +39,9 @@ For presentation:
 
 BBasile (does simple editor with syntax highlight): b2.temp@gmx.com
 
+-- Problem with @ctime variable destructor calls when calling break; or return; or so - they can't be actually called
+	- @ctime destructors would be called "last" ? Or not at all?
+
 
 -- Reflection of comments + documentation generation
 -- Ability to pass ctime string using a command line in beast

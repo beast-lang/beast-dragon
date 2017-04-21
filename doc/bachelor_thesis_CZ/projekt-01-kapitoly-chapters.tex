@@ -1388,6 +1388,10 @@ Ačkoli zde funkce \inlineCode{calc} při volání na řádcích \ref{ctime:impl
 \subsection{Typové proměnné}
 Typové proměnné lze z formálního hlediska považovat za typické \ctime proměnné. Jediným případem, kdy se typová proměnná liší od ostatních \ctime proměnných, je konstrukt pro deklaraci proměnné.
 
+
+\subsection{Destruktory lokálních @ctime proměnných}
+% TODO
+
 \subsection{Možné konflikty referencí, \ctime a CTFE}
 Uvažme následující kód:
 \begin{code}
@@ -1447,6 +1451,18 @@ Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru.
 
 % TODO ref viz - viz kapitola/oddíl/xxx
 
-- Task guard, multithreading, dependency loop, tasks jako takové, error poisoning
+\section{Task guards}
+-vícevláknové, dependency loop, poisoning, princip tasks
+
+\section{Memory}
+- všechno má svůj memory block - jednotný přístup
+
+\section{Data entitites}
+- memory bloky pro proměnné se alokují až při Codebuilder.build\_localVariableDefinition
+
+\section{Ctime stack}
+
+\section{Memory sessions}
+
 - Memory space - to už bylo popsáno
 - Overload resolution + inferring + @ctime

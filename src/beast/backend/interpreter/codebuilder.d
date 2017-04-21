@@ -43,7 +43,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			currentFunction_ = func;
 
-			pushScope( );
+			pushScope( ScopeFlags.sessionRoot );
 			body_( this );
 
 			// Function MUST have a return instruction (for user functions, they're added automatically when return type is void)
@@ -231,7 +231,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			{
 				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
 				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
-					pushScope( );
+					pushScope( ScopeFlags.sessionRoot );
 					thenBranch( this );
 					popScope( );
 
@@ -246,7 +246,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			if ( elseBranch ) {
 				// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
 				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
-					pushScope( );
+					pushScope( ScopeFlags.sessionRoot );
 					elseBranch( this );
 					popScope( );
 					setInstructionOperand( thenJmpInstr, 0, jumpTarget );
@@ -262,7 +262,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			// Branch bodies are in custom sessions to prevent changing @ctime variables outside the runtime bodies
 			with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) ) {
-				pushScope( );
+				pushScope( ScopeFlags.sessionRoot );
 				body_( this );
 				popScope( );
 			}
@@ -345,16 +345,24 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			foreach ( ptr; memoryManager.pointersInSessionBlock( block ) ) {
 				assert( ptr.val >= block.startPtr.val && ptr.val <= block.endPtr.val - hardwareEnvironment.pointerSize );
 
-				result_ = blockOperand;
-				build_offset( ptr.val - block.startPtr.val );
+				build_memoryAccess_noMirrorCtimeChanges( ptr );
 				auto target = result_;
 
-				build_memoryAccess_noMirrorCtimeChanges( ptr.readMemoryPtr );
-				addInstruction( I.stAddr, target, result_, ptrSize );
+				auto ptrPtr = ptr.readMemoryPtr;
+
+				if ( ptrPtr.isNull ) {
+					addInstruction( I.movConst, target, 0.iopLiteral, ptrSize );
+				}
+				else {
+					build_memoryAccess_noMirrorCtimeChanges( ptrPtr );
+					addInstruction( I.stAddr, target, result_, ptrSize );
+				}
 			}
 		}
 
 		override void mirrorBlockDeallocation( MemoryBlock block ) {
+			assert( block.isCtime );
+
 			addInstruction( I.freeCt, block.bpOffset.iopLiteral );
 		}
 

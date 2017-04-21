@@ -13,7 +13,7 @@ Bool x = test();
 
 Void main() {
 	if( x )
-		print( x );
+		print( x ); //! stdout: 1
 	else
 		assert( false );
 }
