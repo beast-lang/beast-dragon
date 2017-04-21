@@ -50,7 +50,7 @@ final class AST_LogicExpression : AST_Expression {
 			if ( !result )
 				return Overloadset( );
 
-			DataEntity opArg = ( op == Token.Operator.logOr ) ? coreLibrary.enum_.operator.binOr.dataEntity : coreLibrary.enum_.operator.binAnd.dataEntity;
+			DataEntity opArg = ( op == Token.Operator.logOr ) ? coreEnum.operator.binOr.dataEntity : coreEnum.operator.binAnd.dataEntity;
 
 			foreach ( item; items )
 				result = resolveBinaryOperation( this, result, item, opArg, op );

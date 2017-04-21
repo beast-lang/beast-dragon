@@ -38,7 +38,7 @@ final class AST_WhileStatement : AST_Statement {
 				auto _sgd = new LocalDataScope( ).scopeGuard;
 
 				cb.build_if(  //
-					condition.buildSemanticTree_singleExpect( coreType.Bool ).expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( condition, true, coreLibrary.enum_.operator.preNot ), //
+					condition.buildSemanticTree_singleExpect( coreType.Bool ).expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( condition, true, coreEnum.operator.preNot ), //
 					( CodeBuilder cb ) { //
 						cb.build_break( );
 					}, null );

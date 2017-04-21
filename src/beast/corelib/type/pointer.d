@@ -25,8 +25,8 @@ final class Symbol_Type_Pointer : Symbol_StaticClass {
 			auto tp = &coreType;
 
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( this ); // a = b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreLibrary.enum_.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreLibrary.enum_.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
 
 			{
 				auto ops = Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( this ); // a == b, a != b

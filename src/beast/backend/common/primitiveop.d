@@ -25,6 +25,9 @@ enum BackendPrimitiveOperation {
 	intLt, /// (arg2 < arg3 => arg1, considers argT.instanceSize)
 	intLte, /// (arg2 <= arg3 => arg1, considers argT.instanceSize)
 
+	// CONVERSION ops
+	int32To64, /// (arg2 => arg1)
+
 	// REREFERENCE/POINTER ops
 	markPtr, /// (arg1) Marks given memory as a pointer (used for compile-time stuff)
 	unmarkPtr, /// (arg1) Unmarks given memory as a pointer

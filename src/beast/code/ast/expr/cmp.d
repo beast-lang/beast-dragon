@@ -71,7 +71,7 @@ final class AST_CmpExpression : AST_Expression {
 			if ( !baseOperand )
 				return Overloadset( );
 
-			auto binAnd = coreLibrary.enum_.operator.binAnd.dataEntity;
+			auto binAnd = coreEnum.operator.binAnd.dataEntity;
 
 			foreach ( item; items[ 0 .. $ - 1 ] ) {
 				DataEntity rightExpr = item.expr.buildSemanticTree_single( );
@@ -144,22 +144,22 @@ final class AST_CmpExpression : AST_Expression {
 			switch ( op ) {
 
 			case Token.Operator.equals:
-				return coreLibrary.enum_.operator.binEq;
+				return coreEnum.operator.binEq;
 
 			case Token.Operator.notEquals:
-				return coreLibrary.enum_.operator.binNeq;
+				return coreEnum.operator.binNeq;
 
 			case Token.Operator.less:
-				return coreLibrary.enum_.operator.binLt;
+				return coreEnum.operator.binLt;
 
 			case Token.Operator.lessEquals:
-				return coreLibrary.enum_.operator.binLte;
+				return coreEnum.operator.binLte;
 
 			case Token.Operator.greater:
-				return coreLibrary.enum_.operator.binGt;
+				return coreEnum.operator.binGt;
 
 			case Token.Operator.greaterEquals:
-				return coreLibrary.enum_.operator.binGte;
+				return coreEnum.operator.binGte;
 
 			default:
 				assert( 0 );

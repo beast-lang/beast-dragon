@@ -46,7 +46,7 @@ final class AST_PrefixExpression : AST_Expression {
 
 			foreach ( op; operators ) {
 				if ( op == Operator.emark )
-					result = result.expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( this, true, coreLibrary.enum_.operator.preNot );
+					result = result.expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( this, true, coreEnum.operator.preNot );
 				else
 					assert( 0 );
 			}

@@ -60,3 +60,7 @@ void primitiveOp_intLt( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 void primitiveOp_intLte( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 	intOp!"<="( cb, t, arg1, arg2, arg3 );
 }
+
+void primitiveOp_int32To64( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+	arg1.writePrimitive!long( arg2.readPrimitive!int );
+}

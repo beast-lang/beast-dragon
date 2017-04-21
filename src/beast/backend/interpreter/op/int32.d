@@ -53,3 +53,10 @@ pragma( inline ):
 		debug ( interpreter )
 			writefln( "%#x (%s) cmp %#x (%s) => %b", op1.val, op1.readPrimitive!int, op2.val, op2.readPrimitive!int, ir.flagsRegister );
 	}
+
+	void op_int32To64( Interpreter ir, MemoryPtr op1, MemoryPtr op2 ) {
+		op1.writePrimitive!long( op2.readPrimitive!int );
+
+		debug ( interpreter )
+			writefln( "%#x => %#x (%s)", op1.val, op2.val, op2.readPrimitive!int );
+	}

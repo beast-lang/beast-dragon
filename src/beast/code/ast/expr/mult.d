@@ -59,7 +59,7 @@ final class AST_MultExpression : AST_Expression {
 
 			DataEntity opArg;
 
-			auto opr = &coreLibrary.enum_.operator;
+			auto opr = &coreEnum.operator;
 
 			foreach ( item; items ) {
 				switch ( item.op ) {

@@ -74,7 +74,7 @@ ref CoreLibrary_Constants coreConst() {
 }
 
 ref CoreLibrary_Enums coreEnum() {
-	return coreLibrary.enum_;
+	return coreEnum;
 }
 
 ref CoreLibrary_Functions coreFunc() {

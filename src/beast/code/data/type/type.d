@@ -18,6 +18,7 @@ import beast.backend.common.primitiveop;
 import beast.code.data.util.btsp;
 import beast.code.data.var.btspconst;
 import beast.corelib.type.reference : Symbol_Type_Reference;
+import beast.corelib.type.int_;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -47,14 +48,14 @@ abstract class Symbol_Type : Symbol {
 
 			// T? -> reference
 			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
-					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffRef ).finish( ( ast ) { //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.suffRef ).finish( ( ast ) { //
 						return coreType.Reference.referenceTypeOf( this ).dataEntity; //
 					} ), //
 					true );
 
 			// T! -> T (for now - future: mutable)
 			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
-					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreLibrary.enum_.operator.suffNot ).finish( ( ast ) { //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.suffNot ).finish( ( ast ) { //
 						return this.dataEntity; //
 					} ), //
 					true );
@@ -194,6 +195,10 @@ abstract class Symbol_Type : Symbol {
 	public:
 		/// Returns if the type is reference type (X?)
 		Symbol_Type_Reference isReferenceType( ) {
+			return null;
+		}
+
+		Symbol_Type_Int isIntType( ) {
 			return null;
 		}
 

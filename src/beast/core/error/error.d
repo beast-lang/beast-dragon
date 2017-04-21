@@ -143,15 +143,14 @@ void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string me
 	synchronized ( stderrMutex ) {
 		stderr.writeln( formattedMessage );
 
-		if ( msg.severity == ErrorSeverity.error )
-			wereErrors = true;
-
 		debug if ( project.configuration.showStackTrace )
 			stderr.writeln( defaultTraceHandler.toString );
 	}
 
-	if ( msg.severity == ErrorSeverity.error ) 
+	if ( msg.severity == ErrorSeverity.error ) {
+		wereErrors = true;
 		throw new BeastErrorException( message, file, line );
+	}
 }
 
 /// Generates error/warning/hint, eventually throwing an exception

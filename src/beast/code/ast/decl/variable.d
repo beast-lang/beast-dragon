@@ -142,7 +142,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				if ( value ) {
 					// colonAssign calls #ctor( #Ctor.refAssign, value );
 					if ( valueColonAssign )
-						match.arg( coreLibrary.enum_.xxctor.refAssign );
+						match.arg( coreEnum.xxctor.refAssign );
 
 					match.arg( value );
 				}
@@ -158,7 +158,7 @@ final class AST_VariableDeclaration : AST_Declaration {
 				if ( valueEntity ) {
 					// colonAssign calls #ctor( #Ctor.refAssign, value );
 					if ( valueColonAssign )
-						match.arg( coreLibrary.enum_.xxctor.refAssign );
+						match.arg( coreEnum.xxctor.refAssign );
 
 					match.arg( valueEntity );
 				}

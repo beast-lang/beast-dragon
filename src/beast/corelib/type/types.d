@@ -24,13 +24,8 @@ struct CoreLibrary_Types {
 	public:
 		// TODO: Unsigned types
 		// TODO: Type recasting
-		@bootstrapType( 4 )
-		Symbol_BootstrapStaticClass Int32;
-
-		@bootstrapType( 8 )
-		Symbol_BootstrapStaticClass Int64;
-
-		Symbol_BootstrapStaticClass Size;
+		Symbol_Type_Int Int32, Int64;
+		Symbol_Type_Int Size;
 
 	public:
 		Symbol_Type_Type Type;
@@ -42,6 +37,9 @@ struct CoreLibrary_Types {
 		void initialize( void delegate( Symbol ) sink, DataEntity parent ) {
 			sink( Type = new Symbol_Type_Type( parent ) );
 			sink( Pointer = new Symbol_Type_Pointer( parent ) );
+
+			sink( Int32 = new Symbol_Type_Int( parent, ID!"Int32", 4, true ) );
+			sink( Int64 = new Symbol_Type_Int( parent, ID!"Int64", 8, true ) );
 
 			sink( new Symbol_BootstrapAlias( ID!"Int", ( matchLevel, inst ) => Int32.dataEntity( matchLevel ).Overloadset ) );
 
@@ -94,8 +92,8 @@ struct CoreLibrary_Types {
 			Type.initialize( );
 			Pointer.initialize( );
 
-			initialize_Int( Int32, this );
-			initialize_Int( Int64, this );
+			Int32.initialize( );
+			Int64.initialize( );
 
 			initialize_Bool( this );
 		}

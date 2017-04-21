@@ -65,6 +65,8 @@ struct Instruction {
 			intDiv32, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 / op2
 			intCmp32, /// (op1: ptr, op2: ptr) Compares two integers and stores the result into INTERNAL FLAGS (use cmpXX instructions)
 
+			int32To64, /// (target: ptr, src: ptr)
+
 			// INT32
 			_int64,
 			intAdd64, /// (target: ptr, op1: ptr, op2: ptr) target <= op1 + op2

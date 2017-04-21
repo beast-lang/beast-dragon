@@ -73,3 +73,8 @@ void primitiveOp_intLte( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 	string tp = intType( t.instanceSize );
 	cb.codeResult_.formattedWrite( "%sVAL( %s, bool ) = VAL( %s, %s ) <= VAL( %s, %s );\n", cb.tabs, arg1, arg2, tp, arg3, tp );
 }
+
+void primitiveOp_int32To64( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+	cb.enforceOperandNotCtime( arg1 );
+	cb.codeResult_.formattedWrite( "%sVAL( %s, int64_t ) = (int64_t) VAL( %s, int32_t );\n", cb.tabs, arg1, arg2 );
+}

@@ -24,5 +24,5 @@ public {
 import beast.corelib.const_.enums;
 
 ref CoreLibrary_Enums enm( ) {
-	return coreLibrary.enum_;
+	return coreEnum;
 }

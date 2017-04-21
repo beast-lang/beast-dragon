@@ -138,7 +138,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		/// Returns binary operator symbols that represent bit comparison (==, !=)
 		static Symbol[ ] newPrimitiveEqNeqOp( Symbol_Type tp ) {
 			return [ new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
-					ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binEq, tp ), //
+					ExpandedFunctionParameter.bootstrap( coreEnum.operator.binEq, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
 						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
@@ -149,7 +149,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 						var.buildCode( cb );
 					} ), //
 				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
-						ExpandedFunctionParameter.bootstrap( coreLibrary.enum_.operator.binNeq, tp ), //
+						ExpandedFunctionParameter.bootstrap( coreEnum.operator.binNeq, tp ), //
 						( cb, inst, args ) { //
 							// 0th arg is operator
 							auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
@@ -159,6 +159,20 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 							// Store var into result operand
 							var.buildCode( cb );
 						} ) ];
+		}
+
+		/// Returns implicit cast realized by a primitive operation (tmpVar; op tmpVar, inst; tmpVar.buildCode)
+		static Symbol newPrimitiveImplicitCast( Symbol_Type tp, Symbol_Type returnType, BackendPrimitiveOperation operation ) {
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCaset", tp, returnType, //
+					ExpandedFunctionParameter.bootstrap( returnType.dataEntity ), //
+					( cb, inst, args ) { //
+						auto var = new DataEntity_TmpLocalVariable( returnType );
+						cb.build_localVariableDefinition( var );
+						cb.build_primitiveOperation( operation, var, inst );
+						
+						// Store var into result operand
+						var.buildCode( cb );
+					} );
 		}
 
 	protected:
