@@ -135,9 +135,46 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 					} );
 		}
 
+		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp tmp; tp <= inst operation arg1 }
+		/// Symmetrical - also adds #opBinaryRight for the primitive operation (with swapped operands so it does the same as left one)
+		static Symbol[ ] newPrimitiveSymmetricalBinaryOp( Symbol_Type tp, Symbol_BootstrapConstant operator, BackendPrimitiveOperation operation ) {
+			return [  //
+			newPrimitiveBinaryOp( tp, operator, operation ), //
+				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, tp, //
+						ExpandedFunctionParameter.bootstrap( operator, tp ), //
+						( cb, inst, args ) { //
+							// 0th arg is operator
+							auto var = new DataEntity_TmpLocalVariable( tp );
+							cb.build_localVariableDefinition( var );
+							cb.build_primitiveOperation( operation, var, args[ 1 ], inst );
+
+							// Store var into result operand
+							var.buildCode( cb );
+						} ) ];
+		}
+
+		/// Returns binary operator symbol realized by primitive operation ( tp inst, operator, tp arg1 ) -> tp { tp2 tmp; tp <= inst operation arg1 }
+		/// Symmetrical - also adds #opBinaryRight for the primitive operation (with swapped operands so it does the same as left one)
+		static Symbol[ ] newPrimitiveSymmetricalBinaryOp( Symbol_Type tp, Symbol_Type returnType, Symbol_BootstrapConstant operator, BackendPrimitiveOperation operation ) {
+			return [  //
+			newPrimitiveBinaryOp( tp, returnType, operator, operation ), //
+				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, returnType, //
+						ExpandedFunctionParameter.bootstrap( operator, tp ), //
+						( cb, inst, args ) { //
+							// 0th arg is operator
+							auto var = new DataEntity_TmpLocalVariable( returnType );
+							cb.build_localVariableDefinition( var );
+							cb.build_primitiveOperation( operation, tp, var, args[ 1 ], inst ); // Store var into result operand
+							var.buildCode( cb );
+						} ) //
+						 ];
+		}
+
 		/// Returns binary operator symbols that represent bit comparison (==, !=)
+		/// Symmetrical - also adds #opBinaryRight for the primitive operation (with swapped operands so it does the same as left one)
 		static Symbol[ ] newPrimitiveEqNeqOp( Symbol_Type tp ) {
-			return [ new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
+			return [  //
+			new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
 					ExpandedFunctionParameter.bootstrap( coreEnum.operator.binEq, tp ), //
 					( cb, inst, args ) { //
 						// 0th arg is operator
@@ -161,15 +198,42 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 						} ) ];
 		}
 
+		/// Returns binary operator symbols that represent bit comparison (==, !=)
+		static Symbol[ ] newPrimitiveSymmetricalEqNeqOp( Symbol_Type tp ) {
+			return newPrimitiveEqNeqOp( tp ) ~ [  //
+			cast( Symbol ) new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, coreType.Bool, //
+					ExpandedFunctionParameter.bootstrap( coreEnum.operator.binEq, tp ), //
+					( cb, inst, args ) { //
+						// 0th arg is operator
+						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
+						cb.build_localVariableDefinition( var );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, args[ 1 ], inst );
+
+						// Store var into result operand
+						var.buildCode( cb );
+					} ), //
+				cast( Symbol ) new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, coreType.Bool, //
+						ExpandedFunctionParameter.bootstrap( coreEnum.operator.binNeq, tp ), //
+						( cb, inst, args ) { //
+							// 0th arg is operator
+							auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
+							cb.build_localVariableDefinition( var );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, args[ 1 ], inst );
+
+							// Store var into result operand
+							var.buildCode( cb );
+						} ) ];
+		}
+
 		/// Returns implicit cast realized by a primitive operation (tmpVar; op tmpVar, inst; tmpVar.buildCode)
 		static Symbol newPrimitiveImplicitCast( Symbol_Type tp, Symbol_Type returnType, BackendPrimitiveOperation operation ) {
-			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCaset", tp, returnType, //
+			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", tp, returnType, //
 					ExpandedFunctionParameter.bootstrap( returnType.dataEntity ), //
 					( cb, inst, args ) { //
 						auto var = new DataEntity_TmpLocalVariable( returnType );
 						cb.build_localVariableDefinition( var );
 						cb.build_primitiveOperation( operation, var, inst );
-						
+
 						// Store var into result operand
 						var.buildCode( cb );
 					} );

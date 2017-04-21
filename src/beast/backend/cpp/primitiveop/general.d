@@ -81,6 +81,8 @@ void primitiveOp_print( CB cb, T t, Op arg1 ) {
 			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, bool ) );\n", tabs, arg1 );
 		else if ( t is coreType.Int32 )
 			codeResult_.formattedWrite( "%sprintf( \"%%i\", VAL( %s, int32_t ) );\n", tabs, arg1 );
+		else if ( t is coreType.Int64 )
+			codeResult_.formattedWrite( "%sprintf( \"%%li\", VAL( %s, int64_t ) );\n", tabs, arg1 );
 		else
 			assert( 0, "Print not implemented for " ~ t.identificationString );
 	}

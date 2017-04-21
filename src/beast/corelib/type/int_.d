@@ -30,19 +30,19 @@ final class Symbol_Type_Int : Symbol_StaticClass {
 
 			// Operator overloads
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( this ); // a = b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( this ); // a == b, a != b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalEqNeqOp( this ); // a == b, a != b
 
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreType.Bool, coreEnum.operator.binGt, BackendPrimitiveOperation.intGt ); // a > b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreType.Bool, coreEnum.operator.binGte, BackendPrimitiveOperation.intGte ); // a >= b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreType.Bool, coreEnum.operator.binLt, BackendPrimitiveOperation.intLt ); // a < b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreType.Bool, coreEnum.operator.binLte, BackendPrimitiveOperation.intLte ); // a <= b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binGt, BackendPrimitiveOperation.intGt ); // a > b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binGte, BackendPrimitiveOperation.intGte ); // a >= b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binLt, BackendPrimitiveOperation.intLt ); // a < b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binLte, BackendPrimitiveOperation.intLte ); // a <= b
 
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binMult, BackendPrimitiveOperation.intMult ); // a * b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binDiv, BackendPrimitiveOperation.intDiv ); // a / b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binMult, BackendPrimitiveOperation.intMult ); // a * b
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binDiv, BackendPrimitiveOperation.intDiv ); // a / b
 
-			switch ( instanceSize + signed_ * 100 ) {
+			switch ( instanceSize_ + signed_ * 100 ) {
 
 				// Int32
 			case 104: {

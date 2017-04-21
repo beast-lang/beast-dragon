@@ -40,6 +40,6 @@ void primitiveOp_intLte( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
 	cb.addInstruction( I.cmpLte, arg1 );
 }
 
-void primitiveOp_int32To64( CB cb, T t, Op arg1, Op arg2, Op arg3 ) {
+void primitiveOp_int32To64( CB cb, T t, Op arg1, Op arg2 ) {
 	cb.addInstruction( I.int32To64, arg1, arg2 );
 }
