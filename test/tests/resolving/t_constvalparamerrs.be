@@ -13,11 +13,15 @@ Void test2( 5 ) {
 }
 
 Void err1() {
-	print( 6 ); //! error: noMatchingOverload
+	test( 6 ); //! error: noMatchingOverload
 }
 
 Void err2() {
 	Int x = 15;
 	Int y = 16;
-	print( x + y ); //! error: noMatchingOverload
+	test2( x + y ); //! error: noMatchingOverload
+}
+
+Void main() {
+
 }

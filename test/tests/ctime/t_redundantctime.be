@@ -7,7 +7,8 @@ Void main() {
 
 	@ctime {
 		i = 5;
-		@ctime i = i + 1; //! warning: duplicitModification
+		// TODO: make this work somehow?
+		@ctime i = i + 1; // ! warning: duplicitModification
 	}
 
 	print( i ); //! stdout: 6

@@ -18,7 +18,8 @@ final static class DataEntity_CtExecProxy : ProxyDataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
-			benforce!( ErrorSeverity.warning )( !cb.isCtime, E.duplicitModification, "@ctime is redundant" );
+			// TODO: Better, this way it does not work well
+			// benforce!( ErrorSeverity.warning )( !cb.isCtime, E.duplicitModification, "@ctime is redundant" );
 
 			// Result might be void -> no memory access
 			if ( auto result = sourceEntity_.ctExec( ).keepValue )

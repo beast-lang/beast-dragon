@@ -28,6 +28,21 @@ final class DeclarationEnvironment {
 		}
 
 	public:
+		DeclarationEnvironment dup( ) {
+			auto result = new DeclarationEnvironment( );
+			result.isStatic = isStatic;
+			result.isCtime = isCtime;
+			
+			result.parentType = parentType;
+			result.enforceDone_memberOffsetObtaining = enforceDone_memberOffsetObtaining;
+			result.staticMembersParent = staticMembersParent;
+			result.staticMemberMerger = staticMemberMerger;
+			result.functionReturnType = functionReturnType;
+
+			return result;
+		}
+
+	public:
 		bool isStatic = true;
 		bool isCtime = false;
 
@@ -36,7 +51,7 @@ final class DeclarationEnvironment {
 
 		/// Delegate that is used when declaring class members
 		/// Points to parent class function that enforces that members have correct parent offset (bytes from this) value set
-		void delegate() enforceDone_memberOffsetObtaining;
+		void delegate( ) enforceDone_memberOffsetObtaining;
 
 		/// Parent for static members
 		DataEntity staticMembersParent;

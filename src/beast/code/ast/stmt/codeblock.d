@@ -43,8 +43,11 @@ final class AST_CodeBlockStatement : AST_Statement {
 			decoList.apply_statementDecorator( decoData );
 			decoList.enforceAllResolved( );
 
-			if ( decoData.isCtime )
+			if ( decoData.isCtime ) {
 				cb = new CodeBuilder_Ctime( );
+				env = env.dup();
+				env.isCtime = true;
+			}
 
 			cb.build_scope( ( cb ) {
 				foreach ( stmt; subStatements )

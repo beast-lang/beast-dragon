@@ -20,7 +20,7 @@ final class TaskContext {
 
 	public:
 		this( ) {
-			fiber_ = new Fiber( &run );
+			fiber_ = new Fiber( &run, 2000000 );
 		}
 
 		void uninitialize( ) {
