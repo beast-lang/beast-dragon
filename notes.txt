@@ -2,7 +2,16 @@ Bakalářka:
 	- rozcestník do úvodu
 
 Soon to-to:
-	- memory garbage collecting
+	- user enums (with member functions)
+	- template functions
+	- realloc
+	- arrays?
+
+	- new jobId when executing taskGuard
+
+Diplomka to-do:
+	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back)
+		- Copy-on-write, session only
 
 Names:
 	Lion

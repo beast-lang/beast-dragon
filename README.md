@@ -44,7 +44,7 @@ Source file extension: `.be`
 
 ## Sample code
 
-Please note that this code describes what the language should be able to do when done, not what it can do now. For currently compilable code, ses tests in ```test/tests```. Compiling (```dub build``` in the ```test``` directory) and running (```./testsuite``` in the ```bin``` directory) the testsuite generates commands required for running each test (commands are in log files in the ```test/log``` directory).
+Please note that this code describes what the language should be able to do when done, not what it can do now. For currently compilable code, ses tests in ```test/tests```. Compiling and running the testsuite (```./runTests```) generates commands required for running each test (commands are in log files in the ```test/log``` directory).
 
 ```beast
 class C {
@@ -74,7 +74,7 @@ String foo( Enum e, @ctime Type T ) { // T is a 'template' parameter
 }
 
 Void main() {
-	// @ctime variables are evaluated at compile time
+  // @ctime variables are evaluated at compile time
   @ctime Type T! = Int; // Type variables!
   T x = 3;
 
@@ -92,6 +92,8 @@ Void main() {
 ```
 
 # News
+__21.04.2017__: We now should have fully working @ctime mirroring in both interpreter and cpp backends.
+
 __14.04.2017__: @ctime variables now work in runtime functions and are properly mirrored! (the subsystem has to be implemented for interpreter yet). See test/ctime/t_basicmirroring.
 
 __04.04.2017__: We have classes now! Constructors are not generated automatically, so you have to do ```Void #ctor() { mem1.#ctor(); mem2.#ctor(); }```
