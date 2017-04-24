@@ -22,8 +22,7 @@ final class MemoryBlock {
 			ctime = doNotMirrorChanges << 1, /// Memory block is compile time - cannot be written to at runtime
 
 			local = ctime << 1, /// Block is local - it cannot be accessed from other sessions (should not happen at all); tested only in debug; used for local and temporary variables
-			functionParameter = local << 1, /// Memory block represents a function parameter
-			result = functionParameter << 1, /// Memory block represents a result variable
+			result = local << 1, /// Memory block represents a result variable
 			dynamicallyAllocated = result << 1, /// The variable has been dynamically allocated (using malloc)
 		}
 
@@ -88,10 +87,6 @@ final class MemoryBlock {
 		/// Returns if the block is static - not local nor dynamically allocated
 		pragma( inline ) bool isStatic( ) {
 			return !flag( Flag.local ) && !flag( Flag.dynamicallyAllocated );
-		}
-
-		pragma( inline ) bool isFunctionParameter( ) {
-			return flag( Flag.functionParameter );
 		}
 
 		pragma( inline ) void markReferenced( ) {

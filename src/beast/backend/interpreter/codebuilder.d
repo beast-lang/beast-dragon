@@ -170,8 +170,12 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			result_ = operandResult;
 		}
 
-		override void build_contextPtr( ) {
+		override void build_contextPtrAccess( ) {
 			result_ = ( -1 ).iopRefBpOffset;
+		}
+
+		override void build_parameterAccess( ExpandedFunctionParameter param ) {
+			result_ = ( -param.index - 2 ).iopBpOffset;
 		}
 
 		override void build_dereference( ExprFunction arg ) {
@@ -335,9 +339,6 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			auto blockOperand = block.bpOffset.iopCtOffset;
 			auto ptrSize = hardwareEnvironment.pointerSize.iopLiteral;
 
-			// Prevent from block being destroyed at session end
-			block.markDoNotGCAtSessionEnd( );
-
 			// Update the local @ctime block
 			addInstruction( I.mov, blockOperand, data.startPtr.iopPtr, block.size.iopLiteral );
 
@@ -425,7 +426,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		final void build_memoryAccess_noMirrorCtimeChanges( MemoryPtr pointer ) {
 			MemoryBlock block = pointer.block;
 
-			/// Prevent the memory block being GC collected at session end - it might be used in function execution
+			// Prevent the memory block being GC collected at session end - it might be used in function execution
+			// This is to prevent static variables from being collected
 			block.markDoNotGCAtSessionEnd( );
 
 			result_ = memoryBlockOperand( block );

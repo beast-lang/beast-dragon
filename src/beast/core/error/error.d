@@ -140,11 +140,13 @@ void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string me
 
 	const string formattedMessage = project.messageFormatter.formatErrorMessage( msg );
 
-	synchronized ( stderrMutex ) {
-		stderr.writeln( formattedMessage );
+	if ( !context.preventErrorPrint ) {
+		synchronized ( stderrMutex ) {
+			stderr.writeln( formattedMessage );
 
-		debug if ( project.configuration.showStackTrace )
-			stderr.writeln( defaultTraceHandler.toString );
+			debug if ( project.configuration.showStackTrace )
+				stderr.writeln( defaultTraceHandler.toString );
+		}
 	}
 
 	if ( msg.severity == ErrorSeverity.error ) {
@@ -166,6 +168,18 @@ final class BeastErrorException : Exception {
 			super( message, file, line );
 		}
 
+}
+
+/// Tries to execute given code and if it throws an exception, returns fallback instead
+pragma( inline ) auto tryFallback( T )( lazy T dg, T fallback ) {
+	context.preventErrorPrint++;
+	scope ( exit )
+		context.preventErrorPrint--;
+
+	try
+		return dg( );
+	catch ( BeastErrorException exc )
+		return fallback;
 }
 
 private enum _init = HookAppInit.hook!( {

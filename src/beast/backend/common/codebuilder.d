@@ -66,7 +66,12 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 		/// Builds access to context ptr
-		void build_contextPtr( ) {
+		void build_contextPtrAccess( ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
+		/// Builds access to a function parameter
+		void build_parameterAccess( ExpandedFunctionParameter param ) {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 

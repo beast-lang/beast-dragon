@@ -6,6 +6,7 @@ import beast.code.ast.expr.expression;
 import beast.code.ast.expr.vardecl;
 import beast.code.data.var.static_;
 import beast.code.data.scope_.root;
+import beast.code.data.var.functionparameter;
 
 /// Expanded function parameter
 final class ExpandedFunctionParameter : Identifiable {
@@ -26,6 +27,8 @@ final class ExpandedFunctionParameter : Identifiable {
 				result.identifier = decl.identifier.identifier;
 				result.dataType = decl.dataType.ctExec_asType( );
 
+				auto paramEntity = new DataEntity_FunctionParameter( result, false );
+				currentScope.addEntity( paramEntity );
 				// TODO: add to scope (to make param definitions like ( Bool x, x.#type y ) work)
 			}
 			// Constant value parameter

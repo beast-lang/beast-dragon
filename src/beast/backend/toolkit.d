@@ -16,7 +16,7 @@ public {
 	import beast.code.hwenv.hwenv : HardwareEnvironment, hardwareEnvironment;
 	import beast.code.lex.identifier : ID;
 	import beast.code.memory.block : MemoryBlock;
-	import beast.code.memory.memorymgr : memoryManager, SessionPolicy;
+	import beast.code.memory.memorymgr : memoryManager, SessionPolicy, inStandaloneSession, inSession;
 	import beast.code.memory.ptr : MemoryPtr;
 	import beast.corelib.corelib : coreLibrary, coreConst, coreEnum, coreType, coreFunc;
 	import beast.toolkit;

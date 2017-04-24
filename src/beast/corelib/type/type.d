@@ -43,7 +43,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
 
-			namespace_.initialize( mem );
+				namespace_.initialize( mem );
 		}
 
 	public:
@@ -70,7 +70,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 	protected:
 		override Overloadset _resolveIdentifier_pre( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			// opRefAssign has priority over mirroring referenced type
-			if( id == ID!"#refAssign" )
+			if ( id == ID!"#refAssign" )
 				return opRefAssign.dataEntity( matchLevel, instance ).Overloadset;
 
 			if ( instance ) {

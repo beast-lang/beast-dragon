@@ -5,6 +5,7 @@ import beast.code.data.function_.toolkit;
 import beast.code.ast.decl.function_;
 import beast.code.decorationlist;
 import beast.code.ast.decl.env;
+import beast.code.data.scope_.blurry;
 
 final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
@@ -60,50 +61,42 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	protected:
 		override void buildDefinitionsCode( CodeBuilder cb, StaticMemberMerger staticMemberMerger ) {
-			with ( memoryManager.session( cb.isCtime ? SessionPolicy.doNotWatchCtChanges : SessionPolicy.watchCtChanges ) ) {
-				auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_, cb.isCtime );
+			assert( !cb.isCtime );
 
-				auto _gd = ErrorGuard( codeLocation );
-				auto _s = new RootDataScope( thisPtr );
-				auto _sgd = _s.scopeGuard;
+			enforceDone_parameterExpanding( );
 
-				_s.addEntity( thisPtr );
+			// We open the new subscope as blurry, because multiple buildDefinitionsCode calls might be used the paramsScopeWIP_
+			auto _sgd = new BlurryDataScope( paramsScopeWIP_ ).scopeGuard;
+			auto _gd = ErrorGuard( codeLocation );
 
-				cb.build_functionDefinition( this, ( cb ) { //
-					foreach ( param; parameters ) {
-						if ( param.identifier ) {
-							auto fparam = new DataEntity_FunctionParameter( param, cb.isCtime );
-							_s.addLocalVariable( fparam );
-						}
-					}
+			cb.build_functionDefinition( this, ( cb ) { //
+				scope env = DeclarationEnvironment.newFunctionBody( );
+				env.staticMembersParent = parent_.dataEntity;
+				env.staticMemberMerger = staticMemberMerger;
 
-					scope env = DeclarationEnvironment.newFunctionBody( );
-					env.staticMembersParent = parent_.dataEntity;
-					env.staticMemberMerger = staticMemberMerger;
+				if ( !ast_.returnType.isAutoExpression )
+					env.functionReturnType = returnType;
 
-					if ( !ast_.returnType.isAutoExpression )
-						env.functionReturnType = returnType;
+				ast_.body_.buildStatementCode( env, cb );
 
-					ast_.body_.buildStatementCode( env, cb );
-
-					/*
+				/*
 						If the return type is auto and the staticMemberMerger is not finished (meaning this definition building is the 'main' codeProcessing one),
 						we deduce a return type from the first encountered return statement (which sets env.functionReturnType if it was null previously)
 					*/
-					if ( ast_.returnType.isAutoExpression && !staticMemberMerger.isFinished )
-						returnTypeWIP_ = env.functionReturnType ? env.functionReturnType : coreType.Void;
+				if ( ast_.returnType.isAutoExpression && !staticMemberMerger.isFinished )
+					returnTypeWIP_ = env.functionReturnType ? env.functionReturnType : coreType.Void;
 
-					// returnTypeWIP_ is definitely accessible now (we called returnType before in this function or eventually set the value ourselves)
-					if ( returnTypeWIP_ is coreType.Void )
-						cb.build_return( null );
+				// returnTypeWIP_ is definitely accessible now (we called returnType before in this function or eventually set the value ourselves)
+				if ( returnTypeWIP_ is coreType.Void )
+					cb.build_return( null );
 
-				} );
-			}
+			} ).inSession( SessionPolicy.watchCtChanges );
 		}
 
 	private:
 		ExpandedFunctionParameter[ ] expandedParametersWIP_;
 		Symbol_Type returnTypeWIP_;
+		RootDataScope paramsScopeWIP_;
 
 	private:
 		AST_FunctionDeclaration ast_;
@@ -122,7 +115,14 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		final void execute_parameterExpanding( ) {
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto _sgd = new RootDataScope( parent_.dataEntity ).scopeGuard;
+				auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_, false );
+
+				paramsScopeWIP_ = new RootDataScope( thisPtr );
+				debug paramsScopeWIP_.allowMultiThreadAccess = true;
+
+				auto _sgd = paramsScopeWIP_.scopeGuard;
+
+				paramsScopeWIP_.addEntity( thisPtr );
 
 				foreach ( i, expr; ast_.parameterList.items )
 					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr, i );

@@ -17,6 +17,7 @@ Int test() {
 	assert( c.ref == 0 );
 	@ctime c.ref = 10;
 	assert( c.ref == 10 );
+	assert( !( c.ref == 0 ) );
 	return c.ref;
 }
 

@@ -38,7 +38,7 @@ abstract class DataScope : IDContainer {
 
 	public:
 		final void addEntity( DataEntity entity_ ) {
-			debug assert( context.jobId == jobId_ );
+			debug assert( allowMultiThreadAccess || context.jobId == jobId_, "DataScope is accessed from a different thread than it was created in" );
 			debug assert( !isFinished_ );
 
 			auto id = entity_.identifier;
@@ -71,7 +71,7 @@ abstract class DataScope : IDContainer {
 
 	public:
 		Overloadset tryResolveIdentifier( Identifier id, MatchLevel matchLevel = MatchLevel.fullMatch ) {
-			debug assert( context.jobId == jobId_ );
+			debug assert( allowMultiThreadAccess || context.jobId == jobId_, "DataScope is accessed from a different thread than it was created in" );
 
 			if ( auto result = id in groupedNamedVariables_ )
 				return *result;
@@ -83,6 +83,9 @@ abstract class DataScope : IDContainer {
 		debug final UIDGenerator.I jobId( ) {
 			return jobId_;
 		}
+
+	public:
+		debug bool allowMultiThreadAccess;
 
 	private:
 		DataEntity parentEntity_;

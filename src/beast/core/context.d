@@ -63,6 +63,9 @@ final class ContextData {
 		TaskContext taskContext;
 		ErrorGuardData errorGuardData;
 
+		/// Error messages are not printed if > 0
+		size_t preventErrorPrint;
+
 	public:
 		final static class SessionData {
 

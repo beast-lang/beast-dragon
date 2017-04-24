@@ -169,8 +169,12 @@ class CodeBuilder_Cpp : CodeBuilder {
 			result_ = resultVarName;
 		}
 
-		override void build_contextPtr( ) {
+		override void build_contextPtrAccess( ) {
 			result_ = "context";
+		}
+
+		override void build_parameterAccess( ExpandedFunctionParameter param ) {
+			result_ = cppParamIdentifier( param.index, param.identifier );
 		}
 
 		override void build_dereference( ExprFunction arg ) {
@@ -307,9 +311,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		static string cppIdentifier( MemoryBlock block, bool addrOf = false ) {
-			if ( block.flag( MemoryBlock.Flag.functionParameter ) )
-				return cppParamIdentifier( block.relatedDataEntity.asFunctionParameter_index, block.relatedDataEntity.identifier );
-
 			if ( block.flag( MemoryBlock.Flag.result ) )
 				return "result";
 

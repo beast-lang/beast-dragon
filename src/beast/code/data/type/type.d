@@ -119,6 +119,20 @@ abstract class Symbol_Type : Symbol {
 			// #instanceSize, lazily initialized
 			mem ~= new Symbol_BootstrapAlias( ID!"#instanceSize", ( matchLevel, inst ) => instanceSizeLiteral.Overloadset );
 
+			// T1 == T2 type compare
+			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opBinary", //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.binEq ).ctArg( coreType.Type ).finish( ( ast, arg ) { //
+						return ( arg.readType is this ) ? coreConst.true_.dataEntity : coreConst.false_.dataEntity;
+					} ), //
+					true );
+
+			// T1 != T2 type compare
+			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opBinary", //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.binNeq ).ctArg( coreType.Type ).finish( ( ast, arg ) { //
+						return ( arg.readType is this ) ? coreConst.false_.dataEntity : coreConst.true_.dataEntity;
+					} ), //
+					true );
+
 			baseNamespace_.initialize( mem );
 
 			debug initialized_ = true;

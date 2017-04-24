@@ -38,7 +38,7 @@ final class DataEntity_ContextPointer : DataEntity {
 
 	public:
 		override void buildCode( CodeBuilder cb ) {
-			cb.build_contextPtr( );
+			cb.build_contextPtrAccess( );
 		}
 
 	private:

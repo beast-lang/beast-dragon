@@ -335,6 +335,11 @@ final class MemoryManager {
 					// This doesn't apply anymore, because @ctime variable destructors aren't called anymore (because it's impossible)
 					// assert( wereErrors || ( !block.isLocal && block.isCtime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
 
+					if ( block.isRuntime ) {
+						assert( pointersInBlock.empty );
+						continue;
+					}
+
 					foreach ( ptr; pointersInBlock ) {
 						MemoryPtr ptrptr = ptr.readMemoryPtr;
 
@@ -353,8 +358,11 @@ final class MemoryManager {
 					}
 				}
 
+				assert( !list.length );
+
 				// We have to copy blocks to be deleted, because sessionMemoryBlocks shrinks as blocks are freed
 				foreach ( MemoryBlock block; context.sessionData.memoryBlocks ) {
+					// We cleanup local blocks except for function parameters (because those are used on multiple places, although being local)
 					if ( !block.isDoNotGCAtSessionEnd || block.isLocal ) {
 						debug ( gc )
 							writefln( "endsession cleanup %s", block.startPtr );
@@ -425,7 +433,7 @@ final class MemoryManager {
 				MemoryBlock[ ] list;
 
 				foreach ( block; mmap_ ) {
-					assert( !block.isLocal, "Local blocks should have been freed already" );
+					assert( !block.isLocal, "Local blocks should have been freed already (%s)".format( block.identificationString ) );
 
 					if ( block.isReferenced )
 						list ~= block;
@@ -514,7 +522,13 @@ enum SessionPolicy {
 	doNotWatchCtChanges
 }
 
-/// Executes given code in a standalone memory manager session
+/// Executes given code in a memory manager session 
+pragma( inline ) auto inSession( T )( lazy T dg, SessionPolicy policy ) {
+	with ( memoryManager.session( policy ) )
+		return dg( );
+}
+
+/// Executes given code in a standalone memory manager session (SessionPolicy.doNotWatchCtChanges)
 pragma( inline ) auto inStandaloneSession( T )( lazy T dg ) {
 	with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) )
 		return dg( );

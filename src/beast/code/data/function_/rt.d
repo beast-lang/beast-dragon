@@ -104,7 +104,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 				}
 
 				override string identification( ) {
-					return "%s( %s )".format( sym_.baseIdentifier, sym_.parameters.map!( x => x.tryGetIdentificationString ).joiner( ", " ) );
+					return "%s( %s )".format( sym_.baseIdentifier, sym_.parameters.map!( x => x.tryGetIdentificationString ).joiner( ", " ).to!string.tryFallback( "#err#" ) );
 				}
 
 				override string identificationString( ) {
