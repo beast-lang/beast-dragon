@@ -1,12 +1,9 @@
 module beast.code.data.function_.expandedparameter;
 
-import beast.code.data.toolkit;
+import beast.code.data.function_.toolkit;
 import beast.util.identifiable;
-import beast.code.ast.expr.expression;
 import beast.code.ast.expr.vardecl;
 import beast.code.data.var.static_;
-import beast.code.data.scope_.root;
-import beast.code.data.var.functionparameter;
 
 /// Expanded function parameter
 final class ExpandedFunctionParameter : Identifiable {

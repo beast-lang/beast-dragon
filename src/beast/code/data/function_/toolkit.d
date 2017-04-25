@@ -11,6 +11,6 @@ public {
 	import beast.code.data.scope_.root : RootDataScope;
 	import beast.code.data.toolkit;
 	import beast.code.data.function_.contextptr : DataEntity_ContextPointer;
-	import beast.code.data.var.functionparameter : DataEntity_FunctionParameter;
+	import beast.code.data.function_.param : DataEntity_FunctionParameter;
 	import beast.code.data.stcmemmerger.d : StaticMemberMerger;
 }
