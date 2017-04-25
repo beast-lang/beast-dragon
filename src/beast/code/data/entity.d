@@ -223,6 +223,7 @@ abstract class DataEntity : IDContainer {
 
 		/// These are only meant to be shortcut, identifier resolution should be also available "the second way" for example Class -> x and Class -> Type -> Class -> x
 		Overloadset _resolveIdentifier_main( Identifier id, MatchLevel matchLevel ) {
+			// TODO: make it accept dataEntity param to be used instead of this -> proxy entities are screwed this way?
 			return Overloadset( );
 		}
 

@@ -131,7 +131,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 				auto _sgd = paramsScopeWIP_.scopeGuard;
 
 				paramsScopeWIP_.addEntity( thisPtr );
-				expandedParametersWIP_ = paramList_.runtimeExpand( );
+				expandedParametersWIP_ = paramList_.expandAsRuntimeParameterList( );
 			}
 		}
 

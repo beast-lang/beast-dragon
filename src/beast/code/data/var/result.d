@@ -5,26 +5,45 @@ import beast.code.data.var.local;
 import beast.code.data.function_.rt;
 
 /// Data entity representing function return value
-final class DataEntity_Result : DataEntity_LocalVariable {
+final class DataEntity_Result : DataEntity {
 
 	public:
 		this( Symbol_RuntimeFunction func, bool isCtime, Symbol_Type dataType ) {
-			super( dataType );
-			allocate_( isCtime, MemoryBlock.Flag.result );
+			super( MatchLevel.fullMatch );
 
-			memoryBlock.bpOffset = -2 - func.parameters.length;
-			memoryBlock.identifier = "result";
+			isCtime_ = isCtime;
+			dataType_ = dataType;
+			func_ = func;
 		}
 
 	public:
+		override Symbol_Type dataType( ) {
+			return dataType_;
+		}
+
+		override bool isCtime( ) {
+			return isCtime_;
+		}
+
+		override Identifier identifier( ) {
+			return null;
+		}
+
+		override DataEntity parent( ) {
+			return func_.dataEntity;
+		}
+
 		override AST_Node ast( ) {
 			return null;
 		}
 
-	public:
-		override void allocate( bool isCtime ) {
-			// Allocation is done in constructor
-			assert( 0 );
+		override void buildCode( CodeBuilder cb ) {
+			cb.build_functionResultAccess( func_ );
 		}
+
+	private:
+		Symbol_RuntimeFunction func_;
+		Symbol_Type dataType_;
+		bool isCtime_;
 
 }

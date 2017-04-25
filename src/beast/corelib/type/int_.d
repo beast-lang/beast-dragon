@@ -1,6 +1,10 @@
 module beast.corelib.type.int_;
 
 import beast.corelib.type.toolkit;
+import beast.code.data.var.tmplocal;
+import beast.code.data.var.literal;
+import std.range : repeat, take;
+import std.array : array;
 
 final class Symbol_Type_Int : Symbol_StaticClass {
 
@@ -41,6 +45,20 @@ final class Symbol_Type_Int : Symbol_StaticClass {
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binMult, BackendPrimitiveOperation.intMult ); // a * b
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binDiv, BackendPrimitiveOperation.intDiv ); // a / b
+
+			auto zeroLiteral = new Symbol_Literal( this, ubyte( 0 ).repeat.take( instanceSize_ ).array, "%s_zero".format( identifier.str ) );
+
+			// Implicit cast to bool
+			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, coreType.Bool, //
+					ExpandedFunctionParameter.bootstrap( coreType.Bool.dataEntity ), //
+					( cb, inst, args ) { //
+						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
+						cb.build_localVariableDefinition( var );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, var, inst, zeroLiteral.dataEntity );
+
+						// Store var into result operand
+						var.buildCode( cb );
+					} );
 
 			switch ( instanceSize_ + signed_ * 100 ) {
 

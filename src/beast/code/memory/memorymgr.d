@@ -15,6 +15,12 @@ debug ( memory ) {
 	import std.stdio : writefln;
 }
 
+version = sessionEndGCCleanup;
+version = finishGCCleanup;
+
+// TODO: sub sessions - you cannot write to data from a different subsession, but data are not garbage collected after subsession end
+// This would be used when matching overloads (not we have to markDoNotGCAtSessionEnd)
+
 /// MemoryManager is in charge of all @ctime-allocated memory
 __gshared MemoryManager memoryManager;
 
@@ -47,7 +53,7 @@ final class MemoryManager {
 
 			synchronized ( blockListMutex_.writer ) {
 				debug synchronized ( this ) {
-					debug assert( context.session in activeSessions_, "Invalid session" );
+					debug assert( context.session in activeSessions_, "Invalid subsession" );
 					debug assert( context.jobId == activeSessions_[ context.session ], "Session does not match with the jobId" );
 				}
 
@@ -118,13 +124,14 @@ final class MemoryManager {
 
 			synchronized ( blockListMutex_.writer ) {
 				debug synchronized ( this ) {
-					debug assert( context.session in activeSessions_, "Invalid session" );
+					debug assert( context.session in activeSessions_, "Invalid subsession" );
 					debug assert( context.jobId == activeSessions_[ context.session ], "Session does not match with the jobId" );
 				}
 
 				foreach ( i, block; mmap_ ) {
 					if ( block.startPtr == ptr ) {
 						benforce( block.session == context.session, E.protectedMemory, "Cannot free memory block owned by a different session (%#x)".format( ptr.val ) );
+						benforce( block.subSession >= context.subSession, E.protectedMemory, "Cannot free memory block owned by a different subsession (%#x)".format( ptr.val ) );
 
 						mmap_ = mmap_[ 0 .. i ] ~ mmap_[ i + 1 .. $ ];
 
@@ -183,10 +190,11 @@ final class MemoryManager {
 
 			MemoryBlock block = findMemoryBlock( ptr );
 
+			benforce( block.isCtime, E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
 			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 			benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session" );
+			benforce( block.subSession >= context.subSession, E.protectedMemory, "Cannot free memory block owned by a different subsession" );
 			benforce( ptr + data.length <= block.endPtr, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
-			benforce( block.isCtime, E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
 
 			debug synchronized ( this ) {
 				debug assert( block.session in activeSessions_ );
@@ -213,7 +221,8 @@ final class MemoryManager {
 			// Other cases should not happen
 			debug synchronized ( this ) {
 				assert( block.session !in activeSessions_ || activeSessions_[ block.session ] == context.jobId, "Block read from session %s can still be modified in its constructor session %s".format( context.session, block.session ) );
-				assert( !block.isLocal || block.jobId == context.jobId, "Local memory block is accessed from a different thread" );
+				// We can access a "local" block, as some literals etc. evaluate data into local variables and then use these
+				assert( !block.isLocal || block.jobId == context.jobId || block.flag( MemoryBlock.SharedFlag.sessionFinished ), "Local memory block is accessed from a different thread" );
 			}
 
 			benforce( ptr + bytes <= block.endPtr, E.invalidMemoryOperation, "Memory read outside of allocated block bounds" );
@@ -298,17 +307,26 @@ final class MemoryManager {
 		}
 
 	public:
+		void startSubSession( ) {
+			context.subSessionStack ~= context.sessionData.subSessionIDGen++;
+		}
+
+		void endSubSession( ) {
+			context.subSessionStack.length--;
+		}
+
 		void startSession( SessionPolicy policy ) {
 			debug assert( !finished_ );
-			static __gshared UIDGenerator sessionUIDGen;
 
-			UIDGenerator.I session = sessionUIDGen( );
+			UIDGenerator.I session = sessionIDGenerator_( );
 
 			context.sessionDataStack ~= context.sessionData;
 			context.sessionData = new ContextData.SessionData( session, policy );
 
+			startSubSession( );
+
 			debug synchronized ( this )
-				activeSessions_[ session ] = context.jobId;
+				activeSessions_[ context.session ] = context.jobId;
 		}
 
 		void endSession( ) {
@@ -318,13 +336,19 @@ final class MemoryManager {
 
 			assert( wereErrors || context.sessionData.policy != SessionPolicy.watchCtChanges || context.sessionData.changedMemoryBlocks.length == 0, "There are unmirrored changes left!" );
 
+			endSubSession( );
+
 			// "GC" cleanup blocks at session end
-			{
+			version ( sessionEndGCCleanup ) {
 				MemoryBlock[ ] list;
 
 				foreach ( MemoryBlock block; context.sessionData.memoryBlocks ) {
-					if ( block.isDoNotGCAtSessionEnd )
+					if ( block.isDoNotGCAtSessionEnd ) {
 						list ~= block;
+
+						debug ( gc )
+							writefln( "endsession %s root %s", context.session, block.startPtr );
+					}
 				}
 
 				while ( list.length ) {
@@ -344,7 +368,7 @@ final class MemoryManager {
 						MemoryPtr ptrptr = ptr.readMemoryPtr;
 
 						debug ( gc )
-							writefln( "endsession pointer at %s (=%s)", ptr, ptrptr );
+							writefln( "endsession %s pointer at %s (=%s)", context.session, ptr, ptrptr );
 
 						if ( ptrptr.isNull )
 							continue;
@@ -355,6 +379,9 @@ final class MemoryManager {
 
 						block2.markDoNotGCAtSessionEnd;
 						list ~= block2;
+
+						debug ( gc )
+							writefln( "endsession %s ref %s -> %s", context.session, block.startPtr, block2.startPtr );
 					}
 				}
 
@@ -363,15 +390,15 @@ final class MemoryManager {
 				// We have to copy blocks to be deleted, because sessionMemoryBlocks shrinks as blocks are freed
 				foreach ( MemoryBlock block; context.sessionData.memoryBlocks ) {
 					// We cleanup local blocks except for function parameters (because those are used on multiple places, although being local)
-					if ( !block.isDoNotGCAtSessionEnd || block.isLocal ) {
+					if ( !block.isDoNotGCAtSessionEnd ) {
 						debug ( gc )
-							writefln( "endsession cleanup %s", block.startPtr );
+							writefln( "endsession %s cleanup %s", context.session, block.startPtr );
 
 						list ~= block;
 					}
 					else {
 						debug ( gc )
-							writefln( "endsession keep %s", block.startPtr );
+							writefln( "endsession %s keep %s", context.session, block.startPtr );
 
 						block.setFlags( MemoryBlock.SharedFlag.sessionFinished );
 					}
@@ -431,11 +458,12 @@ final class MemoryManager {
 			debug assert( activeSessions_.length == 0 );
 
 			// GC all unreferenced blocks
-			{
+			version ( finishGCCleanup ) {
 				MemoryBlock[ ] list;
 
 				foreach ( block; mmap_ ) {
-					assert( !block.isLocal, "Local blocks should have been freed already (%s)".format( block.identificationString ) );
+					// We can have a "local" block, as some literals etc. evaluate data into local variables and then use these
+					//assert( !block.isLocal, "Local blocks should have been freed already (%s)".format( block.identificationString ) );
 
 					if ( block.isReferenced )
 						list ~= block;
@@ -508,7 +536,7 @@ final class MemoryManager {
 		/// Map of session id -> jobId
 		debug static __gshared UIDGenerator.I[ UIDGenerator.I ] activeSessions_;
 
-		UIDGenerator allocIDGenerator_;
+		UIDGenerator allocIDGenerator_, sessionIDGenerator_;
 
 		ReadWriteMutex blockListMutex_, pointerListMutex_;
 
@@ -534,4 +562,13 @@ pragma( inline ) auto inSession( T )( lazy T dg, SessionPolicy policy ) {
 pragma( inline ) auto inStandaloneSession( T )( lazy T dg ) {
 	with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) )
 		return dg( );
+}
+
+/// Executes given code in a standalone memory manager subsession session
+pragma( inline ) auto inSubSession( T )( lazy T dg ) {
+	memoryManager.startSubSession( );
+	scope ( exit )
+		memoryManager.endSubSession( );
+
+	return dg( );
 }

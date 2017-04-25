@@ -144,6 +144,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					auto _sgd = scope_.scopeGuard( false );
 					MatchLevel result = MatchLevel.fullMatch;
 
+					// TODO: variadic arguments, default values
 					if ( argumentIndex_ >= sym_.parameters.length ) {
 						errorStr = "too many arguments";
 						return MatchLevel.noMatch;

@@ -173,20 +173,27 @@ struct CTExecResult {
 			return codeBuilder_.result_;
 		}
 
-		/// Keeps the result so it is never destroyed
-		pragma( inline ) void keep( ) {
-
+		/// Keeps the result value until session and and returns it
+		pragma( inline ) MemoryPtr keepUntilSessionEnd( ) {
+			return value( );
 		}
 
-		/// Keeps the result so it is never destroyed
-		pragma( inline ) MemoryPtr keepValue( ) {
-			keep( );
+		/// Keeps the result value forever (marks it doNotGCAtSessionEnd) and returns it
+		pragma( inline ) MemoryPtr keepForever( ) {
+			value.block.markDoNotGCAtSessionEnd( );
 			return value( );
 		}
 
 		/// Destroys the result
 		pragma( inline ) void destroy( ) {
 			codeBuilder_.popScope( );
+		}
+
+	public:
+		/// Returns local variables of the root scope (the scope that holds result)
+		pragma( inline ) DataEntity_LocalVariable[ ] scopeItems( ) {
+			assert( codeBuilder_.isRootScope );
+			return codeBuilder_.scopeItems;
 		}
 
 	private:

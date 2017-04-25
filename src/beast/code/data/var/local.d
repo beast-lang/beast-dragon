@@ -65,10 +65,15 @@ abstract class DataEntity_LocalVariable : DataEntity {
 
 	public:
 		/// Return data entity representing copy constructor call for given variable
-		final DataEntity getCopyCtor( DataEntity initValue ) {
+		static DataEntity getCopyCtor( DataEntity variable, DataEntity initValue ) {
 			// We don't call var.tryResolveIdentifier because of Type variables
 			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
-			return dataType.expectResolveIdentifier_direct( ID!"#ctor", this ).resolveCall( ast, true, initValue );
+			return variable.dataType.expectResolveIdentifier_direct( ID!"#ctor", variable ).resolveCall( variable.ast, true, initValue );
+		}
+
+		/// Return data entity representing copy constructor call for given variable
+		final DataEntity getCopyCtor( DataEntity initValue ) {
+			return getCopyCtor( this, initValue );
 		}
 
 	protected:

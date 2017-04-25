@@ -40,10 +40,8 @@ struct CallMatchSet {
 			Symbol_Type dataType = entity.dataType;
 			argumentEntities ~= entity;
 
-			foreach ( match; matches ) {
-				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) )
-					match.matchNextArgument( null, entity, dataType );
-			}
+			foreach ( match; matches )
+				match.matchNextArgument( null, entity, dataType ).inSubSession;
 
 			return this;
 		}
@@ -59,10 +57,8 @@ struct CallMatchSet {
 			Symbol_Type dataType = entity ? entity.dataType : null;
 			argumentEntities ~= entity;
 
-			foreach ( match; matches ) {
-				with ( memoryManager.session( SessionPolicy.inheritCtChangesWatcher ) )
-					match.matchNextArgument( expr, entity, dataType );
-			}
+			foreach ( match; matches )
+				match.matchNextArgument( expr, entity, dataType ).inSubSession;
 
 			return this;
 		}

@@ -6,6 +6,8 @@ import beast.backend.interpreter.instruction;
 import beast.backend.interpreter.codeblock;
 import beast.code.data.var.result;
 import beast.code.data.scope_.local;
+import beast.backend.common.codebuilder;
+import std.algorithm : count;
 
 /// "CodeBuilder" that builds code for the internal interpret
 final class CodeBuilder_Interpreter : CodeBuilder {
@@ -178,6 +180,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			result_ = ( -param.runtimeIndex - 2 ).iopBpOffset;
 		}
 
+		override void build_functionResultAccess( Symbol_RuntimeFunction func ) {
+			result_ = ( -func.parameters.count!( x => x.constValue.isNull ) - 2 ).iopBpOffset;
+		}
+
 		override void build_dereference( ExprFunction arg ) {
 			arg( this );
 
@@ -285,10 +291,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void build_return( DataEntity returnValue ) {
 			assert( currentFunction_ );
 
-			if ( returnValue ) {
-				auto resultVar = new DataEntity_Result( currentFunction_, false, returnValue.dataType );
-				build_copyCtor( resultVar, returnValue );
-			}
+			if ( returnValue )
+				build_copyCtor( new DataEntity_Result( currentFunction_, false, returnValue.dataType ), returnValue );
 
 			generateScopesExit( );
 			addInstruction( I.ret );

@@ -22,8 +22,7 @@ final class MemoryBlock {
 			ctime = doNotMirrorChanges << 1, /// Memory block is compile time - cannot be written to at runtime
 
 			local = ctime << 1, /// Block is local - it cannot be accessed from other sessions (should not happen at all); tested only in debug; used for local and temporary variables
-			result = local << 1, /// Memory block represents a result variable
-			dynamicallyAllocated = result << 1, /// The variable has been dynamically allocated (using malloc)
+			dynamicallyAllocated = local << 1, /// The variable has been dynamically allocated (using malloc)
 		}
 
 		alias Flags = Flag;
@@ -50,6 +49,7 @@ final class MemoryBlock {
 			this.flags = flags;
 
 			this.session = context.session;
+			this.subSession = context.subSession;
 			debug this.jobId = context.jobId;
 
 			data = cast( ubyte* ) GC.malloc( size );
@@ -100,6 +100,12 @@ final class MemoryBlock {
 		}
 
 		pragma( inline ) void markDoNotGCAtSessionEnd( ) {
+			debug ( gc ) {
+				import std.stdio : writefln;
+
+				writefln( "mark doNotGCSessEnd %s", startPtr );
+			}
+
 			atomicOp!"|="( sharedFlags_, SharedFlag.doNotGCAtSessionEnd );
 		}
 
@@ -133,10 +139,7 @@ final class MemoryBlock {
 
 	public:
 		string identificationString( ) {
-			if ( flag( Flag.result ) )
-				return "#return#";
-
-			else if ( relatedDataEntity )
+			if ( relatedDataEntity )
 				return relatedDataEntity.identificationString;
 
 			else if ( identifier )
@@ -162,6 +165,8 @@ final class MemoryBlock {
 		const size_t size;
 		/// Session the current block was initialized in
 		const UIDGenerator.I session;
+		/// Subsession the current block was initialized in
+		const UIDGenerator.I subSession;
 		/// Flags of the block.
 		const Flags flags;
 		/// Flags that can be modified asynchronously ("atomic or" write only)

@@ -177,7 +177,7 @@ mixin template BuilderCommon( ) {
 	/// Match single const-value parameter of value data (doesn't add any parameters to obtainFunc)
 	auto constArg( )( Symbol sym ) {
 		auto data = sym.dataEntity;
-		return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec.keepValue );
+		return Builder_ConstParameter!( typeof( this ) )( this, data.dataType, data.ctExec().keepForever.inStandaloneSession );
 	}
 
 	/// Match single argument of any type
@@ -269,7 +269,7 @@ struct Builder_CtimeParameter( Parent ) {
 		if ( result == MatchLevel.noMatch )
 			return MatchLevel.noMatch;
 
-		params[ 0 ] = ctexec.keepValue;
+		params[ 0 ] = ctexec.keepUntilSessionEnd;
 		return result;
 	}
 

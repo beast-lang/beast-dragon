@@ -21,8 +21,17 @@ final static class DataEntity_CtExecProxy : ProxyDataEntity {
 			// TODO: Better, this way it does not work well
 			// benforce!( ErrorSeverity.warning )( !cb.isCtime, E.duplicitModification, "@ctime is redundant" );
 
+			if ( cb.isCtime )
+				sourceEntity_.buildCode( cb );
+
 			// Result might be void -> no memory access
-			if ( auto result = sourceEntity_.ctExec( ).keepValue )
-				cb.build_memoryAccess( result );
+			else {
+				auto ctexec = sourceEntity_.ctExec( );
+				
+				if ( auto result = ctexec.keepUntilSessionEnd )
+					cb.build_memoryAccess( result );
+
+				cb.addToScope( ctexec.scopeItems );
+			}
 		}
 }

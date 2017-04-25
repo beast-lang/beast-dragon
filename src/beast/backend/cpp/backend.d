@@ -69,7 +69,7 @@ final class Backend_Cpp : Backend {
 							nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
 						}
 						else
-							code_memory.formattedWrite( "0x%x, ", data );
+							code_memory.formattedWrite( "0x%s, ", data.toHex.filter!( x => x != '_' ) );
 
 						data = 0;
 					}
@@ -81,7 +81,7 @@ final class Backend_Cpp : Backend {
 				if ( i == nextPtrOffset )
 					code_memory.formattedWrite( "(uintptr_t) %s };\n", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
 				else
-					code_memory.formattedWrite( "0x%x };\n", data );
+					code_memory.formattedWrite( "0x%s };\n", data.toHex.filter!( x => x != '_' ) );
 			}
 
 			if ( wereErrors )

@@ -7,7 +7,7 @@ final class Symbol_Literal : Symbol_StaticVariable {
 
 	public:
 		/// Length of the data is inferred from the dataType instance size
-		this( Symbol_Type dataType, const ubyte[ ] data ) {
+		this( Symbol_Type dataType, const ubyte[ ] data, string identifier = null ) {
 			super( null );
 			assert( dataType.instanceSize == data.length );
 
@@ -15,7 +15,7 @@ final class Symbol_Literal : Symbol_StaticVariable {
 
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.ctime );
-				id_ = Identifier( "lit_%#x".format( block.startPtr.val ) );
+				id_ = Identifier( identifier ? identifier : "lit_%#x".format( block.startPtr.val ) );
 
 				block.markDoNotGCAtSessionEnd( );
 				block.identifier = id_.str;

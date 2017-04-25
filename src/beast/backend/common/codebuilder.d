@@ -75,6 +75,11 @@ abstract class CodeBuilder : Identifiable {
 			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
 		}
 
+		/// Builds access to a function result
+		void build_functionResultAccess( Symbol_RuntimeFunction func ) {
+			assert( 0, "%s not implemented for %s".format( __FUNCTION__, identificationString ) );
+		}
+
 		/// Utility function calling original build_primitiveOperation (argT => arg1.dataType)
 		pragma( inline ) final void build_primitiveOperation( BackendPrimitiveOperation op, DataEntity arg1 ) {
 			build_primitiveOperation( op, arg1.dataType, &arg1.buildCode );
@@ -140,11 +145,15 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 	public:
-		final void build_copyCtor( DataEntity_LocalVariable var, DataEntity initValue ) {
-			var.getCopyCtor( initValue ).buildCode( this );
+		final void build_copyCtor( DataEntity var, DataEntity initValue ) {
+			DataEntity_LocalVariable.getCopyCtor( var, initValue ).buildCode( this );
 		}
 
 		final void build_dtor( DataEntity_LocalVariable var ) {
+			// Do not call destructors for ctime variables (yet)
+			if ( var.isCtime && !this.isCtime )
+				return;
+
 			// We don't call var.tryResolveIdentifier because of Type variables
 			// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
 			var.dataType.expectResolveIdentifier_direct( ID!"#dtor", var ).resolveCall( null, true ).buildCode( this );
@@ -258,6 +267,11 @@ abstract class CodeBuilder : Identifiable {
 
 		final DataEntity_LocalVariable[ ] scopeItems( ) {
 			return scopeStack_[ $ - 1 ].variables;
+		}
+
+		/// Returns if the current scope is the root scope
+		final bool isRootScope( ) {
+			return scopeStack_.length == 1;
 		}
 
 	protected:

@@ -50,9 +50,17 @@ final class FunctionParameterList {
 			return !isCtimeParameterList_;
 		}
 
+		size_t parameterCount( ) {
+			return paramData_.length;
+		}
+
+		ParamData paramData( size_t index ) {
+			return paramData_[ index ];
+		}
+
 	public:
 		/// Expands runtime parameter list
-		ExpandedFunctionParameter[ ] runtimeExpand( ) {
+		ExpandedFunctionParameter[ ] expandAsRuntimeParameterList( ) {
 			assert( isRuntimeParameterList );
 
 			ExpandedFunctionParameter[ ] result;
@@ -79,7 +87,7 @@ final class FunctionParameterList {
 					DataEntity constVal = paramData.ast.buildSemanticTree_single( );
 
 					param.dataType = constVal.dataType;
-					param.constValue = constVal.ctExec( ).keepValue;
+					param.constValue = constVal.ctExec( ).keepForever;
 				}
 
 				assert( param.dataType );

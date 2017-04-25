@@ -126,7 +126,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 				debug paramsScopeWIP_.allowMultiThreadAccess = true;
 				auto _sgd = paramsScopeWIP_.scopeGuard;
 
-				expandedParametersWIP_ = paramList_.runtimeExpand( );
+				expandedParametersWIP_ = paramList_.expandAsRuntimeParameterList( );
 			}
 		}
 

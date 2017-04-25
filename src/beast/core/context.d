@@ -31,6 +31,10 @@ final class ContextData {
 			return sessionData ? sessionData.id : 0;
 		}
 
+		pragma( inline ) auto subSession( ) {
+			return subSessionStack.length ? subSessionStack[ $ - 1 ] : 0;
+		}
+
 	public:
 		/// Currently working lexer
 		Lexer lexer;
@@ -41,6 +45,10 @@ final class ContextData {
 
 		SessionData sessionData;
 		SessionData[ ] sessionDataStack;
+
+		/// Stack of subsession IDs
+		/// Subsessions are to protect memory, same as sessions, but memory is not GC'd on subsession end (it is only on session end)
+		UIDGenerator.I[ ] subSessionStack;
 
 	public:
 		/// This is to prevent passing scopes aroung all the time
@@ -95,6 +103,11 @@ final class ContextData {
 				/// Sessions separate code executing into logical units. It is not possible to write to memory of other sessions.
 				/// Do not edit yourself, call memoryManager.startSession() and memoryManager.endSession()
 				UIDGenerator.I id;
+
+				/// Subsessions are to protect memory block as sessions, but:
+				/// - Subsessions do not run garbage collection on end
+				/// - Parent subsessions can edit child subsession data (parent.subsessionId < child.subsessionId)
+				UIDGenerator.I subSessionIDGen;
 
 				/// List of all memory blocks allocated in the current session (mapped by src ptr)
 				MemoryBlock[ size_t ] memoryBlocks;

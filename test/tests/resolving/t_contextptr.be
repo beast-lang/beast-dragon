@@ -3,7 +3,7 @@ module t_contextptr;
 class C {
 	Int foo() {
 		#returnType x;
-		@ctime assert( 0 ); //! error: ctAssertFail
+		@ctime assert( false ); //! error: ctAssertFail
 		return 0;
 	}
 }

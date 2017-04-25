@@ -9,6 +9,9 @@ Soon to-to:
 
 	- new jobId when executing taskGuard
 
+Future to-do:
+	- Parameters indifferent 
+
 Diplomka to-do:
 	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back)
 		- Copy-on-write, session only
@@ -54,6 +57,15 @@ BBasile (does simple editor with syntax highlight): b2.temp@gmx.com
 
 -- Reflection of comments + documentation generation
 -- Ability to pass ctime string using a command line in beast
+
+FIX!!
+Void test( 5 + 4 ) {
+
+}
+
+Void main() {
+	@ctime test( 5 + 4 ); // error: 5 + 4 not ctime
+}
 
 -- What to do with
 Void foo( Int!? a, @ctime Int!? b ) {

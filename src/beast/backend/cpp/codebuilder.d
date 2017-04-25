@@ -8,6 +8,7 @@ import beast.code.data.var.result;
 import beast.core.error.error;
 import beast.code.lex.identifier;
 import std.algorithm.searching : startsWith;
+import beast.backend.common.codebuilder;
 
 class CodeBuilder_Cpp : CodeBuilder {
 	public enum tab = "\t";
@@ -177,6 +178,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 			result_ = cppParamIdentifier( param.index, param.identifier );
 		}
 
+		override void build_functionResultAccess( Symbol_RuntimeFunction func ) {
+			result_ = "result";
+		}
+
 		override void build_dereference( ExprFunction arg ) {
 			arg( this );
 			result_ = inheritCtime( "DEREF( %s )".format( result_ ), result_ );
@@ -254,10 +259,8 @@ class CodeBuilder_Cpp : CodeBuilder {
 		override void build_return( DataEntity returnValue ) {
 			assert( currentFunction );
 
-			if ( returnValue ) {
-				auto resultVar = new DataEntity_Result( currentFunction, false, returnValue.dataType );
-				build_copyCtor( resultVar, returnValue );
-			}
+			if ( returnValue )
+				build_copyCtor( new DataEntity_Result( currentFunction, false, returnValue.dataType ), returnValue );
 
 			generateScopesExit( );
 			mirrorCtimeChanges( );
@@ -311,10 +314,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		static string cppIdentifier( MemoryBlock block, bool addrOf = false ) {
-			if ( block.flag( MemoryBlock.Flag.result ) )
-				return "result";
-
-			else if ( block.isCtime && !block.isStatic && block.session == context.session )
+			if ( block.isCtime && !block.isStatic && block.session == context.session )
 				return "%sctimeStack[ ctimeStackBP + %s ]".format( addrOf ? "" : "*", block.bpOffset );
 
 			else if ( block.identifier )
