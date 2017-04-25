@@ -15,10 +15,10 @@ Void main() {
 
 }
 
-#returnType err1() { //! error: cirularDependency
+#returnType err1() { //! error: dependencyLoop
 
 }
 
-Int err2( #returnType x ) { //! error: circularDependency
+Int err2( #returnType x ) { //! error: dependencyLoop
 
 }
