@@ -27,6 +27,8 @@ final class ExpandedFunctionParameter : Identifiable {
 				result.identifier = decl.identifier.identifier;
 				result.dataType = decl.dataType.ctExec_asType( );
 
+				benforce( result.dataType.instanceSize > 0, E.zeroSizeVariable, "Parameter %s has instance size 0".format( index + 1 ) );
+
 				auto paramEntity = new DataEntity_FunctionParameter( result, false );
 				currentScope.addEntity( paramEntity );
 				// TODO: add to scope (to make param definitions like ( Bool x, x.#type y ) work)

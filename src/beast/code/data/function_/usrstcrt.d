@@ -105,14 +105,21 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 
 	protected:
 		final void execute_returnTypeDeduction( ) {
+			auto _gd = ErrorGuard( codeLocation );
+
 			// If the return type is auto, the type is inferred in the buildDefinitionsCode function (which is run from the codeProcessing)
 			if ( ast_.returnType.isAutoExpression )
 				enforceDone_codeProcessing( );
-			else
-				returnTypeWIP_ = ast_.returnType.ctExec_asType.inRootDataScope( parent_ ).inStandaloneSession;
+			else {
+				enforceDone_parameterExpanding( );
+				auto _sgd = new BlurryDataScope( paramsScopeWIP_ ).scopeGuard;
+				returnTypeWIP_ = ast_.returnType.ctExec_asType.inStandaloneSession;
+			}
 		}
 
 		final void execute_parameterExpanding( ) {
+			auto _gd = ErrorGuard( codeLocation );
+
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				paramsScopeWIP_ = new RootDataScope( staticData_ );
 				debug paramsScopeWIP_.allowMultiThreadAccess = true;

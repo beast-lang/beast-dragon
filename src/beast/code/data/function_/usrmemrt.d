@@ -106,15 +106,21 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 	protected:
 		final void execute_returnTypeDeduction( ) {
+			auto _gd = ErrorGuard( codeLocation );
+
 			// If the return type is auto, the type is inferred in the buildDefinitionsCode function (which is run from the codeProcessing)
 			if ( ast_.returnType.isAutoExpression )
 				enforceDone_codeProcessing( );
-			else
-				returnTypeWIP_ = ast_.returnType.ctExec_asType.inRootDataScope( parent_.dataEntity ).inStandaloneSession;
+			else {
+				enforceDone_parameterExpanding( );
+				auto _sgd = new BlurryDataScope( paramsScopeWIP_ ).scopeGuard;
+				returnTypeWIP_ = ast_.returnType.ctExec_asType.inStandaloneSession;
+			}
 		}
 
 		final void execute_parameterExpanding( ) {
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
+				auto _gd = ErrorGuard( codeLocation );
 				auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_, false );
 
 				paramsScopeWIP_ = new RootDataScope( thisPtr );
