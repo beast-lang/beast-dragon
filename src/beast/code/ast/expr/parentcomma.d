@@ -38,19 +38,6 @@ final class AST_ParentCommaExpression : AST_Expression, AST_SuffixExpressionItem
 		AST_Expression[ ] items;
 
 	public:
-		/// Returns whether the parentcommaexpression could qualify as runtime parameter list
-		bool isRuntimeParameterList( ) {
-			foreach ( expr; items ) {
-				if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
-					// Auto expressions cannot be expanded
-					if ( decl.dataType.isAutoExpression )
-						return false;
-				}
-			}
-
-			return true;
-		}
-
 		override AST_ParentCommaExpression isParentCommaExpression( ) {
 			return this;
 		}

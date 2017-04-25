@@ -59,6 +59,10 @@ abstract class AST_Expression : AST_Statement {
 			return null;
 		}
 
+		AST_DecoratedExpression isDecoratedExpression() {
+			return null;
+		}
+
 		Tuple!( AST_Expression, AST_ParentCommaExpression ) asNewRightExpression( ) {
 			auto _gd = ErrorGuard( this );
 			berror( E.syntaxError, "The 'new' expression has to end with '( args )'" );

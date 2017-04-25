@@ -40,7 +40,7 @@ final class Symbol_UserStaticClass : Symbol_StaticClass {
 			return ast_;
 		}
 
-		override Namespace namespace() {
+		override Namespace namespace( ) {
 			return namespace_;
 		}
 
@@ -51,7 +51,7 @@ final class Symbol_UserStaticClass : Symbol_StaticClass {
 			env.parentType = this;
 			env.enforceDone_memberOffsetObtaining = &enforceDone_instanceSizeObtaining;
 
-			return ast_.declarationScope.executeDeclarations( env );
+			return ast_.declarationScope.executeDeclarations( env ).inRootDataScope( parent );
 		}
 
 		final void execute_instanceSizeObtaining( ) {

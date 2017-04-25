@@ -7,6 +7,7 @@ import beast.code.ast.stmt.codeblock;
 import beast.code.data.scope_.root;
 import beast.code.data.function_.usrstcrt;
 import beast.code.data.function_.usrmemrt;
+import beast.code.data.function_.paramlist;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -39,12 +40,12 @@ final class AST_FunctionDeclaration : AST_Declaration {
 			// Apply possible decorators in the variableDeclarationModifier context
 			decorations.apply_functionDeclarationModifier( declData );
 
-			immutable isRuntime = parameterList.isRuntimeParameterList;
+			auto paramList = new FunctionParameterList( parameterList );
 
-			if ( declData.isStatic && !declData.isCtime && isRuntime )
-				sink( new Symbol_UserStaticRuntimeFunction( this, decorations, declData ) );
-			else if ( !declData.isStatic && !declData.isCtime && isRuntime )
-				sink( new Symbol_UserMemberRuntimeFunction( this, decorations, declData ) );
+			if ( declData.isStatic && !declData.isCtime && paramList.isRuntimeParameterList )
+				sink( new Symbol_UserStaticRuntimeFunction( this, decorations, declData, paramList ) );
+			else if ( !declData.isStatic && !declData.isCtime && paramList.isRuntimeParameterList )
+				sink( new Symbol_UserMemberRuntimeFunction( this, decorations, declData, paramList ) );
 			else
 				berror( E.notImplemented, "Non-static, ctime or 'templated' functions are not implemented yet" );
 		}

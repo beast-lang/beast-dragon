@@ -8,7 +8,7 @@ public {
 	import beast.code.data.function_.function_ : Symbol_Function;
 	import beast.code.data.function_.rt : Symbol_RuntimeFunction;
 	import beast.code.data.module_.module_ : Symbol_Module;
-	import beast.code.data.scope_.scope_ : DataScope, currentScope, scopeGuard, inLocalDataScope, inRootDataScope;
+	import beast.code.data.scope_.scope_ : DataScope, currentScope, scopeGuard, inLocalDataScope, inRootDataScope, inBlurryDataScope;
 	import beast.code.data.symbol : Symbol;
 	import beast.code.data.type.type : Symbol_Type;
 	import beast.code.data.var.local : DataEntity_LocalVariable;

@@ -6,21 +6,23 @@ import beast.code.ast.decl.function_;
 import beast.code.decorationlist;
 import beast.code.ast.decl.env;
 import beast.code.data.scope_.blurry;
+import beast.code.data.function_.paramlist;
 
 final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
 	mixin TaskGuard!"parameterExpanding";
 
 	public:
-		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
+		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data, FunctionParameterList paramList ) {
 			staticData_ = new Data( this, MatchLevel.fullMatch );
 
 			ast_ = ast;
 			decorationList_ = decorationList;
 			parent_ = data.env.staticMembersParent;
+			paramList_ = paramList;
 
-			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
 			taskManager.delayedIssueJob( { enforceDone_parameterExpanding( ); } );
+			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
 
 			decorationList_.enforceAllResolved( ); // TODO: move somewhere else eventually
 		}
@@ -64,8 +66,6 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			assert( !cb.isCtime );
 			enforceDone_parameterExpanding( );
 
-			// We open the new subscope as blurry, because multiple buildDefinitionsCode calls might be used the paramsScopeWIP_
-			auto _sgd = new BlurryDataScope( paramsScopeWIP_ ).scopeGuard;
 			auto _gd = ErrorGuard( codeLocation );
 
 			cb.build_functionDefinition( this, ( cb ) { //
@@ -89,7 +89,8 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 				if ( returnTypeWIP_ is coreType.Void )
 					cb.build_return( null );
 
-			} ).inSession( SessionPolicy.watchCtChanges );
+			} ).inSession( SessionPolicy.watchCtChanges ).inBlurryDataScope( paramsScopeWIP_ );
+			// We open the new subscope as blurry, because multiple buildDefinitionsCode calls might be used the paramsScopeWIP_
 		}
 
 	private:
@@ -100,6 +101,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 	private:
 		AST_FunctionDeclaration ast_;
 		DecorationList decorationList_;
+		FunctionParameterList paramList_;
 		Data staticData_;
 		DataEntity parent_;
 
@@ -112,8 +114,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 				enforceDone_codeProcessing( );
 			else {
 				enforceDone_parameterExpanding( );
-				auto _sgd = new BlurryDataScope( paramsScopeWIP_ ).scopeGuard;
-				returnTypeWIP_ = ast_.returnType.ctExec_asType.inStandaloneSession;
+				returnTypeWIP_ = ast_.returnType.ctExec_asType.inStandaloneSession.inBlurryDataScope( paramsScopeWIP_ );
 			}
 		}
 
@@ -123,11 +124,9 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
 				paramsScopeWIP_ = new RootDataScope( staticData_ );
 				debug paramsScopeWIP_.allowMultiThreadAccess = true;
-
 				auto _sgd = paramsScopeWIP_.scopeGuard;
 
-				foreach ( i, expr; ast_.parameterList.items )
-					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr, i );
+				expandedParametersWIP_ = paramList_.runtimeExpand( );
 			}
 		}
 

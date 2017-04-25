@@ -10,40 +10,9 @@ final class ExpandedFunctionParameter : Identifiable {
 	mixin TaskGuard!"outerHashObtaining";
 
 	public:
-		/// Tries to expand expression into a function parameter.
-		static ExpandedFunctionParameter process( AST_Expression expr, size_t index ) {
-			ExpandedFunctionParameter result = new ExpandedFunctionParameter( );
-			result.index = index;
-			result.ast = expr;
-
-			// Declaration -> standard parameter
-			if ( AST_VariableDeclarationExpression decl = expr.isVariableDeclaration ) {
-				// Auto expressions cannot be expanded
-				assert( !decl.dataType.isAutoExpression, "Cannot expand auto parameter" );
-
-				result.identifier = decl.identifier.identifier;
-				result.dataType = decl.dataType.ctExec_asType( );
-
-				benforce( result.dataType.instanceSize > 0, E.zeroSizeVariable, "Parameter %s has instance size 0".format( index + 1 ) );
-
-				auto paramEntity = new DataEntity_FunctionParameter( result, false );
-				currentScope.addEntity( paramEntity );
-				// TODO: add to scope (to make param definitions like ( Bool x, x.#type y ) work)
-			}
-			// Constant value parameter
-			else {
-				DataEntity constVal = expr.buildSemanticTree_single( );
-
-				result.dataType = constVal.dataType;
-				result.constValue = constVal.ctExec( ).keepValue;
-			}
-
-			assert( result.dataType );
-			return result;
-		}
-
 		static ExpandedFunctionParameter[ ] bootstrap( Args... )( Args args ) {
 			ExpandedFunctionParameter[ ] result;
+			size_t runtimeIndex;
 
 			foreach ( i, arg; args ) {
 				ExpandedFunctionParameter param = new ExpandedFunctionParameter;
@@ -51,20 +20,23 @@ final class ExpandedFunctionParameter : Identifiable {
 				param.identifier = Identifier( "p%s".format( i ) );
 
 				alias Arg = typeof( arg );
-				static if ( is( Arg : Symbol_Type ) )
+				// Type > > runtime argument
+				static if ( is( Arg : Symbol_Type ) ) {
 					param.dataType = arg;
+					param.runtimeIndex = runtimeIndex++;
+
+				}
+				// Data entity -> constval
 				else static if ( is( Arg : DataEntity ) ) {
 					param.dataType = arg.dataType;
+					auto _s = new RootDataScope( null );
+					auto _sgd = _s.scopeGuard;
 
-					with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-						auto _s = new RootDataScope( null );
-						auto _sgd = _s.scopeGuard;
+					param.constValue = arg.ctExec( ).keepValue.inStandaloneSession;
 
-						param.constValue = arg.ctExec( ).keepValue;
-
-						assert( _s.itemCount <= 1 );
-					}
+					assert( _s.itemCount <= 1 );
 				}
+				// Static variable -> constval
 				else static if ( is( Arg : Symbol_StaticVariable ) ) {
 					param.dataType = arg.dataType;
 					param.constValue = arg.memoryPtr;
@@ -93,8 +65,11 @@ final class ExpandedFunctionParameter : Identifiable {
 		/// If the parameter is const-value (something like template specialization), this points to the value
 		MemoryPtr constValue;
 
-		/// Index of the paramter
+		/// Index of the parameter
 		size_t index;
+
+		/// Runtime index of the parameter (considers only runtime parameters, not constvals etc)
+		size_t runtimeIndex;
 
 		AST_Expression ast;
 

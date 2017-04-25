@@ -43,7 +43,8 @@ final class Symbol_UserModule : Symbol_Module {
 			scope env = DeclarationEnvironment.newModule( );
 			env.staticMembersParent = dataEntity;
 
-			return ast_.declarationScope.executeDeclarations( env );
+			// All identifiers used during members obtaning will be resolved within core module (mostly because of decorators)
+			return ast_.declarationScope.executeDeclarations( env ).inRootDataScope( coreLibrary.module_.dataEntity );
 		}
 
 	private:

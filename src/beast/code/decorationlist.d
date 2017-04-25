@@ -11,6 +11,8 @@ import beast.code.ast.expr.decorated;
 import beast.code.data.idcontainer;
 import beast.code.ast.decl.env;
 import beast.code.ast.stmt.statement;
+import beast.code.data.function_.paramlist;
+import beast.code.data.function_.param;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
 final class DecorationList {
@@ -40,17 +42,22 @@ final class DecorationList {
 	public:
 		/// Applies all possible decorations in the variableDeclarationModifier context and removes them from the list
 		void apply_variableDeclarationModifier( VariableDeclarationData var ) {
-			standardDecoratorProcedure!"variableDeclarationModifier"( coreLibrary.module_.dataEntity, var );
+			standardDecoratorProcedure!"variableDeclarationModifier"( currentScope, var );
 		}
 
 		/// Applies all possible decorations in the functionDeclarationModifier context and removes them from the list
 		void apply_functionDeclarationModifier( FunctionDeclarationData var ) {
-			standardDecoratorProcedure!"functionDeclarationModifier"( coreLibrary.module_.dataEntity, var );
+			standardDecoratorProcedure!"functionDeclarationModifier"( currentScope, var );
+		}
+
+		/// Applies all possible decorations in the functionParameterModifier context and removes them from the list
+		void apply_functionParameterModifier( FunctionParameterDecorationData data ) {
+			standardDecoratorProcedure!"functionParameterModifier"( currentScope, data );
 		}
 
 		/// Applies all possible decorations in the classDeclarationModifier context and removes them from the list
 		void apply_classDeclarationModifier( ClassDeclarationData var ) {
-			standardDecoratorProcedure!"classDeclarationModifier"( coreLibrary.module_.dataEntity, var );
+			standardDecoratorProcedure!"classDeclarationModifier"( currentScope, var );
 		}
 
 		Symbol_Type apply_typeWrapper( Symbol_Type originalType ) {

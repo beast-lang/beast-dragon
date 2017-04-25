@@ -20,15 +20,19 @@ final class AST_DecoratedExpression : AST_Expression {
 			return baseExpression.isPrefixExpression;
 		}
 
+		override AST_DecoratedExpression isDecoratedExpression() {
+			return this;
+		}
+
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-
 			auto decoData = new ExpressionDecorationData;
 			auto decoList = new DecorationList( decorationList );
 
 			decoList.apply_expressionDecorator( decoData );
 			decoList.enforceAllResolved( );
 
+			// TODO: Special case where baseExpression is variable declaration
 			auto result = baseExpression.buildSemanticTree( inferredType, errorOnInferrationFailure );
 
 			if ( decoData.isCtime )

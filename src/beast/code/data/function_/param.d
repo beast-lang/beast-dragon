@@ -43,11 +43,6 @@ final class DataEntity_FunctionParameter : DataEntity {
 			cb.build_parameterAccess( param_ );
 		}
 
-	public:
-		override size_t asFunctionParameter_index( ) {
-			return param_.index;
-		}
-
 	private:
 		ExpandedFunctionParameter param_;
 		DataEntity parent_;
@@ -55,5 +50,8 @@ final class DataEntity_FunctionParameter : DataEntity {
 }
 
 class FunctionParameterDecorationData {
+
+	public:
+		bool isCtime;
 
 }

@@ -6,6 +6,7 @@ import beast.code.ast.decl.function_;
 import beast.code.ast.decl.class_;
 import beast.code.ast.expr.decorated;
 import beast.code.ast.stmt.statement;
+import beast.code.data.function_.param;
 
 /// Base class for all decorator types
 abstract class Symbol_Decorator : Symbol {
@@ -37,6 +38,11 @@ abstract class Symbol_Decorator : Symbol {
 
 		/// Tries to apply in the functionDeclarationModifier context. Returns true if successful
 		bool apply_functionDeclarationModifier( FunctionDeclarationData data ) {
+			return false;
+		}
+
+		/// Tries to apply in the functionParameterDeclarationModifier context. Returns true if successful
+		bool apply_functionParameterModifier( FunctionParameterDecorationData data ) {
 			return false;
 		}
 

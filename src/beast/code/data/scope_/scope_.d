@@ -4,8 +4,6 @@ import beast.code.data.toolkit;
 import beast.code.data.var.local;
 import beast.code.data.idcontainer;
 import beast.util.uidgen;
-import beast.code.data.scope_.local;
-import beast.code.data.scope_.root;
 
 /// DatScope is basically a namespace for data entities (the "Namespace" class stores symbols) - it is a namespace with a context
 /// DataScope is not responsible for calling destructors or constructors - destructors are handled by a codebuilder
@@ -132,12 +130,24 @@ auto scopeGuard( DataScope scope_, bool finish = true ) {
 
 /// Executes given function in a new local data scope
 pragma( inline ) auto inLocalDataScope( T )( lazy T dg ) {
+	import beast.code.data.scope_.local : LocalDataScope;
+
 	auto _gd = new LocalDataScope( ).scopeGuard;
 	return dg( );
 }
 
 /// Executes given function in a new root data scope
 pragma( inline ) auto inRootDataScope( T )( lazy T dg, DataEntity parent ) {
+	import beast.code.data.scope_.root : RootDataScope;
+
 	auto _gd = new RootDataScope( parent ).scopeGuard;
+	return dg( );
+}
+
+/// Executes given function in a new blurry data scope
+pragma( inline ) auto inBlurryDataScope( T )( lazy T dg, DataScope parent ) {
+	import beast.code.data.scope_.blurry : BlurryDataScope;
+
+	auto _gd = new BlurryDataScope( parent ).scopeGuard;
 	return dg( );
 }

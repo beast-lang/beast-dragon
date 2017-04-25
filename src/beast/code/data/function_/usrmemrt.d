@@ -6,21 +6,23 @@ import beast.code.ast.decl.function_;
 import beast.code.decorationlist;
 import beast.code.ast.decl.env;
 import beast.code.data.scope_.blurry;
+import beast.code.data.function_.paramlist;
 
 final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
 	mixin TaskGuard!"parameterExpanding";
 
 	public:
-		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data ) {
+		this( AST_FunctionDeclaration ast, DecorationList decorationList, FunctionDeclarationData data, FunctionParameterList paramList ) {
 			staticData_ = new Data( this, MatchLevel.fullMatch, null );
 
 			ast_ = ast;
 			decorationList_ = decorationList;
+			paramList_ = paramList;
 			parent_ = data.env.parentType;
 
-			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
 			taskManager.delayedIssueJob( { enforceDone_parameterExpanding( ); } );
+			taskManager.delayedIssueJob( { enforceDone_returnTypeDeduction( ); } );
 
 			decorationList_.enforceAllResolved( ); // TODO: move somewhere else eventually
 		}
@@ -101,6 +103,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 	private:
 		AST_FunctionDeclaration ast_;
 		DecorationList decorationList_;
+		FunctionParameterList paramList_;
 		Data staticData_;
 		Symbol_Type parent_;
 
@@ -123,15 +126,12 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 				auto _gd = ErrorGuard( codeLocation );
 				auto thisPtr = new DataEntity_ContextPointer( ID!"this", parent_, false );
 
-				paramsScopeWIP_ = new RootDataScope( thisPtr );
+				paramsScopeWIP_ = new RootDataScope( dataEntity( MatchLevel.fullMatch, thisPtr ) );
 				debug paramsScopeWIP_.allowMultiThreadAccess = true;
-
 				auto _sgd = paramsScopeWIP_.scopeGuard;
 
 				paramsScopeWIP_.addEntity( thisPtr );
-
-				foreach ( i, expr; ast_.parameterList.items )
-					expandedParametersWIP_ ~= ExpandedFunctionParameter.process( expr, i );
+				expandedParametersWIP_ = paramList_.runtimeExpand( );
 			}
 		}
 
@@ -149,7 +149,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				final override DataEntity parent( ) {
-					return sym_.parent_.dataEntity;
+					return parentInstance_ ? parentInstance_ : sym_.parent_.dataEntity;
 				}
 
 				override CallableMatch startCallMatch( AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {

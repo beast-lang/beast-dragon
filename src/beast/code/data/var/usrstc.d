@@ -98,11 +98,15 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataTypeWIP_ );
 
 				if ( isCtime_ ) {
+					scope cb = new CodeBuilder_Ctime();
+
 					// If the variable is ctime, we execute the constructor in ctime
 					if ( valueEntity )
-						ast_.buildConstructor( substEntity, valueEntity, scoped!CodeBuilder_Ctime( ) );
+						ast_.buildConstructor( substEntity, valueEntity, cb );
 					else
-						ast_.buildConstructor( substEntity, ast_.value, scoped!CodeBuilder_Ctime( ) );
+						ast_.buildConstructor( substEntity, ast_.value, cb );
+
+					cb.result.destroy();
 				}
 				else {
 					// Otherwise, we add it to the init block

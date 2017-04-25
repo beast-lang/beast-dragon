@@ -175,7 +175,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void build_parameterAccess( ExpandedFunctionParameter param ) {
-			result_ = ( -param.index - 2 ).iopBpOffset;
+			result_ = ( -param.runtimeIndex - 2 ).iopBpOffset;
 		}
 
 		override void build_dereference( ExprFunction arg ) {

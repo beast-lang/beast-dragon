@@ -24,6 +24,10 @@ abstract class Symbol_StaticClass : Symbol_Class {
 				return staticData_;
 		}
 
+		final DataEntity parent( ) {
+			return parent_;
+		}
+
 	protected:
 		DataEntity staticData_;
 		DataEntity parent_;

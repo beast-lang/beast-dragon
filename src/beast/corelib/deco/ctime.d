@@ -7,6 +7,7 @@ import beast.code.ast.decl.function_;
 import beast.code.ast.decl.class_;
 import beast.code.ast.expr.decorated;
 import beast.code.ast.stmt.statement;
+import beast.code.data.function_.param;
 
 /// @ctime
 final class Symbol_Decorator_Ctime : Symbol_Decorator {
@@ -30,6 +31,11 @@ final class Symbol_Decorator_Ctime : Symbol_Decorator {
 
 		override bool apply_functionDeclarationModifier( FunctionDeclarationData data ) {
 			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
+			data.isCtime = true;
+			return true;
+		}
+
+		override bool apply_functionParameterModifier( FunctionParameterDecorationData data ) {
 			data.isCtime = true;
 			return true;
 		}

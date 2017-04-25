@@ -372,6 +372,8 @@ final class MemoryManager {
 					else {
 						debug ( gc )
 							writefln( "endsession keep %s", block.startPtr );
+
+						block.setFlags( MemoryBlock.SharedFlag.sessionFinished );
 					}
 				}
 

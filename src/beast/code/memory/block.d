@@ -36,6 +36,8 @@ final class MemoryBlock {
 			changed = doNotGCAtSessionEnd << 1, /// When the memory block is mirrored in the runtime, this flag helps the tracker (keeps track if block was allocated/freed/written to since last check)
 			freed = changed << 1, /// Memory block is freed
 			allocated = freed << 1, /// Memory block was allocated since the last check
+
+			sessionFinished = allocated << 1, /// Memory session this block was created in is finished
 		}
 
 	public:
