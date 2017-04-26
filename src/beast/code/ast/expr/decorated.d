@@ -3,6 +3,8 @@ module beast.code.ast.expr.decorated;
 import beast.code.ast.toolkit;
 import beast.code.decorationlist;
 import beast.code.data.util.ctexec;
+import beast.code.memory.memorymgr;
+import beast.backend.ctime.codebuilder;
 
 final class AST_DecoratedExpression : AST_Expression {
 
@@ -20,16 +22,23 @@ final class AST_DecoratedExpression : AST_Expression {
 			return baseExpression.isPrefixExpression;
 		}
 
-		override AST_DecoratedExpression isDecoratedExpression() {
+		override AST_DecoratedExpression isDecoratedExpression( ) {
 			return this;
 		}
 
 	public:
 		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
+			auto _gd = ErrorGuard( codeLocation );
 			auto decoData = new ExpressionDecorationData;
 			auto decoList = new DecorationList( decorationList );
 
 			decoList.apply_expressionDecorator( decoData );
+			
+			return buildSemanticTree( inferredType, decoData, decoList, errorOnInferrationFailure );
+		}
+
+		Overloadset buildSemanticTree( Symbol_Type inferredType, ExpressionDecorationData decoData, DecorationList decoList, bool errorOnInferrationFailure = true ) {
+			auto _gd = ErrorGuard( codeLocation );
 			decoList.enforceAllResolved( );
 
 			// TODO: Special case where baseExpression is variable declaration
@@ -41,6 +50,22 @@ final class AST_DecoratedExpression : AST_Expression {
 				assert( 0, "Ctime is the only decorator for expressions so far, so this should not happen" );
 
 			return result;
+		}
+
+		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
+			auto _gd = ErrorGuard( codeLocation );
+
+			auto decoData = new ExpressionDecorationData;
+			auto decoList = new DecorationList( decorationList );
+
+			decoList.apply_expressionDecorator( decoData );
+
+			if ( cb.isCtime )
+				cb.build_scope( &buildSemanticTree( null, decoData, decoList ).single.buildCode );
+			else if ( decoData.isCtime )
+				new CodeBuilder_Ctime( ).build_scope( &buildSemanticTree( null, decoData, decoList ).single.buildCode );
+			else
+				cb.build_scope( &buildSemanticTree( null, decoData, decoList ).single.buildCode ).inSubSession;
 		}
 
 	public:

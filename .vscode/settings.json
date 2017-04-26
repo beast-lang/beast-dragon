@@ -12,7 +12,6 @@
 		".travis.yml": true,
 		"beast.sln": true,
 		"dscanner.ini": true,
-		"notes.txt": true,
 		"test/log": true,
 		"test/tmp": true,
 		"test/output": true,

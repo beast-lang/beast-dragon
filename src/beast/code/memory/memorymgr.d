@@ -193,7 +193,7 @@ final class MemoryManager {
 			benforce( block.isCtime, E.runtimeMemoryManipulation, "Cannnot write to runtime memory (%s)".format( block.identificationString ) );
 			debug benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session (block %s; current %s)".format( block.session, context.session ) );
 			benforce( block.session == context.session, E.protectedMemory, "Cannot write to a memory block owned by a different session" );
-			benforce( block.subSession >= context.subSession, E.protectedMemory, "Cannot free memory block owned by a different subsession" );
+			benforce( block.subSession >= context.subSession, E.protectedMemory, "Cannot write to a memory block owned by a different subsession" );
 			benforce( ptr + data.length <= block.endPtr, E.invalidMemoryOperation, "Memory write outside of allocated block bounds" );
 
 			debug synchronized ( this ) {

@@ -59,7 +59,7 @@ abstract class AST_Expression : AST_Statement {
 			return null;
 		}
 
-		AST_DecoratedExpression isDecoratedExpression() {
+		AST_DecoratedExpression isDecoratedExpression( ) {
 			return null;
 		}
 
@@ -113,9 +113,13 @@ abstract class AST_Expression : AST_Statement {
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			auto _gd = ErrorGuard( codeLocation );
-			string content = codeLocation.content;
 
-			cb.build_scope( &buildSemanticTree_single( ).buildCode );
+			// Statement code is built and executed in subsession so non-@ctime expression statements cannot modify @ctime variables outside (because of separate semantic tree building (where @ctime stuff is done) and execution)
+			// For @ctime statements, this is resolved in override of buildStatementCode in decoratedExpression
+			if( cb.isCtime )
+				cb.build_scope( &buildSemanticTree_single( ).buildCode );
+			else
+				cb.build_scope( &buildSemanticTree_single( ).buildCode ).inSubSession;
 		}
 
 		final CTExecResult ctExec( Symbol_Type expectedType ) {

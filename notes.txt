@@ -14,7 +14,19 @@ Future to-do:
 
 Diplomka to-do:
 	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back)
-		- Copy-on-write, session only
+	- Copy-on-write, session only
+	- Decorated && expression buildStatementCode -> cleaner + cover ifs, whiles, all statements
+		-> @ctime has to have a statementModifier context -- resolved on a statement AST level. If not @ctime -> statement is executed in a subsession
+
+	Bool ctimeFunc( @ctime Int x ) { ... }
+	void main() {
+		@ctime Int! x;
+		println( x++ > 0 && ctimeFunc( x ) );
+
+		// Problem - ctimeFunc is executed during semantic tree building, so x++ is executed after
+		// Resolution: cannot mutate @ctime variables in nonctime code + @ctime code has to be executed immidately when building semantic tree
+
+	}
 
 Names:
 	Lion
