@@ -25,6 +25,12 @@ private pragma( inline ) void intOp( string op )( CB cb, T t, Op arg1, Op arg2, 
 		assert( 0, "No operations for integrals with instance size %s".format( t.instanceSize ) );
 
 	}
+
+	debug ( ctime ) {
+		import std.stdio : writefln;
+
+		writefln( "CTIME %s %s %s => %s", arg2, op, arg3, arg1 );
+	}
 }
 
 // NUMERIC OPERATIONS

@@ -1,4 +1,4 @@
-module t_paramevalorder; //! run
+module t_paramevalorder;
 // In this test, we test order of evaulation of parameters
 
 class C {
@@ -12,40 +12,36 @@ class C {
 		data.#ctor( other.data );
 	}
 
-	Void function( Int arg1, Int arg2 ) {
+	Void func( Int arg1, Int arg2 ) {
 
 	}
 
 	Int data;
 }
 
-Void func( Int? i, Int set ) {
+Void record( Int? i, Int set ) {
 	i = i * 10 + set;
 }
 
 C mirror( C mirror, Int? i, Int set ) {
-	func( i, set );
+	record( i, set );
 	return mirror;
 }
 
 Int mirror( Int mirror, Int? i, Int set ) {
-	func( i, set );
+	record( i, set );
 	return mirror;
 }
 
-Bool test() {
+Int test() {
 	C c;
 	Int i;
 
-	mirror( c, i, 1 ).function( mirror( 1, i, 2 ), mirror( 2, i, 3 ) );
-	assert( i == 123 );
-
-	return true;
+	mirror( c, i, 1 ).func( mirror( 1, i, 2 ), mirror( 2, i, 3 ) );
+	return i;
 }
 
 Void main() {
-	// Runtime test
-	test();
+	print( test() ); //! stdout: 123
+	print( @ctime test() ); //! stdout: 123
 }
-
-@ctime Bool ctimeTest = test();

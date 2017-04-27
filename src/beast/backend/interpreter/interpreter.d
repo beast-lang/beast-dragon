@@ -6,7 +6,7 @@ import std.typecons : Typedef;
 import std.meta : aliasSeqOf;
 import std.range : iota;
 import beast.core.error.guard;
-import std.algorithm.searching : startsWith;
+import std.algorithm : startsWith, count;
 
 //debug = interpreter;
 
@@ -15,25 +15,38 @@ final class Interpreter {
 	public:
 		static void executeFunction( Symbol_RuntimeFunction func, MemoryPtr resultPtr, MemoryPtr ctxPtr, MemoryPtr[ ] args ) {
 			assert( resultPtr.isNull == ( func.returnType is coreType.Void ) );
-			assert( args.length == func.parameters.length );
+			assert( args.length == func.parameters.count!( x => !x.isConstValue ) );
 
 			auto ir = scoped!Interpreter;
-			Interpreter pr = ir;
+			auto ptrSize = hardwareEnvironment.pointerSize;
 
-			ir.stack ~= resultPtr;
-			ir.stack ~= args;
-			ir.stack ~= ctxPtr;
+			MemoryPtr resultPtrPtr = memoryManager.alloc( ptrSize, MemoryBlock.Flag.ctime );
+			resultPtrPtr.writeMemoryPtr( resultPtr );
+			ir.stack ~= resultPtrPtr;
+
+			MemoryPtr[ ] argPtrs;
+			argPtrs.length = args.length;
+			foreach ( i, arg; args ) {
+				auto ptr = memoryManager.alloc( ptrSize, MemoryBlock.Flag.ctime );
+				ptr.writeMemoryPtr( arg );
+				argPtrs[ i ] = ptr;
+				ir.stack ~= ptr;
+			}
+
+			MemoryPtr ctxPtrPtr = memoryManager.alloc( ptrSize, MemoryBlock.Flag.ctime );
+			ctxPtrPtr.writeMemoryPtr( ctxPtr );
+			ir.stack ~= ctxPtrPtr;
 
 			import beast.core.error.error : stderrMutex;
 
-			/*debug ( interpreter ) {
-				stderrMutex.lock( );
-				scope ( exit )
-					stderrMutex.unlock( );
-			}*/
-
 			ir.executeInstruction( Instruction.I.call, func.iopFuncPtr );
 			ir.run( );
+
+			resultPtrPtr.free( );
+			ctxPtrPtr.free( );
+
+			foreach ( argPtr; argPtrs )
+				argPtr.free( );
 		}
 
 	public:
@@ -198,6 +211,8 @@ final class Interpreter {
 	package:
 		alias JumpTarget = Typedef!( size_t, 0, "beast.interpreter.jumpTarget" );
 		struct StackFrame {
+			debug ( identificationLocals ) string functionId;
+
 			size_t basePointer;
 			size_t baseCtPointer;
 

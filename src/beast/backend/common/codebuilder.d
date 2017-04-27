@@ -126,7 +126,7 @@ abstract class CodeBuilder : Identifiable {
 		final void build_break( ) {
 			foreach_reverse ( i, ref s; scopeStack_ ) {
 				if ( s.flags & ScopeFlags.breakableWithoutLabel ) {
-					assert( i != 0 );
+					benforce( i != 0, E.nothingToBreakOrContinue, "There's nothing to break" );
 					build_break( i );
 					return;
 				}

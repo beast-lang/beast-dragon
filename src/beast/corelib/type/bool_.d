@@ -18,14 +18,13 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binOr, tp.Bool ), //
 			( cb, inst, args ) { //
-				// 0th operator is Operator.binOr
 				auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 				cb.build_localVariableDefinition( var );
 
 				// We construct the local variable based on the if result
 				cb.build_if( inst, //
 					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreConst.true_.dataEntity ).buildCode, //
-					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, args[ 1 ] ).buildCode );
+					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, args[ 0 ] ).buildCode );
 
 				// Result expression is var
 				var.buildCode( cb );
@@ -35,13 +34,12 @@ void initialize_Bool( ref CoreLibrary_Types tp ) {
 	mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp.Bool, tp.Bool, //
 			ExpandedFunctionParameter.bootstrap( enm.operator.binAnd, tp.Bool ), //
 			( cb, inst, args ) { //
-				/// args[ 0 ] is Operator.binAnd
 				auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 				cb.build_localVariableDefinition( var );
 
 				// We construct the local variable based on the if result
 				cb.build_if( inst, //
-					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, args[ 1 ] ).buildCode, //
+					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, args[ 0 ] ).buildCode, //
 					&var.expectResolveIdentifier( ID!"#ctor" ).resolveCall( null, true, coreConst.false_.dataEntity ).buildCode );
 
 				// Result expression is var

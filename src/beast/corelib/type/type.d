@@ -22,6 +22,7 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 
 			Symbol[ ] mem;
 
+			// Implicit ctor
 			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( ), //
 					( cb, inst, args ) { //
@@ -29,21 +30,22 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, coreType.Void.dataEntity );
 					} );
 
+			// Refassign ctor
 			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( coreEnum.xxctor.refAssign, this ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
-					} );
+					( cb, inst, args ) => cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] ) );
 
+			// Copy ctor
+			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCopyCtor( this ); // Copy constructor
+
+			// Dtor
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newNoopDtor( this );
 
 			mem ~= opRefAssign = new Symbol_PrimitiveMemberRuntimeFunction( ID!"#refAssign", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( this ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
-					} );
+					( cb, inst, args ) => cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] ) );
 
-				namespace_.initialize( mem );
+			namespace_.initialize( mem );
 		}
 
 	public:

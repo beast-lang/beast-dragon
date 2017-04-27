@@ -8,7 +8,8 @@ sourcePaths "src"
 versions "cppBackend"
 
 // Remove the "_" to enable
-debugVersions "_interpreter" "_gc" "_ctime" "_memory"
+// when identificationLocals is enabled, local string variables are created in appropriate function containing appropriate identification strings
+debugVersions "_interpreter" "_gc" "_ctime" "_memory" "_identificationLocals"
 
 targetName "beast"
 targetPath "bin"

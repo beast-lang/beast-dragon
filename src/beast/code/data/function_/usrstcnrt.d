@@ -135,6 +135,9 @@ final class Symbol_UserStaticNonRuntimeFunction : Symbol_NonRuntimeFunction {
 							CTExecResult ctexec;
 							result = matchCtimeArgument( expression, entity, dataType, expectedType, ctexec );
 
+							if( result == MatchLevel.noMatch )
+								return result;
+
 							// We add a static ctime variable into the parameter list (as a result of @ctime variable expansion)
 							// The data is copied over copy-ctor
 							// TODO: check the data doesn't point anyhow to the current scope (it has to be copied comletely)

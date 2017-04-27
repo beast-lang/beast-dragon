@@ -88,6 +88,11 @@ struct MemoryPtr {
 		}
 
 	public:
+		void free( ) {
+			memoryManager.free( this );
+		}
+
+	public:
 		bool dataEquals( MemoryPtr other, size_t comparedLength ) const {
 			import core.stdc.string : memcmp;
 

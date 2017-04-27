@@ -7,7 +7,7 @@ import beast.code.data.scope_.local;
 import beast.code.data.var.result;
 import beast.core.error.error;
 import beast.code.lex.identifier;
-import std.algorithm.searching : startsWith;
+import std.algorithm : startsWith, count;
 import beast.backend.common.codebuilder;
 
 class CodeBuilder_Cpp : CodeBuilder {
@@ -120,6 +120,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 		}
 
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			assert( arguments.length == function_.parameters.count!( x => !x.isConstValue ) );
 			//codeResult_.formattedWrite( "%s// Function %s call\n", tabs, function_.tryGetIdentificationString );
 
 			string resultVarName;
@@ -129,10 +130,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 				resultVarName = "&%s".format( result_ );
 			}
 
-			codeResult_.formattedWrite( "%s{\n", tabs );
-
 			auto _sgd = new LocalDataScope( ).scopeGuard;
-			pushScope( );
 
 			string[ ] argumentNames;
 			if ( resultVarName )
@@ -145,18 +143,10 @@ class CodeBuilder_Cpp : CodeBuilder {
 				argumentNames ~= "PARAM( %s, %s )".format( result_, cppIdentifier( parentInstance.dataType ) );
 			}
 
-			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
-				if ( param.isConstValue )
-					continue;
-
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, "arg%s".format( i + 1 ) );
+			foreach ( ExpandedFunctionParameter param; function_.parameters.filter!( x => !x.isConstValue ) ) {
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType, "arg%s".format( param.runtimeIndex + 1 ) );
 				build_localVariableDefinition( argVar );
-
-				codeResult_.formattedWrite( "%s{\n", tabs );
-				pushScope( );
-				build_copyCtor( argVar, arguments[ i ] );
-				popScope( );
-				codeResult_.formattedWrite( "%s}\n", tabs );
+				build_copyCtor( argVar, arguments[ param.runtimeIndex ] );
 
 				argumentNames ~= "PARAM( &%s, %s )".format( cppIdentifier( argVar.memoryBlock ), cppIdentifier( param.dataType ) );
 			}
@@ -164,9 +154,6 @@ class CodeBuilder_Cpp : CodeBuilder {
 			codeResult_.formattedWrite( "%sctimeStackSize = ctimeStackBP + %s;\n", tabs, ctimeStackOffset_ );
 			codeResult_.formattedWrite( "%s%s( %s );\n", tabs, cppIdentifier( function_ ), argumentNames.joiner( ", " ) );
 
-			popScope( );
-
-			codeResult_.formattedWrite( "%s}\n", tabs );
 			result_ = resultVarName;
 		}
 

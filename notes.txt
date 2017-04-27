@@ -3,11 +3,10 @@ Bakalářka:
 
 Soon to-to:
 	- user enums (with member functions)
-	- template functions
 	- realloc
 	- arrays?
 
-	- new jobId when executing taskGuard
+	- Type( args ) ctor
 
 Future to-do:
 	- Parameters indifferent 
@@ -28,6 +27,14 @@ Diplomka to-do:
 		// Resolution: cannot mutate @ctime variables in nonctime code + @ctime code has to be executed immidately when building semantic tree
 
 	}
+
+Examples - ideas:
+	Fibonacci
+	Factorial
+	Binary tree
+	Erastothenes sieve
+	Inferration examples -> make user enum
+	Flags example
 
 Names:
 	Lion

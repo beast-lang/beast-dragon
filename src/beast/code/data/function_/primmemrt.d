@@ -100,7 +100,6 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#assign", tp, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( tp ), //
 					( cb, inst, args ) { //
-						// 0th arg is Operator.assign!
 						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 					} );
 		}
@@ -110,10 +109,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, tp, //
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
-						// 0th arg is operator
 						auto var = new DataEntity_TmpLocalVariable( tp );
 						cb.build_localVariableDefinition( var );
-						cb.build_primitiveOperation( operation, var, inst, args[ 1 ] );
+						cb.build_primitiveOperation( operation, var, inst, args[ 0 ] );
 
 						// Store var into result operand
 						var.buildCode( cb );
@@ -125,10 +123,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			return new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, returnType, //
 					ExpandedFunctionParameter.bootstrap( operator, tp ), //
 					( cb, inst, args ) { //
-						// 0th arg is operator
 						auto var = new DataEntity_TmpLocalVariable( returnType );
 						cb.build_localVariableDefinition( var );
-						cb.build_primitiveOperation( operation, tp, var, inst, args[ 1 ] );
+						cb.build_primitiveOperation( operation, tp, var, inst, args[ 0 ] );
 
 						// Store var into result operand
 						var.buildCode( cb );
@@ -143,10 +140,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, tp, //
 						ExpandedFunctionParameter.bootstrap( operator, tp ), //
 						( cb, inst, args ) { //
-							// 0th arg is operator
 							auto var = new DataEntity_TmpLocalVariable( tp );
 							cb.build_localVariableDefinition( var );
-							cb.build_primitiveOperation( operation, var, args[ 1 ], inst );
+							cb.build_primitiveOperation( operation, var, args[ 0 ], inst );
 
 							// Store var into result operand
 							var.buildCode( cb );
@@ -161,10 +157,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, returnType, //
 						ExpandedFunctionParameter.bootstrap( operator, tp ), //
 						( cb, inst, args ) { //
-							// 0th arg is operator
 							auto var = new DataEntity_TmpLocalVariable( returnType );
 							cb.build_localVariableDefinition( var );
-							cb.build_primitiveOperation( operation, tp, var, args[ 1 ], inst ); // Store var into result operand
+							cb.build_primitiveOperation( operation, tp, var, args[ 0 ], inst ); // Store var into result operand
 							var.buildCode( cb );
 						} ) //
 						 ];
@@ -177,10 +172,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
 					ExpandedFunctionParameter.bootstrap( coreEnum.operator.binEq, tp ), //
 					( cb, inst, args ) { //
-						// 0th arg is operator
 						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 						cb.build_localVariableDefinition( var );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, inst, args[ 1 ] );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, inst, args[ 0 ] );
 
 						// Store var into result operand
 						var.buildCode( cb );
@@ -188,10 +182,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinary", tp, coreType.Bool, //
 						ExpandedFunctionParameter.bootstrap( coreEnum.operator.binNeq, tp ), //
 						( cb, inst, args ) { //
-							// 0th arg is operator
 							auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 							cb.build_localVariableDefinition( var );
-							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, inst, args[ 1 ] );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, inst, args[ 0 ] );
 
 							// Store var into result operand
 							var.buildCode( cb );
@@ -204,10 +197,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 			cast( Symbol ) new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, coreType.Bool, //
 					ExpandedFunctionParameter.bootstrap( coreEnum.operator.binEq, tp ), //
 					( cb, inst, args ) { //
-						// 0th arg is operator
 						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 						cb.build_localVariableDefinition( var );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, args[ 1 ], inst );
+						cb.build_primitiveOperation( BackendPrimitiveOperation.memEq, tp, var, args[ 0 ], inst );
 
 						// Store var into result operand
 						var.buildCode( cb );
@@ -215,10 +207,9 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 				cast( Symbol ) new Symbol_PrimitiveMemberRuntimeFunction( ID!"#opBinaryR", tp, coreType.Bool, //
 						ExpandedFunctionParameter.bootstrap( coreEnum.operator.binNeq, tp ), //
 						( cb, inst, args ) { //
-							// 0th arg is operator
 							auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
 							cb.build_localVariableDefinition( var );
-							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, args[ 1 ], inst );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, tp, var, args[ 0 ], inst );
 
 							// Store var into result operand
 							var.buildCode( cb );

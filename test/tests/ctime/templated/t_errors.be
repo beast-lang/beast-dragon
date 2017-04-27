@@ -45,6 +45,10 @@ Void err4() {
 	test4( 5, 6 ); //! error: noMatchingOverload
 }
 
+Void err5() {
+	print( fineMax.#returnType.#instanceSize ); //! error: unknownIdentifier
+}
+
 Void main() {
 	test4( 1, 1 );
 	test4( 5, 5 );

@@ -154,13 +154,10 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 
 					if ( param.constValue )
 						result |= matchConstValue( expression, entity, dataType, param.dataType, param.constValue );
-					else
+					else {
 						result |= matchStandardArgument( expression, entity, dataType, param.dataType );
-
-					if ( result == MatchLevel.noMatch )
-						return MatchLevel.noMatch;
-
-					arguments_ ~= entity;
+						arguments_ ~= entity;
+					}
 
 					return result;
 				}

@@ -49,16 +49,15 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.refAssign, this ), //
 						( cb, inst, args ) { //
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
-							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 1 ] );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
 						} );
 
 				// Ref ctor
 				mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 						ExpandedFunctionParameter.bootstrap( enm.xxctor.refAssign, baseType ), //
 						( cb, inst, args ) { //
-							// arg0 is #Ctor.refAssign!
 							cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
-							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 1 ] );
+							cb.build_primitiveOperation( BackendPrimitiveOperation.getAddr, inst, args[ 0 ] );
 						} );
 
 				// Dtor
@@ -148,6 +147,11 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 
 		Symbol_Type baseType( ) {
 			return baseType_;
+		}
+
+	public:
+		override string valueIdentificationString( MemoryPtr value ) {
+			return value.isNull ? "null" : "=> %s (%s)".format( baseType_.valueIdentificationString( value.readMemoryPtr ), value.readMemoryPtr );
 		}
 
 	protected:

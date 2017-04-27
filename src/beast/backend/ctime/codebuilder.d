@@ -4,6 +4,8 @@ import beast.backend.toolkit;
 import beast.code.data.scope_.local;
 import beast.backend.interpreter.interpreter;
 import beast.util.uidgen;
+import beast.corelib.type.reference;
+import std.algorithm : count;
 
 /// "CodeBuilder" that executes data at compile time
 /// Because of its result caching, always use each instance of this codebuilder in one task context only!
@@ -58,7 +60,16 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 	public:
 		override void build_functionCall( Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[ ] arguments ) {
+			assert( arguments.length == function_.parameters.count!( x => !x.isConstValue ) );
+
 			// We execute the runtime function using the interpreter
+			debug ( identificationLocals ) string functionIdentification = function_.identificationString;
+
+			debug ( interpreter ) {
+				import std.stdio : writefln;
+
+				writefln( "== PREPARE CALL" );
+			}
 
 			MemoryPtr result;
 			if ( function_.returnType !is coreType.Void ) {
@@ -66,39 +77,35 @@ final class CodeBuilder_Ctime : CodeBuilder {
 				build_localVariableDefinition( resultVar );
 
 				result = resultVar.memoryPtr;
-			}
 
-			pushScope( );
+				debug ( interpreter )
+					writefln( "result: %s (%s)", result, function_.returnType.identificationString );
+			}
 
 			MemoryPtr ctx;
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
-				auto var = new DataEntity_TmpLocalVariable( coreType.Pointer, "ctx" );
-				build_localVariableDefinition( var );
-
-				super.build_primitiveOperation( BackendPrimitiveOperation.markPtr, var );
-
 				assert( parentInstance );
 				parentInstance.buildCode( this );
+				ctx = result_;
 
-				var.memoryPtr.writeMemoryPtr( result_ );
-				ctx = var.memoryPtr;
+				debug ( interpreter )
+					writefln( "ctx: %s (%s?) = %s", ctx, parentInstance.dataType.identificationString, result_ );
 			}
 
 			MemoryPtr[ ] args;
-			foreach ( i, param; function_.parameters ) {
+			foreach ( param; function_.parameters.filter!( x => !x.isConstValue ) ) {
 				auto argVar = new DataEntity_TmpLocalVariable( param.dataType );
 				build_localVariableDefinition( argVar );
+				build_copyCtor( argVar, arguments[ param.runtimeIndex ] );
 
-				pushScope( );
-				build_copyCtor( argVar, arguments[ i ] );
-				popScope( );
-
+				assert( args.length == param.runtimeIndex );
 				args ~= argVar.memoryPtr;
+
+				debug ( interpreter )
+					writefln( "arg%s (rt %s): %s (%s) = %s", param.index, param.runtimeIndex, argVar.memoryPtr, param.dataType.identificationString, argVar.valueIdentificationString );
 			}
 
 			Interpreter.executeFunction( function_, result, ctx, args );
-
-			popScope( );
 
 			result_ = result;
 		}
@@ -147,6 +154,10 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 			popScope( );
 			result_ = MemoryPtr( );
+		}
+
+		override void build_return( DataEntity returnValue ) {
+			berror( E.invalidReturn, "Cannot return from a runtime function at compile time" );
 		}
 
 	public:

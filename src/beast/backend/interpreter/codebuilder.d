@@ -109,67 +109,53 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				Call convention:
 				RETURN ARG3 ARG2 ARG1 CONTEXT
 				context is always present
-				constnant value args also get their BPoffset (it is unused though, even unallocated)
+				constnant value args are ignored
 			*/
 
-			InstructionOperand operandResult;
+			// Because of stuff, parameters are passed by reference -> we execute their expressions, and then add pointer to those expression results just before calling the function
 
+			assert( arguments.length == function_.parameters.count!( x => !x.isConstValue ) );
+
+			InstructionOperand resultOperand;
 			if ( function_.returnType !is coreType.Void ) {
-				auto returnVar = new DataEntity_TmpLocalVariable( function_.returnType );
-				build_localVariableDefinition( returnVar );
-
-				operandResult = result_;
+				auto resultVar = new DataEntity_TmpLocalVariable( function_.returnType );
+				build_localVariableDefinition( resultVar );
+				resultOperand = result_;
 			}
 
-			pushScope( );
-
-			DataEntity_TmpLocalVariable[ ] argVars;
-			argVars.length = function_.parameters.length;
-
-			// Because of call convention (where the argument order is RET ARG3 ARG2 ARG1 CTX), we need to initialize this rather strangely
-			foreach_reverse ( i, ExpandedFunctionParameter param; function_.parameters ) {
-				if ( param.isConstValue ) {
-					currentBPOffset_++;
-					continue;
-				}
-
-				auto argVar = new DataEntity_TmpLocalVariable( param.dataType );
-				build_localVariableDefinition( argVar );
-
-				argVars[ i ] = argVar;
-			}
-
+			InstructionOperand ctxOperand;
 			if ( function_.declarationType == Symbol.DeclType.memberFunction ) {
 				assert( parentInstance );
-
-				auto iopOffset = currentBPOffset_.iopLiteral;
-				auto contextPtrIOP = currentBPOffset_.iopBpOffset;
-				currentBPOffset_++;
-
-				addInstruction( I.allocLocal, iopOffset, hardwareEnvironment.pointerSize.iopLiteral );
-				addInstruction( I.markPtr, contextPtrIOP );
-
 				parentInstance.buildCode( this );
-				addInstruction( I.stAddr, contextPtrIOP, result_ );
+				ctxOperand = result_;
 			}
+
+			InstructionOperand[ ] argVars;
+			foreach ( ExpandedFunctionParameter param; function_.parameters.filter!( x => !x.isConstValue ) ) {
+				auto argVar = new DataEntity_TmpLocalVariable( param.dataType );
+				build_localVariableDefinition( argVar );
+				build_copyCtor( argVar, arguments[ param.runtimeIndex ] );
+
+				assert( argVars.length == param.runtimeIndex );
+				argVars ~= argVar.memoryBlock.bpOffset.iopBpOffset;
+			}
+
+			if ( resultOperand.isUsed )
+				addPointerVariableOnStack( resultOperand );
+
+			foreach_reverse ( argVar; argVars )
+				addPointerVariableOnStack( argVar );
+
+			if ( ctxOperand.isUsed )
+				addPointerVariableOnStack( ctxOperand );
 			else {
 				addInstruction( I.skipAlloc, currentBPOffset_.iopLiteral );
 				currentBPOffset_++;
 			}
 
-			foreach ( i, ExpandedFunctionParameter param; function_.parameters ) {
-				if ( param.isConstValue )
-					continue;
-
-				pushScope( );
-				build_copyCtor( argVars[ i ], arguments[ i ] );
-				popScope( );
-			}
-
 			addInstruction( I.call, function_.iopFuncPtr );
 
-			popScope( );
-			result_ = operandResult;
+			result_ = resultOperand;
 		}
 
 		override void build_contextPtrAccess( ) {
@@ -177,11 +163,11 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void build_parameterAccess( ExpandedFunctionParameter param ) {
-			result_ = ( -param.runtimeIndex - 2 ).iopBpOffset;
+			result_ = ( -param.runtimeIndex - 2 ).iopRefBpOffset;
 		}
 
 		override void build_functionResultAccess( Symbol_RuntimeFunction func ) {
-			result_ = ( -func.parameters.count!( x => x.constValue.isNull ) - 2 ).iopBpOffset;
+			result_ = ( -func.parameters.count!( x => x.constValue.isNull ) - 2 ).iopRefBpOffset;
 		}
 
 		override void build_dereference( ExprFunction arg ) {
@@ -307,15 +293,15 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			import beast.core.error.error : stderrMutex;
 
 			// uncommenting this causes freezes - dunno why
-			synchronized ( stderrMutex ) {
-				writefln( "\n== BEGIN CODE %s\n", desc );
+			//synchronized ( stderrMutex ) {
+			writefln( "\n== BEGIN CODE %s\n", desc );
 
-				foreach ( i, instr; resultCode_.data )
-					writefln( "@%3s   %s", i, instr.identificationString );
+			foreach ( i, instr; resultCode_.data )
+				writefln( "@%3s   %s", i, instr.identificationString );
 
-				writefln( "\n== END\n" );
-				//stdout.flush();
-			}
+			writefln( "\n== END\n" );
+			//stdout.flush();
+			//}
 		}
 
 	protected:
@@ -369,6 +355,16 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			assert( block.isCtime );
 
 			addInstruction( I.freeCt, block.bpOffset.iopLiteral );
+		}
+
+	protected:
+		void addPointerVariableOnStack( InstructionOperand pointerTarget ) {
+			assert( pointerTarget.isUsed );
+
+			addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, hardwareEnvironment.pointerSize.iopLiteral );
+			addInstruction( I.markPtr, currentBPOffset_.iopBpOffset );
+			addInstruction( I.stAddr, currentBPOffset_.iopBpOffset, pointerTarget );
+			currentBPOffset_++;
 		}
 
 	package:

@@ -54,6 +54,9 @@ pragma( inline ):
 		with ( ir ) {
 			callStack ~= currentFrame;
 
+			debug ( identificationLocals )
+				currentFrame.functionId = func.identificationString;
+
 			currentFrame.basePointer = ir.stack.length;
 			currentFrame.baseCtPointer = ir.ctStack.length;
 			currentFrame.sourceBytecode = func.interpreterCode.bytecode;

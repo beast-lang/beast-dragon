@@ -64,6 +64,7 @@ enum E {
 	noReturnExit, /// Function did not exit via return statement
 	ctAssertFail, /// Assert failed at compile-time execution
 	ctStackOverflow, /// Exceeded maximum call recursion in the interpreter
+	invalidReturn, /// Return used in @ctime block in runtime function
 
 	// RESOLVING/OVERLOADSETS:
 	noMatchingOverload, /// No overload matches given parameters

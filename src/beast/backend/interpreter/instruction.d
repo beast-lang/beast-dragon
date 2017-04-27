@@ -139,7 +139,7 @@ struct Instruction {
 				assert( op[ 2 ].type == InstructionOperand.Type.unused );
 			}
 
-			return "%s%s".format( enumAssocInvert!I[ i ], ops );
+			return "%s%s (%s:%s)".format( enumAssocInvert!I[ i ], ops, codeLocation.file, codeLocation.startLine );
 		}
 
 	public:
@@ -179,6 +179,11 @@ struct InstructionOperand {
 			jumpTarget,
 
 			placeholder, /// This should not appear in the resulting code
+		}
+
+	public:
+		bool isUsed( ) {
+			return type != Type.unused;
 		}
 
 	public:

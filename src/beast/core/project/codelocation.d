@@ -51,7 +51,7 @@ struct CodeLocation {
 			}
 
 			string file( ) {
-				return source.absoluteFilePath;
+				return source ? source.absoluteFilePath : null;
 			}
 
 			string content( ) {

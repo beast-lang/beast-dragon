@@ -1,0 +1,37 @@
+Done
+1. Statické funkce
+2. Třídy (bez dedičnosti), třídní funkce
+3. Typové proměnné
+4. Int, Bool, funkce print pro oba, základní logické, numerické a porovnávací operace a operátory
+5. Reference a ukazatelé (ukazatelé nejsou aktuálně asi řešeny úplně ideálně)
+6. Funkce assert
+7. If, while
+8. Statické proměnné
+9. Lokální a statické @ctime proměnné
+10. Zrcadlení @ctime proměnných v runtimu
+11. Statické funkce s @ctime proměnnými
+12. Overload resolution (základ, pravidla jsou poněkud očesaná)
+13. Auto návratové typy, proměnné a parametry
+14. :ident struktura -> type inferration
+15. Malloc, free, new a delete
+16. Nějaké „slabé“ příklady reflexe - #instanceSize, #returnType, #type
+17. Detekce cyklických závislostí, základní vynucování dodržování pravidel code hatching conceptu (chybějící constness to značně omezuje)
+18. Parametry s konstantní hodnotou ( Void function( 5 ) )
+
+
+Undone
+1. Nevolají se destruktory u @ctime funkcí (někde)
+2. Konstantnost není vůbec implementována, operátor ! vrací identitu
+3. Nejsou implementovány @ctime funkce (funkce s @ctime parametry ano, ale ty nemohou navracet @ctime třídy a nejsou „plně“ @ctime)
+4. Není implementováno automatické generování konstruktorů a destruktorů u tříd (člověk musí v destruktoru manuálně napsat member.#ctor/#dtor), ani implicitní konstruktory
+5. Není třídní dědičnost, virtuální třídy, ani nic podobného
+6. Nejsou uživatelem definované výčty (enums) (možná dnes/zítra ještě dodělám, pokud bude nálada)
+7. Ačkoli má kompilátor podporu modulů, není implementována struktura „import“, takže je to prakticky k ničemu
+8. Mám tam ještě jednu věc, která způsobuje v určitých případech neplatné vyhodnocování @ctime kódu. Vím, jak ji vyřešit, jenom nezbyl čas. Demontraci konceptu to ale nijak nedegraduje.
+9. Nejsou implementovány @ctime cykly
+10. Pole, řetězce (pole by šly teoreticky implementovat jako knihovní třída, ale není implementován realloc)
+11. Dekorátory (základní systém funguje, uživatel zatím nemůže definovat a kontexty jako typeWrapper atp nejsou implementovány)
+12. Slučování „expandovaných templatů“ (vytvořených díky @ctime parametrům)
+13. Funkce nejsou first-class citizens
+14. Generické třídy
+15. Jak vyřešit možnost mít Type[]? asi @transitiveCtime ?
