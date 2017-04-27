@@ -81,9 +81,9 @@ final class ExpandedFunctionParameter : Identifiable {
 
 		override string identificationString( ) {
 			if ( isConstValue )
-				return "@ctime %s = %s".format( dataType.tryGetIdentificationString, dataType.valueIdentificationString( constValue ) );
+				return "@ctime %s = %s (index %s)".format( dataType.tryGetIdentificationString, dataType.valueIdentificationString( constValue ), index );
 			else if ( identifier )
-				return "%s %s".format( dataType.tryGetIdentificationString, identifier.str );
+				return "%s %s (index %s)".format( dataType.tryGetIdentificationString, identifier.str, index );
 			else
 				return dataType.tryGetIdentificationString;
 		}

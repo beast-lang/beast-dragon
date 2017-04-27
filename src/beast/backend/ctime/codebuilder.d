@@ -103,6 +103,10 @@ final class CodeBuilder_Ctime : CodeBuilder {
 			result_ = result;
 		}
 
+		override void build_parameterAccess( ExpandedFunctionParameter param ) {
+			berror( E.valueNotCtime, "Parameter %s is not @ctime".format( param.identificationString ) );
+		}
+
 		override void build_dereference( ExprFunction arg ) {
 			arg( this );
 

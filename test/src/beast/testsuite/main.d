@@ -37,14 +37,14 @@ int main( string[ ] args ) {
 	"../test/output/".mkdirRecurse( );
 	"../test/tmp/".mkdirRecurse( );
 
-	bool[ string ] previouslyFailedTests;
+	bool[ string ] previouslySucceededTests;
 	if ( onlyFailed ) {
-		foreach ( ln; "../test/log/failed.txt".readText.replace( "\r", "" ).splitter( "\n" ) )
-			previouslyFailedTests[ ln ] = true;
+		foreach ( ln; "../test/log/succeeded.txt".readText.replace( "\r", "" ).splitter( "\n" ) )
+			previouslySucceededTests[ ln ] = true;
 	}
 
 	File log = File( "../test/log/log.txt", "w" );
-	File failedTestsLog = File( "../test/log/failed.txt", "w" );
+	File succeededTestsLog = File( "../test/log/succeeded.txt", onlyFailed ? "a" : "w" );
 
 	Test[ ] tests, activeTests, failedTests;
 
@@ -62,7 +62,7 @@ int main( string[ ] args ) {
 	}
 
 	foreach ( test; tests ) {
-		if ( onlyFailed && test.identifier !in previouslyFailedTests )
+		if ( onlyFailed && test.identifier in previouslySucceededTests )
 			continue;
 
 		activeTests ~= test;
@@ -79,13 +79,14 @@ int main( string[ ] args ) {
 
 		synchronized ( testsMutex ) {
 			string str;
-			if ( result )
+			if ( result ) {
 				str = "[   ] %s: PASSED\n".format( test.identifier );
+				succeededTestsLog.writeln( test.identifier );
+			}
 
 			else {
 				str = "[ # ] %s: FAILED\n".format( test.identifier );
 				failedTests ~= test;
-				failedTestsLog.writeln( test.identifier );
 
 				if ( showLogs )
 					str ~= test.logFilename.readText ~ "\n";

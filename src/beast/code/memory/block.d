@@ -113,6 +113,10 @@ final class MemoryBlock {
 			return flag( SharedFlag.referenced );
 		}
 
+		pragma( inline ) bool isSessionFinished( ) {
+			return flag( SharedFlag.sessionFinished );
+		}
+
 	public:
 		pragma( inline ) bool flag( Flag flag ) {
 			return ( flags & flag ) == flag;

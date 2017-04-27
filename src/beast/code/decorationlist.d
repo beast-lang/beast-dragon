@@ -39,6 +39,10 @@ final class DecorationList {
 			}
 		}
 
+		this( DecorationList other ) {
+			this.list_ = other.list_.dup;
+		}
+
 	public:
 		/// Applies all possible decorations in the variableDeclarationModifier context and removes them from the list
 		void apply_variableDeclarationModifier( VariableDeclarationData var ) {

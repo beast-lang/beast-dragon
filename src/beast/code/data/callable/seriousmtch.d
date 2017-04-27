@@ -63,7 +63,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 				result |= MatchLevel.inferrationsNeeded;
 			}
 
-			if ( dataType !is expectedType ) {
+			if ( expectedType && dataType !is expectedType ) {
 				entity = entity.tryCast( expectedType );
 
 				if ( !entity ) {

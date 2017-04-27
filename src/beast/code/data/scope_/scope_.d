@@ -37,7 +37,7 @@ abstract class DataScope : IDContainer {
 	public:
 		final void addEntity( DataEntity entity_ ) {
 			debug assert( allowMultiThreadAccess || context.jobId == jobId_, "DataScope is accessed from a different thread than it was created in" );
-			debug assert( !isFinished_ );
+			debug assert( !isFinished_, "Scope is finished (%s)".format( finishedAt_ ) );
 
 			auto id = entity_.identifier;
 			assert( id, "You cannot add entities without an identifier to a scope" );
@@ -60,10 +60,16 @@ abstract class DataScope : IDContainer {
 		}
 
 		/// Marks the scope as not being editable anymore
-		void finish( ) {
-			debug {
-				assert( !isFinished_, "Duplicate finish() of scope" );
+		debug {
+			void finish( string file = __FILE__, ulong line = __LINE__ ) {
+				assert( !isFinished_, "Duplicate finish() of scope (finished at %s)".format( finishedAt_ ) );
 				isFinished_ = true;
+				finishedAt_ = "%s:%s".format( file, line );
+			}
+		}
+		else {
+			void finish( ) {
+
 			}
 		}
 
@@ -93,6 +99,7 @@ abstract class DataScope : IDContainer {
 
 		debug UIDGenerator.I jobId_;
 		debug bool isFinished_;
+		debug string finishedAt_;
 
 	package:
 		/// Currently open subscope (used for checking there's maximally one at a time)
@@ -106,13 +113,14 @@ DataScope currentScope( ) {
 	return context.currentScope;
 }
 
-auto scopeGuard( DataScope scope_, bool finish = true ) {
+// TODO: remove file, line args or make them debug
+auto scopeGuard( DataScope scope_, bool finish = true, string file = __FILE__, ulong line = __LINE__ ) {
 	struct Result {
 		~this( ) {
 			assert( context.currentScope is scope_ );
 
 			if ( finish )
-				scope_.finish( );
+				scope_.finish( file, line );
 
 			context.currentScope = context.scopeStack[ $ - 1 ];
 			context.scopeStack.length--;
@@ -128,26 +136,32 @@ auto scopeGuard( DataScope scope_, bool finish = true ) {
 	return Result( scope_, finish );
 }
 
+/// Executes given function in a given data scope
+pragma( inline ) auto inDataScope( T )( lazy T dg, DataScope scope_, bool finish = true, string file = __FILE__, ulong line = __LINE__ ) {
+	auto _gd = scope_.scopeGuard( finish, file, line );
+	return dg( );
+}
+
 /// Executes given function in a new local data scope
-pragma( inline ) auto inLocalDataScope( T )( lazy T dg ) {
+pragma( inline ) auto inLocalDataScope( T )( lazy T dg, string file = __FILE__, ulong line = __LINE__ ) {
 	import beast.code.data.scope_.local : LocalDataScope;
 
-	auto _gd = new LocalDataScope( ).scopeGuard;
+	auto _gd = new LocalDataScope( ).scopeGuard( true, file, line );
 	return dg( );
 }
 
 /// Executes given function in a new root data scope
-pragma( inline ) auto inRootDataScope( T )( lazy T dg, DataEntity parent ) {
+pragma( inline ) auto inRootDataScope( T )( lazy T dg, DataEntity parent, bool finish = true, string file = __FILE__, ulong line = __LINE__ ) {
 	import beast.code.data.scope_.root : RootDataScope;
 
-	auto _gd = new RootDataScope( parent ).scopeGuard;
+	auto _gd = new RootDataScope( parent ).scopeGuard( finish, file, line );
 	return dg( );
 }
 
 /// Executes given function in a new blurry data scope
-pragma( inline ) auto inBlurryDataScope( T )( lazy T dg, DataScope parent ) {
+pragma( inline ) auto inBlurryDataScope( T )( lazy T dg, DataScope parent, string file = __FILE__, ulong line = __LINE__ ) {
 	import beast.code.data.scope_.blurry : BlurryDataScope;
 
-	auto _gd = new BlurryDataScope( parent ).scopeGuard;
+	auto _gd = new BlurryDataScope( parent ).scopeGuard( true, file, line );
 	return dg( );
 }

@@ -192,6 +192,12 @@ mixin template TaskGuard( string guardName ) {
 				context.delayedIssuedJobs = null;
 			}
 
+			// Create a new jobId for during the task execution so that it is considered to be in a different thread (which it could be if the task guard was executed in a different thread first)
+			auto prevJobId = context.jobId;
+			context.jobId = TaskContext.jobIdGen( );
+			scope ( exit )
+				context.jobId = prevJobId;
+
 			try {
 				debug ( taskGuards )
 					writefln( "%s.%s exec", typeof( this ).stringof, guardName );

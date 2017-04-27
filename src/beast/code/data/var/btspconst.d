@@ -2,6 +2,7 @@ module beast.code.data.var.btspconst;
 
 import beast.code.data.toolkit;
 import beast.code.data.var.static_;
+import beast.code.data.util.subst;
 
 final class Symbol_BootstrapConstant : Symbol_StaticVariable {
 
@@ -22,6 +23,28 @@ final class Symbol_BootstrapConstant : Symbol_StaticVariable {
 
 				assert( data.sizeof >= dataType.instanceSize );
 				memoryPtr_ = block.startPtr.write( &data, dataType.instanceSize );
+			}
+		}
+
+		/// Creates a constant by copying data from given data entity (at ctime)
+		this( DataEntity parent, Identifier identifier, DataEntity copyCtorSource ) {
+			super( parent );
+
+			identififer_ = identifier;
+
+			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
+				dataType_ = copyCtorSource.dataType;
+
+				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.ctime );
+				block.markDoNotGCAtSessionEnd( );
+				block.identifier = identifier.str;
+				block.relatedDataEntity = dataEntity;
+
+				scope cb = new CodeBuilder_Ctime( );
+				cb.build_copyCtor( new SubstitutiveDataEntity( block.startPtr, dataType ), copyCtorSource );
+				cb.result.destroy( );
+
+				memoryPtr_ = block.startPtr;
 			}
 		}
 

@@ -29,8 +29,9 @@ Source file extension: `.be`
 
 ## Progress
 
-* Compiler: Currently under intensive development, some very basic functionality working right now (compiles to C++)
-	* See test/tests for working code examples
+* Compiler: The compiler now works as a proof-of-concept. It has some core functionality working, but not really anything you could write your programs with.
+  * __Development is paused for now__ (I have finished my job for a bachelor's thesis and I will probably have time to return to this project in first half of 2019). Feel free to write me about anything project related.
+  * See test/tests for working code examples
 * Std library: Nothing at all
 * Language reference: Nothing much
 
@@ -92,6 +93,8 @@ Void main() {
 ```
 
 # News
+__27.04.2017__: Static functions with @ctime parameters implemented! They generate kinda messy code ("template" instances are not joined when provided with same arguments), but still, we have them!
+
 __21.04.2017__: We now should have fully working @ctime mirroring in both interpreter and cpp backends.
 
 __14.04.2017__: @ctime variables now work in runtime functions and are properly mirrored! (the subsystem has to be implemented for interpreter yet). See test/ctime/t_basicmirroring.

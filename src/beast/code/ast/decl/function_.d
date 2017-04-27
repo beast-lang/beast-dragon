@@ -8,6 +8,7 @@ import beast.code.data.scope_.root;
 import beast.code.data.function_.usrstcrt;
 import beast.code.data.function_.usrmemrt;
 import beast.code.data.function_.paramlist;
+import beast.code.data.function_.usrstcnrt;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -44,10 +45,18 @@ final class AST_FunctionDeclaration : AST_Declaration {
 
 			if ( declData.isStatic && !declData.isCtime && paramList.isRuntimeParameterList )
 				sink( new Symbol_UserStaticRuntimeFunction( this, decorations, declData, paramList ) );
+
 			else if ( !declData.isStatic && !declData.isCtime && paramList.isRuntimeParameterList )
 				sink( new Symbol_UserMemberRuntimeFunction( this, decorations, declData, paramList ) );
+
+			else if ( declData.isStatic && !declData.isCtime && !paramList.isRuntimeParameterList )
+				sink( new Symbol_UserStaticNonRuntimeFunction( this, decorations, declData, paramList ) );
+
+			else if ( !declData.isStatic && !declData.isCtime && !paramList.isRuntimeParameterList )
+				berror( E.notImplemented, "Member functions with @ctime parameters are not implemented yet" );
+
 			else
-				berror( E.notImplemented, "Non-static, ctime or 'templated' functions are not implemented yet" );
+				berror( E.notImplemented, "@ctime functions are not implemented yet" );
 		}
 
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {

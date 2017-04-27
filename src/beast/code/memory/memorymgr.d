@@ -137,6 +137,7 @@ final class MemoryManager {
 
 						assert( block.startPtr.val in context.sessionData.memoryBlocks );
 						assert( !block.flag( MemoryBlock.SharedFlag.freed ) );
+						assert( !block.isSessionFinished, "Block has flag session finished" );
 						context.sessionData.memoryBlocks.remove( block.startPtr.val );
 
 						// We also have to unmark pointers in the block
@@ -203,6 +204,7 @@ final class MemoryManager {
 			}
 
 			debug assert( !block.wasReadOutsideContext, "Block was read outside context before write (race condition might occur)" );
+			assert( !block.isSessionFinished, "Block has flag session finished" );
 
 			// We're writing to a memory that is accessed only from one thread (context), so no mutexes should be needed
 			memcpy( block.data + ( ptr - block.startPtr ).val, data.ptr, data.length );
@@ -444,6 +446,18 @@ final class MemoryManager {
 			}
 			else
 				return Result( );
+		}
+
+		/// Utility function for use with with( memoryManager.subSession ) { xxx } - calls startSubSession on beginning and endSubSession on end
+		auto subSession( ) {
+			static struct Result {
+				~this( ) {
+					memoryManager.endSubSession( );
+				}
+			}
+
+			startSubSession( );
+			return Result( );
 		}
 
 	public:

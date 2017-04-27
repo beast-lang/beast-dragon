@@ -137,8 +137,10 @@ final class TaskContext {
 			}
 		}
 
+	public:
+		static __gshared UIDGenerator jobIdGen;
+
 	private:
 		debug ubyte status_;
-		static __gshared UIDGenerator jobIdGen;
 
 }

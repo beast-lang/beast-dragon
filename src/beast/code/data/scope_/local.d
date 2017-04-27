@@ -18,13 +18,11 @@ final class LocalDataScope : DataScope {
 		}
 
 	public:
-		override void finish( ) {
-			super.finish( );
+		debug override void finish( string file = __FILE__, ulong line = __LINE__ ) {
+			super.finish( file, line );
 
-			debug {
-				assert( parentScope_.openSubscope_ is this );
-				parentScope_.openSubscope_ = null;
-			}
+			assert( parentScope_.openSubscope_ is this );
+			parentScope_.openSubscope_ = null;
 		}
 
 	public:

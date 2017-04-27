@@ -24,7 +24,7 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 		abstract Symbol_Type returnType( );
 
 		/// Type of required contextPtr (null for static functions)
-		abstract Symbol_Type contextType();
+		abstract Symbol_Type contextType( );
 
 		abstract ExpandedFunctionParameter[ ] parameters( );
 
@@ -194,6 +194,20 @@ abstract class Symbol_RuntimeFunction : Symbol_Function {
 					ast_ = match.ast;
 					sym_ = sym;
 					parentInstance_ = match.parentInstance_;
+				}
+
+				this( Symbol_RuntimeFunction sym, MatchLevel matchLevel, AST_Node ast, DataEntity[ ] arguments, DataEntity parentInstance ) {
+					super( matchLevel );
+
+					assert( sym );
+					assert( arguments.length == sym.parameters.length );
+					debug foreach ( i, arg; arguments )
+						assert( sym.parameters[ i ].dataType is arg.dataType );
+
+					arguments_ = arguments;
+					ast_ = ast;
+					sym_ = sym;
+					parentInstance_ = parentInstance;
 				}
 
 			public:
