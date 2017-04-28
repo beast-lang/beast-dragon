@@ -145,6 +145,12 @@ abstract class CodeBuilder : Identifiable {
 		}
 
 	public:
+		/// Builds a comment that is eventually incorporated into the code
+		void build_comment( string comment ) {
+
+		}
+
+	public:
 		final void build_copyCtor( DataEntity var, DataEntity initValue ) {
 			DataEntity_LocalVariable.getCopyCtor( var, initValue ).buildCode( this );
 		}

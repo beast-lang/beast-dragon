@@ -19,6 +19,8 @@ import beast.code.data.util.btsp;
 import beast.code.data.var.btspconst;
 import beast.corelib.type.reference : Symbol_Type_Reference;
 import beast.corelib.type.int_;
+import beast.code.data.function_.primstcnrt;
+import beast.code.ast.expr.expression;
 
 __gshared UIDKeeper!Symbol_Type typeUIDKeeper;
 private enum _init = HookAppInit.hook!( { typeUIDKeeper.initialize( ); } );
@@ -48,14 +50,14 @@ abstract class Symbol_Type : Symbol {
 
 			// T? -> reference
 			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
-					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.suffRef ).finish( ( ast ) { //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.suffRef ).finish( ( AST_Node ast ) { //
 						return coreType.Reference.referenceTypeOf( this ).dataEntity; //
 					} ), //
 					true );
 
 			// T! -> T (for now - future: mutable)
 			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#opSuffix", //
-					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.suffNot ).finish( ( ast ) { //
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).constArg( coreEnum.operator.suffNot ).finish( ( AST_Node ast ) { //
 						return this.dataEntity; //
 					} ), //
 					true );
@@ -77,11 +79,34 @@ abstract class Symbol_Type : Symbol {
 						} );
 			}
 
+			// #call( ) -> ctor
+			mem ~= new Symbol_BootstrapStaticNonRuntimeFunction( dataEntity, ID!"#call", //
+					// TODO: Accept additional arguments (pass them to cast functions)
+					Symbol_BootstrapStaticNonRuntimeFunction.paramsBuilder( ).ast( ).finish(  //
+						( AST_Node nd, AST_Expression[ ] asts, DataEntity[ ] entities ) { //
+						return cast( DataEntity ) new DataEntity_Bootstrap( ID!"#call", this, this.dataEntity, false, ( cb ) { //
+							auto var = new DataEntity_TmpLocalVariable( this );
+							cb.build_localVariableDefinition( var );
+
+							auto match = var.dataType.expectResolveIdentifier_direct( ID!"#ctor", var, MatchLevel.fullMatch ).CallMatchSet( ast, true, MatchLevel.fullMatch );
+							foreach ( i, ent; entities ) {
+								if ( ent )
+									match.arg( ent );
+								else
+									match.arg( asts[ i ] );
+							}
+							match.finish.buildCode( cb );
+
+							var.buildCode( cb );
+						} );
+					} //
+					 ), true );
+
 			// .to( XX )
 			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"to", this, //
 					// TODO: Accept additional arguments (pass them to cast functions)
 					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
-						( AST_Node, DataEntity inst, MemoryPtr targetType ) { //
+						( AST_Node ast, DataEntity inst, MemoryPtr targetType ) { //
 						DataEntity targetTypeEntity = targetType.readType.dataEntity;
 
 						CallMatchSet explicitCast = inst.tryResolveIdentifier( ID!"#explicitCast" ).CallMatchSet( ast, false ).arg( targetTypeEntity );

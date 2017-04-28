@@ -64,7 +64,7 @@ abstract class SeriousCallableMatch : CallableMatch {
 			}
 
 			if ( expectedType && dataType !is expectedType ) {
-				entity = entity.tryCast( expectedType );
+				entity = entity.tryCast( expectedType ).inSubSession;
 
 				if ( !entity ) {
 					errorStr = "cannot cast argument %s of type %s to %s".format( argumentIndex_ + 1, dataType.identificationString, expectedType.identificationString );

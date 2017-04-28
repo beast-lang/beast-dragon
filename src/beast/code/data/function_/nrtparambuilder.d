@@ -190,11 +190,13 @@ mixin template BuilderCommon( ) {
 		return Builder_AST!( typeof( this ) )( this );
 	}
 
-	CallMatchFactory!( isMemberFunction, SourceEntity ) finish( )( ObtainFunc obtainFunc ) {
+	CallMatchFactory!( isMemberFunction, SourceEntity ) finish( ObtainFunc obtainFunc ) {
+		//static assert( is( OF : ObtainFunc ), "Obtainfunc %s does not match %s".format( OF.stringof, ObtainFunc.stringof ) );
 		return new CallMatchFactoryImpl!( isMemberFunction, SourceEntity, typeof( this ) )( this, obtainFunc );
 	}
 
-	CallMatchFactory!( isMemberFunction, SourceEntity ) finishIf( )( IfFunc ifFunc, ObtainFunc obtainFunc ) {
+	CallMatchFactory!( isMemberFunction, SourceEntity ) finishIf( IfFunc ifFunc, ObtainFunc obtainFunc ) {
+		//static assert( is( OF : ObtainFunc ), "Obtainfunc %s does not match %s".format( OF.stringof, ObtainFunc.stringof ) );
 		return new CallMatchFactoryImpl!( isMemberFunction, SourceEntity, typeof( this ) )( this, obtainFunc, ifFunc );
 	}
 

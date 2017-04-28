@@ -110,11 +110,11 @@ final class AST_VariableDeclaration : AST_Declaration {
 					varCb = new CodeBuilder_Ctime;
 
 				varCb.build_localVariableDefinition( var );
-				
+
 				if ( valueEntity )
-					buildConstructor( var, valueEntity, varCb );
+					varCb.build_scope( varCb => buildConstructor( var, valueEntity, varCb ) );
 				else
-					buildConstructor( var, value, varCb );
+					varCb.build_scope( varCb => buildConstructor( var, value, varCb ) );
 
 				currentScope.addLocalVariable( var );
 			}
@@ -136,35 +136,31 @@ final class AST_VariableDeclaration : AST_Declaration {
 
 	public:
 		void buildConstructor( DataEntity entity, AST_Expression value, CodeBuilder cb ) {
-			cb.build_scope( ( cb ) {
-				auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );
+			auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );
 
-				if ( value ) {
-					// colonAssign calls #ctor( #Ctor.refAssign, value );
-					if ( valueColonAssign )
-						match.arg( coreEnum.xxctor.refAssign );
+			if ( value ) {
+				// colonAssign calls #ctor( #Ctor.refAssign, value );
+				if ( valueColonAssign )
+					match.arg( coreEnum.xxctor.refAssign );
 
-					match.arg( value );
-				}
+				match.arg( value );
+			}
 
-				match.finish( ).buildCode( cb );
-			} );
+			match.finish( ).buildCode( cb );
 		}
 
 		void buildConstructor( DataEntity entity, DataEntity valueEntity, CodeBuilder cb ) {
-			cb.build_scope( ( cb ) {
-				auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );
+			auto match = entity.dataType.expectResolveIdentifier_direct( ID!"#ctor", entity ).CallMatchSet( this, true );
 
-				if ( valueEntity ) {
-					// colonAssign calls #ctor( #Ctor.refAssign, value );
-					if ( valueColonAssign )
-						match.arg( coreEnum.xxctor.refAssign );
+			if ( valueEntity ) {
+				// colonAssign calls #ctor( #Ctor.refAssign, value );
+				if ( valueColonAssign )
+					match.arg( coreEnum.xxctor.refAssign );
 
-					match.arg( valueEntity );
-				}
+				match.arg( valueEntity );
+			}
 
-				match.finish( ).buildCode( cb );
-			} );
+			match.finish( ).buildCode( cb );
 		}
 
 		pragma( inline ) void buildConstructor( DataEntity entity, CodeBuilder cb ) {

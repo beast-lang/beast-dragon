@@ -1,7 +1,7 @@
 module beast.backend.cpp.codebuilder;
 
 import beast.backend.toolkit;
-import std.array : Appender, appender;
+import std.array : Appender, appender, replace;
 import std.format : formattedWrite;
 import beast.code.data.scope_.local;
 import beast.code.data.var.result;
@@ -254,6 +254,11 @@ class CodeBuilder_Cpp : CodeBuilder {
 			codeResult_.formattedWrite( "%sreturn;\n", tabs );
 
 			debug result_ = null;
+		}
+
+	public:
+		override void build_comment( string comment ) {
+			codeResult_.formattedWrite( "%s/* %s */\n", tabs, comment.replace( "\n", "\n" ~ tabs( 1 ) ).replace( "*/", "" ) );
 		}
 
 	protected:

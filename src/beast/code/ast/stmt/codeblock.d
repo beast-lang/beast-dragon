@@ -50,8 +50,10 @@ final class AST_CodeBlockStatement : AST_Statement {
 			}
 
 			cb.build_scope( ( cb ) {
-				foreach ( stmt; subStatements )
+				foreach ( stmt; subStatements ) {
+					cb.build_comment( stmt.codeLocation.content );
 					stmt.buildStatementCode( env, cb );
+				}
 			} ).inLocalDataScope;
 		}
 
