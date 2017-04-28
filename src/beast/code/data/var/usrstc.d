@@ -98,7 +98,7 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 				DataEntity substEntity = new SubstitutiveDataEntity( memoryPtrWIP_, dataTypeWIP_ );
 
 				if ( isCtime_ ) {
-					scope cb = new CodeBuilder_Ctime();
+					scope cb = new CodeBuilder_Ctime( );
 
 					// If the variable is ctime, we execute the constructor in ctime
 					if ( valueEntity )
@@ -106,18 +106,16 @@ final class Symbol_UserStaticVariable : Symbol_StaticVariable {
 					else
 						ast_.buildConstructor( substEntity, ast_.value, cb );
 
-					cb.result.destroy();
+					cb.result.destroy( );
 				}
 				else {
 					// Otherwise, we add it to the init block
-					project.backend.buildInitCode( ( CodeBuilder cb ) { //
-						with ( memoryManager.session( SessionPolicy.watchCtChanges ) ) {
+					project.backend.buildInitCode( ( cb ) => cb.build_scope( ( cb ) { //
 							if ( valueEntity )
 								ast_.buildConstructor( substEntity, valueEntity, cb );
 							else
 								ast_.buildConstructor( substEntity, ast_.value, cb ).inRootDataScope( parent );
-						}
-					} );
+						} ).inSession( SessionPolicy.watchCtChanges ) );
 				}
 			}
 		}
