@@ -15,6 +15,7 @@ final class DataEntity_FunctionParameter : DataEntity {
 
 			param_ = param;
 			parent_ = currentScope.parentEntity( );
+			isCtime_ = isCtime;
 		}
 
 	public:
@@ -27,7 +28,7 @@ final class DataEntity_FunctionParameter : DataEntity {
 		}
 
 		override bool isCtime( ) {
-			return isCtime;
+			return isCtime_;
 		}
 
 		override DataEntity parent( ) {
@@ -46,6 +47,7 @@ final class DataEntity_FunctionParameter : DataEntity {
 	private:
 		ExpandedFunctionParameter param_;
 		DataEntity parent_;
+		bool isCtime_;
 
 }
 

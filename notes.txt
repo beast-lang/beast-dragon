@@ -6,10 +6,8 @@ Soon to-to:
 	- realloc
 	- arrays?
 
-	- Type( args ) ctor
-
 Future to-do:
-	- Parameters indifferent 
+	- Parameters indifferent ???
 
 Diplomka to-do:
 	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back)
@@ -18,6 +16,8 @@ Diplomka to-do:
 	- if in function definitions
 	- Decorated && expression buildStatementCode -> cleaner + cover ifs, whiles, all statements
 		-> @ctime has to have a statementModifier context -- resolved on a statement AST level. If not @ctime -> statement is executed in a subsession
+	- public/private/...
+	- Join template parameters - pointer-aware data compare
 
 	Bool ctimeFunc( @ctime Int x ) { ... }
 	void main() {
@@ -50,7 +50,7 @@ Names:
 	Wolf
 
 Fantasy:
-	Dragon
+	Dragon - compiler
 	Troll
 	Centaur
 	Ghoul

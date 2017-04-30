@@ -8,6 +8,7 @@ import beast.code.data.type.stcclass;
 import beast.code.data.function_.primmemrt;
 import beast.code.data.function_.expandedparameter;
 import beast.backend.common.primitiveop;
+import beast.code.data.alias_.btsp;
 
 final class Symbol_BootstrapEnum : Symbol_Enum {
 
@@ -25,26 +26,14 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 		void initialize( Symbol[ ] members ) {
 			super.initialize( );
 
-			// TODO: pass to baseClass
-			// Implicit constructor
-			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
-					ExpandedFunctionParameter.bootstrap( ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memZero, inst );
-					} );
+			members ~= new Symbol_BootstrapAlias( ID!"#ctor", ( matchLevel, parentInstance ) => baseClass.tryResolveIdentifier( ID!"#ctor", parentInstance.reinterpret( baseClass ), matchLevel ) );
+			members ~= new Symbol_BootstrapAlias( ID!"#dtor", ( matchLevel, parentInstance ) => baseClass.tryResolveIdentifier( ID!"#dtor", parentInstance.reinterpret( baseClass ), matchLevel ) );
 
 			// Copy/assign constructor
 			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
-					} );
-
-			// Destructor
-			members ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreType.Void, //
-					ExpandedFunctionParameter.bootstrap( ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.noopDtor, inst );
+						baseClass.expectResolveIdentifier( ID!"#ctor", inst.reinterpret( baseClass ) ).resolveCall( null, true, args[ 0 ].reinterpret( baseClass ) ).buildCode( cb );
 					} );
 
 			namespace_.initialize( members );

@@ -3,6 +3,9 @@ module beast.code.data.type.enum_;
 import beast.code.data.toolkit;
 import beast.code.data.type.stcclass;
 import beast.code.data.util.reinterpret;
+import beast.code.data.function_.primmemrt;
+import beast.code.data.function_.expandedparameter;
+import beast.code.data.type.stcclass;
 
 abstract class Symbol_Enum : Symbol_Type {
 	mixin TaskGuard!"valueAAGeneration";
@@ -12,6 +15,14 @@ abstract class Symbol_Enum : Symbol_Type {
 			staticData_ = new Data( this, MatchLevel.fullMatch );
 			parent_ = parent;
 			baseClass_ = baseClass;
+		}
+
+		protected override void _initialize( void delegate( Symbol ) sink ) {
+			sink( new Symbol_PrimitiveMemberRuntimeFunction( ID!"#explicitCast", this, baseClass, //
+					ExpandedFunctionParameter.bootstrap( baseClass.dataEntity ), //
+					( cb, inst, args ) { //
+						inst.reinterpret( baseClass ).buildCode( cb );
+					} ) );
 		}
 
 	public:
@@ -51,8 +62,8 @@ abstract class Symbol_Enum : Symbol_Type {
 		override Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel ) {
 			if ( instance )
 				return baseClass_.tryResolveIdentifier( id, new DataEntity_ReinterpretCast( instance, baseClass_, MatchLevel.fullMatch ), matchLevel | MatchLevel.baseClass );
-
-			return baseClass_.tryResolveIdentifier( id, null );
+			else
+				return baseClass_.tryResolveIdentifier( id, null );
 		}
 
 	private:

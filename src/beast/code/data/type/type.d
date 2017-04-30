@@ -158,6 +158,7 @@ abstract class Symbol_Type : Symbol {
 					} ), //
 					true );
 
+			_initialize( ( sym ) { mem ~= sym; } );
 			baseNamespace_.initialize( mem );
 
 			debug initialized_ = true;
@@ -252,6 +253,10 @@ abstract class Symbol_Type : Symbol {
 
 		Overloadset _resolveIdentifier_mid( Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch ) {
 			return Overloadset( );
+		}
+
+		void _initialize( void delegate( Symbol ) sink ) {
+
 		}
 
 	protected:
