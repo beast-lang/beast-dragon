@@ -6,7 +6,7 @@ import std.typecons : Typedef;
 struct Hash {
 
 	public:
-		alias Data = Typedef!( size_t );
+		alias Data = Typedef!( uint );
 
 	public:
 		this( string str ) {
@@ -23,7 +23,7 @@ struct Hash {
 			this.data = hash.get;
 		}
 
-		this( size_t data ) {
+		this( uint data ) {
 			this.data = 0x9e3779b9 + ( cast( size_t ) data << 6 ) + ( cast( size_t ) data >> 2 );
 		}
 
