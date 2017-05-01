@@ -17,7 +17,7 @@ struct Hash {
 		}
 
 		this( const( ubyte )[ ] data ) {
-			MurmurHash3!( Data.sizeof * 8 ) hash;
+			MurmurHash3!( 32 ) hash;
 			hash.put( data );
 			hash.finalize( );
 			this.data = hash.get;
