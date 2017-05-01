@@ -26,7 +26,6 @@ final class Symbol_BootstrapEnum : Symbol_Enum {
 		void initialize( Symbol[ ] members ) {
 			super.initialize( );
 
-			members ~= new Symbol_BootstrapAlias( ID!"#ctor", ( matchLevel, parentInstance ) => baseClass.tryResolveIdentifier( ID!"#ctor", parentInstance.reinterpret( baseClass ), matchLevel ) );
 			members ~= new Symbol_BootstrapAlias( ID!"#dtor", ( matchLevel, parentInstance ) => baseClass.tryResolveIdentifier( ID!"#dtor", parentInstance.reinterpret( baseClass ), matchLevel ) );
 
 			// Copy/assign constructor

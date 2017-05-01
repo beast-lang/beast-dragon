@@ -52,19 +52,23 @@ final class MemoryBlock {
 			this.subSession = context.subSession;
 			debug this.jobId = context.jobId;
 
-			data = cast( ubyte* ) GC.malloc( size );
-			data[ 0 .. size ] = 0;
+			if ( isCtime ) {
+				data = cast( ubyte* ) GC.malloc( size );
+				data[ 0 .. size ] = 0;
+			}
 
 			assert( context.session, "You need a session to be able to allocate" );
 		}
 
 		~this( ) {
-			GC.free( data );
+			if( data )
+				GC.free( data );
 		}
 
 	public:
 		/// Duplicates given memory block. The memory block must not be runtime. The resulting block is set static
 		MemoryBlock duplicate( Flag flags ) {
+			assert( isCtime );
 			MemoryBlock result = memoryManager.allocBlock( size, flags );
 			memoryManager.write( result.startPtr, data[ 0 .. size ] );
 			return result;

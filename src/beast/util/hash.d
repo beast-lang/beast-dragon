@@ -1,11 +1,12 @@
 module beast.util.hash;
 
 import std.digest.murmurhash : MurmurHash3;
+import std.typecons : Typedef;
 
 struct Hash {
 
 	public:
-		alias Data = uint;
+		alias Data = Typedef!( size_t );
 
 	public:
 		this( string str ) {
@@ -22,14 +23,13 @@ struct Hash {
 			this.data = hash.get;
 		}
 
+		this( size_t data ) {
+			this.data = 0x9e3779b9 + ( cast( size_t ) data << 6 ) + ( cast( size_t ) data >> 2 );
+		}
+
 		this( Data data ) {
 			this.data = data;
 		}
-
-		static if ( !is( Data == size_t ) )
-			this( size_t data ) {
-				this.data = cast( Data ) data;
-			}
 
 	public:
 		Data data;
@@ -39,7 +39,7 @@ struct Hash {
 		string str( ) {
 			enum chars = "0123456789abcdefghijklmopqrstvuw";
 
-			size_t val = data;
+			size_t val = cast( size_t ) data;
 			string result;
 
 			while ( val ) {

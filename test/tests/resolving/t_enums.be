@@ -52,10 +52,13 @@ Void err5() {
 }
 
 Void err6() {
-	Operator o;
-	foo3( o ); //! error: noMatchingOverload
+	Operator o; //! error: noMatchingOverload
 }
 
 Void err7() {
 	foo1( :xx ); //! error: unknownIdentifier
+}
+
+Void err6() {
+	foo3( :binPlus ); //! error: noMatchingOverload
 }

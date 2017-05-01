@@ -34,7 +34,7 @@ final class Identifier {
 
 	public:
 		override size_t toHash( ) const {
-			return hash.data;
+			return cast( size_t ) hash.data;
 		}
 
 		// We don't need to compare strings, we only compare pointers

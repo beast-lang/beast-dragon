@@ -44,6 +44,7 @@ final class Backend_Cpp : Backend {
 			debug MemoryBlock prevBlock;
 			foreach ( MemoryBlock block; memoryManager.memoryBlocks ) {
 				assert( block.startPtr.val > prevPtr );
+				assert( block.isCtime || memoryManager.nextPointer( block.startPtr - 1 ).isNull || memoryManager.nextPointer( block.startPtr - 1 ) >= block.endPtr, "Block %s-%s is runtime, but found pointer at %s".format( block.startPtr, block.endPtr, memoryManager.nextPointer( block.startPtr - 1 ) ) );
 
 				prevPtr = block.startPtr.val;
 				debug prevBlock = block;
@@ -55,33 +56,37 @@ final class Backend_Cpp : Backend {
 				code_memory.formattedWrite( "uintptr_t %s[%s] = { ", identifier, arraySize );
 
 				//assert( ulong.sizeof >= hardwareEnvironment.pointerSize );
-				BigInt data = block.data[ 0 ];
-				auto mem = memoryManager;
+				if ( block.isCtime ) {
+					BigInt data = block.data[ 0 ];
+					auto mem = memoryManager;
 
-				MemoryPtr nextPtr = memoryManager.nextPointer( block.startPtr - 1 );
-				size_t nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
-				size_t i = 1;
-				foreach ( b; block.data[ 1 .. block.size ] ) {
-					if ( i % hardwareEnvironment.pointerSize == 0 ) {
-						if ( i == nextPtrOffset ) {
-							code_memory.formattedWrite( "(uintptr_t) %s, ", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
-							nextPtr = memoryManager.nextPointer( block.startPtr + i - 1 );
-							nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
+					MemoryPtr nextPtr = memoryManager.nextPointer( block.startPtr - 1 );
+					size_t nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
+					size_t i = 1;
+					foreach ( b; block.data[ 1 .. block.size ] ) {
+						if ( i % hardwareEnvironment.pointerSize == 0 ) {
+							if ( i == nextPtrOffset ) {
+								code_memory.formattedWrite( "(uintptr_t) %s, ", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
+								nextPtr = memoryManager.nextPointer( block.startPtr + i - 1 );
+								nextPtrOffset = nextPtr.val - block.startPtr.val + hardwareEnvironment.pointerSize;
+							}
+							else
+								code_memory.formattedWrite( "0x%s, ", data.toHex.filter!( x => x != '_' ) );
+
+							data = 0;
 						}
-						else
-							code_memory.formattedWrite( "0x%s, ", data.toHex.filter!( x => x != '_' ) );
 
-						data = 0;
+						data += ( cast( ulong ) b ) << ( i * 8 );
+						i++;
 					}
 
-					data += ( cast( ulong ) b ) << ( i * 8 );
-					i++;
+					if ( i == nextPtrOffset )
+						code_memory.formattedWrite( "(uintptr_t) %s };\n", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
+					else
+						code_memory.formattedWrite( "0x%s };\n", data.toHex.filter!( x => x != '_' ) );
 				}
-
-				if ( i == nextPtrOffset )
-					code_memory.formattedWrite( "(uintptr_t) %s };\n", CodeBuilder_Cpp.memoryPtrIdentifier( nextPtr.readMemoryPtr ) );
 				else
-					code_memory.formattedWrite( "0x%s };\n", data.toHex.filter!( x => x != '_' ) );
+					code_memory.formattedWrite( "0 };\n" );
 			}
 
 			if ( wereErrors )

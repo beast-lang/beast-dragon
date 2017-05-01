@@ -20,6 +20,15 @@
 }
 \renewcommand{\theequation}{\arabic{chapter}.\arabic{equation}}
 
+\newcommand{\putImage}[3][]{
+	\begin{centering}
+		\vspace{5mm}
+		\includegraphics[#3]{obrazky-figures/#2}
+		
+		\putrefCentered[#1] \vspace{5mm}
+	\end{centering}
+}
+
 % Code
 \lstset{% 
 	basicstyle=\fontfamily{SourceCodePro-TLF}\selectfont\scalefont{0.8}, 

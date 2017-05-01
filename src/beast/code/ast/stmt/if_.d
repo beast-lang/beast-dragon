@@ -1,6 +1,9 @@
 module beast.code.ast.stmt.if_;
 
 import beast.code.ast.toolkit;
+import beast.code.decorationlist;
+import beast.code.ast.stmt.statement;
+import beast.backend.ctime.codebuilder;
 
 final class AST_IfStatement : AST_Statement {
 
@@ -12,7 +15,7 @@ final class AST_IfStatement : AST_Statement {
 		/// Continues parsing after decoration list
 		static AST_IfStatement parse( CodeLocationGuard _gd, AST_DecorationList decorationList ) {
 			auto result = new AST_IfStatement;
-			benforce( decorationList is null, E.invalidDecoration, "Decorating an if statement is not allowed" );
+			result.decorationList = decorationList;
 
 			currentToken.expectAndNext( Token.Keyword.if_ );
 
@@ -36,14 +39,31 @@ final class AST_IfStatement : AST_Statement {
 		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
 			const auto __gd = ErrorGuard( codeLocation );
 
-			cb.build_if(  //
-					condition.buildSemanticTree_singleExpect( coreType.Bool ), //
-					( CodeBuilder cb ) => thenBranch.buildStatementCode( env, cb ).inLocalDataScope, //
-					elseBranch ? ( CodeBuilder cb ) => elseBranch.buildStatementCode( env, cb ).inLocalDataScope : null  //
-					 );
+			auto decoList = scoped!DecorationList( decorationList );
+			auto decoData = scoped!StatementDecorationData( );
+
+			decoList.apply_statementDecorator( decoData );
+			decoList.enforceAllResolved( );
+
+			if ( decoData.isCtime ) {
+				cb.build_scope( ( cb ) { //
+					if ( condition.buildSemanticTree_singleExpect( coreType.Bool ).ctExec( ).keepUntilSessionEnd.readPrimitive!bool )
+						thenBranch.buildStatementCode( env, cb ).inLocalDataScope;
+					else if ( elseBranch )
+						elseBranch.buildStatementCode( env, cb ).inLocalDataScope;
+				} );
+			}
+			else {
+				cb.build_if(  //
+						condition.buildSemanticTree_singleExpect( coreType.Bool ), //
+						( CodeBuilder cb ) => thenBranch.buildStatementCode( env, cb ).inLocalDataScope, //
+						elseBranch ? ( CodeBuilder cb ) => elseBranch.buildStatementCode( env, cb ).inLocalDataScope : null  //
+						 );
+			}
 		}
 
 	public:
+		AST_DecorationList decorationList;
 		AST_Expression condition;
 		AST_Statement thenBranch, elseBranch;
 

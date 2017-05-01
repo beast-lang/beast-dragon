@@ -19,6 +19,13 @@ Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletn
 
 Motivací a současně i cílem této práce je snaha vnést nový pohled do oblasti kompilovaných jazyků, jak celkovou kompozicí jazyka, tak novými nápady, a přiblížit jej akademické komunitě skrze demonstrační kompilátor.
 
+\paragraph{Struktura práce}
+\begin{itemize}
+	\item Kapitola \ref{chap:languageProps} se zabývá spekulacemi nad zavedením různých vlastností a~prvků do jazyka.
+	\item Kaptiola \ref{chap:ctime} se potom věnuje novému konceptu líhnutí kódu, který jazyk Beast zavádí.
+	\item Kapitola \ref{chap:compiler} popisuje implementační detaily vzorového kompilátoru.
+\end{itemize}
+
 \begin{comment}
 Mou hlavní motivací je nespokojenost se stávajícími programovacími jazyky. Programování mám jako koníčka už od nějakých dvanácti let, a tak jsem ještě před nastoupením na FIT získal nějaké zkušenosti z psaní aplikací v Object Pascalu (Delphi), C++ (Qt, SDL + OpenGL) a PHP (webové aplikace). FIT pak můj repertoár (i když jen rámcově) rozšířil na valnou většinu dnes používaných jazyků. Bohužel jsem ale nenarazil na žádný, který by splňoval mé požadavky. Rozhodl jsem se tedy využít nutnost napsání bakalářské práce k~uskutečnění mého dlouholetého snu.
 
@@ -28,7 +35,7 @@ Mému srdci nejbližší jazyk, na který jsem ve svém pátrání narazil, byl 
 D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem narazil na strop možnosti (ačkoli byl značně výš než třeba v C++), kdy některé věci nešly napsat tak jednoduše, jak bych chtěl. Tento jazyk však dokazuje, že tato bariéra může být mnohem dál. Já ji chci ve svém jazyku ještě více posunout. 
 \end{comment}
 
-\chapter{Vlastnosti a syntaxe jazyka}
+\chapter{Vlastnosti a syntaxe jazyka} \label{chap:languageProps}
 Naším cílem je navrhnout jazyk pro obecné použití, který by se dal použít na maximálním počtu platforem, například i ve vestavěných systémech. Složitější struktury se tím pádem budeme snažit řešit spíše vhodnou abstrakcí než zaváděním prvků, které kladou zvýšené nároky na výkon a paměť.
 
 Budeme navrhovat kompilovaný jazyk. Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret. Pro zjednodušení práce při psaní překladače nebudeme ale překládat přímo do strojového kódu, ale do jazyka C/C++.
@@ -277,7 +284,7 @@ Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Sy
 Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v jazyce Beast \beastRef{Decorators}.
 
 \subsection{Vykonávání fukncí za doby kompilace}
-Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci konceptu líhnutí kódu, viz \autoref{ctime}.
+Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci konceptu líhnutí kódu, viz \autoref{chap:ctime}.
 
 \subsection{Metaprogramování} \label{metaprogramming}
 Metaprogramování je koncept, jehož realizace dává programátorovi možnost přistupovat ke kódu "jako k datům," tedy kód pomocí kódu samotného určitým způsobem číst (například získání seznamu proměnných ve třídě, zjištění návratového typu funkce, atp.) a~přidávat/upravovat (například vytvořit třídy pro binární strom nad zadaným typem nebo na základě seznamu proměnných ve třídě vygenerovat funkci, která zajistí její korektní serializaci). Do tohoto konceptu spadá například šablonování a reflexe.
@@ -735,7 +742,7 @@ Void main() {
 %TODO scope guards
 %TODO break labels
 
-\chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{ctime}
+\chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{chap:ctime}
 Koncept líhnutí kódu je nový koncept vytvořený v rámci návrhu jazyka Beast a spojuje do koherentního celku funkčnost několika již zavedených konceptů -- například šablonového metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace.
 
 Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řada důsledků. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce Beast dekorátor \ctime.
@@ -1229,7 +1236,7 @@ Int pow( Int x, 3 ) {
 
 Po spuštění druhého stupně interpretace (které by předcházela generace bajtkódu) by funkce už navrátila hodnotu 125, která by se uložila do proměnné \inlineCode{powed}. V tomto konkrétním případě by mohlo být vhodnější celou funkci vykonat pomocí pomalejšího \ctime interpretu (protože generování bajtkódu a jeho následné vykonání může být ve výsledku pomalejší), nicméně v~případech, kdy by se funkce \inlineCode{pow} se stejnou hodnotou druhého parametru (který je \ctime) volala vícekrát, je výhodnější použít dvoustupňovou interpretaci.
 
-Bližší studium této problematiky je mimo rámec této práce. V demonstračním kompilátoru je z časových důvodů implementován pouze interpret prvního stupně. I přes faktickou existenci pouze jednoho interpretu zaveďme termíny "interpretace prvního stupně," kterým je myšleno zpracování \ctime kódu, a "interpretace druhého stupně," který referuje na vykonávání standardních funkcí za doby kompilace.
+Bližší studium této problematiky je mimo rámec této práce. %I přes faktickou existenci pouze jednoho interpretu zaveďme termíny "interpretace prvního stupně," kterým je myšleno zpracování \ctime kódu, a "interpretace druhého stupně," který referuje na vykonávání standardních funkcí za doby kompilace.
 
 \subsection{\ctime proměnné a \nonctime reference}
 Nelze tvrdit, že \ctime proměnné jsou čistě záležitostí kompilace. V momentě, kdy uložíme adresu \ctime proměnné do \nonctime reference/ukazatele (toto může nastat například i~při předávání \ctime dat jako argumentů typu reference při volání \nonctime funkcí), tak abychom zajistili funkčnost reference, musíme data této proměnné (a všech dalších proměnných, na které odkazuje) umístit do paměti i při běhu programu. Data referencovaných nestatických \ctime proměnných ve funkcích musí být uložena na zásobníku. Ačkoli je veškerý \ctime kód vykonáván interpretem prvního stupně, výsledky a dokonce i některé mezistavy musí být kopírovány při běhu aplikace.
@@ -1438,8 +1445,8 @@ Tento přehled pravidel doplňuje ten uvedený v podkapitole \ref{ctime:rules}.
 	\item Pro nevykonané \ctime větve se neprovádí sémantická kontrola. U \ctime cyklů se provádí sémantická kontrola pro každou iteraci zvlášť.
 \end{enumerate}
 
-\chapter{Implementace kompilátoru}
-Tato kapitola se věnuje implementaci demonstračního kompilátoru jazyka.
+\chapter{Implementace kompilátoru} \label{chap:compiler}
+Tato kapitola se věnuje implementaci demonstračního kompilátoru jazyka Beast, pojmenovaném \textit{Dragon}.
 
 \subsubsection{Volba implementačního jazyka}
 S ohledem na autorovu znalost programovacích jazyků připadaly jako jazyky pro implementaci demonstračního kompilátoru v úvahu dva kandidáti -- C++ a D. Zvítězil jazyk D, zejména kvůli obsáhlé a dobře zdokumentované standardní knihovně a kvůli odpadnutí nutnosti psát hlavičkové soubory. Nevýhodou je menší nabídka podporovaných vývojových prostředí, obzvláště pak s podporou ladění v OS Windows.
@@ -1448,14 +1455,49 @@ S ohledem na autorovu znalost programovacích jazyků připadaly jako jazyky pro
 Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru. Existuje mnoho generátorů parserů, jejich průzkum a srovnávání by sám o sobě vydal na knihu; mezi ty nejznámější z nich patří například LALR generátor Bison\footnote{\url{https://www.gnu.org/software/bison/}}, a LL generátor ANTLR\footnote{\url{http://www.antlr.org/}}. Srovnání LL a LR parserů je mimo rámec této práce a~snadno dohledatelné na internetu v přehledné podobě (například \cite{LLLRComp}).
 
  Bylo rozhodnuto, že demonstrační kompilátor bude založen na LL parseru, především kvůli větší intuitivnosti návrhu a lepším možnostem generování chybových zpráv. Dalším předmětem k úvaze bylo, zda opravdu použít generátor parseru, nebo parser napsat ručně. Napsání vlastního syntaktického a sémantického analyzátoru není obtížné a nejde o nic neobvyklého -- takto jsou řešeny například kompilátory Microsoft C\#\footnote{Dle \cite{JavaCompilerConstructionCampbell}, oddíl 8.5.2}, DMD\footnote{Kompilátor jazyka D; zřejmé z kódu parseru, viz \url{https://github.com/dlang/dmd/blob/master/src/parse.d}}, GCC\footnote{Uvedeno zde: \url{https://gcc.gnu.org/wiki/New_C_Parser}} nebo Clang\footnote{Uvedeno zde: \url{http://clang.llvm.org/features.html}, první odstavec předposledního oddílu}. Autor tohoto projektu zvolil variantu napsání vlastního parseru a lexeru metodou rekurzivního sestupu (modifikovanou tak, aby si poradila i s částmi gramatiky, které nejde zpracovat LL(1) parserem) ve víře, že časová náročnost bude srovnatelná s osvojením si a aplikací nové technologie s~tím, že takto napsaný parser bude lépe modifikovatelný a~všeobecně více "pod kontrolou".
+ 
+\section{\inlineCode{TaskGuard} - vícevláknová implementace, \textit{poisoning}, cyklické závislosti}
+Uhelným kamenem kompilátoru je třída \inlineCode{TaskGuard}, která zapouzdřuje mechanismus "úloh" (angl. \textit{tasks}), které kompilátor vykonává. Tyto úlohy jsou například:
+\begin{itemize}
+	\item Syntaktická analýza souboru
+	\item Odvození typu statické proměnné (sémantická analýza výrazu, který popisuje typ proměnné)
+	\item Vytvoření tabulky symbolů pro daný jmenný prostor ze syntaktického stromu
+\end{itemize}
 
-% TODO ref viz - viz kapitola/oddíl/xxx
+Každá úloha se vykonává maximálně jednou. Vykonání jedné úlohy může být závislé na jiné úloze (nebo více jiných úlohách), například vytvoření tabulky symbolů pro jmenný prostor modulu vyžaduje nejdřív vykonání syntaktické analýzy zdrojového souboru. Takto vzniká orientovaný acyklický graf závislostí jednotlivých úloh. Protože úlohy nemění stav systému, kromě dat spojených se samotnou úlohou (které jsou zbytku systému zpřístupněny až po dokončení úlohy), mohou být jednotlivé úlohy vykonávány paralelně. Kompilátor Dragon je tedy \textbf{vícevláknový}.
 
-\section{Task guards}
--vícevláknové, dependency loop, poisoning, princip tasks
+\putImage[Příklad grafu závislostí úloh]{taskTree.pdf}{width=11cm}
 
-\section{Memory}
-- všechno má svůj memory block - jednotný přístup
+V některých případech může vzniknout cyklický graf, například v kódu
+\begin{code}
+a.#type b;
+b.#type a;
+\end{code}
+
+Zde vzniká cyklická závislost úloh pro odvození typu proměnné \inlineCode{a} a pro odvození typu proměnné \inlineCode{b}. Třída \inlineCode{TaskGuard} je takovouto cyklickou závislost schopná detekovat a reagovat na ni vypsáním chybové hlášky.
+
+V případě, že během vykonávání úlohy vznikne chyba (je vyvolána výjimka), třída \inlineCode{TaskGuard} is k dané úloze poznačí, že její zpracování způsobilo chybu. Tento příznak chyby se propaguje grafem závislostí do všech závislých úloh (další chybové hlášky se nevypisují). Ty části grafu, které touto chybo nejsou ovlivněny, mohou být dále zpracovávány a produkovat další, nezávislé chybové hlášky.
+
+V praxi se graf závislostí tvoří postupně; vykonání jedné úlohy vytváří další úlohy, které mají být vykonány (například syntaktická analýza rozpozná definici funkce, pro kterou jsou vytvořeny úlohy pro odvození návratového typu, zpracování seznamu parametrů a generování kódu) a většina závislostí je objevena až během vykonávání nějaké úlohy (například to, že kód funkce pracuje s nějakou třídou, se zjistí až během zpracovávání daného kódu). Tomuto je přizpůsobena i implementace třídy \inlineCode{TaskGuard}.
+
+Třída \inlineCode{TaskGuard} obsahuje jedinou funkci, \inlineCode{enforceDone}. Jakémukoli přístupu k datům, které úloha zpracovává, musí předcházet volání právě této funkce. Funkce se chová následovně:
+\begin{itemize}
+	\item Pokud byla úloha již dříve vykonána s chybou, funkce vyvolá "tichou" výjimku.
+	\item Pokud je úloha již vykonaná, funkce se ukončí.
+	\item Pokud úloha ještě nebyla vykonána, zavolá se funkce (předaná třídě \inlineCode{TaskGuard} jako parametr), která zajistí její vykonání. Pokud je během vykonávání této funkce vyvolána výjimka, \inlineCode{TaskGuard} ji zachytí, poznamená si, že úloha byla vykonána s chybou, a výjimku předá dál.
+	\item Pokud je úloha právě vykonávána v jiném vlákně, aktuální vlákno se pozastaví a~do správy vláken se přidá záznam, aby bylo obnoveno po dokončení úlohy (na druhém vlákně). Pokud vykonání úlohy na jiném vlákně skončí chybou, je aktuální vlákno obnoveno a je na něm vyvolána tichá výjimka.
+	
+	Před přidáním záznamu do správy vláken je ověřeno, zda by přidáním nevznikla cyklická závislost (totiž zda vlákno A nečeká na vlákno B, které by přidáním záznamu mělo čekat na vlákno A); v~takovém případě je nahlášena chyba, všechna tato vlákna jsou probuzena a je v nich vyvolána tichá výjimka.
+\end{itemize}
+
+Implementace využívá atomických operací, k použití semaforů dochází až v případě, že je potřeba využít správu vláken. Místo systémových vláken se využívá vlákének (angl. \textit{Fibers}), což dále snižuje cenu režie.
+
+\section{Virtuální paměť a \textit{sessions}}
+Kompilátor zavádí virtuální adresový prostor. V něm jsou uloženy nejenom data \ctime proměnných, ale  adresy v tomto prostoru jsou přiřazeny i \nonctime proměnným. To umožňuje jednotný přístup k \ctime a \nonctime proměnným.
+
+Virtuální paměťový prostor je z časových důvodů implementován lineárním polem; jedná se o velice neefektivní řešení.
+
+Implementované řešení virtuální paměti také disponuje systémem pro ochranu zápisu -- ten je využit zejména pro vynucování dodržení pravidel konceptu líhnutí kódu. Systém je implementován pomocí tzv. \textit{sessions} a \textit{subsessions}. Jedná se o číselné identifikátory, které jsou vázané k jednotlivým vláknům kompilátoru. Při alokaci/dealokaci virtuální paměti se k bloku uloží \textit{session} a \textit{subsession id}, které jsou právě přiřazeny k vláknu, které alokaci iniciovalo. Je vynucováno pravidlo, že vlákno nemůže zapisovat do bloků, které mají \textit{session id} jiné než takové, které má vlákno právě přiřazeno. Pro každý výpočet hodnoty statické proměnné a pro každý \nonctime rámec (tedy rámce \nonctime funkcí a větvících příkazů) je určeno unikátní \textit{session id}.
 
 \section{Data entitites}
 - memory bloky pro proměnné se alokují až při Codebuilder.build\_localVariableDefinition
@@ -1470,3 +1512,9 @@ Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru.
 
 - Memory space - to už bylo popsáno
 - Overload resolution + inferring + @ctime
+
+\section{Backend}
+
+\section{Konfigurace projektu}
+
+\section{Dokončené a nedokončenéí věci}
