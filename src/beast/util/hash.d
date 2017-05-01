@@ -6,11 +6,11 @@ import std.typecons : Typedef;
 struct Hash {
 
 	public:
-		alias Data = Typedef!( uint );
+		alias Data = Typedef!( size_t );
 
 	public:
 		this( string str ) {
-			MurmurHash3!( Data.sizeof * 8 ) hash;
+			MurmurHash3!( 32 ) hash;
 			hash.put( cast( const( ubyte )[ ] ) str );
 			hash.finalize( );
 			data = hash.get;
@@ -23,7 +23,7 @@ struct Hash {
 			this.data = hash.get;
 		}
 
-		this( uint data ) {
+		this( size_t data ) {
 			this.data = 0x9e3779b9 + ( cast( size_t ) data << 6 ) + ( cast( size_t ) data >> 2 );
 		}
 
