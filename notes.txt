@@ -29,6 +29,11 @@ Diplomka to-do:
 
 	}
 
+	New memory mgmt system:
+		Beast pointer = offset in pointer table
+		pointer table items: struct { MemoryBlock (instance), size_t offset in the memory block }
+		-> no need for virtual address space structures
+
 Examples - ideas:
 	Fibonacci
 	Factorial

@@ -77,6 +77,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			case InstructionOperand.Type.jumpTarget:
 			case InstructionOperand.Type.placeholder:
 			case InstructionOperand.Type.unused:
+			case InstructionOperand.Type.comment:
 				assert( 0, "Cannot offset operand %s".format( result_.identificationString ) );
 
 			case InstructionOperand.Type.heapRef:
@@ -282,6 +283,14 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			generateScopesExit( );
 			addInstruction( I.ret );
+		}
+
+	public:
+		override void build_comment( string comment ) {
+			InstructionOperand op;
+			op.type = InstructionOperand.Type.comment;
+			op.comment = comment;
+			addInstruction( I.noOp, op );
 		}
 
 	public:

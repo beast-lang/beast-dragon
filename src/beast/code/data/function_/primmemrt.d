@@ -297,6 +297,11 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 			public:
 				override void buildCode( CodeBuilder cb ) {
+					/*cb.build_comment( this.identificationString );
+					cb.build_comment( "inst: %s".format( parentInstance_.identificationString ) );
+					foreach ( i, arg; arguments_ )
+						cb.build_comment( "arg%s: %s".format( i, arg.identificationString ) );*/
+
 					sym_.func_( cb, parentInstance_, arguments_ );
 				}
 

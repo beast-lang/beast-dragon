@@ -26,7 +26,7 @@ final class Interpreter {
 
 			MemoryPtr[ ] argPtrs;
 			argPtrs.length = args.length;
-			foreach ( i, arg; args ) {
+			foreach_reverse ( i, arg; args ) {
 				auto ptr = memoryManager.alloc( ptrSize, MemoryBlock.Flag.ctime );
 				ptr.writeMemoryPtr( arg );
 				argPtrs[ i ] = ptr;

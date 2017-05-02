@@ -562,6 +562,7 @@ Bez zavedení UFCS by kód na řádku \ref{ufcs:2} nebyl platný, bylo by možn�
 \begin{itemize}
 	\item Funkce pracuje nad typem, jehož definici programátor nemůže upravit -- typy definované kompilátorem (\inlineCode{Int}, \inlineCode{String}) nebo knihovnami třetích stran.
 	\item Funkce pracuje nad více typy současně --  pro jazyk Beast to zde znamená, že první parameter je typu \inlineCode{auto}, například funkce
+	
 		\begin{code}
 Double area( auto? entity )
 	if( entity.#type in [ Circle, Rectangle ] )
@@ -627,6 +628,7 @@ int main () {
 Zde na řádku \ref{colonIdent:1} musí programátor napsat prefix \inlineCppCode{std::fstream::} dokonce třikrát. Přitom funkce \inlineCppCode{std::fstream::open} přijímá právě jenom hodnoty z tohoto výčtu (sémanticky to zcela zřejmé není, protože C++ standardně nenabízí typ, který by dokázal bezpečně pracovat s prvky výčtu jako s příznaky; jazyk Beast to však bude umožňovat).
 
 Jazyk Beast nabízí elegantní řešení tohoto problému. Zavádí konstrukci \inlineCode{:ident}, která vyhledává zadaný identifikátor ne v aktuálním jmenném prostoru, nýbrž ve jmenném prostoru typu, jehož hodnotu kompilátor očekává. Za předpokladu, že funkce \inlineCode{open} přijímá jako druhý parametr typ \inlineCode{Flags(OpenMode)}, kde \inlineCode{OpenMode} je výčet, a že prvky výčtu jsou z příznakového typu dostupné (toho je docíleno pomocí importu rámců, viz \autoref{scopeImport}), může ekvivalentní kód v jazyce Beast vypadat takto:
+
 \begin{code}
 Void main() {
 	File( "test.txt", :write | :append ).write( " more lorem ipsum" );
@@ -683,10 +685,12 @@ class C {
 
 \subsection{Ternární operátor} \label{ternary}
 Narozdíl od jazyků C++ a D Beast neposkytuje ternární operátor \inlineCppCode{a ? b : c}. Hlavním důvodem byla potřeba využít lexémy \inlineDCode{?} a \inlineDCode{:} jinde. Místo toho existuje funkce 
+
 \begin{code}
 auto select(@lazy Bool cond1, @lazy auto val1, @lazy auto defVal)
 \end{code}
 která má stejnou funkčnost (\inlineCode{cond1} odpovídá parametru \inlineDCode{a}, \inlineCode{val1} parametru \inlineDCode{b} a \inlineCode{defVal} parametru \inlineDCode{c}). Tato funkce je navíc rozšiřitelná o libovolný počet podmínek a odpovídajících hodnot -- tedy například 
+
 \begin{code}
 auto select(
 	@lazy Bool cond1, @lazy auto val1,
@@ -751,6 +755,7 @@ Vykonávání kódu tak probíhá ve dvou fázích -- hodnoty proměnných ozna�
 
 \section{Dedukce axiomů}
 Máme vyřčenou základní myšlenku -- hodnoty proměnných označených dekorátorem \ctime musíme být schopni odvodit již během kompilace; v následujícím textu tuto myšlenku budeme rozvádět. Začneme jednoduchým příkladem:
+
 \begin{code}
 @ctime Int x = 8;
 \end{code}
@@ -759,6 +764,7 @@ Zde je vše jasné. Proměnná je konstantní, takže se nemůže měnit; po cel
 
 \subsection{Datové závislosti} \label{ctimeDataDependency}
 Další jednoduchý příklad:
+
 \begin{code}
 @ctime Int x = console.read( Int );
 \end{code}
@@ -895,6 +901,7 @@ Void main() {
 
 \subsection{Reference a dynamické alokace} \label{ctime:ref}
 Pro praktickou demonstraci tohoto problému je již třeba složitější příklad:
+
 \begin{code}
 class BinaryTreeNode {
 	
@@ -965,6 +972,7 @@ Void main() {
 Výše uvedený příklad neporušuje žádné z pravidel, které jsme si již odvodili, nicméně hodnota proměnné \inlineCode{y} již není odvoditelná během kompilace, protože se hodnota proměnné \inlineCode{x}~může změnit na základě uživatelského vstupu. Přiřazení do \inlineCode{cref} na řádku \ref{ctime:nonctime:1} je v pořádku; kontrola nad daty se ztrácí při inicializaci proměnné \inlineCode{ref} na řádku \ref{ctime:nonctime:2}. Aby se tomuto předešlo, zavedeme pravidlo, že \textbf{na \ctime data nelze odkazovat \nonctime referencí/ukazatelem na mutabilní typ}.
 
 Toto pravidlo ale není dostatečné:
+
 \begin{code}
 class C {
 	@public Int! x;
@@ -985,6 +993,7 @@ Void main() {
 Zde jsme toto pravidlo neporušili, ale přesto se nám opět podařilo porušit axiom pro \ctime. Zavedeme tedy další pravidlo: \textbf{odkaz na \ctime data nelze uložit do \nonctime reference/ukazatele, pokud všechny třídní proměnné typu reference/ukazatel v~odkazovaném typu nejsou konstantní}.
 
 Toto pravidlo se ale také dá obejít:
+
 \begin{code}
 class C {
 	@public Int x;
@@ -1010,6 +1019,7 @@ Void main() {
 
 \subsection{Třídní \ctime proměnné}
 Zvažme možnost existence nestatických \ctime proměnných ve třídách:
+
 \begin{code}
 class C {
 	
@@ -1128,6 +1138,7 @@ class TreeNode( @ctime Type Key, @ctime Type Value, @ctime Int childrenCount ) {
 \end{code}
 
 Díky prakticky nulovému rozdílu v syntaxi \ctime a \nonctime proměnných lze šablonové a standardní parametry funkcí zapisovat do stejných závorek a libovolně je míchat:
+
 \begin{code}
 T readFromBuffer( Buffer!? buf, @ctime Type T ) {
 	T? result = buf.ptr.to( T? );
@@ -1143,6 +1154,7 @@ Void main() {
 \end{code}
 
 Dokonce lze vytvořit i speciální dekorátor, v našem jazce pojmenovaný \inlineCode{@autoCtime}, který argument bere jako \ctime, pokud to je možné:
+
 \begin{code}
 Index regexFind( String pattern, @autoCtime String regex ) {
 	// regex implementation
@@ -1156,6 +1168,7 @@ Void main() {
 \end{code}
 
 Pomocí klíčového slova \inlineCode{auto} může funkce přijmout hodnotu jakéhokoli typu
+
 \begin{cppcode}
 // C++
 template< typename T1, typename T2 >
@@ -1200,7 +1213,7 @@ Třídní proměnné \ctime tříd jsou \ctime (funkce mohou být \nonctime).
 \subsection{Reflexe kódu} \label{ctime:reflection}
 Koncept také umožňuje reflexi; implicitně se jedná o reflexi za doby kompilace, reflexi za doby běhu si programátor může napsat (případně využít knihovnu). Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member( String identifier )}, které reflexi zajišťují. Jsou zdokumentovány v referenci jazyka.
 
-\section{Implementace konceptu}
+\section{Implementace konceptu} \label{ctime:orderInterpreters}
 Nyní zvažme, jak by se tento koncept dal implementovat do kompilátoru.
 
 Je zřejmé, že hodnoty \ctime proměnných se budou vypočítávat již během kompilace pomocí interpretu zabudovaného do kompilátoru.
@@ -1280,6 +1293,7 @@ Je tedy třeba zavést mapování z adresového prostoru interpretu prvního stu
 \end{enumerate}
 
 Třetí forma se dá demonstrovat tímto příkladem:
+
 \begin{code}
 Void foo() {
 	@ctime Int!?! x := new Int!( 5 );
@@ -1308,6 +1322,7 @@ Aby se skryly rozdíly mezi adresovým prostorem interpretu a adresovým prostor
 \subsection{\ctime větvení a sémantická kontrola}
 
 Uvažme následující příklad:
+
 \begin{code}
 class C {
 	Int! x;
@@ -1350,6 +1365,7 @@ Void main() {
 
 \subsection{Šablonování}
 Následující dva příklady mají stejný význam a podobnou funkčnost:
+
 \begin{cppcode}
 // C++
 template< int i >
@@ -1376,6 +1392,7 @@ Int foo( 5, Int j ) {
 V případě, že se někde jinde v kódu volá funkce \inlineCode{foo} se \textit{stejnými} \ctime argumenty, zdánlivě není třeba generovat další funkci, protože by se chovala naprosto stejně; kompilátor může využít již vygenerovaný kód. Stejnými \ctime argumenty se myslí bitově shodná data; nelze uvažovat shodu podle operátoru \inlineCode{==}, protože bitově rozdílná data mohou i~přes sémantickou shodu vést k rozdílným výsledkům výpočtu (například i když jsou dva binární stromy shodné, jejich hloubka může být různá a výsledky výpočtů pracujících s hloubkou se nemusí shodovat).
 
 Tvrzení, že bitově stejné \ctime argumenty generují stejné funkce, ale není ve všech případech platné. Uvažme tento příklad:
+
 \begin{code}
 Int calc( Int x, @ctime Int!? y ) {
 	y ++;
@@ -1396,11 +1413,9 @@ Ačkoli zde funkce \inlineCode{calc} při volání na řádcích \ref{ctime:impl
 Typové proměnné lze z formálního hlediska považovat za typické \ctime proměnné. Jediným případem, kdy se typová proměnná liší od ostatních \ctime proměnných, je konstrukt pro deklaraci proměnné.
 
 
-\subsection{Destruktory lokálních @ctime proměnných}
-% TODO
-
 \subsection{Možné konflikty referencí, \ctime a CTFE}
 Uvažme následující kód:
+
 \begin{code}
 Void foo( Int!? x, @ctime Int!? y ) {
 	@ctime while( y < 2 ) {
@@ -1417,6 +1432,7 @@ Void main() {
 \end{code}
 
 Funkce \inlineCode{foo} je zde na řádku \ref{ctime:ctfeConflict:1} volána za doby kompilace (protože se jí předává \ctime proměnná přes nekonstantní referenci). Uvážíme-li, že se funkce může vykonávat ve dvou stupních (v tomto případě to má smysl, protože řádek \ref{ctime:ctfeConflict:2} představuje relativně velký cyklus a interpret druhého stupně je rychlejší), vyvstává tu problém: kód po interpretaci prvního stupně bude vypadat takto:
+
 \begin{code}
 Void foo( Int!? x ) {
 	@ctime while( y < 4 ) {
@@ -1469,6 +1485,7 @@ Každá úloha se vykonává maximálně jednou. Vykonání jedné úlohy může
 \putImage[Příklad grafu závislostí úloh]{taskTree.pdf}{width=11cm}
 
 V některých případech může vzniknout cyklický graf, například v kódu
+
 \begin{code}
 a.#type b;
 b.#type a;
@@ -1497,24 +1514,87 @@ Kompilátor zavádí virtuální adresový prostor. V něm jsou uloženy nejenom
 
 Virtuální paměťový prostor je z časových důvodů implementován lineárním polem; jedná se o velice neefektivní řešení.
 
-Implementované řešení virtuální paměti také disponuje systémem pro ochranu zápisu -- ten je využit zejména pro vynucování dodržení pravidel konceptu líhnutí kódu. Systém je implementován pomocí tzv. \textit{sessions} a \textit{subsessions}. Jedná se o číselné identifikátory, které jsou vázané k jednotlivým vláknům kompilátoru. Při alokaci/dealokaci virtuální paměti se k bloku uloží \textit{session} a \textit{subsession id}, které jsou právě přiřazeny k vláknu, které alokaci iniciovalo. Je vynucováno pravidlo, že vlákno nemůže zapisovat do bloků, které mají \textit{session id} jiné než takové, které má vlákno právě přiřazeno. Pro každý výpočet hodnoty statické proměnné a pro každý \nonctime rámec (tedy rámce \nonctime funkcí a větvících příkazů) je určeno unikátní \textit{session id}.
+Implementované řešení virtuální paměti také disponuje systémem pro ochranu zápisu -- ten je využit zejména pro vynucování dodržení pravidel konceptu líhnutí kódu. Systém je implementován pomocí tzv. \textit{sessions} a \textit{subsessions}. Jedná se o číselné identifikátory, které jsou vázané k jednotlivým vláknům kompilátoru. Při alokaci/dealokaci virtuální paměti se k bloku uloží \textit{session} a \textit{subsession id}, které jsou právě přiřazeny k vláknu, které alokaci iniciovalo. Je vynucováno pravidlo, že vlákno nemůže zapisovat do bloků, které mají \textit{session id} jiné než takové, které má vlákno právě přiřazeno. Pro každý výpočet hodnoty statické proměnné a pro každý \nonctime rámec (tedy rámce \nonctime funkcí a větvících příkazů) je vláknu přiřazeno unikátní \textit{session id}.
 
-\section{Data entitites}
-- memory bloky pro proměnné se alokují až při Codebuilder.build\_localVariableDefinition
+Důsledkem těchto pravidel je, že pokus o zápis do statické proměnné nebo proměnné z jiného rámce způsobí chybu kompilátoru, což efektivně zajišťuje dodržení pravidel konceptu líhnutí kódu během kompilace. Dodržování pravidel bude v budoucnu doplněno ještě mechanismem konstantnosti, který ale v rámci této práce nebyl z časových důvodů implementován.
 
-\section{Overload resolution}
-- inferace = session
-- proč je nutný střídat všechny overloady argument po argumentu
+\textit{Subsessions} pak fungují podobně; jejich přesné mechanismy jsou vysvětleny v sekci \ref{sec:overloadResolution}.
 
-\section{Ctime stack}
+Z důvodu uspoření paměti probíhá po ukončení každé \textit{session} (po zpracování kódu, který využívá dané \textit{session id}) \textit{garbage collection}, kdy je uvolněna ta paměť, která byla alokovaná v dané \textit{session} a která není nikde ve vygenerovaném kódu (ani nepřímo přes ukazatele) referencovaná. Další \textit{garbage collection} pak probíhá těsně před sestavením výstupního kódu.
 
-\section{Memory sessions}
+\section{Sémantický strom, interpretace a \textit{backends}}
+Důsledkem návrhu jazyka a toho, že je povoleno přetěžování funkcí, je, že nelze generovat cílový kód bez alespoň částečného sestavení sémantického stromu (nebo by se musel generovat kód samostatně pro každé přetížení, poté vybrat jeden a zbytek zahodit). Pro výrazy tedy kompilátor sestavuje sémantický strom; příkazy, cykly, apod. jsou generovány "přímo". Všechny uzly stromu se zakládají na abstraktní třídě \inlineCode{DataEntity}. Nejdůležitější vlastností uzlu je datový typ, jehož hodnotu uzel zastupuje; dále je klíčová virtuální funkce \inlineCode{buildCode} (jejíž implementace se různí podle typu uzlu), která zajistí sestavení kódu, který odpovídá vyhodnocení daného uzlu, pro daný \textit{backend}.
 
-- Memory space - to už bylo popsáno
-- Overload resolution + inferring + @ctime
+Kompilátor obsahuje tři \textit{backends}:
+\begin{enumerate}
+	\item \textbf{Cpp} obstarává sestavení výstupního kódu v jazyce C/C++
+	\item \textbf{Ctime} místo sestavení přímo vykonává poskytnutý kód; tento se využívá při vyhodnocování výrazů dekorovaných \inlineCode{@ctime}. Jedná se o interpret prvního stupně (viz sekce \ref{ctime:orderInterpreters}).
+	\item \textbf{Interpret} sestavuje mezikód, který je poté vykonáván při běhu kompilátoru. Mezikód je sestavován pro \nonctime funkce (tedy pro funkce, které se mohou alespoň částečně vykonávat za běhu), které mají být vykonány během kompilace. Jedná se o interpret druhého stupně (viz sekce \ref{ctime:orderInterpreters}).
+\end{enumerate}
 
-\section{Backend}
+Ke všem třem \textit{backends} se přistupuje přes stejné rozhraní, které je založeno na jednoduchých operacích typu "sečti dvě 32bitové ordinální proměnné a výsledek ulož do této proměnné" nebo "sestav \textit{if} konstrukci".
+
+\putImage[Diagram popisující zpracování vstupního kódu v kompilátoru Dragon]{compiling_interpretation.pdf}{width=14cm}
+
+\subsection{Overload resolution} \label{sec:overloadResolution}
+Za normálních okolností a bez odvozování typů by při \textit{overload resolution} stačilo sestavit sémantický strom pro každý argument (tím by se zjistil typ každého argumentu) a potom najít nejvhodnější přetížení, případně přidat do sémantického stromu přetypování některých parametrů (implicitní), a tyto uzly sémantického stromu mu předat. První komplikací, jež v Beastu znemožňuje použití tohoto modelu, je to, že typ argumentu může záviset na typu parametru přetížení (tedy sémantický strom může být ve skutečnosti pro každé přetížení jiný) -- toto nastává například při použití konstrukce \inlineCode{:ident} (viz \ref{colonIdent}), která vyhledává identifikátor \inlineCode{ident} ve jmenném prostoru očekávaného typu parametru, místo aktuálního jmenného prostoru.
+
+Toto je v Dragonu řešeno tak, že pokud je to možné -- pokud daný argument nevyužívá konstrukcí, které odvozují z očekávaného typu parametru -- pak se sestaví sémantický strom pro daný argument pouze jednou; pokud je potřeba odvození, sémantický strom se pro daný argument sestavuje pro každé přetížení.
+
+\putImage[Demonstrace implementace \textit{overload resolution} v kompilátoru Dragon]{overloadResolution.pdf}{width=14cm}
+
+Koncept líhnutí kódu problém ještě komplikuje; existují totiž případy, kdy je kus kódu třeba vykonat již během sestavování sémantického stromu (\textit{overload resolution} také pouze sestavuje uzel sémantického stromu, který odpovídá volání funkce).
+
+\begin{code}[\label{code:overloadResolution:1}]
+	Void foo( Int x, Int y ) { ... }
+	
+	Void main() {
+		Int a = 4;
+		foo( x++, x );$\label{codeLine:overloadResolution:1}$
+	}
+\end{code}
+
+Ve výše uvedeném kódu by kompilátor při zpracovávání řádku \ref{codeLine:overloadResolution:1} vytvořil následující sémantický strom:
+
+\putImage[Sémantický strom sestavený na základě volání funkce v příkladu \ref{code:overloadResolution:1} na řádku \ref{codeLine:overloadResolution:1}]{semTreeFuncCall.pdf}{width=14cm}
+
+Uvažme ale následující kód:
+
+\begin{code}
+Void foo( Int x, 5 ) { ... }
+
+Void main() {
+	@ctime {
+		Int a = 4;
+		foo( a, a++ );$\label{codeLine:overloadResolution:2}$
+	}
+}
+\end{code}
+
+Zde je při volání funkce \inlineCode{foo} na řádku \ref{codeLine:overloadResolution:2} potřeba zjistit hodnotu argůmentu již během \textit{overload resolution} (tedy během sestavování sémantického stromu). Vyhodnocování argumentů již během sestavování sémantického stromu je třeba i v jiných případech -- například u \ctime funkcí, u kterých může být návratový typ v některých případech zjištěn až vykonáním dané funkce.
+
+Vzorový kompilátor Dragon tento problém z časových důvodů neřeší zcela. Momentálně je problém řešen tak, že sestavování sémantického stromu argumentů je uzavřeno do \textit{subsession}, tím pádem během něj nelze měnit hodnoty proměnných. Toto řešení ale nepokrývá celý problém, vezměme například tento kód:
+
+\begin{code}
+Void foo( Int x, 5 ) { ... }
+
+Void main() {
+	@ctime {
+		Int a = 5;
+		foo( a++, a );$\label{codeLine:overloadResolution:3}$
+	}
+}
+\end{code}
+
+Zde je problém demonstrován z druhé strany. Pro posouzení, jestli lze funkci \inlineCode{foo} použít, je třeba během sestavování sémantického stromu vyhodnotit na řádku \ref{codeLine:overloadResolution:3} výraz \inlineCode{a}, který odpovídá druhému argumentu. Ten se vyhodnotí jako 5, což je špatně, protože v předchozím argumentu proměnnou \inlineCode{a} přičítáme (na hodnotu 6). Toto přičtení se ale vykoná až při "sestavování" kódu \textit{Ctime backendem} (který kód okamžitě vykonává).
+
+Pro odstranění tohoto problému by bylo potřeba vykonávat kód ihned, tj. nestavět sémantický strom (nebo stavět, ale vykonat ihned po sestavení pro každý argument). Aby se příliš nezvýšila doba kompilace, bylo by vhodné toto provádět pouze při vykonávání \ctime kódu. Tím pádem by se během vykonávání \nonctime kódu zakázalo měnit hodnoty \ctime proměnných. Mít oddělené řádky, kde se mění hodnoty \ctime proměnných a kde se pracuje s \nonctime proměnnými ale není příliš velké omezení, snad by se to dalo nazvat i~dobrou programovací praktikou.
+
+Dalším omezením je nutnost zamezení změny hodnot lokálních proměnných v těch argumentech, kde se využívá odvozování z očekávaného typu parametru, protože tyto argumenty jsou sestavovány (a v případě \ctime kódu i vykonávány) pro každé přetížení. Toto omezení by se dalo odstranit pouze zavedením možnosti ukládat a navracet se do různých stavů paměti interpretu; poté by se při \textit{overload resolution} postupně vyzkoušely všechny přetížení, po každém přetížení by se navrátil původní stav paměti, a po rozhodnutí správného přetížení by se obnovil stav paměti po zavolání daného přetížení. Je otázkou, zda zrušení relativně malého omezení vyváží zvýšení výpočetních a paměťových nároků, které by přecházení mezi stavy přineslo.
+
+\section{Zrcadlení \ctime proměnných a \ctime zásobník}
+- destruktory @ctime proměnných a runtime breaky
 
 \section{Konfigurace projektu}
 
-\section{Dokončené a nedokončenéí věci}
+\section{Implementované a neimplementované prvky}

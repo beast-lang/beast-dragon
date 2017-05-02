@@ -179,6 +179,7 @@ struct InstructionOperand {
 			jumpTarget,
 
 			placeholder, /// This should not appear in the resulting code
+			comment
 		}
 
 	public:
@@ -203,6 +204,9 @@ struct InstructionOperand {
 
 			/// When type == jumpTarget
 			size_t jumpTarget;
+
+			/// When type == comment
+			string comment;
 		}
 
 	public:
@@ -248,6 +252,9 @@ struct InstructionOperand {
 
 			case Type.placeholder:
 				return "(placeholder)";
+
+			case Type.comment:
+				return "\n\n// %s".format( comment );
 
 			}
 		}

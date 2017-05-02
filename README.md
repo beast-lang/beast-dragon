@@ -45,7 +45,11 @@ Source file extension: `.be`
 
 ## Sample code
 
-Please note that this code describes what the language should be able to do when done, not what it can do now. For currently compilable code, ses tests in ```test/tests```. Compiling and running the testsuite (```./runTests```) generates commands required for running each test (commands are in log files in the ```test/log``` directory).
+Please note that this code describes what the language should be able to do when done, not what it can do now.
+
+For currently compilable code, ses tests in ```test/tests```. Compiling and running the testsuite (```./runTests```) generates commands required for running each test (commands are in log files in the ```test/log``` directory).
+
+Specifically, tests in the [examples folder](https://github.com/beast-lang/beast-dragon/tree/master/test/tests/examples) are designed as examples.
 
 ```beast
 class C {
