@@ -55,6 +55,7 @@ final class CodeBuilder_Ctime : CodeBuilder {
 
 		override void build_offset( ExprFunction expr, size_t offset ) {
 			expr( this );
+			memoryManager.checkNullptr( result_ );
 			result_.val += offset;
 		}
 

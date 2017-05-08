@@ -30,7 +30,7 @@ abstract class AST_Declaration : AST_Statement {
 
 		static AST_Declaration parse( CodeLocationGuard _gd, AST_DecorationList decorationList ) {
 			if ( AST_Class.canParse )
-				return AST_Class.parse( );
+				return AST_Class.parse( decorationList );
 				
 			/// Type of variable or return type of a function
 			AST_Expression type = AST_PrefixExpression.parse( );

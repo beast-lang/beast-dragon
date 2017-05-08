@@ -362,7 +362,7 @@ final class MemoryManager {
 					// assert( wereErrors || ( !block.isLocal && block.isCtime ) || pointersInBlock.empty, "There should be no pointers in local or runtime memory block on session end" );
 
 					if ( block.isRuntime ) {
-						assert( pointersInBlock.empty );
+						assert( pointersInBlock.empty, "Runtime block contains pointers" );
 						continue;
 					}
 
@@ -462,7 +462,7 @@ final class MemoryManager {
 
 	public:
 		void checkNullptr( MemoryPtr ptr ) {
-			benforce( ptr.val != 0, E.nullPointer, "Null pointer" );
+			benforce( !ptr.isNull, E.nullPointer, "Null pointer" );
 		}
 
 	public:

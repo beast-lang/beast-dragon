@@ -13,9 +13,10 @@ final class AST_Class : AST_Declaration {
 			return currentToken == Token.Keyword.class_;
 		}
 
-		static AST_Class parse( ) {
+		static AST_Class parse( AST_DecorationList decorationList ) {
 			auto clg = codeLocationGuard( );
 			auto result = new AST_Class;
+			result.decorationList = decorationList;
 
 			// class X { ... };
 			currentToken.expectAndNext( Token.Keyword.class_ );
@@ -43,7 +44,7 @@ final class AST_Class : AST_Declaration {
 			decorations.apply_classDeclarationModifier( declData );
 
 			if ( declData.isCtime || !declData.isStatic )
-				berror( E.notImplemented, "Ctime classes not implemented yet" );
+				berror( E.notImplemented, "Ctime or member classes not implemented yet" );
 			else {
 				auto class_ = new Symbol_UserStaticClass( this, decorations, declData );
 				class_.initialize( );

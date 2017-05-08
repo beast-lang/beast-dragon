@@ -113,3 +113,7 @@ pragma( inline ):
 		debug ( interpreter )
 			writefln( "unmark %s", op1 );
 	}
+
+	void op_enforceNotNullptr( Interpreter ir, MemoryPtr op1 ) {
+		memoryManager.checkNullptr( op1.readMemoryPtr );
+	}

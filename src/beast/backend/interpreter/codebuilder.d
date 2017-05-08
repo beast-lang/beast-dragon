@@ -81,6 +81,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 				assert( 0, "Cannot offset operand %s".format( result_.identificationString ) );
 
 			case InstructionOperand.Type.heapRef:
+				memoryManager.checkNullptr( result_.heapLocation );
 				result_.heapLocation.val += offset;
 				break;
 
@@ -94,6 +95,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 					addInstruction( I.allocLocal, currentBPOffset_.iopLiteral, ptrSize.iopLiteral );
 					addInstruction( I.stAddr, varOperand, result_ );
+					addInstruction( I.enforceNotNullptr, varOperand );
 					addInstruction( Instruction.numericI( ptrSize, Instruction.NumI.addConst ), varOperand, varOperand, offset.iopLiteral );
 
 					result_ = currentBPOffset_.iopRefBpOffset;
@@ -269,9 +271,12 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		}
 
 		override void build_break( size_t scopeIndex ) {
+			size_t bpOffset = currentBPOffset_;
+
 			foreach_reverse ( ref s; scopeStack_[ scopeIndex .. $ ] )
 				generateScopeExit( s );
 
+			currentBPOffset_ = bpOffset;
 			additionalScopeData_[ scopeIndex ].breakJumps ~= addInstruction( I.jmp, iopPlaceholder );
 		}
 
@@ -281,7 +286,10 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 			if ( returnValue )
 				build_copyCtor( new DataEntity_Result( currentFunction_, false, returnValue.dataType ), returnValue );
 
+			size_t bpOffset = currentBPOffset_;
 			generateScopesExit( );
+			currentBPOffset_ = bpOffset;
+
 			addInstruction( I.ret );
 		}
 
@@ -415,7 +423,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 					setInstructionOperand( jmp, 0, jt );
 			}
 
-			currentBPOffset_ = additionalScopeData_[ $ - 1 ].bpOffset;
+			// Now called in generateScopeExit
+			// currentBPOffset_ = additionalScopeData_[ $ - 1 ].bpOffset;
 			additionalScopeData_.length--;
 
 			result_ = result;
@@ -429,6 +438,8 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 
 			if ( targetBPOffset < currentBPOffset_ )
 				addInstruction( I.popScope, targetBPOffset.iopLiteral );
+
+			currentBPOffset_ = targetBPOffset;
 		}
 
 	protected:

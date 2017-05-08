@@ -18,6 +18,8 @@ final class Symbol_UserStaticClass : Symbol_StaticClass {
 			// Identifier (thus ast) must be available even when constructing parent class
 			ast_ = ast;
 
+			decorationList.enforceAllResolved();
+
 			super( declData.env.staticMembersParent );
 
 			assert( !declData.isCtime );

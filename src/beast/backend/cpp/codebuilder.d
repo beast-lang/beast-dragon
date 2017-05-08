@@ -374,7 +374,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 
 			super.pushScope( flags );
 			if ( flags & ScopeFlags.continuable )
-				codeResult_.formattedWrite( "slbl_%s:\n", labelHash_.str );
+				codeResult_.formattedWrite( "slbl_%s:;\n", labelHash_.str );
 
 			additionalScopeData_ ~= AdditionalScopeData( labelHash_, false );
 		}
@@ -386,7 +386,7 @@ class CodeBuilder_Cpp : CodeBuilder {
 			super.popScope( generateDestructors );
 
 			if ( additionalScopeData_[ $ - 1 ].requiresEndLabelConstruction )
-				codeResult_.formattedWrite( "elbl_%s:\n", additionalScopeData_[ $ - 1 ].hash.str );
+				codeResult_.formattedWrite( "elbl_%s:;\n", additionalScopeData_[ $ - 1 ].hash.str );
 
 			additionalScopeData_.length--;
 			tabOffset_--;

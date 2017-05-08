@@ -27,7 +27,7 @@ void primitiveOp_unmarkPtr( CB cb, T t, Op arg1 ) {
 }
 
 void primitiveOp_malloc( CB cb, T t, Op arg1, Op arg2 ) {
-	arg1.writeMemoryPtr( memoryManager.alloc( arg2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated ) );
+	arg1.writeMemoryPtr( memoryManager.alloc( arg2.readSizeT, MemoryBlock.Flag.dynamicallyAllocated | MemoryBlock.Flag.ctime ) );
 
 	debug ( ctime )
 		writefln( "CTIME malloc( %s ) (=%s) => %s", arg2.readSizeT, arg1.readMemoryPtr, arg1 );

@@ -43,6 +43,7 @@ struct Instruction {
 			stAddr, /// (target: ptr, source: ptr) Stores address of source into the target
 			malloc, /// (target: ptr, bytes: ptr) Mallocaes n bytes and stores the pointer to target
 			free, /// (target: ptr) Frees the memory referenced by target
+			enforceNotNullptr, /// (target: ptr) Enforces given pointer is not a null pointer
 
 			// Pointers
 			markPtr, /// (target: ptr) Mark given address as pointer

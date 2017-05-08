@@ -44,7 +44,7 @@ final class AST_DeleteStatement : AST_Statement {
 				// Call the destructor on referenced memory
 				var.expectResolveIdentifier( ID!"#data" ).single.expectResolveIdentifier( ID!"#dtor" ).resolveCall( expr, true ).buildCode( cb );
 
-				// And call free
+				// Call free
 				coreFunc.free.dataEntity.resolveCall( expr, true, new DataEntity_ReinterpretCast( var, coreType.Pointer ) ).buildCode( cb );
 			} );
 		}

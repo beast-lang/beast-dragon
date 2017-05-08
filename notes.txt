@@ -18,6 +18,7 @@ Diplomka to-do:
 		-> @ctime has to have a statementModifier context -- resolved on a statement AST level. If not @ctime -> statement is executed in a subsession
 	- public/private/...
 	- Join template parameters - pointer-aware data compare
+	- Implicit cast to reference -> higher priority than implict cast to anything else
 
 	Bool ctimeFunc( @ctime Int x ) { ... }
 	void main() {
