@@ -728,7 +728,7 @@ Jako náhradu za \inlineCppCode{size_t} nabízí jazyk bezznaménkové typy \inl
 	\item \inlineCode{null} je implicitně přetypovatelné jak do typu \inlineCode{Index}, tak do \inlineCode{Size} a odpovídá hodnotě \inlineCode{\-1}.
 \end{itemize}
 
-\subsection{Konstrukce \inlineCode{while-else}}
+\subsection{Konstrukce \inlineCode{while-else}} \label{design:whileElse}
 Tuto konstrukci přejímá Beast z Pythonu\footnote{\url{https://docs.python.org/3/reference/compound_stmts.html\#the-while-statement}}. Konstrukce umožňuje za příkaz cyklu (\inlineCode{while}, \inlineCode{for}, ...) přidat větev \inlineCode{else}, která se vykoná, pokud cyklus není přerušen příkazem \inlineCode{break} (případně výjimkou, návratem z fuknce, atp.). Toto je užitečné například pokud cyklus implementuje vyhledávání -- v případě nálezu se použije příkaz \inlineCode{break}, který cyklus přeruší (prvek byl nalezen, další vyhledávání není potřeba) a větev \inlineCode{else} se nevykoná. Pokud cyklus prvek nenalezl, větev \inlineCode{else} poskytuje alternativní chování. Bez existence této konstrukce by se po cyklu musela použít podmínka, což je výpočetně dražší -- s konstrukcí \inlineCode{else} je to zadarmo, pouze se upraví adresy skoků.
 
 \begin{code}
@@ -1595,16 +1595,16 @@ Pro odstranění tohoto problému by bylo potřeba vykonávat kód ihned, tj. ne
 
 Dalším omezením je nutnost zamezení změny hodnot lokálních proměnných v těch argumentech, kde se využívá odvozování z očekávaného typu parametru, protože tyto argumenty jsou sestavovány (a v případě \ctime kódu i vykonávány) pro každé přetížení. Toto je realizováno pomocí \textit{subsessions} (viz \ref{sec:sessions}). Omezení by se dalo odstranit pouze zavedením možnosti ukládat a navracet se do různých stavů paměti interpretu; poté by se při \textit{overload resolution} postupně vyzkoušely všechny přetížení, po každém přetížení by se navrátil původní stav paměti, a po rozhodnutí správného přetížení by se obnovil stav paměti po zavolání daného přetížení. Je otázkou, zda zrušení relativně malého omezení vyváží zvýšení výpočetních a paměťových nároků, které by přecházení mezi stavy přineslo.
 
-\section{Zrcadlení \ctime proměnných a \ctime zásobník}
+\section{Zrcadlení \ctime proměnných a \ctime zásobník} \label{impl:ctimemirror}
 Aby mohly \ctime proměnné být referencovány v \nonctime kódu, musí mít (alespoň ty, které skutečně jsou referencovány) přiřazenou paměť i za běhu aplikace. Data v této paměti musí odpovídat hodnotě dané \ctime proměnné. Pokud si lokální \ctime proměnná dynamicky naalokovala paměť (například uzly u binárního stromu) a pokud je na paměť z lokální proměnné odkazováno, musí být i ona zrcadlena za běhu aplikace. Toto téma je rozvedeno v \ref{ctime:impl:ref}.
 
 U lokálních \ctime proměnných lze mít paměť pro jejich zrcadlení za běhu uloženou na zásobníku. Protože životnost dynamicky alokovaných \ctime bloků nemusí nutně korespondovat s životností lokálních proměnných (mohou být dealokovány dříve nebo i až po ukončení aktuálního rámce), paměť pro dynamicky alokované \ctime bloky je vhodné dynamicky alokovat i za běhu aplikace. Ukazatel na tuto paměť by měl být uložen buď přímo ve výchozí \ctime lokální proměnné nebo v jiném paměťovém bloku, ke kterému se dá přistoupit přes reference z výchozí lokální proměnné; pokud to takto není, k danému paměťovému bloku se nedá nijak dostat a nemá smysl ho zrcadlit.
 
-Takovýto řetězec referencí, který je potřeba projít, abychom se dostali k nějakému bloku, ale může být potenciálně nekonečně dlouhý. Kompilátor musí mít pro případ, že by se data v tomto \ctime bloku paměti změnila, nějakým způsobem uložen odkaz na paměť odpovídající reflektující ho při běhu aplikace, aby tam mohl tuto změnu zrcadlit. Kvůli rychlosti je ale nevhodné, aby měl ale kompilátor při zrcadlení procházet tento potenciálně nekonečný řetězec referencí. Proto se ukazatel na každý blok uchovává ve speciální struktuře částečně zásobníkové povahy (klasický zásobník nejde dost jednoduše použít kvůli výše zmiňovaném rozdílu mezi dobou života lokální proměnné a dynamicky alokované \ctime paměti). Takto se subsystém pro zrcadlení \ctime dat může dostat k libovolnému bloku pomocí jediné indirekce.
+Takovýto řetězec referencí, který je potřeba projít, abychom se dostali k nějakému bloku, ale může být potenciálně nekonečně dlouhý. Kompilátor musí mít pro případ, že by se data v~tomto \ctime bloku paměti změnila, nějakým způsobem uložen odkaz na paměť reflektující ho při běhu aplikace, aby tam mohl tuto změnu zrcadlit. Kvůli rychlosti je ale nevhodné, aby měl ale kompilátor při zrcadlení procházet tento potenciálně nekonečný řetězec referencí. Proto se ukazatel na každý blok uchovává ve speciální struktuře částečně zásobníkové povahy, (klasický zásobník nejde dost jednoduše použít kvůli výše zmiňovaném rozdílu mezi dobou života lokální proměnné a dynamicky alokované \ctime paměti) která je nazývána \ctime zásobníkem. Takto se subsystém pro zrcadlení \ctime dat může dostat k libovolnému bloku pomocí jediné indirekce.
 
 \putImage[Demonstrace uchovávání referencí na dynamicky alokované \ctime bloky pomocí dedikované struktury]{ctstack.pdf}{width=13cm}
 
-\section{Destruktory \ctime proměnných}
+\section{Destruktory \ctime proměnných} \label{impl:destructors}
 Koncept líhnutí kódu je navržen tak, aby \ctime proměnné šlo vyhodnocovat již za doby kompilace a aby toto vyhodnocování šlo provést právě jednou, podobně jak funguje preprocesor (ačkoli koncept líhnutí kódu nelze realizovat pouhým preprocesorem, musí být vestavěn do samého jádra jazyka). Během vývoje kompilátoru byl ale nalezen jeden případ, kde toto neplatí. Uvažujeme-li, že lokální \ctime proměnné se chovají úplně stejně jako normální lokální proměnné, musí při opuštění rámce být vykonán jejich destruktor; pořadí vykonávání destruktorů je určeno jako opačné pořadí, v jakém byly lokální proměnné definovány (nezávisle na tom, zda jsou \ctime, či nikoli).
 
 Nyní uvažme, co by se mělo stát, když má být v dané funkci vykonán příkaz \inlineCode{return}. Příkaz \inlineCode{return} způsobuje zavolání destruktorů všech "aktuálně definovaných" lokálních proměnných ve všech rámcích až po kořenový rámec funkce. Tím pádem by měly být vykonány i destruktory lokálních \ctime proměnných. Nicméně jak je uvedeno výše, v tomto ohledu je \ctime kód zpracováván podobně jako preprocesorem, takže pokud by se u příkazu \inlineCode{return} vykonaly destruktory \ctime proměnných, tyto destruktory by se jakoby vykonaly i v případě, kdy by samotný příkaz \inlineCode{return} vykonán nebyl (například kvůli nesplněné podmínce). Obdobně tomu je i u příkazů \inlineCode{break} a \inlineCode{continue}.
@@ -1617,8 +1617,342 @@ Kompilátor Dragon umožňuje konfiguraci Beast projektu pomocí souboru \inline
 Kompilátor momentálně podporuje dva formáty výstupu chybových hlášek -- buď ve standardním formátu GNU \cite{GNUErrors}, který je cílen na čitelnost pro uživatele, nebo ve formátu JSON, který má být lehce strojove zpracovatelný a usnadnit tak integraci vývojových prostředí.
 
 \section{Rozbor kódu generovaného kompilátorem}
-V této sekci se podíváme na příklad zdrojového kódu v jazyce Beast a na transkompilovaný kód v jazyce C, který kompilátor Dragon pro daný příklad generuje.
+V této sekci se podíváme na příklad zdrojového kódu v jazyce Beast a na transkompilovaný kód v jazyce C, který kompilátor Dragon pro daný příklad generuje. Bude předveden jednoduchý příklad, který ale pokrývá všechny klíčové aspekty, které je vhodné demonstrovat.
+
+Příklad je následující:
+
+\begin{code}[\label{impl:gencode:sample}]
+module t_bachelorgenexample;
+
+@ctime Int? valPtr := val;
+@ctime Int val = 3 + 5;
+
+Void foo( Int x ) {
+	print( x );
+}
+
+Void main() {
+	@ctime Int! x = 5;
+	@ctime Int! y = 6;
+	foo( @ctime x + y ); //! stdout: 11
+	
+	@ctime Int!? ref := x;
+	foo( ref ); //! stdout: 5
+	
+	@ctime ref := y;
+	foo( ref ); //! stdout: 6
+	
+	foo( valPtr ); //! stdout: 8
+}
+\end{code}
+
+Výstupní C kód je značně delší, a proto je rozdělen na menší částí a ty jsou popsány postupně:
+
+\begin{cppcode}[Část 1 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+#define VAL( var, type ) ( *( ( type* )( var ) ) )
+#define TYPEDEF( id, size ) typedef struct { uintptr_t data[ size ]; } id
+#define PARAM( expr, type ) ( ( type* )( expr ) )
+#define DEREF( expr ) ( *( ( uintptr_t ** )( expr ) ) )
+#define OFFSET( expr, offset ) ( ( uintptr_t* ) ( ( ( uint8_t* ) expr ) + offset ) )
+#define CTMEM
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+
+uintptr_t *ctimeStack[ 1024 * 1024 ];
+size_t ctimeStackSize = 0;
+\end{cppcode}
+
+Tato část neobsahuje moc zajímavého, a proto ji přeskočíme.
+
+\begin{cppcode}[Část 2 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+// TYPES
+TYPEDEF( _spscmp2_Type, 1 );
+TYPEDEF( _fbwm2d_Pointer, 1 );
+TYPEDEF( _bug1ph_Int32, 1 );
+TYPEDEF( _irqo202_Int64, 2 );
+typedef void _4fdej5_Void;
+TYPEDEF( _wpmdt21_Bool, 1 );
+TYPEDEF( _86g1r42_Operator, 1 );
+TYPEDEF( _vkbk102__Ctor, 1 );
+TYPEDEF( _5bpj6k_Null, 1 );
+TYPEDEF( _gaucg12_Void_ref, 1 );
+TYPEDEF( _kmadlv3_Type_ref, 1 );
+TYPEDEF( _ei66v8_Pointer_ref, 1 );
+TYPEDEF( _1fpv2r1_Int32_ref, 1 );
+TYPEDEF( _a6wkqe_Int64_ref, 1 );
+TYPEDEF( _tj3tms3_Bool_ref, 1 );
+TYPEDEF( _stbv9i2_Operator_ref, 1 );
+TYPEDEF( _fr2o741__Ctor_ref, 1 );
+TYPEDEF( _41phrv1_Null_ref, 1 );
+\end{cppcode}
+
+Výše uvedená sekce zrcadlí datové typy z Beast kódu. Lze vidět, že transkompilátor nevyužívá struktury v C, ale s typy pracuje jako se "surově"; datový typ je jen kus paměti o~určitém počtu bytů. Počet bytů typu se zaokrouhluje nahoru na násobek velikosti ukazatele.
+
+\begin{cppcode}[Část 3 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+// MEMORY BLOCKS DECLARATIONS
+extern uintptr_t _0xc0_valPtr[1];
+extern uintptr_t _0xc4_val[1];
+
+// MEMORY BLOCKS
+uintptr_t _0xc0_valPtr[1] = { (uintptr_t) CTMEM &_0xc4_val };$\label{impl:gencode:output:valPtrDef}$
+uintptr_t _0xc4_val[1] = { 0x8 };
+\end{cppcode}
+
+Tato sekce zrcadlí statické proměnné, a to jak klasické, tak \ctime (\ctime ale pouze pokud jsou použity v kódu). Zrcadlení je provedeno ve dvou fázích -- deklarace a definice -- aby se nemuselo řešit pořadí definic kvůli ukazatelům. Data jsou ukládána jako pole položek typu \inlineCppCode{uintptr_t}, aby šlo do literálů polí (které jsou používány pro inicializaci statických proměnných) vkládat ukazatele, jak je demonstrováno na řádku \ref{impl:gencode:output:valPtrDef}.
+
+Názvy funkcí, typů a proměnných obsahují \textit{hash}, který má napomoci jejich identifikaci (mimo jiné je potřeba i kvůli přetěžování).
+
+\begin{cppcode}[Část 4 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+// DECLARATIONS
+void _tfhj4t2_foo( _bug1ph_Int32 *_p0_x );
+void _69b6o33_main( );
+
+//DEFINITIONS
+void _tfhj4t2_foo( _bug1ph_Int32 *_p0_x ) {
+	size_t ctimeStackBP = ctimeStackSize;
+	{
+		/* print( x ) */
+		{
+			printf( "%i", VAL( _p0_x, int32_t ) );
+		}
+	}
+	return;
+	fprintf( stderr, "ERROR: Function test.foo( core.Int32 x ) did not exit via return statement\n" );
+	exit( -1 );
+}
+\end{cppcode}
+
+Poslední sekcí je sekce pro funkce, opět napřed deklarace a pak definice. Ačkoli jsou v Beastu data předávána hodnotou, v transkompilovaném C kódu se parametry funkcí předávají odkazem, aby měl Beast kontrolu nad voláním konstruktorů a destruktorů a nad tím, kde v paměti se daná proměnná nachází. Do budoucna je plán předávat primitivní typy a typy z nich odvozené (u kterých je kopírovací konstruktor realizován pouhým zkopírováním paměti) přes hodnotu.
+
+Nyní se podíváme na implementaci funkce \inlineCode{main}. Tato funkce není přímo zrcadlena na \inlineCppCode{main} v jazyce C kvůli předávaným parametrům a kvůli případným konstruktorům statických proměnných, které jsou v jazyce C volány právě ve funkci \inlineCppCode{main}.
+
+\begin{cppcode}[Část 5 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+void _69b6o33_main( ) {
+	size_t ctimeStackBP = ctimeStackSize;
+	{
+		/* @ctime Int! x = 5; */
+		/* @ctime Int! y = 6; */
+		/* foo( @ctime x + y ) */
+		{
+			_bug1ph_Int32 _7la7b83_tmp;
+			// alloc 0xdc x
+			ctimeStack[ ctimeStackBP + 0 ] = (uintptr_t*) malloc( 4 );
+			// alloc 0xec y
+			ctimeStack[ ctimeStackBP + 1 ] = (uintptr_t*) malloc( 4 );
+			{
+				// update 0xdc x
+				static uint8_t _ctData[ 4 ] = { 0x5, 0, 0, 0 };
+				memcpy( ctimeStack[ ctimeStackBP + 0 ], _ctData, 4 );
+			}
+			{
+				// update 0xec y
+				static uint8_t _ctData[ 4 ] = { 0x6, 0, 0, 0 };
+				memcpy( ctimeStack[ ctimeStackBP + 1 ], _ctData, 4 );
+			}
+			// alloc 0xf4 tmp
+			ctimeStack[ ctimeStackBP + 2 ] = (uintptr_t*) malloc( 4 );
+			{
+				// update 0xf4 tmp
+				static uint8_t _ctData[ 4 ] = { 0xb, 0, 0, 0 };
+				memcpy( ctimeStack[ ctimeStackBP + 2 ], _ctData, 4 );
+			}
+			VAL( &_7la7b83_tmp, uint32_t ) = VAL( CTMEM ctimeStack[ ctimeStackBP + 2 ], uint32_t );
+			ctimeStackSize = ctimeStackBP + 3;
+			_tfhj4t2_foo( PARAM( &_7la7b83_tmp, _bug1ph_Int32 ) );
+			// &_7la7b83_tmp DTOR
+			// free 0xf4 tmp
+			free( ctimeStack[ ctimeStackBP + 2 ] );
+		}
+\end{cppcode}
+
+Všimněme si, že první dva výrazy, které jsou \ctime, nemají žádný odpovídající kód ve výstupním jazyce. Veškeré zrcadlení proměnných (viz \ref{ctime:ref} a \ref{impl:ctimemirror}) probíhá až před vykonáním \nonctime výrazu. Ačkoli v oddílu \ref{impl:ctimemirror} bylo řečeno, že by data lokálních \ctime proměnných bylo vhodné ukládat na zásobník, všechny \ctime proměnné a data jsou z~časových důvodů uloženy na \ctime zásobník, taktéž popsaný v oddílu \ref{impl:ctimemirror}.
+
+Zrcadlení \ctime proměnné tedy spočívá v alokaci paměti pro tuto proměnnou (pokud již nebyl dříve alokován) a ve vložení dat do této paměti (zde realizováno pomocí \inlineCppCode{memcpy}). V systému momentálně není implementovaná detekce toho, zda je proměnná referencována, či nikoli -- jsou tedy zrcadleny všechny \ctime proměnné.
+
+Funkce \inlineCode{main} dále pokračuje:
+
+\begin{cppcode}[Část 6 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+		/* @ctime Int!? ref := x; */
+		/* foo( ref ) */
+		{
+			_bug1ph_Int32 _499a3c1_tmp;
+			// alloc 0xf0 ref
+			ctimeStack[ ctimeStackBP + 3 ] = (uintptr_t*) malloc( 4 );
+			{
+				// update 0xf0 ref
+				static uint8_t _ctData[ 4 ] = { 0xdc, 0, 0, 0 };
+				memcpy( ctimeStack[ ctimeStackBP + 3 ], _ctData, 4 );
+				VAL( CTMEM ctimeStack[ ctimeStackBP + 3 ], void* ) = CTMEM ctimeStack[ ctimeStackBP + 0 ];$\label{impl:gencode:sample:1}$
+			}
+			VAL( &_499a3c1_tmp, uint32_t ) = VAL( CTMEM DEREF( CTMEM ctimeStack[ ctimeStackBP + 3 ] ), uint32_t );
+			ctimeStackSize = ctimeStackBP + 4;
+			_tfhj4t2_foo( PARAM( &_499a3c1_tmp, _bug1ph_Int32 ) );
+			// &_499a3c1_tmp DTOR
+		}
+\end{cppcode}
+
+Zde je práce s \ctime proměnnou ozvláštněna o to, že se jedná o referenci. Kompilátor si uchovává přehled o tom, která místa v paměti (interpretu) jsou použity jako reference, mapováním volání konstruktorů/destruktorů referenčních typů. Protože paměťový prostor výsledné aplikace se neshoduje s paměťovým prostorem interpretu (kompilátoru), je třeba reference "překládat". Protože jsou (nestatické) \ctime proměnné alokovány dynamicky, mapování \ctime adres na \nonctime adresy není během kompilace znám. Je třeba vytvořit kód, který mapování provede za běhu; tomu odpovídá řádek \ref{impl:gencode:sample:1}.
+
+Zrcadlení \ctime proměnné tedy probíhá ve třech fázích: alokace, vložení dat a vložení referencí.
+
+Zbytek kódu už není třeba dál komentovat:
+
+\begin{cppcode}[Část 7 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
+		/* @ctime ref := y */
+		/* foo( ref ) */
+		{
+			_bug1ph_Int32 _dm8gj4_tmp;
+			{
+				// update 0xf0 ref
+				static uint8_t _ctData[ 4 ] = { 0xec, 0, 0, 0 };
+				memcpy( ctimeStack[ ctimeStackBP + 3 ], _ctData, 4 );
+				VAL( CTMEM ctimeStack[ ctimeStackBP + 3 ], void* ) = CTMEM ctimeStack[ ctimeStackBP + 1 ];
+			}
+			VAL( &_dm8gj4_tmp, uint32_t ) = VAL( CTMEM DEREF( CTMEM ctimeStack[ ctimeStackBP + 3 ] ), uint32_t );
+			ctimeStackSize = ctimeStackBP + 4;
+			_tfhj4t2_foo( PARAM( &_dm8gj4_tmp, _bug1ph_Int32 ) );
+			// &_dm8gj4_tmp DTOR
+		}
+		/* foo( valPtr ) */
+		{
+			_bug1ph_Int32 _shscpv_tmp;
+			VAL( &_shscpv_tmp, uint32_t ) = VAL( CTMEM DEREF( CTMEM &_0xc0_valPtr ), uint32_t );
+			ctimeStackSize = ctimeStackBP + 4;
+			_tfhj4t2_foo( PARAM( &_shscpv_tmp, _bug1ph_Int32 ) );
+			// &_shscpv_tmp DTOR
+		}
+	}
+	// free 0xec y
+	free( ctimeStack[ ctimeStackBP + 1 ] );
+	// free 0xdc x
+	free( ctimeStack[ ctimeStackBP + 0 ] );
+	// free 0xf0 ref
+	free( ctimeStack[ ctimeStackBP + 3 ] );
+	return;
+	fprintf( stderr, "ERROR: Function test.main(  ) did not exit via return statement\n" );
+	exit( -1 );
+}
+
+int main() {
+	size_t ctimeStackBP = ctimeStackSize;
+	if( sizeof( void* ) != 4 ) {
+		fprintf( stderr, "Beast compiler considered pointer size 4 but C compiler used %s", sizeof(void*) );
+		exit( -1 );
+	}
+	ctimeStackSize = ctimeStackBP + 0;
+	_69b6o33_main(  );
+	return 0;
+}
+\end{cppcode}
 
 \section{Implementované a neimplementované prvky}
 
+Implementace demonstračního kompilátoru se soustředila zejména na koncept líhnutí kódu, na spoustu prvků jazyka v omezeném čase určeném pro tvorbu bakalářské práce nezbyly prostředky. V této sekci naleznete přehled toho, co v rámci bakalářské práce bylo v kompilátoru implementováno a co ne.
+
+\begin{center}
+	\begin{tabular}{p{0.45\textwidth} p{0.45\textwidth}}
+		\multicolumn{2}{c}{\bfseries \large Koncept líhnutí kódu} \\
+		\hline \\
+		Implementováno & Neimplementováno \\
+		\begin{compactitem}
+				\item Statické, lokální a dynamicky alokované \ctime proměnné
+				\item Zrcadlení \ctime proměnných za doby běhu, včetně referencí
+				\item Statické funkce s \ctime parametry
+				\item Vykonávání funkcí za doby kompilace
+				\item Typové proměnné
+				\item Parametry s konstantní hodnotou
+		\end{compactitem} &
+		\begin{compactitem}
+				\item Generické třídy
+				\item Členské funkce (nestatické třídní) s~\ctime parametry
+				\item \ctime cykly
+				\item \ctime funkce a třídy
+				\item Reflexe
+				\item Volání destruktorů \ctime proměnných
+				\item Opravení jisté chyby při vykonávání \ctime kódu, viz \ref{impl:destructors}
+		\end{compactitem} \\
+	\end{tabular}
+\end{center}
+\begin{center}
+	\begin{tabular}{p{0.45\textwidth} p{0.45\textwidth}}
+		\multicolumn{2}{c}{\bfseries \large Třídy, výčty, typy} \\
+		\hline \\
+		Implementováno & Neimplementováno \\
+		\begin{compactitem}
+			\item Uživatelem definované třídy
+			\item Kompilátorem definované výčty
+			\item Typy \inlineCode{Int32}, \inlineCode{Int64}, \inlineCode{Bool} a základní operátory a operace pro ně (\inlineCode{+}, \inlineCode{\-}, \inlineCode{*}, \inlineCode{/}, \inlineCode{!}, \inlineCode{&&}, \inlineCode{||})
+			\item Referenční typy, typ \inlineCode{Pointer}
+			\item Přetěžování operátorů
+		\end{compactitem} &
+		\begin{compactitem}
+			\item Generické třídy
+			\item \ctime třídy
+			\item Uživatelem definované výčty
+			\item Automatické generování konstruktorů
+			\item Model dědičnosti, virtuální funkce, ...
+			\item Další typy -- řetězce, pole, ...
+		\end{compactitem} \\
+	\end{tabular}
+\end{center}
+\begin{center}
+	\begin{tabular}{p{0.45\textwidth} p{0.45\textwidth}}
+		\multicolumn{2}{c}{\bfseries \large Funkce} \\
+		\hline \\
+		Implementováno & Neimplementováno \\
+		\begin{compactitem}
+			\item Statické i třídní funkce
+			\item \inlineCode{auto} návratové typy, typy parametrů i definice proměnných
+			\item \ctime proměnné jako parametry statických funkcí
+			\item Funkce \inlineCode{print} a \inlineCode{assert}
+			\item Funkce \inlineCode{malloc} a \inlineCode{free}
+			\item Parametry s konstantní hodnotou
+			\item Základní \textit{overload resolution} (je co vylepšovat)
+			\item Funkce \inlineCode{to} pro explicitní přetypování
+		\end{compactitem} &
+		\begin{compactitem}
+			\item \ctime proměnné jako parametry třídních funkcí
+			\item \ctime funkce
+			\item \inlineCode{realloc}
+			\item Instance "šablonových" funkcí (funkcí s \ctime parametry) se nesjednocují, ani když mají stejné hodnoty argumentů
+			\item Funkce nejsou \textit{first-class citizens} (nelze mít uložen ukazatel na funkci)
+		\end{compactitem} \\
+	\end{tabular}
+\end{center}
+\begin{center}
+	\begin{tabular}{p{0.45\textwidth} p{0.45\textwidth}}
+		\multicolumn{2}{c}{\bfseries \large Kompilátor, syntaxe} \\
+		\hline \\
+		Implementováno & Neimplementováno \\
+		\begin{compactitem}
+			\item Detekce cyklických závislostí
+			\item Vícevláknový kompilátor
+			\item \inlineCode{:ident} konstrukce
+			\item \inlineCode{if}, \inlineCode{while} větvící příkazy
+			\item \inlineCode{new}, \inlineCode{delete} příkazy
+			\item Základy modularity
+			\item Konfigurační soubor projektu
+			\item Dekorátory \inlineCode{@ctime} a \inlineCode{@static}
+			\item Implicitní a explicitní přetypování
+		\end{compactitem} &
+		\begin{compactitem}
+			\item Konstantnost
+			\item \inlineCode{import} pro komunikaci mezi moduly
+			\item Uživatelem definované dekorátory
+			\item Omezení přístupu -- \inlineCode{@public}, \inlineCode{@private}, ...
+			\item Další operátory jako \inlineCode{|}, \inlineCode{+=}, \inlineCode{++}, atp.
+			\item Systém výjimek
+			\item Další cykly, jako \inlineCode{for}, \inlineCode{do .. while}, atp.
+			\item Konstrukce \inlineCode{while}-\inlineCode{else} (viz \ref{design:whileElse})
+		\end{compactitem} \\
+	\end{tabular}
+\end{center}
+
 \chapter{Závěr}
+Během návrhu jazyka Beast v rámci této práce vznikl nový koncept, koncept líhnutí kódu, který inovuje oblast metaprogramování a vykonávání kódu za doby kompilace; tato práce se zabývá zejména tímto konceptem. Byly navrženy základní aspekty jazyka Beast a naznačen další směr jeho vývoje. Byl implementován demonstrační kompilátor Dragon, který se z~časových důvodů soustředil především na demonstraci konceptu líhnutí kódu; vlivem toho nezbyly prostředky na rozvedení ostatních vlastností jazyka. Při vývoji této práce bylo použito verzovacího prostředí git a veškerá práce je uložena na githubu\footnote{\url{https://github.com/beast-lang/beast-dragon}} pod MIT licencí.
+
+Autor zamýšlí navázat na tento projekt ve své diplomové práci, kde bude cílem dokončit implementaci nejdůležitějších prvků jazyka do kompilátoru Dragon - zejména koncept líhnutí kódu, poté například třídní dědičnost, \textit{first-class citizenship} funkcí, dekorátory, apod.

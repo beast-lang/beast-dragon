@@ -28,7 +28,6 @@ Void main() {
 	}
 }
 
-
 class LinkedList {
 
 	// There are no generic classes yet, but this is a good preparation for ones - when they're implemented, one can simply move this variable to the generic parameter list

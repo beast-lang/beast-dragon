@@ -19,6 +19,16 @@ Diplomka to-do:
 	- public/private/...
 	- Join template parameters - pointer-aware data compare
 	- Implicit cast to reference -> higher priority than implict cast to anything else
+	- Do not generate reference types for everything
+	- Better pointers
+	- Class inheritance, virtual functions, etc.
+	- Member functions with @ctime parameters
+	- @ctime functions
+	- user decorators?
+	- functions - first-class citizens
+	- audo constructor generation
+	- generic classes
+	- imports
 
 	Bool ctimeFunc( @ctime Int x ) { ... }
 	void main() {
