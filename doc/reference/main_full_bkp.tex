@@ -24,41 +24,58 @@
 \makeatother
 
 \chapter{Introduction}
-Beast is an imperative, structured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C is available. In future, a LLVM backend integration is planned.
+BEAST is an imperative, structured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C++ is available. In future, a LLVM backend integration is planned.
 
-Most notably, the language implements a new concept called \textit{code hatching} (also a subject of this paper) that unifies templating, compile-time function execution, compile-time reflection and metaprogramming in general.
+BEAST is a practical tool for practical programmers. With BEAST, you can write effective and readable code quite fast. Although the language itself builds on a significant abstraction, the functionality behind it is still close to HW. If you know the language, you can pretty well determine what assembly each line of your code generates.
+
+Basic language classification:
+\begin{compactitem}
+	\item Imperative
+	\item Classes are instances of \verb|Type| class
+	\item Statically typed
+\end{compactitem}
+
+\section{Why choose BEAST}
+\begin{itemize}
+	\item \textbf{Good programming practices} BEAST gently pushes you into writing your code readable and understandable.
+	\item \textbf{Compile-time magic} In BEAST, you can do many things much more comfortably using compile time function execution.
+	\item \textbf{Language reflection} BEAST has easy ways to get information about symbols, list class members, etc.
+	\item \textbf{Modules} In BEAST, you don't have to write separate header and source files and struggle with keeping them consistent.
+\end{itemize}
 
 \section{Inspiration}
 \paragraph{Inspiration from C++}
 \begin{compactitem}
+	\item Class system, multiple inheritance
 	\item Most of the syntax
+	\item \hyperref[userDefinedLiterals]{User-defined literals}
 \end{compactitem}
 
 \paragraph{Inspiration from D}
 \begin{compactitem}
-	\item Module system (not implemented yet)
-	\item Compile-time function execution
+	\item Module system
+	\item Compile time function execution
 \end{compactitem}
 
 \paragraph{Ideas not directly inspired by other languages}
 \begin{compactitem}
-	\item Code hatching concept
+	\item Overall collaboration of compile-time function execution
 	\item Language reflection
 	\item The \hyperref[colonAccessor]{\kwd{:}} accessor
 	\item The \hyperref[constantValueParameter]{constant value function parameters}	
-	\item Decorators (not implemented yet)
+	\item Decorators
 \end{compactitem}
 
 \chapter{Lexical}
-In a normal code, Beast accepts only standard ASCII characters. Non-ascii characters are allowed only in comments.
+In a normal code, BEAST accepts only standard ASCII characters. Non-ascii characters are allowed only in comments and string literals.
 
 \begin{grammar}
-	\tokenDef{Whitespace} \verb|[\n\t\r ]+|
+	\tokenDef{Whitespace} \verb|[\n\t ]+|
 \end{grammar}
 
 \section{Identifiers}
 \begin{grammar}
-	\tokenDef{Identifier} \verb|[#a-zA-Z_][a-zA-Z_0-9]*|
+	\tokenDef{Identifier} \verb|#?[a-zA-Z_][a-zA-Z_0-9]*|
 \end{grammar}
 An identifier consists of any combination of lower and upper case ASCII letters, numbers and undescores, with these additional rules:
 \begin{itemize}
@@ -67,29 +84,100 @@ An identifier consists of any combination of lower and upper case ASCII letters,
 \end{itemize}
 
 \section{Keywords} \label{keywords}
-More keywords will be added in the future.
-
 \begin{code}
-auto, break, class, delete, else, if, module, new, return, while
+alias, auto, break, case, class, continue, else, enum, for, if, import, in, is, module, return, switch, this, while
+\end{code}
+
+\subsection{Reserved words}
+\begin{code}
+asm, auto, blueprint, debug, declaration, declare, decorator, delegate, do, except, extend, finally, foreach, function, generic, goto, loop, mixin, scope, singleton, template, throw, try, with, yield
 \end{code}
 
 \section{Literals}
 \begin{grammar}
-	\grDef{Literal} \gr{IntLiteral} \\
+	\grDef{Literal} \gr{UnitLiteral} [ \token{Identifier} ] \\
+	\grDef{UnitLiteral} \gr{StringLiteral} \\
+		\grAltLn \gr{IntLiteral} \\
+		\grAltLn \gr{BinLiteral} \\
+		\grAltLn \gr{OctLiteral} \\
+		\grAltLn \gr{HexLiteral} \\
+		\grAltLn \gr{FloatLiteral} \\
 \end{grammar}
 
 \subsection{Boolean 'literals'}
-Beast does provide \inlineCode{true} and \inlineCode{false}, however those are not keywords or literals, but just \decoratorRef{ctime} variables defined from the runtime library. That means that they can be redefined.
+BEAST does provide \inlineCode{true} and \inlineCode{false}, however those are not keywords or literals, but just \decoratorRef{ctime} variables defined from the runtime library. That means that they can be redefined.
 
 \subsection{The 'null' 'literal'}
-The \inlineCode{null} is of an unspecified type that is statically implicitly castable to pointer or reference of any type. It is not a keyword; it is defined in runtime library and thus can be redefined.
+The \inlineCode{null} is a \typeRef{Type} which is statically implicitly castable to pointer or reference of any type. It is not a keyword; it is defined in runtime library and thus can be redefined.
 
 \subsection{Integer literals}
-Integer literal is always of type \inlineCode{Int32}.
-
 \begin{grammar}
-	\tokenDef{IntLiteral} \verb|-?[0-9]+| 
+	\tokenDef{IntLiteral} \verb|-?[0-9]+| \\
+	\tokenDef{BinLiteral} \verb|-?0b[01]+| \\
+	\tokenDef{OctLiteral} \verb|-?0o[0-7]+| \\
+	\tokenDef{HexLiteral} \verb|-?0x[0-9a-fA-F]+|
 \end{grammar}
+
+\paragraph{Data type} Type of a literal is always the smallest signed type possible. If the number doesn't fit in the signed variant but fits in the unsigned variant with the same size, the unsigned variant is used (doesn't apply to negative literals). If the required bit count exceeds 128, a \typeRef{BigInt} type is used.
+
+\begin{code}
+10 // Int8
+128 // UInt8
+-10 // Int8
+-150 // Int16
+60000 // Int16
+0xaa // UInt8
+0xa01 // UInt16
+\end{code}
+
+\subsection{Float literals}
+\begin{grammar}
+	\tokenDef{FloatLiteral} \verb|-?[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?|
+\end{grammar}
+
+\paragraph{Data type} Float literal is always of type \typeRef{Float64}. It is recommended to use the \verb|f| for casting to \typeRef{Float32} (alternatively, you can use the explicit cast).
+
+\subsection{User-defined literals} \label{userDefinedLiterals}
+BEAST supports a syntactical construct that allows users to define their own literals. The user defined literal is then represented by a standard BEAST literal followed by an identifier.
+
+An appropriate function with prototype
+\begin{code}
+@ctime auto #literal( String suffix, String value, Literal type );
+\end{code}
+is then called where the first argument is the \token{Identifier} used, the second is the literal value (stringified) and the third is the type of the literal.
+
+\begin{code}
+enum Literal {
+	stringLiteral,
+	intLiteral,
+	binLiteral,
+	octLiteral,
+	hexLiteral,
+	floatLiteral;
+	
+@public:
+	enum : Set {
+		number = intLiteral | floatLiteral;	
+	}
+}
+\end{code}
+
+\begin{code}
+@ctime Float32[ String ] lengthUnits = [
+	"km": 1e3, "m": 1, "dm": 1e-1, "cm": 1e-2, "mm": 1e-3
+];
+	
+@ctime Length #literal( String suffix, String value, Literal type )
+	if( type is :number && suffix in lengthUnits.keys )
+{
+	return Length( value.to( Float32 ) * lengthUnits[ unit ] );
+}
+
+// Here, the #literal function is called with arguments #literal( "cm", "32.5", Literal.floatLiteral )
+Length len = 32.5 cm;
+\end{code}
+
+\paragraph{TODO} string literals, char literals
 
 \section{Comments}
 \begin{grammar}
@@ -109,120 +197,200 @@ void main() {
 
 \chapter{Expressions}
 \begin{grammar}
-	\grDef{Expression} \gr{AssignExpr} \\		
-		\grAltLn \gr{DecoratedExpression} \\
+	\grDef{Expression} \gr{AssignExpr} \\
+		\grAltLn \token{Identifier} \kwd{->} \gr{AssignExpr} \\
 		
-	\grDef{ParentCommaExpr} \kwd{(} [ \gr{Expression} \{ \kwd{,} \gr{Expression} \} ] \kwd{)} \\
+	\grDef{CommaExpression} \gr{Expression} \{ \kwd{,} \gr{Expression} \} \\
 	
-	\grDef{DecoratedExpression} \{ \gr{Decoration} \}+ \gr{Expression} \\
+	\\
+	
+	\grDef{ParentCommaExpr} \kwd{(} [ \gr{PrntCommaExprItem} \{ \kwd{,} \gr{PrntCommaExprItem} \} [ \kwd{,} ] ] \kwd{)} \\
+	\grDef{PrntCommaExprItem} \{ \gr{Decoration} \} \gr{Expression} [ \kwd{...} ] \\
+	
 \end{grammar}
 
 \section{Operators}
 \begin{grammar}	
-	\grDef{AssignExpr} \gr{LogicExpr} \\
-		\grAltLn \gr{LogicExpr} \kwd{=} \gr{LogicExpr} \\
-		\grAltLn \gr{LogicExpr} \kwd{:=} \gr{LogicExpr} \\
+	\grDef{AssignExpr} \gr{RangeExpr} \\
+		\grAltLn \gr{RangeExpr} \gr{AssignOpOp} \gr{RangeExpr} \\
+		\grAltLn \gr{RangeExpr} \kwd{=>} \gr{RangeExpr} \\
+		\grAltLn \gr{RangeExpr} \{ \kwd{=} \gr{RangeExpr} \}+ \\
+		\grAltLn \gr{RangeExpr} \{ \kwd{:=} \gr{RangeExpr} \}+ \\
+	
+	\grDef{RangeExpr} \gr{LogicExpr} \\
+		\grAltLn \gr{LogicExpr} \kwd{..} \gr{LogicExpr} \\
 	
 	\grDef{LogicExpr} \gr{CmpExpr} \\
 		\grAltLn \gr{CmpExpr} \{ \kwd{\&\&} \gr{CmpExpr} \}+ \\
 		\grAltLn \gr{CmpExpr} \{ \kwd{||} \gr{CmpExpr} \}+ \\
 		
-	\grDef{CmpExpr} \gr{SumExpr} \\
-		\grAltLn \gr{SumExpr} \kwd{!=} \gr{SumExpr} \\
-		\grAltLn \gr{SumExpr} \{ ( \kwd{==} | \kwd{>=} | \kwd{>} ) \gr{SumExpr} \}+ \\
-		\grAltLn \gr{SumExpr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{SumExpr} \}+ \\
+	\grDef{CmpExpr} \gr{BitExpr} \\
+		\grAltLn \gr{BitExpr} ( \kwd{is} | \kwd{!is} | \kwd{in} | \kwd{!in} | \kwd{!=} ) \gr{BitExpr} \\
+		\grAltLn \gr{BitExpr} \{ ( \kwd{==} | \kwd{>=} | \kwd{>} ) \gr{BitExpr} \}+ \\
+		\grAltLn \gr{BitExpr} \{ ( \kwd{==} | \kwd{<=} | \kwd{<} ) \gr{BitExpr} \}+ \\
 		
+	\grDef{BitExpr} \gr{SumExpr} \\
+		\grAltLn \gr{PrefixExpr} ( \kwd{>{}>} | \kwd{<{}<} | \kwd{>{}>{}>} | \kwd{<{}<{}<} ) \gr{PrefixExpr} \\
+		\grAltLn \gr{PrefixExpr} \{ \kwd{\&} \gr{PrefixExpr} \}+ \\
+		\grAltLn \gr{PrefixExpr} \{ \kwd{|} \gr{PrefixExpr} \}+ \\
+		\grAltLn \gr{PrefixExpr} \{ \kwd{\^} \gr{PrefixExpr} \}+ \\
+	
 	\grDef{SumExpr} \gr{MultExpr} \\
 		\grAltLn \gr{MultExpr} \{ ( \kwd{+} | \kwd{-} ) \gr{MultExpr} \}+ \\
 	
 	\grDef{MultExpr} \gr{VarDeclExpr} \\
-		\grAltLn \gr{NewExpr} \{ ( \kwd{*} | \kwd{/} ) \gr{NewExpr} \}+ \\
+		\grAltLn \gr{VarDeclExpr} \{ ( \kwd{*} | \kwd{/} ) \gr{VarDeclExpr} \}+ \\
+		\grAltLn \gr{VarDeclExpr} \kwd{\%} \gr{VarDeclExpr} \\
 		
-	\grDef{NewExpr} \gr{PrefixExpr} \\
+	\grDef{VarDeclExpr} \gr{PrefixExpr} \\
+		\grAltLn \gr{PrefixExpr} \token{Identifier} [ \gr{ParentCommaExpr} ] \\
 		\grAltLn \kwd{new} \gr{PrefixExpr} [ \gr{ParentCommaExpr} ] \\
 
 	\grDef{PrefixExpr} \gr{SuffixExpr} \\
-		\grAltLn \kwd{!} \gr{SuffixExpr} \\
+		\grAltLn ( \kwd{!} | \kwd{-} | \kwd{\~} | \kwd{++} | \kwd{-{}-} ) \gr{SuffixExpr} \\
+		%\grAltLn \gr{InlineVarDecl} \\
+		\grAltLn \kwd{\$} \\
 		
 	\grDef{SuffixExpr} \gr{AtomExpr} \\
-		\grAltLn \kwd{auto} \\
-		\grAltLn \gr{AtomExpr} \{ \gr{SuffixOp} \}+ \\
+		\grAltLn \gr{AtomExpr} \{ \gr{SuffixExpr} \} \\
 	
 	\grDef{AtomExpr} [ \kwd{:} ] \token{Identifier} \\
 		\grAltLn \gr{Literal} \\
-		\grAltLn \gr{Identifier} \\
-		\grAltLn \gr{ParentCommaExpr} \\
+		\grAltLn \kwd{(} \gr{Expression} \kwd{)} \\
+		\grAltLn \kwd{[} [ \gr{ArrayLiteralExpr} \{ \kwd{,} \gr{ArrayLiteralExpr} \} [ \kwd{,} ] ] \kwd{]} \\
+	
+	\grDef{ArrayLiteralExpr} \gr{RangeExpr} [ \kwd{=>} \gr{RangeExpr} ] \\
+	
+	\grDef{AssignOpOp} \kwd{+=} | \kwd{-=} | \kwd{*=} | \kwd{/=} | \kwd{\%=} | \kwd{\&=} | \kwd{|=} | \kwd{\^{}=} | \kwd{<{}<=} \\
+		\grAltLn \kwd{>{}>=} | \kwd{<{}<{}<=} | \kwd{>{}>{}>=} \\
 	
 	\grDef{SuffixOp} \gr{ParentCommaExpr} \\
+		\grAltLn \kwd{[} [ \gr{Expression} \{ \kwd{,} \gr{Expression} \} [ \kwd{,} ] ] \kwd{]} \\
 		\grAltLn \kwd{.} \token{Identifier} \\
+		\grAltLn \kwd{++} | \kwd{-{}-} \\
 		\grAltLn \kwd{?} | \kwd{!} \\
-		\grAltLn \gr{ParentCommaExpr}
 \end{grammar}
 
 \subsection{Operator precedence} \label{opPrecedence}
-\begin{centeredRefTabular}{P{1.5cm} | c | p{6cm} | c}
-	\textbf{Priority} & \textbf{Operator} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
+\begin{centeredRefTabular}{P{1.5cm} | c | c | p{6cm} | c}
+	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
 	
 	1
-		& \inlineCode{x(args)} & Function call & \multirow{7}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x.ident} & Member access & \\
+		& \inlineCode{x(args)} & & Function call & \multirow{7}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x[args]} & & Array subscripting & \\
+		& \inlineCode{x.ident} & & Attribute access & \\
 		\cline{2-4}
-		& \inlineCode{x!} & Mutable type & \\
-		& \inlineCode{x?} & Reference type & \\
+		& \inlineCode{x++} & \inlineCode{suffInc} & Suffix increment & \\
+		& \inlineCode{x--} & \inlineCode{suffDec} & Suffix decrement & \\
+		& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & \\
+		& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
 	\hline
 	
 	2
-		& \inlineCode{!x} & Logical NOT & \multirow{1}{*}{NOCH} \\
+		& \inlineCode{!x} & \inlineCode{preNot} & Logical NOT & \multirow{5}{*}{NOCH} \\
+		& \inlineCode{-x} & \inlineCode{preMinus} & Sign negation & \\
+		& \inlineCode{\~x} & \inlineCode{preTilde} & Bitwise NOT & \\
+		& \inlineCode{++x} & \inlineCode{preInc} & Prefix increment & \\
+		& \inlineCode{--x} & \inlineCode{preDec} & Prefix decrement & \\
+		\cline{2-5}
+		& \inlineCode{\$} & & Array size (can only be used inside the \inlineCode{brackets} operator) & \\
 	\hline
 	
 	3
 		%& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
-		& \inlineCode{new x( args )} & Dynamic construction & NOCH \\
+		& \inlineCode{new x( args )} & & Dynamic construction & NOCH \\
 	\hline
 	
 	4
-		& \inlineCode{x * y} & Multiplication & \multirow{2}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x / y} & Division \\
+		& \inlineCode{x * y} & \inlineCode{binMult} & Multiplication & \multirow{2}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x / y} & \inlineCode{binDiv} & Division \\
+		\cline{2-5}
+		& \inlineCode{x \% y} & \inlineCode{binMod} & Modulo & NOCH \\
 	\hline
 	
 	5
-		& \inlineCode{x + y} & Addition & \multirow{2}{*}{L$\rightarrow$R} \\
-		& \inlineCode{x - y} & Subtraction & \\
+		& \inlineCode{x + y} & \inlineCode{binPlus} & Addition & \multirow{2}{*}{L$\rightarrow$R} \\
+		& \inlineCode{x - y} & \inlineCode{binMinus} & Subtraction & \\
 	\hline
 	
-	6
-		& \inlineCode{x != y} & Not equal to & \multirow{1}{*}{NOCH} \\
-		\cline{2-4}
-		& \inlineCode{x < y} & Less than & \\
-		& \inlineCode{x <= y} & Less than or equal to & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R\\SPEC}} \\
-		& \inlineCode{x == y} & Equal to & \\
-		& \inlineCode{x >= y} & Greater than or equal to & \\
-		& \inlineCode{x > y} & Less than & \\
+	\multirow{4}{1.5cm}{\centering 6\\(cannot use P3, P4)}
+		& \inlineCode{x & y} & \inlineCode{binBitAnd} & Bitwise AND & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
+		& \inlineCode{x | y} & \inlineCode{binBitOr} & Bitwise OR & \\
+		& \inlineCode{x ^ y} & \inlineCode{binBitXor} & Bitwise XOR / power & \\
+		\cline{2-5}
+		& \inlineCode{x >> y} & \inlineCode{binRSft} & Bitwise right shift & \multirow{4}{*}{NOCH} \\
+		& \inlineCode{x << y} & \inlineCode{binLSft} & Bitwise left shift & \\
+		& \inlineCode{x >>> y} & \inlineCode{binRRot} & Bitwise right circular shift & \\
+		& \inlineCode{x <<< y} & \inlineCode{binLRot} & Bitwise left circular shift & \\
 	\hline
 	
 	7
-		& \inlineCode{x && y} & Logical AND & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
-		& \inlineCode{x || y} & Logical OR & \\
+		& \inlineCode{x is y} & \inlineCode{binIs} & Is (pattern matching) & \multirow{5}{*}{NOCH} \\
+		& \inlineCode{x !is y} & \inlineCode{binIsNot} & Is not & \\
+		& \inlineCode{x in y} & \inlineCode{binIn} & In & \\
+		& \inlineCode{x !in y} & \inlineCode{binNotIn} & Not in & \\
+		& \inlineCode{x != y} & \inlineCode{binNeq} & Not equal to & \\
+		\cline{2-5}
+		& \inlineCode{x < y} & \inlineCode{binLt} & Less than & \\
+		& \inlineCode{x <= y} & \inlineCode{binLte} & Less than or equal to & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R\\SPEC}} \\
+		& \inlineCode{x == y} & \inlineCode{binEq} & Equal to & \\
+		& \inlineCode{x >= y} & \inlineCode{binGte} & Greater than or equal to & \\
+		& \inlineCode{x > y} & \inlineCode{binGt} & Less than & \\
 	\hline
 	
 	8
-		& \inlineCode{x = y} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering NOCH}} \\
-		& \inlineCode{x := y} & Reference assignment & \\
+		& \inlineCode{x && y} & \inlineCode{binLogAnd} & Logical AND & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
+		& \inlineCode{x || y} & \inlineCode{binLogOr} & Logical OR & \\
 	\hline
-
+	
+	9
+		& \inlineCode{x .. y} & \inlineCode{binRange} & Range & NOCH \\
+	\hline
+	
+	10
+		& \inlineCode{x = y} & \inlineCode{assign} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
+		& \inlineCode{x := y} & \inlineCode{refAssign} & Reference assignment & \\
+		\cline{2-5}
+		& \inlineCode{x += y} & \inlineCode{binPlus} & \multirow{12}{*}{Op assign operators} & \multirow{12}{*}{NOCH} \\
+		& \inlineCode{x -= y} & \inlineCode{binMinus} && \\
+		& \inlineCode{x *= y} & \inlineCode{binMult} && \\
+		& \inlineCode{x /= y} & \inlineCode{binDiv} && \\
+		& \inlineCode{x \%= y} & \inlineCode{binMod} && \\
+		& \inlineCode{x &= y} & \inlineCode{binBitAnd} && \\
+		& \inlineCode{x |= y} & \inlineCode{binBitOr} && \\
+		& \inlineCode{x ^= y} & \inlineCode{binBitXor} && \\
+		& \inlineCode{x <<= y} & \inlineCode{binLSft} && \\
+		& \inlineCode{x >>= y} & \inlineCode{binRSft} && \\
+		& \inlineCode{x <<<= y} & \inlineCode{binLRot} && \\
+		& \inlineCode{x >>>= y} & \inlineCode{binRRot} && \\
+		\cline{2-5}
+		& \inlineCode{x => y} & (not overloadable) & Association & NOCH \\
+	\hline
+	
+	11
+		& \inlineCode{x, y} & & Comma & L$\rightarrow$R \\
 \end{centeredRefTabular}
 
 \paragraph{Associativity -- explanation}
 \begin{compactitem}
 	\item \textbf{L$\rightarrow$R} Operations from the same group are processed from left to right, meaning \inlineCode{x + y + z} is processed as \inlineCode{(x + y) + z}.
-	%\item \textbf{R$\rightarrow$L} Operations from the same group are processed from right to left, meaning \inlineCode{x = y = z} is processed as \inlineCode{x = (y = z)}.
+	\item \textbf{R$\rightarrow$L} Operations from the same group are processed from right to left, meaning \inlineCode{x = y = z} is processed as \inlineCode{x = (y = z)}.
 	\item \textbf{NOCH} Operations cannot be chained with any operator of the same priority, meaning expressions like \inlineCode{x >> y >> z}, \inlineCode{x >> y << z} or \inlineCode{++!x} are syntactically incorrect.
 	\item \textbf{SAME} Only the same operators can be chained, meaning \inlineCode{x & y & z} and \inlineCode{x | y | z} is correct, but \inlineCode{x & y | z} is not.
 	\item \textbf{SPEC} Specific chaining rules, described in following sections.
 \end{compactitem}
 
-\paragraph{Evaluation order}
-Operands are evaluated left to right, if not specified otherwise.
+\paragraph{Left-side and right-side overloads}
+%TODO
+
+\paragraph{Operator precedence specialities}
+In order to improve code readability, it is prohibited to use priority 3 and 4 operations as priority 5 operands -- you must wrap them in the parentheses.
+\begin{code}
+x + y >> z; // Error
+(x + y) >> z; // Ok
+\end{code}
+
+Also, you cannot use P9 operations as operands in the \verb|[args]| operator.
 
 \subsection{Comparison operators chaining} Comparison operators can be chained in monotonous order:
 \begin{code}
@@ -238,6 +406,9 @@ a > b < c;
 
 When chaining comparison operators, the expressions in form \inlineCode{x == y > z} are internally rewritten to \inlineCode{(x == y) && (x > z)} (supports user overloaded operators), except the \verb|x|, \verb|y| and \verb|z| expressions are evaluated only once.
 
+\paragraph{Evaluation order}
+Operands are evaluated left to right, if not specified otherwise.
+
 \section{Overloadsets (symbols, symbol lookup, identifier resolution, overloading)}
 Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
 
@@ -249,20 +420,97 @@ Overloadset is a language structure, a container with all symbols that match cur
 	}
 \end{code}
 
-Here, when processing the function call on line \ref{codeLine:overloadSets1:fCall}, the compiler starts with identifier \inlineCode{f}. It constructs an overloadset which contains the function \inlineCode{f} defined on line \ref{codeLine:overloadSets1:fDecl}. Then, it reads parentheses, so it will look up for operator \inlineCode{x(args)} in the previous overloadset and put everything it has found to a new overloadset. Then, a process which selects the best matching overload is performed (will be described later in this chapter).
+Here, when processing the function call on line \ref{codeLine:overloadSets1:fCall}, the compiler starts with identifier \inlineCode{f}. It constructs an overloadset which contains the function \inlineCode{f} defined on line \ref{codeLine:overloadSets1:fDecl}. Then, it sees parentheses, so it will look up for operator \inlineCode{x(args)} in the previous overloadset and put everything it has found to a new overloadset. Then, a process which selects the best matching overload is performed (will be described later in this chapter).
 
 Now let's explain that process step by step.
 
-\subsection{Recursive identifier resolution} \label{fullIdentifierResolution}
-When there's an expression that starts with an identifier (\gr{AtomExpr}, the \token{Identifier} version), a recursive identifier resolution is performed for it. This is done by searching symbols with the desired identifier in the current scope. If there is no match in the current scope, the compiler looks into parent scope, and so on. As soon as a match is found, the resolution ends, returning an overloadset with all matching symbols in the currently searched scope. If no match is found, an error is shown.
+\subsection{Full identifier resolution} \label{fullIdentifierResolution}
+When there's an expression that starts with an identifier (\gr{AtomExpr}, the \token{Identifier} alternative), a full resolution is performed for it. This is done by searching symbols with the desired identifier in various scopes. As soon as a match is found, the resolution ends, resulting an overloadset with all matching symbols in the currently searched set of scopes.
 
-\subsection{Local identifier resolution} \label{scopedIdentifierResolution}
+The rules that decide which scopes will be looked for are following:
+
+\paragraph{Function scopes}
+\begin{enumerate}
+	\item Current scope
+	\item Parent scope (recursive); if the current scope is a nested function (lambda) root, all parent function scopes are skipped except when the lambda does capture all outer scope variables
+\end{enumerate}
+
+\paragraph{Object (class, enum, ...) scopes}
+Please note that object's dynamic and static fields are in separate scopes (depends if you're accessing an instance or an object). You can somewhat mix them using \decoratorRef{dynamicAccess}.
+
+\begin{enumerate}
+	\item Current object scope and scopes of all ancestors of the current object (whether the member is static or not is not taken into consideration in this phase). Parent scopes are not searched recursively.
+	\item Scope imports of the current object and all its ancestors (scope imports are not implemented as a language feature in the current version, however some language-defined classes use them internally) and all ancestors of all the scope imports
+	\item Parent scope (recursive)
+\end{enumerate}
+
+\paragraph{Module level scopes (modules, templates)}
+\begin{enumerate}
+	\item Current scope
+	\item Parent scope (recursive)
+\end{enumerate}
+
+\begin{comment}
+\textbf{Namespace scopes}
+\begin{compactenum}
+\item Current scope and scopes of all namespaces with the same (full) identifier in any of the modules that have been imported in the identifier resolution scope (that means also all imports derived from parent scopes).
+\item Parent scope (recursive)
+\end{compactenum}
+\end{comment}
+
+\textbf{If no results are found, root scopes of all imported modules are searched.} If nothing is found even then, identifier resolution ends with an empty result (or error, depending on use case).
+
+\begin{comment}
+\begin{code}
+module a;
+
+Void a() {}
+Void b() {}
+
+Void f() {
+// First, we search in the current scope (inside the function) -> not found
+// Then, we search in the parent scope (which is the module scope) -> found function a
+a();
+
+Int a;
+
+// Now when we search in the current scope, we find variable a
+a = 5;
+}
+
+$\moduleSep$
+module b;
+
+Void a() {}
+
+class C {
+
+@public:
+Void a() {}
+Void c() {}
+Void f() {
+
+}	
+
+}
+
+class D : @public C {
+
+@public:
+Void c() {}
+Void g() {
+
+}
+
+}
+\end{code}
+\end{comment}
+
+\subsection{Scoped identifier resolution} \label{scopedIdentifierResolution}
 The scoped identifier resolution is similar to the full identifier resolution, except it doesn't look into parent scopes at all.
 
 \subsection{The '\inlineCode{:ident}' accessor} \label{colonAccessor}
-This language construct can be used for example in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an expected data type}. In function calls, the expected data type would be parameter data type. Please mote that operators are also translated into function calls, so this construct works with operators, too.
-
-This of course does not work with \kwd{auto} parameters.
+This language construct can only be used in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an object the parameter is expected to be type of}.
 
 \begin{code}
 	enum Enum {
@@ -278,76 +526,61 @@ This of course does not work with \kwd{auto} parameters.
 	}
 \end{code}
 
+This of course does not work with \kwd{auto} parameters (they are ignored in the overload resolution).
+
 \subsection{Overload resolution} \label{overloadResolution}
-Overload resolution is performed every time the compiler needs to match arguments to a function overload. The process is performed over an overloadset where all items must be \textit{callables} (meaning they support overload resolution; error is shown otherwise).
+Overload resolution is performed every time the compiler needs to match arguments to a function overload. The process is performed over an overloadset where all items must accept arguments (error is shown otherwise).
 
-Each overload is assigned a "match level" number. Then, the overload with lowest match level is selected; if no overload matches given arguments, an error is shown; if there are more overloads with the same lowest match level, an error is shown. Overload match level is determined as a sum of $2^i$ of the following:
+Note that not only functions accept arguments - for example parametric classes (similar to template classes) also accept arguments (they can however be considered to be compile-time functions returning a class as they are indistinguishable from them).
 
-\begin{compactenum}
-	\item Implicit cast needed for at least one argument
-	\item Inferration needed for at least one anrgument (used \inlineCode{:ident})
-	\item Function is static
-	\item Function is compiler-defined
-	\item General fallback (compiler-defined)
-\end{compactenum}
+Overload resolution consists of these steps:
+\begin{enumerate}
+	\item Overloads that do not match given arguments are ignored (also considering constness and staticness)
+	\begin{itemize}
+		\item Constant-value parameters (for example \inlineCode{Void foo( 3, Int x )}) require \ctime arguments. Trying to resolve overload with constant-value parameter with \nonctime argument on the same index results in semantic error.
+	\end{itemize}
+	\item For each overload, rate each argument with a numeric value, representing argument-to-parameter mismatch rate. Remove those overloads whose mismatch rate is higher than match rate of another overload from the set for all arguments. Match rate rules:
+		\begin{enumerate}[label=(\arabic*)]
+			\item Exact value match (see \ref{parameterLiterals})
+			\item Exact type match
+			\item Type deduction needed (for example \inlineCode{foo(x => x + 1)} for prototype \inlineCode{Void foo(Function(Int, Int) func)}) or use of \inlineCode{:ident} accessor (see \ref{colonAccessor})
+			\item Scope import cast needed (see \ref{scopeImports})
+			\item Implicit cast needed			
+			\item Parameter is of \inlineCode{auto} type
+		\end{enumerate}
+		For variadic parameters, the highest mismatch rate across all arguments is considered.
+	
+	\item Find minimal scope import nesting level of an overload in the overloadset; remove all overloads with higher nesting levels (overloads that are not from scope imports have higher priority)
+	\item If there are any non-static overloads, ignore all static overloads
+	\item If there are any non-compiler-generated overloads, ignore all compiler-generated overloads (implicit constructors etc)
+	\item If there are any non-const overloads, ignore all const overloads
+\end{enumerate}
 
-\subsection{Casting}
-Beast introduces implicit and explicit cast. Implicit cast are used whenever there's mismatch between expected type and the type provided (for example when passing an argument to a function), explicit casting is done using function \inlineCode{to( @ctime Type targetType )} (which also tries implicit casting if there is no explicit cast available).
+If there's more than one overload remaining after application of the process mentioned above, the "ambiguous overloads" error occurs.
 
-Implicit casting is realized
+\subsection{Resolution application on expressions}
+Application of the resolutions will be described in the next chapter for each operator.
 
 \section{Operator overloading}
-\begin{centeredRefTabular}{P{1.5cm} | c | c | p{6cm} | c}
-	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
+\begin{code}
+enum Operator {
+	funcCall,
+	brackets,
+	dispatch,
+	preNot,
+	// etc
+	;
 	
-	1
-	& \inlineCode{x(args)} & & Function call & \multirow{7}{*}{L$\rightarrow$R} \\
-	& \inlineCode{x.ident} & & Member access & \\
-	\cline{2-4}
-	& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & \\
-	& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
-	\hline
-	
-	2
-	& \inlineCode{!x} & \inlineCode{preNot} & Logical NOT & \multirow{1}{*}{NOCH} \\
-	\hline
-	
-	3
-	%& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
-	& \inlineCode{new x( args )} & & Dynamic construction & NOCH \\
-	\hline
-	
-	4
-	& \inlineCode{x * y} & \inlineCode{binMult} & Multiplication & \multirow{2}{*}{L$\rightarrow$R} \\
-	& \inlineCode{x / y} & \inlineCode{binDiv} & Division \\
-	\hline
-	
-	5
-	& \inlineCode{x + y} & \inlineCode{binPlus} & Addition & \multirow{2}{*}{L$\rightarrow$R} \\
-	& \inlineCode{x - y} & \inlineCode{binMinus} & Subtraction & \\
-	\hline
-	
-	6
-	& \inlineCode{x != y} & \inlineCode{binNeq} & Not equal to & \multirow{1}{*}{NOCH} \\
-	\cline{2-5}
-	& \inlineCode{x < y} & \inlineCode{binLt} & Less than & \\
-	& \inlineCode{x <= y} & \inlineCode{binLte} & Less than or equal to & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R\\SPEC}} \\
-	& \inlineCode{x == y} & \inlineCode{binEq} & Equal to & \\
-	& \inlineCode{x >= y} & \inlineCode{binGte} & Greater than or equal to & \\
-	& \inlineCode{x > y} & \inlineCode{binGt} & Less than & \\
-	\hline
-	
-	7
-	& \inlineCode{x && y} & \inlineCode{binLogAnd} & Logical AND & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
-	& \inlineCode{x || y} & \inlineCode{binLogOr} & Logical OR & \\
-	\hline
-	
-	8
-	& \inlineCode{x = y} & \inlineCode{assign} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering NOCH}} \\
-	& \inlineCode{x := y} & \inlineCode{refAssign} & Reference assignment & \\
-	\hline
-	
-\end{centeredRefTabular}
+@public:
+	enum : Set {
+		prefix = preNot | preMinus | preTilde /* etc */,
+		suffix = suffNot | suffMult | suffAnd /* etc */,
+		
+		binary = binMult | binDiv | binMod /* etc */,
+		anyAssign = assign | refAssign | plusAssign /* etc */
+	}	
+}
+\end{code}
 
 All operators can be overloaded. This is done by overloading/implementing function:
 \begin{code}
@@ -643,7 +876,7 @@ There are three syntactical alternatives of how to declare a variable:
 When using \inlineCode{auto} instead of type, the type is inferred from the first argument of \gr{ParentCommaExpr} (which must be the only one) or from the value type of the \gr{Expression} after the \kwd{=}. Multiple declarations per one auto keyword are acceptable, each inferring its own type.
 
 \paragraph{In-expression variable declarations}
-In Beast, you can declare variables inside expressions.
+In BEAST, you can declare variables inside expressions.
 
 \subsection{Variable lifetime}
 When variable's lifetime ends, it's implicit destructor \inlineCode{var.#dtor();} is called.
@@ -887,7 +1120,7 @@ class C {
 \paragraph{Statement decorations} Decorators are applied to the statement that follows the decoration.
 
 \subsection{Decoration contexts} \label{decorationContexts}
-The concept of decorators wraps up lot of possibilities and functionality. In order to make things work, it is necessary to define different types of decorators, each altering the program in a different, unique way. In Beast, these decorator subtypes are called \textit{decorator contexts}. Each decorator is defined for one particular context. However decorator identifiers are overloadable, so it is possible to define multiple decorators for different contexts with the same name.
+The concept of decorators wraps up lot of possibilities and functionality. In order to make things work, it is necessary to define different types of decorators, each altering the program in a different, unique way. In BEAST, these decorator subtypes are called \textit{decorator contexts}. Each decorator is defined for one particular context. However decorator identifiers are overloadable, so it is possible to define multiple decorators for different contexts with the same name.
 
 The contexts are following (decorators of contexts commented with "system only" cannot be defined by the programmer):
 \begin{code}
@@ -1149,12 +1382,12 @@ The decorator cannot be used in any other contexts.
 \subsection{The \decoratorRef{noscope} decorator} \label{decorator:noscope}
 
 \chapter{Ctime}
-Ctime is a powerful concept introduced in Beast. It provides a form of metaprogramming, but that's not all what it does.
+Ctime is a powerful concept introduced in BEAST. It provides a form of metaprogramming, but that's not all what it does.
 
 \paragraph{Basic idea}
 The ctime concept has one simple idea: to introduce a \textbf{type of variables of which value can be deduced at any line of code} (without having to run the program).
 
-These variables will are called ctime variables in Beast.
+These variables will are called ctime variables in BEAST.
 
 \paragraph{Consequences} Consequences of this one simple rule are following:
 
@@ -1209,7 +1442,7 @@ class FunctionMetadata {
 }
 \end{code}
 
-\chapter{Beast practices \& styling guide}
+\chapter{BEAST practices \& styling guide}
 
 \begin{itemize}
 	\item Class and enum names are in \verb|UpperCamelCase|.

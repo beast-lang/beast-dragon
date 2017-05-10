@@ -11,19 +11,19 @@
 \renewcommand\subsubsectionautorefname{pododdíl}
 
 \chapter{Úvod}
-Tento dokument popisuje a zdůvodňuje ta nejdůležitější rozhodnutí, která byla vykonána při procesu návrhu imperativního kompilovaného programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a popisuje i nové koncepty a prvky.
+Tento dokument popisuje a zdůvodňuje ta nejdůležitější rozhodnutí, která byla vykonána při procesu návrhu imperativního kompilovaného programovacího jazyka Beast a vzorového překladače pro něj. Rámcově prozkoumává syntaktické i sémantické prvky moderních programovacích jazyků a zavádí i koncepty nové.
 
-Tato práce se zejména zaměřuje na nový koncept "líhnutí kódu," který má poskytovat rozsáhlé možnosti metaprogramování v kompilovaných jazycích. Navržený programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
+Tato práce se zaměřuje zejména na nový koncept "líhnutí kódu", který má poskytovat rozsáhlé možnosti metaprogramování v kompilovaných jazycích. Navržený programovací jazyk se hodně inspiruje jazyky C++ a D\footnote{\url{http://dlang.org/}}. Tyto jazyky budou používány pro srovnávání syntaxe a efektivity psaní kódu.
 
-Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletní specifikace jazyka, případně pracují se standardní knihovnou (která ještě ani nebyla navržena); kompilátor vytvořený v~rámci bakalářské práce ale implementuje pouze malou část zdokumentované funkčnosti -- většinu uvedených kódů tedy kompilátor není schopný zpracovat.
+Příklady kódů z jazyka Beast uvedené v tomto dokumentu čerpají z kompletního návrhu jazyka, případně pracují se standardní knihovnou (která ještě ani nebyla navržena); kompilátor vytvořený v~rámci bakalářské práce ale implementuje pouze malou část zdokumentované či zamýšlené funkčnosti -- většinu uvedených kódů tedy kompilátor není schopný zpracovat.
 
 Motivací a současně i cílem této práce je snaha vnést nový pohled do oblasti kompilovaných jazyků, jak celkovou kompozicí jazyka, tak novými nápady, a přiblížit jej akademické komunitě skrze demonstrační kompilátor.
 
 \paragraph{Struktura práce}
 \begin{itemize}
 	\item Kapitola \ref{chap:languageProps} se zabývá spekulacemi nad zavedením různých vlastností a~prvků do jazyka.
-	\item Kaptiola \ref{chap:ctime} se potom věnuje novému konceptu líhnutí kódu, který jazyk Beast zavádí.
-	\item Kapitola \ref{chap:compiler} popisuje implementační detaily vzorového kompilátoru.
+	\item Kaptiola \ref{ctime} se potom věnuje novému konceptu líhnutí kódu, který jazyk Beast zavádí.
+	\item Kapitola \ref{chap:compiler} se věnuje implementaci demonstračního kompilátoru.
 \end{itemize}
 
 \begin{comment}
@@ -38,9 +38,9 @@ D mi byl velikou inspirací při navrhování mého jazyka. Bohužel i v D jsem 
 \chapter{Vlastnosti a syntaxe jazyka} \label{chap:languageProps}
 Naším cílem je navrhnout jazyk pro obecné použití, který by se dal použít na maximálním počtu platforem, například i ve vestavěných systémech. Složitější struktury se tím pádem budeme snažit řešit spíše vhodnou abstrakcí než zaváděním prvků, které kladou zvýšené nároky na výkon a paměť.
 
-Budeme navrhovat kompilovaný jazyk. Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret. Pro zjednodušení práce při psaní překladače nebudeme ale překládat přímo do strojového kódu, ale do jazyka C/C++.
+Budeme navrhovat kompilovaný jazyk. Ačkoli interpretované jazyky mají jisté výhody, platí se za ně pomalejším kódem a nutností zavádět interpret do počítačů, kde má jazyk běžet. Pro zjednodušení práce při psaní překladače nebudeme ale překládat přímo do strojového kódu, ale do jazyka C/C++.
 
-Abychom maximálně usnadnili přechod programátorů k našemu jazyku a~zlepšili parametry křivky učení, je vhodné se inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet ze syntaxe rodiny jazyků C, které jsou hojně rozšířené a zažité. Tento jazyk se inspiruje konkrétně jazyky C++ a D. Z~těchto jazyků bude přejímat i paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
+Abychom usnadnili přechod programátorů k našemu jazyku a~zlepšili parametry křivky učení, je vhodné se inspirovat již existujícími jazyky. Vzhledem k tomu, že se jedná o~kompilovaný jazyk, je nejrozumnější vycházet ze syntaxe rodiny jazyků C, které jsou hojně rozšířené a zažité. Tento jazyk se inspiruje konkrétně jazyky C++ a D. Z~těchto jazyků bude přejímat i paradigmata a základní koncepty. Náš jazyk bude tedy umožňovat strukturované, funkcionální i objektově orientované programování.
 
 \section{Existující prvky programovacích jazyků}
 V oblasti návrhu programovacích jazyků již bylo vytvořeno mnoho konceptů a kategorizováno mnoho vlastností, které jazyk definují. V tomto oddílu si přiblížíme ty nejznámější z~nich a budeme diskutovat o jejich začlenění do našeho programovacího jazyka.
@@ -50,7 +50,7 @@ Informace v tomto oddílu jsou čerpány z referencí programovacích jazyků C+
 \subsection{Modularita}
 Pro větší projekty, které jazyk Beast také cílí podporovat, je rozdělení kódu do menších částí -- modulů -- nezbytné. Přístup, kde u modulů byla oddělená deklarační (hlavičková) a~definiční část (například u jazyků Object Pascal a C/C++), byl již překonán a~kompilátory moderních jazyků již rozhraní mezi moduly odvozují z definic uvnitř jednotlivých modulů. Tento přístup je praktičtější, protože vytváření a udržování hlavičkových sekcí bylo časově náročné (programátor jinak musel vše psát a upravovat dvakrát). Jazyk Beast zavede systém modulů podobný jazykům D a Java, které jsou vytvořeny v tomto duchu.
 
-\subsection{Systém dedičnosti tříd} U kompilovaných jazyků se nejběžněji využívá třídní systém využívající dědičnost a tabulky virtuálních metod. Tohoto konceptu využívají i jazyky C++ a D, nicméně v detailech se poněkud liší. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a~to s~dědičností vícenásobnou a případně i~virtuální, D~používá obdobný systém jako Java -- třídy (\textit{class}) mohou mít maximálně jednu rodičovskou třídu (myslí se jeden přímý předek, rodičovská třída může dědit od další třídy), navíc ale existují rozhraní (\textit{interfaces}). Ta však mohou obsahovat pouze funkce (tedy žádné proměnné), což omezuje jejich možnosti.
+\subsection{Systém dědičnosti tříd} U kompilovaných jazyků se nejběžněji využívá třídní systém využívající dědičnost a tabulky virtuálních metod. Tohoto konceptu využívají i jazyky C++ a D, nicméně v detailech se poněkud liší. Zatímco v C++ existuje jen jeden typ objektu, který pracuje s dědičností (\textit{class} a \textit{struct} jsou z pohledu dědění identické), a~to s~dědičností vícenásobnou a případně i~virtuální, D~používá obdobný systém jako Java -- třídy (\textit{class}) mohou mít maximálně jednu rodičovskou třídu (myslí se jeden přímý předek, rodičovská třída může dědit od další třídy), navíc ale existují rozhraní (\textit{interfaces}). Ta však mohou obsahovat pouze funkce (tedy žádné proměnné), což omezuje jejich možnosti.
 
 Jazyk D poskytuje k vícenásobné dědičnosti částečnou alternativu ve formě tzv. \textit{template mixins}\footnote{\url{https://dlang.org/spec/template-mixin.html}} -- které fungují podobně jako kopírování bloků kódu přímo do těla třídy. Ty se kombinují s rozhraními -- funkce deklarované v rozhraních obsahují implementace v \textit{mixins}, které se vkládají do těl tříd. Proměnné jsou napodobeny \textit{gettery} a \textit{settery}, se kterými se díky tzv. \textit{property functions}\footnote{Viz \url{https://dlang.org/spec/function.html\#property-functions}} dá pracovat téměř jako s proměnnými.
 
@@ -113,7 +113,7 @@ Zavedení \textit{garbage collectoru} (dále jen GC) nenabízí pouze výhody \c
 Rozumným východiskem se jeví být volitelné používání automatické správy paměti. Beast by měl umožňovat efektivní napsání GC přímo v jazyce; GC by tedy mohla být jedna ze základních knihoven. Vzhledem k už tak velkému rozsahu plánované práce je však GC jen plánem do budoucna.
 
 \subsection{Implicitní konstantnost proměnných} \label{implicitConst}
-Koncept konstantnosti proměnných byl zaveden jednak prvek statické kontroly při psaní kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů neaplikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti. Konstantnost je, když už je zavedena, třeba dodržovat v celém projektu (díky jejím tranzitivním vlastnostem) a její pozdní zavedení bývá pracné a zpravidla nelze udělat postupně kvůli tzv. \textit{const poisoning} efektu -- zavedení konstantní korektnosti \cite{ConstCorrectness}\cite{ConstCorrectness2} v části kódu vyžaduje konstantní korektnost všech typů, které daný kód používá (a ty typy vyžadují konstantní korektnost všech funkcí, které využívají, a tak dále).
+Koncept konstantnosti proměnných byl zaveden jako prvek statické kontroly při psaní kódu. Označení proměnné za konstantní ale u jazyku C++ (i D, Java, ...) vyžaduje napsání dalšího slova (modifikátoru \textit{const} u C, C++ a D, \textit{final} u Javy), a tak tuto praktiku (označovat všechno, co se dá, jako konstantní) spousta programátorů neaplikuje, zčásti kvůli lenosti, zčásti kvůli zapomnětlivosti. Konstantnost je, když už je zavedena, třeba dodržovat v celém projektu (díky jejím tranzitivním vlastnostem) a její pozdní zavedení bývá pracné a~zpravidla nelze udělat postupně kvůli tzv. \textit{const poisoning} efektu -- zavedení konstantní korektnosti \cite{ConstCorrectness}\cite{ConstCorrectness2} v části kódu vyžaduje konstantní korektnost všech typů, které daný kód používá (a~ty typy vyžadují konstantní korektnost všech funkcí, které využívají, a tak dále).
 
 Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/nightly/book/mutability.html}}) přišly s opačným přístupem: všechny proměnné jsou implicitně konstantní a programátor musí pro deklaraci nekonstantních proměnných použít speciální syntaktickou konstrukci. Tento přístup má vést programátory ke korektnímu používání konstantních a mutabilních proměnných. Jazyk Beast tento přístup také aplikuje.
 
@@ -149,7 +149,9 @@ Chceme-li mít nekonstantní ukazatel na nekonstantní data, musíme tedy specif
 	\item \inlineCode{Typ!?!}
 \end{enumerate}
 
-Další možností by bylo se inspirovat gramatikou C++ (po vzoru \inlineCppCode{const int * const} by měl zápis formu \inlineCode{@mutable Int ? @mutable}), nicméně ta je všeobecně považována za velice matoucí -- dochází tam ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis má jasná a jednoduchá a~značně snižuje potřebu využívat závorky.
+Další možností by bylo se inspirovat gramatikou C++ (po vzoru \inlineCppCode{const int * const} by měl zápis formu \inlineCode{@mutable Int ? @mutable}), nicméně ta je všeobecně považována za velice matoucí -- dochází tam ke kombinování suffixových a prefixových modifikátorů podle neintuitivních pravidel. Čistě suffixový zápis má jasná pravidla a jednoduchá a~značně snižuje potřebu využívat závorky.
+
+Jak bylo uvedeno v oddílu \ref{implicitConst}, pro jazyk Beast byla zvolena druhá varianta.
 
 \paragraph{Srovnání syntaxe C++, D a Beast}
 \begin{cppcode}
@@ -183,8 +185,8 @@ Další možností by bylo se inspirovat gramatikou C++ (po vzoru \inlineCppCode
 \subsection{Typová kontrola, konverze typů a odvozování typů}
 Beast má podobný mechanismus typových kontrol jako jazyky C++ a D:
 \begin{itemize}
-	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCastTo} nebo \inlineCode{#implicitCastFrom})\footnote{\BeastRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \beastRef{Overload resolution}}.
-	\item Typy mohou být explicitně konvertibilní do jiných typů (funkce \inlineCode{#explicitCastTo} a~\inlineCode{#explicitCastFrom}). K explicitnímu přetypování se používá výhradně funkce\\\inlineCode{var.to(Type)} (lze použít i k implicitnímu přetypování).
+	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCast})\footnote{\BeastRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \beastRef{Overload resolution}}.
+	\item Typy mohou být explicitně konvertibilní do jiných typů (funkce \inlineCode{#explicitCast}). K explicitnímu přetypování se používá výhradně funkce\\\inlineCode{var.to(Type)} (lze použít i k implicitnímu přetypování).
 \end{itemize}
 
 Důvodem k jiné syntaxi oproti C++ je opět snaha o zjednodušení pravidel a zvýšení přehlednosti kódu.
@@ -235,7 +237,7 @@ V souvislosti s odvozováním typů zavádí jazyk Beast novou konstrukci \inlin
 \subsection{Reference, ukazatelé a jejich syntaxe} \label{pointers}
 Typ ukazatel umožňující ukazatelovou aritmetiku je v dnešní době považován za potenciálně nebezpečný prvek, který by se měl užívat jen v nutných případech. Toto se řeší zavedením referencí, které v různých jazycích fungují mírně rozdílně, všeobecně se ale dá říci, že se jedná o ukazatele, které nepodporují ukazatelovou aritmetiku.
 
-C++ reference neumožňují měnit adresu odkazované paměti. V praxi ale ji programátor poměrně často potřebuje měnit; musí se proto uchylovat k ukazatelům, které podporují ukazatelovou aritmetiku a pro přístup k odkazované hodnotě je třeba buď použít dereferenci (která je implementována prefixovým operátorem \inlineCppCode{*ptr} a má tendenci znepřehledňovat kód) nebo speciální syntaktickou konstrukci (místo \inlineCppCode{x.y} \inlineCppCode{x->y}) pro přístup k prvkům odkazované hodnoty.
+C++ reference neumožňují měnit adresu odkazované paměti. V praxi ji ale programátor poměrně často potřebuje měnit; musí se proto uchylovat k ukazatelům, které podporují ukazatelovou aritmetiku a pro přístup k odkazované hodnotě je třeba buď použít dereferenci (která je implementována prefixovým operátorem \inlineCppCode{*ptr} a má tendenci znepřehledňovat kód) nebo speciální syntaktickou konstrukci (místo \inlineCppCode{x.y} \inlineCppCode{x->y}) pro přístup k prvkům odkazované hodnoty.
 
 D k problematice přistupuje takto:
 \begin{itemize}
@@ -258,13 +260,13 @@ Způsob deklarace ukazatelů je v C++ i D problematický z hlediska syntaktické
 
 V jazyce Beast je tímto znakem otazník (\inlineCode{?}). V~C++ a~D~je používán pouze v ternárním operátoru (\inlineCode{cond ? expr1 : expr2}), kteréhož funkčnost Beast obstarává jiným způsobem\footnote{Viz \autoref{ternary}}.
 
-Ukazatel v jazyce Beast funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se ale nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu a nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}; přístup k prvkům odkazované hodnoty není možný jiným způsobem. K získání ukazatele se také, kvůli stejným důvodům jako u~dereference, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Typ?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer( @ctime Type referencedType )}.
+Ukazatel v jazyce Beast funguje skoro stejně jako v C++; podporuje ukazatelovou aritmetiku. Na dereferenci se ale nepoužívá prefixový operátor \inlineCode{*ptr} kvůli gramatickým konfliktům a protože může způsobovat nepřehlednost kódu a nejasnosti v prioritě operátorů (například u výrazu \inlineCppCode{*p++}). Místo toho se používá \inlineCode{ptr.data}; přístup k prvkům odkazované hodnoty není možný jiným způsobem. K získání ukazatele se také, kvůli stejným důvodům jako u~dereference, nepoužívá prefixový operátor \inlineCppCode{&variable}, nýbrž \inlineCode{variable.#addr}. Typ ukazatel není deklarován pomocí zvláštní syntaktické konstrukce (suffixový operátor \inlineCode{Type?} přenechává hojněji používaným referencím), jedná se o kompilátorem definovanou třídu \inlineCode{Pointer( @ctime Type referencedType )}.
 
 Reference je podobná referencím v C++, navíc ale umožňuje změnu odkazované adresy (může mít i hodnotu \inlineCode{null}). Neumožňuje zanořování -- nelze definovat referenci na referenci (ukazatel na referenci ale možný je). Chová se stejně jako odkazovaná hodnota, až na několik výjimek:
 \begin{itemize}
 	\item Je přetížen operátor \inlineCode{ref := var} a \inlineCode{ref := null}, který je určen pro změnu odkazované adresy reference.
 	\item Je přetížen operátor \inlineCode{ref is null}, který navrací, zda má reference hodnotu \inlineCode{null}.
-	\item \inlineCode{ref.addr} vrací ukazatel na referenci. \inlineCode{ref.refAddr} vrací ukazatel na odkazovaný objekt.
+	\item \inlineCode{ref.#addr} vrací ukazatel na referenci. \inlineCode{ref.#refAddr} vrací ukazatel na odkazovaný objekt.
 \end{itemize}
 
 Všechny typy jsou implicitně konvertibilní na referenci (daného typu i jeho předků). Reference jsou implicitně konvertibilní na odkazovaný typ, na reference předků odkazované třídy a explicitně konvertibilní na referenci jakéhokoli typu; při těchto explicitních konverzích probíhá dynamická typová kontrola, jejíž výsledek může být \inlineCode{null}.
@@ -284,7 +286,7 @@ Jazyk Beast zamýšlí poskytnout všechny výše uvedené případy užití. Sy
 Z časových důvodů bude v rámci tohoto projektu implementováno užití dekorátorů pouze jako direktiv pro kompilátor. Pro více informací o dekorátorech v jazyce Beast \beastRef{Decorators}.
 
 \subsection{Vykonávání fukncí za doby kompilace}
-Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci konceptu líhnutí kódu, viz \autoref{chap:ctime}.
+Vykonávání funkcí za doby kompilace je jedna z nutných prekvizit pro realizaci konceptu líhnutí kódu, viz \autoref{ctime}.
 
 \subsection{Metaprogramování} \label{metaprogramming}
 Metaprogramování je koncept, jehož realizace dává programátorovi možnost přistupovat ke kódu "jako k datům," tedy kód pomocí kódu samotného určitým způsobem číst (například získání seznamu proměnných ve třídě, zjištění návratového typu funkce, atp.) a~přidávat/upravovat (například vytvořit třídy pro binární strom nad zadaným typem nebo na základě seznamu proměnných ve třídě vygenerovat funkci, která zajistí její korektní serializaci). Do tohoto konceptu spadá například šablonování a reflexe.
@@ -379,7 +381,7 @@ void main() {
 
 Tato forma \textit{mixin}u společně s vykonáváním funkcí za doby kompilace (CTFE) značně zvyšuje možnosti metaprogramování. V praxi ale bývá kód, který \textit{mixins} využívá, nepřehledný.
 
-Ačkoli jazyk Beast podporuje vícenásobnou dědičnost, koncept \textit{mixins} nabízí rozšíření možností a proto jejich zavedení stojí za úvahu. Z časových důvodů je ale prozatím přeskočen.
+Ačkoli jazyk Beast podporuje vícenásobnou dědičnost, koncept \textit{mixins} nabízí rozšíření možností, a proto jejich zavedení stojí za úvahu. Z časových důvodů je ale prozatím přeskočen.
 
 \subsection{Výjimky}
 Systém výjimek má napříč jazyky velice podobnou formu využívající konstrukce typu \inlineDCode{try-catch-finally} a příkazu typu \inlineDCode{throw}. Koncept je všeobecně známý, není tedy třeba ho tu rozepisovat.
@@ -574,7 +576,7 @@ Double area( auto? entity )
 	\item Funkce se používá pouze ve specifických případech; například se nám v některém z~modulů hodí funkce \inlineCode{Bool isDividableByTwo(Int x)}, zavádět ji ale všude by bylo nepraktické.
 \end{itemize}
 
-UFCS nicméně povoluje volání funkce dvěma způsoby, což narušuje jednotnost kódu. V~úvahu připadá zavést direktivu kompilátoru (formou dekorátoru, viz \autoref{decorators}), která by říkala, že místo "klasické" syntaxe využívá funkce k volání syntaxi pro třídní metody. Pro každou funkci by vždy byla povolena jen jeden ze způsobů volání. Podobně fungují například \textit{extension methods} v C\#.
+UFCS nicméně povoluje volání funkce dvěma způsoby, což narušuje jednotnost kódu. V~úvahu připadá zavést direktivu kompilátoru (formou dekorátoru, viz \autoref{decorators}), která by říkala, že místo "klasické" syntaxe využívá funkce k volání syntaxi pro třídní metody. Pro každou funkci by vždy byl povolen jen jeden ze způsobů volání. Podobně fungují například \textit{extension methods} v C\#.
 
 Jazyk Object Pascal řeší tento problém pomocí tzv. \textit{helper objects}. Objekt, nad kterým funkce pracuje, pak není předáván jako první parametr, ale napodobuje se objektový přístup (\inlinePascalCode{self} a implicitní přístup do jmenného prostoru objektu).
 \begin{pascalcode}
@@ -671,7 +673,7 @@ class C {
 		// Constructor	
 	}
 
-	Void #operator( Operator.binPlus, C? other ) {
+	Void #opBinary( Operator.binPlus, C? other ) {
 		// Overload of a + b
 	}
 
@@ -684,12 +686,12 @@ class C {
 \end{code}
 
 \subsection{Ternární operátor} \label{ternary}
-Narozdíl od jazyků C++ a D Beast neposkytuje ternární operátor \inlineCppCode{a ? b : c}. Hlavním důvodem byla potřeba využít lexémy \inlineDCode{?} a \inlineDCode{:} jinde. Místo toho existuje funkce 
+Narozdíl od jazyků C++ a D Beast neposkytuje ternární operátor \inlineCppCode{a ? b : c}. Hlavním důvodem byla potřeba využít lexémy \inlineDCode{?} a \inlineDCode{:} jinde. Místo toho existuje funkce:
 
 \begin{code}
 auto select(@lazy Bool cond1, @lazy auto val1, @lazy auto defVal)
 \end{code}
-která má stejnou funkčnost (\inlineCode{cond1} odpovídá parametru \inlineDCode{a}, \inlineCode{val1} parametru \inlineDCode{b} a \inlineCode{defVal} parametru \inlineDCode{c}). Tato funkce je navíc rozšiřitelná o libovolný počet podmínek a odpovídajících hodnot -- tedy například 
+která má stejnou funkčnost (\inlineCode{cond1} odpovídá parametru \inlineDCode{a}, \inlineCode{val1} parametru \inlineDCode{b} a \inlineCode{defVal} parametru \inlineDCode{c}). Tato funkce je navíc rozšiřitelná o libovolný počet podmínek a odpovídajících hodnot -- tedy například:
 
 \begin{code}
 auto select(
@@ -743,10 +745,47 @@ Void main() {
 		console.write( "Not found!" );
 }
 \end{code}
+
+\subsection{Parametry s konstantní hodnotou}
+V jazyce Beast se dá specializace "šablon" provést pomocí konstrukce \inlineCode{if( expr )} (viz \autoref{metaprogramming}), která umožňuje specializaci jak částečnou (pro libovolně určenou množinu hodnot \ctime parametrů), tak pro úplnou (pro jednu konkrétní hodnotu \ctime parametrů). Úplná specializace se dá v Beastu realizovat i jednodušším způsobem -- použitím parametru s konstantní hodnotou.
+
+\begin{code}
+// Without const-value parameter
+Void foo( @ctime Int x )
+	if( x == 3 ) 
+{
+	...
+}
+
+// With const-value parameter
+Void foo( 3 ) {
+	...
+}
+\end{code}
+
+Obě varianty se pak dají volat pomocí \inlineCode{foo( 3 )}.
+
+Tento koncept je také užitečný k rozlišování mezi více přetíženími funkce, které mají stejně typy parametrů:
+
+\begin{code}
+class Stream {
+	
+	@public:
+	Void #ctor( CreateFrom.fromFile, String filename ) { /* ... */ }
+	Void #ctor( CreateFrom.fromString, String str ) { /* ... */ } 
+	
+}
+
+Void main() {
+	Stream str1 = Stream( :fromFile, "file.txt" );
+	Stream str2 = Stream( :fromString, "asdfgh" );
+}
+\end{code}
+
 %TODO scope guards
 %TODO break labels
 
-\chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{chap:ctime}
+\chapter{Koncept líhnutí kódu (\textit{code~hatching})} \label{ctime}
 Koncept líhnutí kódu je nový koncept vytvořený v rámci návrhu jazyka Beast a spojuje do koherentního celku funkčnost několika již zavedených konceptů -- například šablonového metaprogramování, reflexe jazyka, vykonávání funkcí za doby kompilace.
 
 Koncept zavádí jednu jednoduchou myšlenku, ze které pak vyplývá celá řada důsledků. Tou myšlenkou je \textbf{zavedení klasifikátoru pro proměnné, jejichž hodnota se dá zjistit} bez nutnosti spouštět program. Tímto klasifikátorem je v~jazyce Beast dekorátor \ctime.
@@ -769,7 +808,7 @@ Další jednoduchý příklad:
 @ctime Int x = console.read( Int );
 \end{code}
 
-Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.readNumber()} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání alespoň některých funkcí.
+Zde je zřejmé, že proměnná \inlineCode{x} nesplňuje naše požadavky. Příkaz \inlineCode{console.read( Int )} čte data z konzole a návratová hodnota této funkce se nedá zjistit bez spuštění programu (mohli bychom požádat o vstup již během kompilace, pro demonstraci konceptu ale toto nyní neuvažujme). Z~příkladu vyplývá, že \ctime proměnná nemůže být datově závislá na volání alespoň některých funkcí.
 
 \begin{code}
 Int add( Int x, Int y ) {
@@ -798,11 +837,11 @@ Void main() {
 
 Tento příklad ukazuje, že to, zda funkci lze použít pro výpočet hodnot \ctime proměnných, může záležet na předaných parametrech.
 
-\textbf{Funkce tedy k výpočtu hodnot \ctime proměnných všeobecně mohou být použity.} To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo ktré závisí na externích datech (soubory, čas, vstup uživatele, ...).
+\textbf{Funkce tedy k výpočtu hodnot \ctime proměnných všeobecně mohou být použity.} To, jestli funkce opravdu lze použít, se zjistí až během vykonávání. Nelze použít žádné funkce, u kterých kompilátor nezná chování nebo které závisí na externích datech (soubory, čas, vstup uživatele, ...).
 
 Z tohoto úhlu pohledu nemá funkce smysl označovat dekorátorem \inlineCode{@ctime}; níže v této kapitole je popsáno, že se tento dekorátor na funkce používá, ale s~trochu jiným účelem.
 
-Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Hodnoty \nonctime proměnných mohou sice být odvoditelné bez nutnosti spuštění programu, ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat jej pouze z~kódu, v~praxi by toto však značně zpomalilo kompilaci -- kompilátor by musel každou akci s každou proměnnou zkusit při kompilaci vykonat (jak je uvedeno výše, je to jediný možný způsob, jak ověřit, že proměnná může být považována za \ctime). Mnoho proměnných by se ukázalo být \nonctime, tím pádem by bylo časově nákladné ověřování zbytečné. Zavedením klasifikátoru, který \ctime proměnné jasně označuje, je za doby kompilace nutné vykonat pouze ty funkce, u~kterých se jejich splnitelnost očekává a jejich nesplnitelnost je považována za logickou chybu (což vyvolá chybu kompilátoru).
+Všeobecně se dá říci, že \ctime proměnné nemohou být závislé na \nonctime datech. Hodnoty \nonctime proměnných mohou sice být odvoditelné bez nutnosti spuštění programu, ale nemusí. Teoreticky by bylo možné klasifikátor vynechat a odvozovat jej pouze z~kódu, toto by však vyžadovalo implementaci rozsáhlé statické analýzy, která je mimo rámec možností autora. Zavedení klasifikátoru, který \ctime proměnné jasně označuje, řeší problém bez nutnosti mít statickou analýzu; navíc by se dalo spekulovat nad rozdílem čitelnosti kódu bez \ctime dekorátoru a s ním.
 
 Předpokládejme tedy, že \textbf{hodnoty všech proměnných, které nejsou \ctime, se před spuštěním programu nedají odvodit.}
 
@@ -863,7 +902,7 @@ Void main() {
 
 Z řádku \ref{ctime:branch:1} je patrné, že větvení v rámci \ctime proměnných je možné. Řádek \ref{ctime:branch:2} zase ukazuje, že to není možné vždy. Pokud je větvení datově závislé na výrazu, jehož hodnota se dá odvodit za doby kompilace (dále jen \ctime výrazu), mohou být v jeho těle přítomny \ctime proměnné. Pro usnadnění práce kompilátoru a zpřehlednění kódu Beast vyžaduje, aby \ctime větvení byly označeny dekorátorem (jinak se k nim přistupuje jako k \nonctime, viz dále).
 
-Problematika je ale trochu složitější:
+Problematika je ale trochu složitější: \nopagebreak
 
 \begin{code}
 Void main() {
@@ -900,7 +939,7 @@ Void main() {
 \end{code}
 
 \subsection{Reference a dynamické alokace} \label{ctime:ref}
-Pro praktickou demonstraci tohoto problému je již třeba složitější příklad:
+Pro praktickou demonstraci tohoto problému je již třeba složitější příklad: \nopagebreak
 
 \begin{code}
 class BinaryTreeNode {
@@ -921,7 +960,7 @@ class BinaryTree {
 	Void insert!( String key, Int value ) { ... }
 	
 	/// binaryTree[ "key" ] key lookup
-	Int #operator( Operator.brackets, String key ) { ... }
+	Int #index( String key ) { ... }
 
 }
 
@@ -948,7 +987,7 @@ Protože \inlineCode{tree} je statická \ctime proměnná, musí být konstantn�
 
 Jak tedy zajistit, aby se po inicializaci proměnné \inlineCode{tree} nedalo k jejím uzlům přistupovat přes mutabilní reference? Tento problém by se dal vyřešit zavedením vynucené tranzitivity konstantnosti referencí a ukazatelů -- tedy že při konstantní referenci/ukazateli by se odkazovaná paměť automaticky brala jako také konstantní. V oddílu \ref{constPropagation} jsme ale rozhodli, že jazyk Beast nebude vynucovat propagaci konstantnosti přes reference -- programátor si ji musí zajistit sám tam, kde je to potřeba. U binárního stromu je logické, že je-li konstantní strom, měly by jeho uzly být také konstantní; v případě programátorem definovaných typů ale nelze zaručit, že je mutabilita korektně ošetřena.
 
-Při kompilaci se konstantní statické proměnné v některých kompilátorech umísťují do tzv. \textit{.text section} ve výsledném binárním souboru. Stránky paměti načtené z těchto sekcí jsou chráněny operačním systémem proti zápisu a pokus o zapsání do nich vyvolává běhovou chybu (\textit{segfault/access violation}). Beast řeší problém obdobným způsobem -- při pokusu o~zápis do paměti (během kompilace), která byla alokována během inicializace statické \ctime (nebo i jen konstantní) proměnné, mimo dobu inicializace zmíněné proměnné vyvolá kompilátor chybu. Dalším prvkem ochrany je zákaz existence mutabilních referencí a ukazatelů na dané bloky mimo rámec inicializované proměnné.
+Při kompilaci se konstantní statické proměnné v některých kompilátorech umísťují do tzv. \textit{.text section} ve výsledném binárním souboru. Stránky paměti načtené z těchto sekcí jsou chráněny operačním systémem proti zápisu a pokus o zapsání do nich vyvolává běhovou chybu (\textit{segfault/access violation}). Beast řeší problém obdobným způsobem -- při pokusu o~zápis do paměti (během kompilace), která byla alokována během inicializace statické \ctime (nebo i jen konstantní) proměnné, mimo dobu inicializace zmíněné proměnné vyvolá kompilátor chybu. Dalším prvkem ochrany je zákaz existence mutabilních referencí a ukazatelů na dané bloky mimo rámec inicializované proměnné. Této problematice se také věnuje \autoref{sec:sessions}.
 
 \subsection{Konverze na \nonctime}
 Je vhodné objasnit, že dekorátor \inlineCode{@ctime} není modifikátor typu (\inlineCode{typeModifier}\footnote{\BeastRef{Decoration contexts}}), ale modifikátor proměnné/parametru (\inlineCode{parameterModifier}/\inlineCode{variableModifier}). To znamená, že typy proměnných \inlineCode{ref} a \inlineCode{cref} v příkladu \ref{ctime:nonctime:3} jsou shodné (\inlineCode{ref.#type == cref.#type == Int!?}). Zákaz přiřazování výrazů závislých na \nonctime datech do \ctime proměnných je řešen jinak než typovou kontrolou.
@@ -1018,7 +1057,7 @@ Void main() {
 Řešení tohoto problému už je značně problematické. Kvůli způsobu implementace by zápis do paměti připadající \ctime datům vedl k nedefinovanému chování aplikace, takže je třeba mu zabránit. Všem těmto komplikacím by se předešlo vynucením tranzitivity konstantnosti přes referenci a vzniká tak dilema, zda tranzitivitu vynutit i za cenu omezení možností programátora, nebo ponechat programátorovi místo, kde by se nechtěně mohl "střelil do nohy". Na základě názoru, že "jazyk má sloužit programátorovi, ne programátor jazyku" se autor přiklání k variantě nevynucovat tranzitivitu.
 
 \subsection{Třídní \ctime proměnné}
-Zvažme možnost existence nestatických \ctime proměnných ve třídách:
+Zvažme možnost existence nestatických \ctime proměnných ve třídách: \nopagebreak
 
 \begin{code}
 class C {
@@ -1153,10 +1192,10 @@ Void main() {
 }
 \end{code}
 
-Dokonce lze vytvořit i speciální dekorátor, v našem jazce pojmenovaný \inlineCode{@autoCtime}, který argument bere jako \ctime, pokud to je možné:
+Dokonce lze vytvořit i speciální dekorátor, v našem jazce pojmenovaný \inlineCode{@autoCtime}, který argument bere jako \ctime, pokud to je možné: \nopagebreak
 
 \begin{code}
-Index regexFind( String pattern, @autoCtime String regex ) {
+Index regexFind( String data, @autoCtime String regex ) {
 	// regex implementation
 }
 
@@ -1211,7 +1250,7 @@ Pro usnadnění práce programátora se zavádí i podpora dekorátoru \inlineCo
 Třídní proměnné \ctime tříd jsou \ctime (funkce mohou být \nonctime).
 
 \subsection{Reflexe kódu} \label{ctime:reflection}
-Koncept také umožňuje reflexi; implicitně se jedná o reflexi za doby kompilace, reflexi za doby běhu si programátor může napsat (případně využít knihovnu). Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member( String identifier )}, které reflexi zajišťují. Jsou zdokumentovány v referenci jazyka.
+Koncept také umožňuje reflexi; implicitně se jedná o reflexi za doby kompilace, reflexi za doby běhu si programátor může napsat (případně využít knihovnu). Vezmeme-li v úvahu, že každá třída je instancí \ctime třídy \inlineCode{Type}, stačí už jen přidat do těchto tříd další \ctime proměnné, které je popisují. Jazyk Beast zavádí \ctime konstanty jako \inlineCode{Symbol.#identifier}, \inlineCode{Function.#returnType}, třídy \inlineCode{FunctionMetadata}, \inlineCode{ClassMetadata} a funkce jako \inlineCode{Class.#member( String identifier )}, které reflexi zajišťují.
 
 \section{Implementace konceptu} \label{ctime:orderInterpreters}
 Nyní zvažme, jak by se tento koncept dal implementovat do kompilátoru.
@@ -1220,7 +1259,7 @@ Je zřejmé, že hodnoty \ctime proměnných se budou vypočítávat již během
 
 Možnosti \ctime jsou díky \hyperref[ctime:typeVars]{typovým proměnným} a \hyperref[ctime:reflection]{reflexi kódu} větší, než co je možné udělat za běhu aplikace; v rámci \ctime se sémantika příkazů může měnit na základě vykonání jiného \ctime kódu. Kdybychom zpracování \ctime chtěli realizovat klasickým interpretem, který přijímá bajtkód, zjistili bychom, že takový kód, který by dokázal pojmout veškerou funkčnost konceptu líhnutí kódu, by odpovídal abstraktnímu syntaktickému stromu.
 
-Tento \ctime~"interpret" bude nutně pomalejší než konvenční interprety, protože jeho součástí je kompletní sémantická analýza. Jakmile se ale zbavíme \ctime proměnných, můžeme program převést do bajtkódu a ten zpracovávat konvenčním interpretem, který je rychlejší. Pro větší rychlost kompilace by tedy kompilátor jazyka Beast měl mít dva interprety: první (dále interpret prvního stupně) pracující přímo nad AST schopný zpracovávat i~\ctime proměnné a~druhý (dále interpret druhého stupně) pracující nad bajtkódem. Tyto interprety se dokonce mohou postupně aplikovat na stejnou funkci:
+Tento \ctime~"interpret" bude nutně pomalejší než konvenční interprety, protože jeho součástí je kompletní sémantická analýza. Jakmile ale zpracujeme \ctime proměnné, můžeme kód převést do bajtkódu a ten vykonávat konvenčním interpretem, který je rychlejší. Pro větší rychlost kompilace by tedy kompilátor jazyka Beast měl mít dva interprety: první (dále interpret prvního stupně) pracující přímo nad AST schopný zpracovávat i~\ctime proměnné a~druhý (dále interpret druhého stupně) pracující nad bajtkódem. Tyto interprety se dokonce mohou postupně aplikovat na stejnou funkci:
 
 \begin{code}
 Int pow( Int x, @ctime Int exp ) {
@@ -1235,7 +1274,7 @@ Int pow( Int x, @ctime Int exp ) {
 @ctime Int powed = pow( 5, 3 );
 \end{code}
 
-Výše uvedený kód by po interpretaci funkce \inlineCode{pow( 5, 3 )} pomocí \ctime interpretu vypadal (bez optimalizací) takto:
+Výše uvedený kód by po interpretaci funkce \inlineCode{pow( 5, 3 )} pomocí \ctime interpretu vypadal (bez optimalizací) takto: \nopagebreak
 
 \begin{code}
 Int pow( Int x, 3 ) {
@@ -1249,7 +1288,7 @@ Int pow( Int x, 3 ) {
 
 Po spuštění druhého stupně interpretace (které by předcházela generace bajtkódu) by funkce už navrátila hodnotu 125, která by se uložila do proměnné \inlineCode{powed}. V tomto konkrétním případě by mohlo být vhodnější celou funkci vykonat pomocí pomalejšího \ctime interpretu (protože generování bajtkódu a jeho následné vykonání může být ve výsledku pomalejší), nicméně v~případech, kdy by se funkce \inlineCode{pow} se stejnou hodnotou druhého parametru (který je \ctime) volala vícekrát, je výhodnější použít dvoustupňovou interpretaci.
 
-Bližší studium této problematiky je mimo rámec této práce. %I přes faktickou existenci pouze jednoho interpretu zaveďme termíny "interpretace prvního stupně," kterým je myšleno zpracování \ctime kódu, a "interpretace druhého stupně," který referuje na vykonávání standardních funkcí za doby kompilace.
+%Bližší studium této problematiky je mimo rámec této práce. I přes faktickou existenci pouze jednoho interpretu zaveďme termíny "interpretace prvního stupně," kterým je myšleno zpracování \ctime kódu, a "interpretace druhého stupně," který referuje na vykonávání standardních funkcí za doby kompilace.
 
 \subsection{\ctime proměnné a \nonctime reference} \label{ctime:impl:ref}
 Nelze tvrdit, že \ctime proměnné jsou čistě záležitostí kompilace. V momentě, kdy uložíme adresu \ctime proměnné do \nonctime reference/ukazatele (toto může nastat například i~při předávání \ctime dat jako argumentů typu reference při volání \nonctime funkcí), tak abychom zajistili funkčnost reference, musíme data této proměnné (a všech dalších proměnných, na které odkazuje) umístit do paměti i při běhu programu. Ačkoli je veškerý \ctime kód vykonáván interpretem prvního stupně, výsledky a dokonce i některé mezistavy musí být kopírovány při běhu aplikace.
@@ -1343,7 +1382,7 @@ Void main() {
 }
 \end{code}
 
-Aby kód správně fungoval, sémantická kontrola v \inlineCode{else} větvi podmínky (řádek \ref{ctime:impl:branch:1}) nesmí proběhnout, protože proměnná \inlineCode{a} nemá člen \inlineCode{y}. Tento případ není okrajovou záležitostí -- v~reálném \ctime kódu by obdobné problémy nastávaly na spoustě míst. \textbf{Sémantická kontrola tedy neprobíhá ve větvích \ctime větvení, které neproběhnou.} Na druhou stranu ale také musí probíhat pro každou iteraci \ctime cyklů:
+Aby kód správně fungoval, sémantická kontrola v \inlineCode{else} větvi podmínky (řádek \ref{ctime:impl:branch:1}) nesmí proběhnout, protože proměnná \inlineCode{a} nemá člen \inlineCode{y}. Tento případ není okrajovou záležitostí -- v~reálném \ctime kódu by obdobné problémy nastávaly na spoustě míst. \textbf{Sémantická kontrola tedy neprobíhá ve větvích \ctime větvení, které neproběhnou.} Na druhou stranu ale musí probíhat pro každou iteraci \ctime cyklů zvlášť: \nopagebreak
 
 \begin{code}
 class C { 
@@ -1391,7 +1430,7 @@ Int foo( 5, Int j ) {
 
 V případě, že se někde jinde v kódu volá funkce \inlineCode{foo} se \textit{stejnými} \ctime argumenty, zdánlivě není třeba generovat další funkci, protože by se chovala naprosto stejně; kompilátor může využít již vygenerovaný kód. Stejnými \ctime argumenty se myslí bitově shodná data; nelze uvažovat shodu podle operátoru \inlineCode{==}, protože bitově rozdílná data mohou i~přes sémantickou shodu vést k rozdílným výsledkům výpočtu (například i když jsou dva binární stromy shodné, jejich hloubka může být různá a výsledky výpočtů pracujících s hloubkou se nemusí shodovat).
 
-Tvrzení, že bitově stejné \ctime argumenty generují stejné funkce, ale není ve všech případech platné. Uvažme tento příklad:
+Tvrzení, že bitově stejné \ctime argumenty generují stejné funkce, ale není ve všech případech platné. Uvažme tento příklad: \nopagebreak
 
 \begin{code}
 Int calc( Int x, @ctime Int!? y ) {
@@ -1469,7 +1508,7 @@ Tato kapitola se věnuje implementaci demonstračního kompilátoru jazyka Beast
 S ohledem na autorovu znalost programovacích jazyků připadaly jako jazyky pro implementaci demonstračního kompilátoru v úvahu dva kandidáti -- C++ a D. Zvítězil jazyk D, zejména kvůli obsáhlé a dobře zdokumentované standardní knihovně a kvůli odpadnutí nutnosti psát hlavičkové soubory. Nevýhodou je menší nabídka podporovaných vývojových prostředí, obzvláště pak s podporou ladění v OS Windows.
 
 \section{Lexikální a syntaktická analýza}
-Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru. Existuje mnoho generátorů parserů, jejich průzkum a srovnávání by sám o sobě vydal na knihu; mezi ty nejznámější z nich patří například LALR generátor Bison\footnote{\url{https://www.gnu.org/software/bison/}}, a LL generátor ANTLR\footnote{\url{http://www.antlr.org/}}. Srovnání LL a LR parserů je mimo rámec této práce a~snadno dohledatelné na internetu v přehledné podobě (například \cite{LLLRComp}).
+Při psaní kompilátoru stojí za to uvažovat o využití generátoru parseru. Existuje mnoho generátorů parserů, jejich průzkum a srovnávání by samo o sobě vydalo na knihu; mezi ty nejznámější z nich patří například LALR generátor Bison\footnote{\url{https://www.gnu.org/software/bison/}}, a LL generátor ANTLR\footnote{\url{http://www.antlr.org/}}. Srovnání LL a LR parserů je mimo rámec této práce a~snadno dohledatelné na internetu v~přehledné podobě (například \cite{LLLRComp}).
 
  Bylo rozhodnuto, že demonstrační kompilátor bude založen na LL parseru, především kvůli větší intuitivnosti návrhu a lepším možnostem generování chybových zpráv. Dalším předmětem k úvaze bylo, zda opravdu použít generátor parseru, nebo parser napsat ručně. Napsání vlastního syntaktického a sémantického analyzátoru není obtížné a nejde o nic neobvyklého -- takto jsou řešeny například kompilátory Microsoft C\#\footnote{Dle \cite{JavaCompilerConstructionCampbell}, oddíl 8.5.2}, DMD\footnote{Kompilátor jazyka D; zřejmé z kódu parseru, viz \url{https://github.com/dlang/dmd/blob/master/src/parse.d}}, GCC\footnote{Uvedeno zde: \url{https://gcc.gnu.org/wiki/New_C_Parser}} nebo Clang\footnote{Uvedeno zde: \url{http://clang.llvm.org/features.html}, první odstavec předposledního oddílu}. Autor tohoto projektu zvolil variantu napsání vlastního parseru a lexeru metodou rekurzivního sestupu (modifikovanou tak, aby si poradila i s částmi gramatiky, které nejde zpracovat LL(1) parserem) ve víře, že časová náročnost bude srovnatelná s osvojením si a aplikací nové technologie s~tím, že takto napsaný parser bude lépe modifikovatelný a~všeobecně více "pod kontrolou".
  
@@ -1494,11 +1533,11 @@ b.#type a;
 
 Zde vzniká cyklická závislost úloh pro odvození typu proměnné \inlineCode{a} a pro odvození typu proměnné \inlineCode{b}. Třída \inlineCode{TaskGuard} je takovouto cyklickou závislost schopná detekovat a reagovat na ni vypsáním chybové hlášky.
 
-V případě, že během vykonávání úlohy vznikne chyba (je vyvolána výjimka), třída \inlineCode{TaskGuard} is k dané úloze poznačí, že její zpracování způsobilo chybu. Tento příznak chyby se propaguje grafem závislostí do všech závislých úloh (další chybové hlášky se nevypisují). Ty části grafu, které touto chybo nejsou ovlivněny, mohou být dále zpracovávány a produkovat další, nezávislé chybové hlášky.
+V případě, že během vykonávání úlohy vznikne chyba (je vyvolána výjimka), třída \inlineCode{TaskGuard} is k dané úloze poznačí, že její zpracování způsobilo chybu. Tento příznak chyby se propaguje grafem závislostí do všech závislých úloh (další chybové hlášky se nevypisují). Ty části grafu, které touto chybo nejsou ovlivněny, mohou být dále zpracovávány a případně produkovat další, nezávislé chybové hlášky.
 
 V praxi se graf závislostí tvoří postupně; vykonání jedné úlohy vytváří další úlohy, které mají být vykonány (například syntaktická analýza rozpozná definici funkce, pro kterou jsou vytvořeny úlohy pro odvození návratového typu, zpracování seznamu parametrů a generování kódu) a většina závislostí je objevena až během vykonávání nějaké úlohy (například to, že kód funkce pracuje s nějakou třídou, se zjistí až během zpracovávání daného kódu). Tomuto je přizpůsobena i implementace třídy \inlineCode{TaskGuard}.
 
-Třída \inlineCode{TaskGuard} obsahuje jedinou funkci, \inlineCode{enforceDone}. Jakémukoli přístupu k datům, které úloha zpracovává, musí předcházet volání právě této funkce. Funkce se chová následovně:
+Třída obsahuje jedinou funkci, \inlineCode{enforceDone}. Jakémukoli přístupu k datům, které úloha zpracovává, musí předcházet volání právě této funkce. Funkce se chová následovně:
 \begin{itemize}
 	\item Pokud byla úloha již dříve vykonána s chybou, funkce vyvolá "tichou" výjimku.
 	\item Pokud je úloha již vykonaná, funkce se ukončí.
@@ -1511,28 +1550,28 @@ Třída \inlineCode{TaskGuard} obsahuje jedinou funkci, \inlineCode{enforceDone}
 Implementace využívá atomických operací, k použití semaforů dochází až v případě, že je potřeba využít správu vláken. Místo systémových vláken se využívá vlákének (angl. \textit{Fibers}), což dále snižuje cenu režie.
 
 \section{Virtuální paměť a \textit{sessions}} \label{sec:sessions}
-Kompilátor zavádí virtuální adresový prostor. V něm jsou uloženy nejenom data \ctime proměnných, ale  adresy v tomto prostoru jsou přiřazeny i \nonctime proměnným. To umožňuje jednotný přístup k \ctime a \nonctime proměnným.
+Kompilátor zavádí virtuální adresový prostor. V něm jsou uloženy nejenom data \ctime proměnných, ale  adresy v tomto prostoru jsou přiřazeny i \nonctime proměnným. To umožňuje jednotný přístup k \ctime a \nonctime proměnným. Každý blok paměti obsahuje příznak, ve kterém je uloženo, zda blok reflektuje \ctime proměnnou nebo \nonctime proměnnou. Pokus o čtení z/zápis do \nonctime bloků během doby kompilace pochopitelně vyvolá chybu.
 
 Virtuální paměťový prostor je z časových důvodů implementován lineárním polem; do budoucna je plánováno upuštění od klasického virtuálního adresového prostoru (kde má každý bajt unikátní adresu i na úrovni interpretovaného kódu/dat) a využití jiného způsobu implementace ukazatelů pro interpret.
 
-Implementované řešení virtuální paměti také disponuje systémem pro ochranu zápisu -- ten je využit zejména pro vynucování dodržení pravidel konceptu líhnutí kódu. Systém je implementován pomocí tzv. \textit{sessions} a \textit{subsessions}. Jedná se o číselné identifikátory, které jsou vázané k jednotlivým vláknům kompilátoru. Při alokaci/dealokaci virtuální paměti se k bloku uloží \textit{session} a \textit{subsession id}, které jsou právě přiřazeny k vláknu, které alokaci iniciovalo. Je vynucováno pravidlo, že vlákno nemůže zapisovat do bloků, které mají \textit{session id} jiné než takové, které má vlákno právě přiřazeno. Pro každý výpočet hodnoty statické proměnné a pro každý \nonctime rámec (tedy rámce \nonctime funkcí a větvících příkazů) je vláknu přiřazeno unikátní \textit{session id}; říkáme, že vlákno je v dané \textit{session}. Každé \textit{session id} jde přiřadit pouze jednou, jakmile vlákno \textit{session} opustí, není již jakkoli možné editovat paměť, která byla během \textit{session} vytvořena. Během jedné otevřené \textit{session} je ale možné otevřít v témže vlákně jinou; jakmile se tato nová \textit{subsession} ukončí, obnoví se opět ta stará.
+Implementované řešení virtuální paměti také disponuje systémem pro ochranu zápisu -- ten je využit zejména pro vynucování dodržení pravidel konceptu líhnutí kódu. Systém je implementován pomocí tzv. \textit{sessions} a \textit{subsessions}. Jedná se o číselné identifikátory, které jsou vázané k jednotlivým vláknům kompilátoru. Při alokaci/dealokaci virtuální paměti se k bloku uloží \textit{session} a \textit{subsession id}, které jsou právě přiřazeny k vláknu, které alokaci iniciovalo. Je vynucováno pravidlo, že vlákno nemůže zapisovat do bloků, které mají \textit{session id} jiné než takové, které má vlákno právě přiřazeno. Pro každý výpočet hodnoty statické proměnné a pro každý \nonctime rámec (tedy rámce \nonctime funkcí a větvících příkazů) je vláknu přiřazeno unikátní \textit{session id}; říkáme, že vlákno je v dané \textit{session}. Každé \textit{session id} jde přiřadit pouze jednou; jakmile vlákno \textit{session} opustí, není již jakkoli možné editovat paměť, která byla během \textit{session} vytvořena. Během jedné otevřené \textit{session} je ale možné otevřít v témže vlákně jinou; jakmile se tato nová \textit{subsession} ukončí, obnoví se opět ta původní.
 
 Důsledkem těchto pravidel je, že pokus o zápis do statické proměnné nebo proměnné z~jiného rámce (které mají přiřazené jiné \textit{session id}) způsobí chybu, což efektivně zajišťuje dodržení pravidel konceptu líhnutí kódu během kompilace. Dodržování pravidel bude v~budoucnu doplněno ještě mechanismem konstantnosti, který ale v rámci této práce nebyl z~časových důvodů implementován.
 
-V některých případech je žádoucí (například u argumentů volání funkcí, u kterých je třeba odvozovat typ, viz \ref{sec:overloadResolution}), aby tato ochrana fungovala jednosměrně -- aby z jedné \textit{session} šlo upravovat data jiné, ale ne naopak (v našem příkladě aby se při vyhodnocování argumentu nedalo měnit ostatní data, ale aby po vyhodnocení šlo pracovat s proměnnými, které vytvořil). Tento problém řeší \textit{subsessions}. Princip je podobný \textit{sessions} -- kromě \textit{session id} je ke každému bloku paměti a každému vlákno přiřazeno \textit{subsession id} (které je vázáno na \textit{session id}). Jediný rozdíl je v tom, že ze \textit{subsession} stejné \textit{session}, která byla vytvořena dříve (a tím pádem musí být buď nadřazená aktuální \textit{subsession}, nebo je již ukončená), lze upravovat data \textit{subsessions}, které byly vytvořeny později (a tedy mají vyšší \textit{subsession id}).
+V některých případech je žádoucí (například u argumentů volání funkcí, u kterých je třeba odvozovat typ, viz \autoref{sec:overloadResolution}), aby tato ochrana fungovala jednosměrně -- aby z jedné \textit{session} šlo upravovat data jiné, ale ne naopak (v našem příkladě aby se při vyhodnocování argumentu nedalo měnit ostatní data, ale aby po vyhodnocení šlo pracovat s proměnnými, které se vytvořily). Tento problém řeší \textit{subsessions}. Princip je podobný \textit{sessions} -- kromě \textit{session id} je ke každému bloku paměti a každému vlákno přiřazeno \textit{subsession id} (které je vázáno na \textit{session id}). Rozdíl je v tom, že ze \textit{subsession}, která byla vytvořena dříve (=má nižší \textit{subsession id}; a tím pádem musí být buď nadřazená aktuální \textit{subsession}, nebo je již ukončená a tedy z ní již nelze nic měnit), lze upravovat data \textit{subsessions} stejné \textit{session}, které byly vytvořeny později (a tedy mají vyšší \textit{subsession id}).
 
 \putImage[Demonstrace ochrany paměti a dodržování pravidel konceptu líhnutí kódu pomocí \textit{sesisons} a~\textit{subsessions}. Šipky zobrazují přístup k paměti -- plnou čárou zápis, přerušovanou čtení. Červená čára znázorňuje chybu. Čísla v kulatých závorkách u \textit{session id} udávají \textit{subsession id}.]{memorySessions.pdf}{width=14cm}
 
 Z důvodu uspoření paměti probíhá po ukončení každé \textit{session} (po zpracování kódu, který využívá dané \textit{session id}) \textit{garbage collection}, kdy je uvolněna ta paměť, která byla alokovaná v dané \textit{session} a která není nikde ve vygenerovaném kódu (ani nepřímo přes ukazatele) referencovaná. Další \textit{garbage collection} pak probíhá těsně před sestavením výstupního kódu. Při ukončení \textit{subsession} \textit{garbage collection} neprobíhá.
 
-\section{Sémantický strom, interpretace a \textit{backends}}
-Důsledkem návrhu jazyka a toho, že je povoleno přetěžování funkcí, je, že nelze generovat cílový kód bez alespoň částečného sestavení sémantického stromu (nebo by se musel generovat kód samostatně pro každé přetížení, poté vybrat jeden a zbytek zahodit). Pro výrazy tedy kompilátor sestavuje sémantický strom; příkazy, cykly, apod. jsou generovány "přímo". Všechny uzly stromu se zakládají na abstraktní třídě \inlineCode{DataEntity}. Nejdůležitější vlastností uzlu je datový typ, jehož hodnotu uzel zastupuje; dále je klíčová virtuální funkce \inlineCode{buildCode} (jejíž implementace se různí podle typu uzlu), která zajistí sestavení kódu, který odpovídá vyhodnocení daného uzlu, pro daný \textit{backend}.
+\section{Sémantický strom, interpretace a \textit{backends}} \label{impl:backends}
+Důsledkem návrhu jazyka a toho, že je povoleno přetěžování funkcí, je, že nelze generovat cílový kód bez alespoň částečného sestavení sémantického stromu (nebo by se musel generovat kód samostatně pro každé přetížení, poté vybrat jeden a zbytek zahodit). Pro výrazy tedy kompilátor sestavuje sémantický strom; příkazy, cykly, apod. jsou generovány "přímo". Všechny uzly stromu se zakládají na abstraktní třídě \inlineCode{DataEntity}. Nejdůležitější vlastností uzlu je datový typ, jehož hodnotu uzel zastupuje; dále je klíčová virtuální funkce \inlineCode{buildCode} (jejíž implementace se různí podle povahy uzlu), která zajistí sestavení kódu, který odpovídá vyhodnocení daného uzlu, pro daný \textit{backend}.
 
 Kompilátor obsahuje tři \textit{backends}:
 \begin{enumerate}
 	\item \textbf{Cpp} obstarává sestavení výstupního kódu v jazyce C/C++
-	\item \textbf{Ctime} místo sestavení přímo vykonává poskytnutý kód; tento se využívá při vyhodnocování výrazů dekorovaných \inlineCode{@ctime}. Jedná se o interpret prvního stupně (viz sekce \ref{ctime:orderInterpreters}).
-	\item \textbf{Interpret} sestavuje mezikód, který je poté vykonáván při běhu kompilátoru. Mezikód je sestavován pro \nonctime funkce (tedy pro funkce, které se mohou alespoň částečně vykonávat za běhu), které mají být vykonány během kompilace. Jedná se o interpret druhého stupně (viz sekce \ref{ctime:orderInterpreters}).
+	\item \textbf{Ctime} místo sestavení přímo vykonává poskytnutý kód; tento se využívá při vyhodnocování výrazů dekorovaných \inlineCode{@ctime}. Jedná se o interpret prvního stupně (viz \autoref{ctime:orderInterpreters}).
+	\item \textbf{Interpret} sestavuje mezikód, který je poté vykonáván při běhu kompilátoru. Mezikód je sestavován pro \nonctime funkce (tedy pro funkce, které se mohou alespoň částečně vykonávat za běhu), které mají být vykonány během kompilace. Jedná se o interpret druhého stupně (viz \autoref{ctime:orderInterpreters}).
 \end{enumerate}
 
 Ke všem třem \textit{backends} se přistupuje přes stejné rozhraní, které je založeno na jednoduchých operacích typu "sečti dvě 32bitové ordinální proměnné a výsledek ulož do této proměnné" nebo "sestav \textit{if} konstrukci".
@@ -1540,7 +1579,7 @@ Ke všem třem \textit{backends} se přistupuje přes stejné rozhraní, které 
 \putImage[Diagram popisující zpracování vstupního kódu v kompilátoru Dragon]{compiling_interpretation.pdf}{width=14cm}
 
 \subsection{Overload resolution} \label{sec:overloadResolution}
-Za normálních okolností a bez odvozování typů by při \textit{overload resolution} stačilo sestavit sémantický strom pro každý argument (tím by se zjistil typ každého argumentu) a potom najít nejvhodnější přetížení, případně přidat do sémantického stromu přetypování některých parametrů (implicitní), a tyto uzly sémantického stromu mu předat. První komplikací, jež v Beastu znemožňuje použití tohoto modelu, je to, že typ argumentu může záviset na typu parametru přetížení (tedy sémantický strom může být ve skutečnosti pro každé přetížení jiný) -- toto nastává například při použití konstrukce \inlineCode{:ident} (viz \ref{colonIdent}), která vyhledává identifikátor \inlineCode{ident} ve jmenném prostoru očekávaného typu parametru, místo aktuálního jmenného prostoru.
+Za normálních okolností a bez odvozování typů by při \textit{overload resolution} stačilo sestavit sémantický strom pro každý argument (tím by se zjistil typ každého argumentu) a potom najít nejvhodnější přetížení, případně přidat do sémantického stromu přetypování některých parametrů (implicitní), a tyto uzly sémantického stromu mu předat. První komplikací, jež v Beastu znemožňuje použití tohoto modelu, je to, že typ argumentu může záviset na typu parametru přetížení (tedy sémantický strom může být ve skutečnosti pro každé přetížení jiný) -- toto nastává například při použití konstrukce \inlineCode{:ident} (viz \autoref{colonIdent}), která vyhledává identifikátor \inlineCode{ident} ve jmenném prostoru očekávaného typu parametru, místo aktuálního jmenného prostoru.
 
 Toto je v Dragonu řešeno tak, že pokud je to možné -- pokud daný argument nevyužívá konstrukcí, které odvozují z očekávaného typu parametru -- pak se sestaví sémantický strom pro daný argument pouze jednou; pokud je potřeba odvození, sémantický strom se pro daný argument sestavuje pro každé přetížení.
 
@@ -1561,7 +1600,7 @@ Ve výše uvedeném kódu by kompilátor při zpracovávání řádku \ref{codeL
 
 \putImage[Sémantický strom sestavený na základě volání funkce v příkladu \ref{code:overloadResolution:1} na řádku \ref{codeLine:overloadResolution:1}]{semTreeFuncCall.pdf}{width=14cm}
 
-Uvažme ale následující kód:
+Uvažme ale následující kód: \nopagebreak
 
 \begin{code}
 Void foo( Int x, 5 ) { ... }
@@ -1574,9 +1613,11 @@ Void main() {
 }
 \end{code}
 
-Zde je při volání funkce \inlineCode{foo} na řádku \ref{codeLine:overloadResolution:2} potřeba zjistit hodnotu argůmentu již během \textit{overload resolution} (tedy během sestavování sémantického stromu). Vyhodnocování argumentů již během sestavování sémantického stromu je třeba i v jiných případech -- například u \ctime funkcí, u kterých může být návratový typ v některých případech zjištěn až vykonáním dané funkce.
+Zde je při volání funkce \inlineCode{foo} na řádku \ref{codeLine:overloadResolution:2} potřeba zjistit hodnotu argůmentu již během \textit{overload resolution} (tedy během sestavování sémantického stromu). Pokud bychom vyhodnotili argument 2 (výraz \inlineCode{a++}) při sestavování sémantického stromu, potom by hodnota předaná argumentem 1, který by byl vyhodnocen až později, byla špatná (5 místo očekávaných 4).
 
-Vzorový kompilátor Dragon tento problém z časových důvodů neřeší zcela. Momentálně je problém řešen tak, že sestavování sémantického stromu argumentů je uzavřeno do \textit{subsession}, tím pádem během něj nelze měnit hodnoty proměnných. Toto řešení ale nepokrývá celý problém, vezměme například tento kód:
+Vyhodnocování argumentů již během sestavování sémantického stromu je třeba i v jiných případech -- například u \ctime funkcí, u kterých může být návratový typ v některých případech zjištěn až vykonáním dané funkce.
+
+Vzorový kompilátor Dragon tento problém z časových důvodů neřeší zcela. Momentálně je problém řešen tak, že sestavování sémantického stromu argumentů je uzavřeno do \textit{subsession}, tím pádem během něj nelze měnit hodnoty okolních \ctime proměnných. Toto řešení ale nepokrývá celý problém, vezměme například tento kód:
 
 \begin{code}
 Void foo( Int x, 5 ) { ... }
@@ -1589,37 +1630,37 @@ Void main() {
 }
 \end{code}
 
-Zde je problém demonstrován z druhé strany. Pro posouzení, jestli lze funkci \inlineCode{foo} použít, je třeba během sestavování sémantického stromu vyhodnotit na řádku \ref{codeLine:overloadResolution:3} výraz \inlineCode{a}, který odpovídá druhému argumentu. Ten se vyhodnotí jako 5, což je špatně, protože v předchozím argumentu proměnnou \inlineCode{a} přičítáme (na hodnotu 6). Toto přičtení se ale vykoná až při "sestavování" kódu \textit{Ctime backendem} (který kód okamžitě vykonává).
+Zde je problém demonstrován z druhé strany. Pro posouzení, jestli lze funkci \inlineCode{foo} použít, je třeba během sestavování sémantického stromu vyhodnotit na řádku \ref{codeLine:overloadResolution:3} výraz \inlineCode{a}, který odpovídá druhému argumentu. Ten se vyhodnotí jako 5, což je špatně, protože v předchozím argumentu proměnnou \inlineCode{a} přičítáme (na hodnotu 6). Toto přičtení se ale vykoná až při "sestavování" kódu \textit{Ctime backendem} (který kód okamžitě vykonává; viz \autoref{impl:backends}).
 
-Pro odstranění tohoto problému by bylo potřeba vykonávat kód ihned, tj. nestavět sémantický strom (nebo stavět, ale vykonat ihned po sestavení pro každý argument). Aby se příliš nezvýšila doba kompilace, bylo by vhodné toto provádět pouze při vykonávání \ctime kódu. Tím pádem by se během vykonávání \nonctime kódu zakázalo měnit hodnoty \ctime proměnných. Mít oddělené řádky, kde se mění hodnoty \ctime proměnných a kde se pracuje s \nonctime proměnnými ale není příliš velké omezení, snad by se to dalo nazvat i~dobrou programovací praktikou.
+Pro odstranění tohoto problému by bylo potřeba vykonávat kód ihned, tj. nestavět sémantický strom (nebo stavět, ale vykonat ihned po sestavení pro každý argument). Aby se příliš nezvýšila doba kompilace (vzniklá tím, že se pro každé přetížení okamžitě generuje výstupní kód), bylo by vhodné toto provádět pouze při vykonávání \ctime kódu. Tím pádem by se během vykonávání \nonctime kódu zakázalo měnit hodnoty \ctime proměnných. Mít oddělené řádky, kde se mění hodnoty \ctime proměnných a kde se pracuje s \nonctime proměnnými ale není příliš velké omezení, snad by se to dalo nazvat i~dobrou programovací praktikou.
 
 Dalším omezením je nutnost zamezení změny hodnot lokálních proměnných v těch argumentech, kde se využívá odvozování z očekávaného typu parametru, protože tyto argumenty jsou sestavovány (a v případě \ctime kódu i vykonávány) pro každé přetížení. Toto je realizováno pomocí \textit{subsessions} (viz \ref{sec:sessions}). Omezení by se dalo odstranit pouze zavedením možnosti ukládat a navracet se do různých stavů paměti interpretu; poté by se při \textit{overload resolution} postupně vyzkoušely všechny přetížení, po každém přetížení by se navrátil původní stav paměti, a po rozhodnutí správného přetížení by se obnovil stav paměti po zavolání daného přetížení. Je otázkou, zda zrušení relativně malého omezení vyváží zvýšení výpočetních a paměťových nároků, které by přecházení mezi stavy přineslo.
 
 \section{Zrcadlení \ctime proměnných a \ctime zásobník} \label{impl:ctimemirror}
-Aby mohly \ctime proměnné být referencovány v \nonctime kódu, musí mít (alespoň ty, které skutečně jsou referencovány) přiřazenou paměť i za běhu aplikace. Data v této paměti musí odpovídat hodnotě dané \ctime proměnné. Pokud si lokální \ctime proměnná dynamicky naalokovala paměť (například uzly u binárního stromu) a pokud je na paměť z lokální proměnné odkazováno, musí být i ona zrcadlena za běhu aplikace. Toto téma je rozvedeno v \ref{ctime:impl:ref}.
+Aby mohly být \ctime proměnné referencovány v \nonctime kódu, musí mít (alespoň ty, které skutečně jsou referencovány) přiřazenou paměť i za běhu aplikace. Data v této paměti musí odpovídat hodnotě dané \ctime proměnné. Pokud si lokální \ctime proměnná dynamicky naalokovala paměť (například uzly u binárního stromu) a pokud je na paměť z lokální proměnné odkazováno, musí být i ona zrcadlena za běhu aplikace. Toto téma je rozvedeno v oddílu \ref{ctime:impl:ref}.
 
 U lokálních \ctime proměnných lze mít paměť pro jejich zrcadlení za běhu uloženou na zásobníku. Protože životnost dynamicky alokovaných \ctime bloků nemusí nutně korespondovat s životností lokálních proměnných (mohou být dealokovány dříve nebo i až po ukončení aktuálního rámce), paměť pro dynamicky alokované \ctime bloky je vhodné dynamicky alokovat i za běhu aplikace. Ukazatel na tuto paměť by měl být uložen buď přímo ve výchozí \ctime lokální proměnné nebo v jiném paměťovém bloku, ke kterému se dá přistoupit přes reference z výchozí lokální proměnné; pokud to takto není, k danému paměťovému bloku se nedá nijak dostat a nemá smysl ho zrcadlit.
 
 Takovýto řetězec referencí, který je potřeba projít, abychom se dostali k nějakému bloku, ale může být potenciálně nekonečně dlouhý. Kompilátor musí mít pro případ, že by se data v~tomto \ctime bloku paměti změnila, nějakým způsobem uložen odkaz na paměť reflektující ho při běhu aplikace, aby tam mohl tuto změnu zrcadlit. Kvůli rychlosti je ale nevhodné, aby měl ale kompilátor při zrcadlení procházet tento potenciálně nekonečný řetězec referencí. Proto se ukazatel na každý blok uchovává ve speciální struktuře částečně zásobníkové povahy, (klasický zásobník nejde dost jednoduše použít kvůli výše zmiňovaném rozdílu mezi dobou života lokální proměnné a dynamicky alokované \ctime paměti) která je nazývána \ctime zásobníkem. Takto se subsystém pro zrcadlení \ctime dat může dostat k libovolnému bloku pomocí jediné indirekce.
 
-\putImage[Demonstrace uchovávání referencí na dynamicky alokované \ctime bloky pomocí dedikované struktury]{ctstack.pdf}{width=13cm}
+\putImage[Demonstrace uchovávání referencí na dynamicky alokované \ctime bloky pomocí dedikované struktury]{ctstack.pdf}{width=9cm}
 
 \section{Destruktory \ctime proměnných} \label{impl:destructors}
-Koncept líhnutí kódu je navržen tak, aby \ctime proměnné šlo vyhodnocovat již za doby kompilace a aby toto vyhodnocování šlo provést právě jednou, podobně jak funguje preprocesor (ačkoli koncept líhnutí kódu nelze realizovat pouhým preprocesorem, musí být vestavěn do samého jádra jazyka). Během vývoje kompilátoru byl ale nalezen jeden případ, kde toto neplatí. Uvažujeme-li, že lokální \ctime proměnné se chovají úplně stejně jako normální lokální proměnné, musí při opuštění rámce být vykonán jejich destruktor; pořadí vykonávání destruktorů je určeno jako opačné pořadí, v jakém byly lokální proměnné definovány (nezávisle na tom, zda jsou \ctime, či nikoli).
+Koncept líhnutí kódu je navržen tak, aby \ctime proměnné šlo vyhodnocovat již za doby kompilace a aby se toto vyhodnocování nemuselo během kompilace opakovat; v tomto se implementace konceptu podobá preprocesoru (ačkoli koncept líhnutí kódu nelze realizovat pouhým preprocesorem, musí být vestavěn do samého jádra jazyka). Během vývoje kompilátoru byl ale nalezen jeden případ, kde toto neplatí. Uvažujeme-li, že lokální \ctime proměnné se chovají úplně stejně jako normální lokální proměnné, musí při opuštění rámce být vykonán jejich destruktor; pořadí vykonávání destruktorů je určeno jako opačné pořadí, v jakém byly lokální proměnné definovány (nezávisle na tom, zda jsou \ctime, či nikoli).
 
 Nyní uvažme, co by se mělo stát, když má být v dané funkci vykonán příkaz \inlineCode{return}. Příkaz \inlineCode{return} způsobuje zavolání destruktorů všech "aktuálně definovaných" lokálních proměnných ve všech rámcích až po kořenový rámec funkce. Tím pádem by měly být vykonány i destruktory lokálních \ctime proměnných. Nicméně jak je uvedeno výše, v tomto ohledu je \ctime kód zpracováván podobně jako preprocesorem, takže pokud by se u příkazu \inlineCode{return} vykonaly destruktory \ctime proměnných, tyto destruktory by se jakoby vykonaly i v případě, kdy by samotný příkaz \inlineCode{return} vykonán nebyl (například kvůli nesplněné podmínce). Obdobně tomu je i u příkazů \inlineCode{break} a \inlineCode{continue}.
 
 Demonstrační kompilátor tento problém aktuálně "řeší" tak, že destruktory lokálních \ctime proměnných nejsou na koncích rámců volány vůbec. Jediným doposud nalezeným řešením tohoto problému je implementace možnosti navrácení se do předchozích uložených stavu \ctime paměti v kompilátoru. V takovém případě by se při zpracovávání příkazu \inlineCode{return} uložil aktuální stav paměti, pak by se zavolaly destruktory (\nonctime i \ctime proměnných; \ctime proměnné by byly korektně zrcadleny) a do výstupního kódu by se přidal samotný kód pro ukončení funkce. Poté by se paměť \ctime proměnných uložená v~kompilátoru navrátila zpět do stavu, než byly zavolány destruktory.
 
 \section{Konfigurace projektu}
-Kompilátor Dragon umožňuje konfiguraci Beast projektu pomocí souboru \inlineCode{beast.json} ve formátu JSON, který bývá uložen v kořenovém adresáři projektu. V tomto souboru je možné nakonfigurovat například cesty ke složkám, ve kterých má kompilátor hledat zdrojové soubory, výstupní složku a název výstupního souboru, použitý C kompilátor a kompilovací příkaz, formát chybových hlášek, apod. Všechny položky konfigurace je také možné nastavit pomocí argumentů v příkazové řádce.
+Kompilátor Dragon umožňuje konfiguraci Beast projektu pomocí souboru \inlineCode{beast.json}, který je v textovém formátu JSON, který bývá uložen v kořenovém adresáři projektu. V tomto souboru je možné nakonfigurovat například cesty ke složkám, ve kterých má kompilátor hledat zdrojové soubory, výstupní složku a název výstupního souboru, použitý C kompilátor a kompilovací příkaz, formát chybových hlášek, apod. Všechny položky konfigurace je také možné nastavit pomocí argumentů v příkazové řádce.
 
 Kompilátor momentálně podporuje dva formáty výstupu chybových hlášek -- buď ve standardním formátu GNU \cite{GNUErrors}, který je cílen na čitelnost pro uživatele, nebo ve formátu JSON, který má být lehce strojove zpracovatelný a usnadnit tak integraci vývojových prostředí.
 
 \section{Rozbor kódu generovaného kompilátorem}
 V této sekci se podíváme na příklad zdrojového kódu v jazyce Beast a na transkompilovaný kód v jazyce C, který kompilátor Dragon pro daný příklad generuje. Bude předveden jednoduchý příklad, který ale pokrývá všechny klíčové aspekty, které je vhodné demonstrovat.
 
-Příklad je následující:
+Příklad je následující: \nopagebreak
 
 \begin{code}[\label{impl:gencode:sample}]
 module t_bachelorgenexample;
@@ -1646,7 +1687,7 @@ Void main() {
 }
 \end{code}
 
-Výstupní C kód je značně delší, a proto je rozdělen na menší částí a ty jsou popsány postupně:
+Výstupní C kód je dlouhý, a proto je rozdělen na menší částí, které jsou popsány postupně:
 
 \begin{cppcode}[Část 1 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
 #define VAL( var, type ) ( *( ( type* )( var ) ) )
@@ -1690,7 +1731,7 @@ TYPEDEF( _fr2o741__Ctor_ref, 1 );
 TYPEDEF( _41phrv1_Null_ref, 1 );
 \end{cppcode}
 
-Výše uvedená sekce zrcadlí datové typy z Beast kódu. Lze vidět, že transkompilátor nevyužívá struktury v C, ale s typy pracuje jako se "surově"; datový typ je jen kus paměti o~určitém počtu bytů. Počet bytů typu se zaokrouhluje nahoru na násobek velikosti ukazatele.
+Výše uvedená sekce zrcadlí datové typy z Beast kódu. Lze vidět, že transkompilátor třídy nezrcadlí naivně strukturami v C, ale s typy pracuje "surově"; datový typ je v~C~zrcadlen jen jako kus paměti o~určitém počtu bytů. Počet bytů typu se zaokrouhluje nahoru na násobek velikosti ukazatele.
 
 \begin{cppcode}[Část 3 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
 // MEMORY BLOCKS DECLARATIONS
@@ -1702,9 +1743,9 @@ uintptr_t _0xc0_valPtr[1] = { (uintptr_t) CTMEM &_0xc4_val };$\label{impl:gencod
 uintptr_t _0xc4_val[1] = { 0x8 };
 \end{cppcode}
 
-Tato sekce zrcadlí statické proměnné, a to jak klasické, tak \ctime (\ctime ale pouze pokud jsou použity v kódu). Zrcadlení je provedeno ve dvou fázích -- deklarace a definice -- aby se nemuselo řešit pořadí definic kvůli ukazatelům. Data jsou ukládána jako pole položek typu \inlineCppCode{uintptr_t}, aby šlo do literálů polí (které jsou používány pro inicializaci statických proměnných) vkládat ukazatele, jak je demonstrováno na řádku \ref{impl:gencode:output:valPtrDef}.
+Tato sekce zrcadlí statické proměnné, a to jak klasické, tak \ctime (ale pouze pokud jsou použity v kódu). Zrcadlení je provedeno ve dvou fázích -- deklarace a definice -- aby se nemuselo řešit pořadí definic kvůli ukazatelům v datech. Data jsou ukládána jako pole položek typu \inlineCppCode{uintptr_t}, aby šlo do literálů polí (které jsou používány pro inicializaci statických proměnných) vkládat ukazatele, jak je demonstrováno na řádku \ref{impl:gencode:output:valPtrDef}.
 
-Názvy funkcí, typů a proměnných obsahují \textit{hash}, který má napomoci jejich identifikaci (mimo jiné je potřeba i kvůli přetěžování).
+Názvy funkcí, typů a proměnných obsahují \textit{hash}, který má napomoci jejich identifikaci (mimo jiné je to třeba kvůli přetěžování).
 
 \begin{cppcode}[Část 4 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
 // DECLARATIONS
@@ -1726,7 +1767,7 @@ void _tfhj4t2_foo( _bug1ph_Int32 *_p0_x ) {
 }
 \end{cppcode}
 
-Poslední sekcí je sekce pro funkce, opět napřed deklarace a pak definice. Ačkoli jsou v Beastu data předávána hodnotou, v transkompilovaném C kódu se parametry funkcí předávají odkazem, aby měl Beast kontrolu nad voláním konstruktorů a destruktorů a nad tím, kde v paměti se daná proměnná nachází. Do budoucna je plán předávat primitivní typy a typy z nich odvozené (u kterých je kopírovací konstruktor realizován pouhým zkopírováním paměti) přes hodnotu.
+Poslední sekcí je sekce pro funkce, opět napřed deklarace a pak definice. Ačkoli jsou v Beastu data předávána hodnotou, v transkompilovaném C kódu se parametry funkcí předávají odkazem, aby měl Beast kontrolu nad voláním konstruktorů a destruktorů a~nad tím, kde v paměti se data argumentů nachází. Do budoucna je plán předávat primitivní typy a typy z nich odvozené (u kterých je kopírovací konstruktor realizován pouhým zkopírováním paměti) hodnotou.
 
 Nyní se podíváme na implementaci funkce \inlineCode{main}. Tato funkce není přímo zrcadlena na \inlineCppCode{main} v jazyce C kvůli předávaným parametrům a kvůli případným konstruktorům statických proměnných, které jsou v jazyce C volány právě ve funkci \inlineCppCode{main}.
 
@@ -1734,8 +1775,8 @@ Nyní se podíváme na implementaci funkce \inlineCode{main}. Tato funkce není 
 void _69b6o33_main( ) {
 	size_t ctimeStackBP = ctimeStackSize;
 	{
-		/* @ctime Int! x = 5; */
-		/* @ctime Int! y = 6; */
+		/* @ctime Int! x = 5; */$\label{impl:gencode:sample:2}$
+		/* @ctime Int! y = 6; */$\label{impl:gencode:sample:3}$
 		/* foo( @ctime x + y ) */
 		{
 			_bug1ph_Int32 _7la7b83_tmp;
@@ -1769,9 +1810,9 @@ void _69b6o33_main( ) {
 		}
 \end{cppcode}
 
-Všimněme si, že první dva výrazy, které jsou \ctime, nemají žádný odpovídající kód ve výstupním jazyce. Veškeré zrcadlení proměnných (viz \ref{ctime:ref} a \ref{impl:ctimemirror}) probíhá až před vykonáním \nonctime výrazu. Ačkoli v oddílu \ref{impl:ctimemirror} bylo řečeno, že by data lokálních \ctime proměnných bylo vhodné ukládat na zásobník, všechny \ctime proměnné a data jsou z~časových důvodů uloženy na \ctime zásobník, taktéž popsaný v oddílu \ref{impl:ctimemirror}.
+Všimněme si, že první dva příkazy (řádky \ref{impl:gencode:sample:2} a \ref{impl:gencode:sample:3}), které jsou \ctime, nemají žádný odpovídající kód ve výstupním kódu. Veškeré zrcadlení proměnných (viz \autoref{ctime:ref} a \autoref{impl:ctimemirror}) probíhá až před vykonáním \nonctime výrazu. Ačkoli v oddílu \ref{impl:ctimemirror} bylo řečeno, že by data lokálních \ctime proměnných bylo vhodné ukládat na zásobník, všechny \ctime proměnné a data jsou z~časových důvodů uloženy na \ctime zásobník, taktéž popsaný v~podkapitole \ref{impl:ctimemirror}.
 
-Zrcadlení \ctime proměnné tedy spočívá v alokaci paměti pro tuto proměnnou (pokud již nebyl dříve alokován) a ve vložení dat do této paměti (zde realizováno pomocí \inlineCppCode{memcpy}). V systému momentálně není implementovaná detekce toho, zda je proměnná referencována, či nikoli -- jsou tedy zrcadleny všechny \ctime proměnné.
+Zrcadlení \ctime proměnné tedy spočívá v alokaci paměti pro tuto proměnnou (pokud již nebyla alokována dříve) a ve vložení dat do této paměti (zde realizováno pomocí \inlineCppCode{memcpy}). V systému momentálně není implementovaná detekce toho, zda je proměnná referencována, či nikoli -- jsou tedy zrcadleny všechny \ctime proměnné.
 
 Funkce \inlineCode{main} dále pokračuje:
 
@@ -1795,11 +1836,11 @@ Funkce \inlineCode{main} dále pokračuje:
 		}
 \end{cppcode}
 
-Zde je práce s \ctime proměnnou ozvláštněna o to, že se jedná o referenci. Kompilátor si uchovává přehled o tom, která místa v paměti (interpretu) jsou použity jako reference, mapováním volání konstruktorů/destruktorů referenčních typů. Protože paměťový prostor výsledné aplikace se neshoduje s paměťovým prostorem interpretu (kompilátoru), je třeba reference "překládat". Protože jsou (nestatické) \ctime proměnné alokovány dynamicky, mapování \ctime adres na \nonctime adresy není během kompilace znám. Je třeba vytvořit kód, který mapování provede za běhu; tomu odpovídá řádek \ref{impl:gencode:sample:1}.
+Zde je práce s \ctime proměnnou ozvláštněna o to, že se jedná o referenci. Kompilátor si uchovává přehled o tom, která místa v paměti (interpretu) jsou použity jako reference, mapováním volání konstruktorů/destruktorů referenčních typů. Protože paměťový prostor výsledné aplikace se neshoduje s paměťovým prostorem interpretu (kompilátoru), je třeba reference "překládat" (viz \autoref{ctime:impl:ref} a \autoref{impl:ctimemirror}). Protože jsou (nestatické) \ctime proměnné alokovány dynamicky, mapování \ctime adres na \nonctime adresy není během kompilace znám. Je třeba vytvořit kód, který mapování provede za běhu; tomu odpovídá řádek \ref{impl:gencode:sample:1}.
 
 Zrcadlení \ctime proměnné tedy probíhá ve třech fázích: alokace, vložení dat a vložení referencí.
 
-Zbytek kódu už není třeba dál komentovat:
+Zbytek kódu už nepřináší nic nového a tedy není třeba jej komentovat:
 
 \begin{cppcode}[Část 7 z C kódu generovaného překladačem Dragon ze zdrojového kódu \ref{impl:gencode:sample}]
 		/* @ctime ref := y */
@@ -1851,7 +1892,7 @@ int main() {
 
 \section{Implementované a neimplementované prvky}
 
-Implementace demonstračního kompilátoru se soustředila zejména na koncept líhnutí kódu, na spoustu prvků jazyka v omezeném čase určeném pro tvorbu bakalářské práce nezbyly prostředky. V této sekci naleznete přehled toho, co v rámci bakalářské práce bylo v kompilátoru implementováno a co ne.
+Časová dotace na implementaci demonstračního kompilátoru byla soustředěna zejména na koncept líhnutí kódu, na mnoho prvků jazyka nezbyl čas. V této sekci naleznete přehled toho, co v rámci bakalářské práce bylo v kompilátoru implementováno a co ne.
 
 \begin{center}
 	\begin{tabular}{p{0.45\textwidth} p{0.45\textwidth}}
@@ -1873,7 +1914,7 @@ Implementace demonstračního kompilátoru se soustředila zejména na koncept l
 				\item \ctime funkce a třídy
 				\item Reflexe
 				\item Volání destruktorů \ctime proměnných
-				\item Opravení jisté chyby při vykonávání \ctime kódu, viz \ref{impl:destructors}
+				\item Opravení jisté chyby při vykonávání \ctime kódu, viz \autoref{impl:destructors}
 		\end{compactitem} \\
 	\end{tabular}
 \end{center}
@@ -1911,7 +1952,7 @@ Implementace demonstračního kompilátoru se soustředila zejména na koncept l
 			\item Funkce \inlineCode{print} a \inlineCode{assert}
 			\item Funkce \inlineCode{malloc} a \inlineCode{free}
 			\item Parametry s konstantní hodnotou
-			\item Základní \textit{overload resolution} (je co vylepšovat)
+			\item \textit{Overload resolution} (vhodné ještě vylepšit)
 			\item Funkce \inlineCode{to} pro explicitní přetypování
 		\end{compactitem} &
 		\begin{compactitem}
@@ -1940,19 +1981,22 @@ Implementace demonstračního kompilátoru se soustředila zejména na koncept l
 			\item Implicitní a explicitní přetypování
 		\end{compactitem} &
 		\begin{compactitem}
-			\item Konstantnost
+			\item Konstantnost všeobecně, const-by-default
 			\item \inlineCode{import} pro komunikaci mezi moduly
 			\item Uživatelem definované dekorátory
 			\item Omezení přístupu -- \inlineCode{@public}, \inlineCode{@private}, ...
+			\item Další důležité dekorátory
 			\item Další operátory jako \inlineCode{|}, \inlineCode{+=}, \inlineCode{++}, atp.
 			\item Systém výjimek
 			\item Další cykly, jako \inlineCode{for}, \inlineCode{do .. while}, atp.
 			\item Konstrukce \inlineCode{while}-\inlineCode{else} (viz \ref{design:whileElse})
+			\item Lambda výrazy
+			\item Další věci nezmíněné jako implementované
 		\end{compactitem} \\
 	\end{tabular}
 \end{center}
 
 \chapter{Závěr}
-Během návrhu jazyka Beast v rámci této práce vznikl nový koncept, koncept líhnutí kódu, který inovuje oblast metaprogramování a vykonávání kódu za doby kompilace; tato práce se zabývá zejména tímto konceptem. Byly navrženy základní aspekty jazyka Beast a naznačen další směr jeho vývoje. Byl implementován demonstrační kompilátor Dragon, který se z~časových důvodů soustředil především na demonstraci konceptu líhnutí kódu; vlivem toho nezbyly prostředky na rozvedení ostatních vlastností jazyka. Při vývoji této práce bylo použito verzovacího prostředí git a veškerá práce je uložena na githubu\footnote{\url{https://github.com/beast-lang/beast-dragon}} pod MIT licencí.
+Během návrhu jazyka Beast vznikl nový koncept, koncept líhnutí kódu, který inovuje oblast metaprogramování a vykonávání kódu za doby kompilace; tato práce se zabývá zejména tímto konceptem. Byly navrženy základní aspekty jazyka Beast a naznačen další směr jeho vývoje. Byl implementován demonstrační kompilátor Dragon, který se z~časových důvodů soustředil především na demonstraci konceptu líhnutí kódu; vlivem toho nezbyly prostředky na rozvedení ostatních vlastností jazyka. Při vývoji této práce bylo použito verzovacího prostředí git a veškeré podklady (zdrojový kód kompilátoru, bakalářská práce, specifikace jazyka, sada testů) jsou uloženy na githubu\footnote{\url{https://github.com/beast-lang/beast-dragon}} pod MIT licencí.
 
-Autor zamýšlí navázat na tento projekt ve své diplomové práci, kde bude cílem dokončit implementaci nejdůležitějších prvků jazyka do kompilátoru Dragon - zejména koncept líhnutí kódu, poté například třídní dědičnost, \textit{first-class citizenship} funkcí, dekorátory, apod.
+Autor zamýšlí navázat na tento projekt ve své diplomové práci, kde bude cílem dokončit implementaci nejdůležitějších prvků jazyka do kompilátoru Dragon -- zejména koncept líhnutí kódu, poté například třídní dědičnost, \textit{first-class citizenship} funkcí, dekorátory, apod. Nicméně prostředky nutné k dotažení kompilátoru a jazyka do takové podoby, aby byly komerčně využitelné, značně přesahují časovou dotaci i pro bakalářskou a diplomovou práci dohromady.

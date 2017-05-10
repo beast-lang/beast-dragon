@@ -10,6 +10,11 @@ Future to-do:
 	- Parameters indifferent ???
 
 Diplomka to-do:
+	- no need to pass matchLevel or parentInstance in data entities -> symbols can become data entities
+		- matchLevel can be simply done by a wrapping data entity
+		- same for parentInstance, but then you need to pass parentInstance in buildCode and resolveIdentifier as an argument (which is okay, I think); add parentInstaceType property
+		- sink instead of Overloadset
+
 	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back)
 	- Copy-on-write, session only
 	- @ctime while

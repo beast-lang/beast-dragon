@@ -9,7 +9,7 @@
 	(\arabic{chapter}.\arabic{equation}) #1
 }
 \newcommand{\putref}[1][]{
-	\refstepcounter{equation}
+	\nopagebreak\refstepcounter{equation}
 	\eqlabel[#1]
 }
 \newcommand{\putrefCentered}[1][]{
@@ -23,7 +23,7 @@
 \newcommand{\putImage}[3][]{
 	\begin{centering}
 		\vspace{5mm}
-		\includegraphics[#3]{obrazky-figures/#2}
+		\includegraphics[#3]{obrazky-figures/#2} \nopagebreak
 		
 		\putrefCentered[#1] \vspace{5mm}
 	\end{centering}
