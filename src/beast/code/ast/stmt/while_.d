@@ -38,6 +38,7 @@ final class AST_WhileStatement : AST_Statement {
 				auto _sgd = new LocalDataScope( ).scopeGuard;
 
 				cb.build_if(  //
+					// TODO: remake bool into custom type, get rid of the expectResolveIdentifier here
 					condition.buildSemanticTree_singleExpect( coreType.Bool ).expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( condition, true, coreEnum.operator.preNot ), //
 					( CodeBuilder cb ) { //
 						cb.build_break( );

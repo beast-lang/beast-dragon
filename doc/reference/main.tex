@@ -297,332 +297,56 @@ Beast introduces implicit and explicit cast. Implicit cast are used whenever the
 Implicit casting is realized
 
 \section{Operator overloading}
-\begin{centeredRefTabular}{P{1.5cm} | c | c | p{6cm} | c}
-	\textbf{Priority} & \textbf{Operator} & \textbf{Enum} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
+Generally, all operators can be overloaded. Most operators are assigned an item in the \inlineCode{Operator} enum. Operator overloading rules are described in the table below; the "Enum" column corresponds with names of the \inlineCode{Operator} enum items (and the \inlineCode{@ctime Operator op} argument in the "Resolution" column). The "Resolution" column describes how operators are resolved. If there are multiple function resolutions mentioned in the column, the first one is tried first, if it fails (no matching overload is found), the second one is tried, and so on.
+
+\begin{centeredRefTabular}{c | c | p{6cm}}
+	\textbf{Operator} & \textbf{Enum} & \textbf{Resolution} \\ \hline \hline
 	
-	1
-	& \inlineCode{x(args)} & & Function call & \multirow{7}{*}{L$\rightarrow$R} \\
-	& \inlineCode{x.ident} & & Member access & \\
-	\cline{2-4}
-	& \inlineCode{x!} & \inlineCode{suffNot} & Mutable type & \\
-	& \inlineCode{x?} & \inlineCode{suffRef} & Reference type & \\
+	\inlineCode{x(args)} & & \inlineCode{x.#call(args)} \\
 	\hline
 	
-	2
-	& \inlineCode{!x} & \inlineCode{preNot} & Logical NOT & \multirow{1}{*}{NOCH} \\
+	\inlineCode{x!} & \inlineCode{suffNot} & \multirow{2}{*}{\inlineCode{x.#opSuffix( op )}} \\
+	\inlineCode{x?} & \inlineCode{suffRef} & \\
 	\hline
 	
-	3
-	%& \inlineCode{T id = args} & (not overloadable) & In-expression variable declaration & \multirow{2}{*}{NOCH} \\
-	& \inlineCode{new x( args )} & & Dynamic construction & NOCH \\
+	\inlineCode{!x} & \inlineCode{preNot} & \inlineCode{x.#opPrefix( op )} \\
 	\hline
 	
-	4
-	& \inlineCode{x * y} & \inlineCode{binMult} & Multiplication & \multirow{2}{*}{L$\rightarrow$R} \\
-	& \inlineCode{x / y} & \inlineCode{binDiv} & Division \\
+	\inlineCode{x * y} & \inlineCode{binMult} & \multirow{12}{*}{\parbox{\textwidth}{
+		\inlineCode{x.#opBinary( op, y )} \\
+		\inlineCode{y.#opBinaryR( op, x )}
+	}} \\
+	\inlineCode{x / y} & \inlineCode{binDiv} & \\
+	\cline{1-2}
+	
+	\inlineCode{x + y} & \inlineCode{binPlus} & \\
+	\inlineCode{x - y} & \inlineCode{binMinus} & \\
+	\cline{1-2}
+	
+	\inlineCode{x != y} & \inlineCode{binNeq} & \\
+	\inlineCode{x < y} & \inlineCode{binLt} & \\
+	\inlineCode{x <= y} & \inlineCode{binLte} & \\
+	\inlineCode{x == y} & \inlineCode{binEq} & \\
+	\inlineCode{x >= y} & \inlineCode{binGte} &  \\
+	\inlineCode{x > y} & \inlineCode{binGt} & \\
+	\cline{1-2}
+	
+	\inlineCode{x && y} & \inlineCode{binLogAnd} & \\
+	\inlineCode{x || y} & \inlineCode{binLogOr} & \\
 	\hline
 	
-	5
-	& \inlineCode{x + y} & \inlineCode{binPlus} & Addition & \multirow{2}{*}{L$\rightarrow$R} \\
-	& \inlineCode{x - y} & \inlineCode{binMinus} & Subtraction & \\
+	\inlineCode{x = y} & \inlineCode{assign} & \inlineCode{x.#assign( y )} \\
 	\hline
 	
-	6
-	& \inlineCode{x != y} & \inlineCode{binNeq} & Not equal to & \multirow{1}{*}{NOCH} \\
-	\cline{2-5}
-	& \inlineCode{x < y} & \inlineCode{binLt} & Less than & \\
-	& \inlineCode{x <= y} & \inlineCode{binLte} & Less than or equal to & \multirow{3}{*}{\parbox{1cm}{\centering L$\rightarrow$R\\SPEC}} \\
-	& \inlineCode{x == y} & \inlineCode{binEq} & Equal to & \\
-	& \inlineCode{x >= y} & \inlineCode{binGte} & Greater than or equal to & \\
-	& \inlineCode{x > y} & \inlineCode{binGt} & Less than & \\
-	\hline
-	
-	7
-	& \inlineCode{x && y} & \inlineCode{binLogAnd} & Logical AND & \multirow{2}{*}{\parbox{1cm}{\centering L$\rightarrow$R,\\SAME}} \\
-	& \inlineCode{x || y} & \inlineCode{binLogOr} & Logical OR & \\
-	\hline
-	
-	8
-	& \inlineCode{x = y} & \inlineCode{assign} & Assignment & \multirow{2}{*}{\parbox{1cm}{\centering NOCH}} \\
-	& \inlineCode{x := y} & \inlineCode{refAssign} & Reference assignment & \\
+	\inlineCode{x := y} & \inlineCode{refAssign} & \inlineCode{x.#refAssign( y )} \\
 	\hline
 	
 \end{centeredRefTabular}
 
-All operators can be overloaded. This is done by overloading/implementing function:
-\begin{code}
-auto #opXX( @ctime Operator op, auto args ... );
-\end{code}
-where \inlineCode{opXX} is function name (mentioned below).
-
-So for example, you can overload all suffix operators at once using:
-\begin{code}
-@final class SuffixProxy( Type T ) {
-	
-@public:
-	Void #ctor( T? value ) {
-		referencedValue = value;
-	}
-	
-@public:
-	auto #opSuffix( @ctime Operator op, auto args ... ) {
-		return referencedValue.#operator( op, args ... );
-	}
-	
-@private:
-	T! referencedValue;
-	
-}
-\end{code}
-
-or you can overload one exact operator:
-\begin{code}
-Boolean #opSuffix( Operator.suffNot ) {
-	return !referencedValue;	
-}
-Int16 #opSuffix( Operator("x++") ) {
-	return referencedValue ++;
-}
-\end{code}
-
-You can also make operator overload implementations virtual (if they don't contain any ctime variables):
-\begin{code}
-class A {
-	@public @abstract Void #opAssign( Operator.binPlus, A@ other );
-}
-
-@final class B : @public A {
-	@public @override Void #opAssign( Operator.binPlus, A@ other ) {
-		// code here	
-	}
-}
-\end{code}
-
-\subsection{The '\inlineCode{x.ident}' (dispatch) operator}
-Consider expression
-\begin{code}
-x.ident
-\end{code}
-
-Here, \inlineCode{x} is the left operand and the \inlineCode{ident} is the right operand.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the left operand overloadset contains only one record (or error).
-	\item Perform a scoped identifier resolution for the left operand scope, looking for the \inlineCode{ident}; return the results if any.
-	\item If the resolution resulted an empty overloadset, try calling (left operand scope identifier resolution + overload resolution + call)\\ \inlineCode{instance.#dispatch( "ident" )}
-	\item If it fails, show an error
-\end{enumerate}
-
-\paragraph{Consequences}
-The \inlineCode{x.ident} operator can result with multiple overloads. You can implement a dispatch function.
-
-\begin{code}
-class Vector( UInt16 dimensions ) {
-
-@public:
-	Float32! data[ dimensions ];
-	
-	(...)
-	
-	auto #dispatch( @ctime String str )
-		if( str.allMatch( x => "xyz".contains( x ) ) )
-	{
-		@ctime Index[ Char ] translationArray = [
-			'x' => 0,
-			'y' => 1,
-			'z' => 2
-		];
-		
-		Vector( str.length )	result;
-		foreach( Index i, Char ch; str )
-			result.data[ i ] = data[ translationArray[ ch ] ];
-			
-		return result;
-	}
-			
-
-}
-
-Void main() {
-	Vector( 3 ) v1( 1, 2, 3 );
-	auto v2 = v1.xxx; // v2 = ( 1, 1, 1 )
-	auto v3 = v1.zyx; // v3 = ( 3, 2, 1 )
-}
-\end{code}
-
-\paragraph{TODO} Exceptions used for overload filtering
-
-\subsection{The '\inlineCode{x(args)}' operator}
-Consider expression
-\begin{code}
-a.f( arg1, arg2 )
-\end{code}
-
-Here, \inlineCode{a.f} is the left operand and \inlineCode{arg1} and \inlineCode{arg2} are the parameter operands.
-
-\paragraph{Behavior}
-Behavior of this operator varies on the properties of the overloadset.
-
-If the overload set contains only functions:
-\begin{enumerate}
-	\item Perform an overload resolution with parameters \inlineCode{( arg1, arg2 )}.
-	\item Call the only resulting overload (or error).
-\end{enumerate}
-
-If not:
-\begin{enumerate}
-	\item Check if the left operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{a.f.#call( arg1, arg2 )}.
-\end{enumerate}
-
-\paragraph{Consequences}
-Behavior described above makes the function overloading work.
-
-\paragraph{Inline variable declarations}
-You can use variable declaration as a parameter. The declared variable is valid from the point declaration to end of current scope.
-\begin{code}
-{
-	JsonDocument doc = JSON.parse( stringData, Bool isOkay );
-	if( !isOkay )
-		throw;
-}
-\end{code}
-
-\paragraph{The '\inlineCode{x ...}' operator} is used for 'expading' a value across multiple parameter slots. It does so using \hyperref[iterators]{standard iterating process} performed at ctime.
-\begin{code}
-Void f( Int a, Int b, Int c ) { /* ... */ }
-Void g( String x, Int a ) { /* ... */ }
-
-Void main() {
-	f( [ 1, 2, 3 ] ... ); // Valid, the array is iterated at compile time and each value is passed as a separate parameter
-	g( tuple( "5", 12 ) ... ); // Valid
-}
-\end{code}
-
-\subsection{The '\inlineCode{x[args]}' (brackets) operator}
-Consider expression
-\begin{code}
-	x[ arg1, arg2 ]
-\end{code}
-
-Here, the \inlineCode{x} is the left operand and \inlineCode{arg1} and \inlineCode{arg2} are the parameters.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the left operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#index( arg1, arg2 )} (or error).
-\end{enumerate}
-
-\subsection{The '\inlineCode{\$}' (dollar) operator}
-In the bracket parameters, you can use the \inlineCode{\$} operator.
-
-It doesn't take any operands and translates to \inlineCode{x.#dollar( Index paramId )} where \inlineCode{paramId} is the index of the bracket parameter the dollar operator was used in (starting from 0).
-
-\subsection{Suffix operators}
-Consider expression
-\begin{code}
-	x++
-\end{code}
-
-Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#opSuffix( op )} (or error).
-\end{enumerate}
-
-\subsection{Prefix operators}
-Consider expression
-\begin{code}
-	++x
-\end{code}
-
-Here, \inlineCode{x} is the operand and \inlineCode{++} is the operator.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#opPrefix( op )} (or error).
-\end{enumerate}
-
-\subsection{Binary operators}
-Consider expression
-\begin{code}
-	x + y
-\end{code}
-
-Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operand and \inlineCode{+} is the operator.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#opBinary( op, y )}.
-	\item If previous step did not found any matching overload, resolve and call \inlineCode{y.#opBinaryR( op, x )} (or error).
-\end{enumerate}
-
-Every binary operator has a record in the \inlineCode{Operator} enum.
-
-\subsection{Assign operator}
-Consider expression
-\begin{code}
-	x = y
-\end{code}
-
-Here, the \inlineCode{x} is the left operand and \inlineCode{y} is the right operand.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#assign( y )}.
-\end{enumerate}
-
-\subsection{Ref assign operator}
-Consider expression
-\begin{code}
-	x := y
-\end{code}
-
-Here, the \inlineCode{x} is the left operand and \inlineCode{y} is the right operand.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#refAssign( y )}.
-\end{enumerate}
-
-\subsection{Operator assign operator}
-Consider expression
-\begin{code}
-	x |= y
-\end{code}
-
-Here, the \inlineCode{x} is the left operand, \inlineCode{y} is the right operand and \inlineCode{|=} is the operator. There is a corresponding \inlineCode{Operator} enum item for each op assign operator (see \ref{opPrecedence}) in the \inlineCode{binXX} format. This enum item corresponds with the \inlineCode{op} mentioned in the behavior paragraph below.
-
-\paragraph{Behavior}
-\begin{enumerate}
-	\item Check if the operand overloadset contains only one record (or error).
-	\item Resolve and call \inlineCode{x.#opAssign( op, y )}.
-\end{enumerate}
-
-\subsection{The '\inlineCode{x .. y}' (range) operator}
-This operator is almost equivalent to \inlineCode{Range( x.#type )( x, y )}, except it infers the Range type from expected parameter type if possible.
-
-\subsection{The '\inlineCode{x => y}' (association) operator}
-This operator is almost equivalent to \inlineCode{Association( x.#type, y.#type )( x, y )}, except it infers the Association types from expected parameter type if possible.
-
-\subsection{The 'x, y' (comma) operator}
-Operands separated by the comma are evaluated from left to right. Value of the rightmost operand is returned.
-
 \pagebreak\section{Variable declarations}
 \begin{grammar}
-	\grDef{VarDeclCmd} \gr{TypeExpr} \token{Identifier} [ \gr{VarDeclCtor} ] \\
-		\grLn \{ \kwd{,} \token{Identifier} [ \gr{VarDeclCtor} ] \} \kwd{;} \\
-	\\
-	\grDef{TypeExpr} \{ \gr{Decoration} \} ( \gr{PrefixExpr} | \gr{AutoType} ) \\
-	\grDef{AutoType} \kwd{auto} [ \kwd{?} ] [ \kwd{!} ] \\
-	\grDef{VarDeclCtor} ( \kwd{=} | \kwd{:=} ) \gr{Expression} \\
+	\grDef{VarDeclStmt} \gr{TypeExpr} \token{Identifier} [ ( \kwd{=} | \kwd{:=} ) \gr{Expression} ] \\
+	\grDef{TypeExpr} \gr{PrefixExpr}
 \end{grammar}
 
 Declaring a variable is a thing well known from other programming languages. Declaring a variable consists of two tasks:
@@ -631,65 +355,22 @@ Declaring a variable is a thing well known from other programming languages. Dec
 	\item Calling the constructor -- evaluating \inlineCode{var.#ctor( args );}
 \end{compactenum}
 
-There are three syntactical alternatives of how to declare a variable:
-\begin{compactitem}
-	\item \inlineCode{Type var;} results in calling the implicit constructor \inlineCode{var.#ctor();} if presents, yield an error otherwise.
-	\item \inlineCode{Type var = val;} calls \inlineCode{var.#ctor( val );}
-	\item \inlineCode{Type var = Type( arg1, arg2 );}  calls \inlineCode{var.#ctor( arg1, arg2 );}. This is a special case of the previous rule and is checked during semantic analysis (the right expression must evaluate to \inlineCode{Type} constructor call).
-	\item \inlineCode{Type var := val;} calls \inlineCode{var.#ctor( Operator.refAssign, val );} %TODO change first argument to something more reasonable (singleton?)
-\end{compactitem}
+There are multiple ways of how to construct a variable:
+\begin{compactenum}
+	\item \inlineCode{Type var;} \quad allocates a variable on the stack and calls \inlineCode{var.#ctor()}
+	\item \label{vardecl:opt1} \inlineCode{Type var = val;} allocates a variable on the stack and calls \inlineCode{var.#ctor( val )}
+	\item \label{vardecl:opt2} \inlineCode{Type var := val;} allocates a variable on the stack and calls \inlineCode{var.#ctor( Operator.refAssign, val )} %TODO change first argument to something more reasonable (singleton?)
+	\item \inlineCode{Type( arg1, arg2 )} allocates a temporary variable on the stack, calls \inlineCode{tmpVar.#ctor( arg1, arg2 )} and returns the variable
+	\item \label{vardecl:opt3} \inlineCode{new Type( arg1, arg2 )} allocates a variable on the heap, calls \inlineCode{heapVar.#ctor( arg1, arg2 )}, and returns pointer to the variable
+\end{compactenum}
 
-\paragraph{Auto declarations}
-When using \inlineCode{auto} instead of type, the type is inferred from the first argument of \gr{ParentCommaExpr} (which must be the only one) or from the value type of the \gr{Expression} after the \kwd{=}. Multiple declarations per one auto keyword are acceptable, each inferring its own type.
+\paragraph{\inlineCode{auto} keyword}
+When using \inlineCode{auto} instead of type, variable type is inferred from the value provided (this applies to variants \ref{vardecl:opt1} and \ref{vardecl:opt2}). For dynamic construction (variant \ref{vardecl:opt3}), type is inferred from type the expression is expected to be of.
 
-\paragraph{In-expression variable declarations}
-In Beast, you can declare variables inside expressions.
-
-\subsection{Variable lifetime}
-When variable's lifetime ends, it's implicit destructor \inlineCode{var.#dtor();} is called.
-
-\paragraph{Local variables}
-Local variables are destroyed as soon as their scope ends. Although this is straightforward in most cases, there are some that require further explanations:
-\begin{itemize}
-	\item Variables declared inside \textbf{if} conditions are destroyed after the end of the if statement, including following else statements.
-	\begin{code}
-if( Int i( getNumber() ) == 5 ) {
-		
-} else if( i == 4 ) {
-	
-} // i is destroyed here
-	\end{code}
-
-	\item Variables declared inside \textbf{where} conditions are destroyed at the end of every iteration as they are declared at the beginning of every iteration.
-	\begin{code}
-while( ( Int! x = 0 )++ < 32 ) {
-	// This is WRONG! x is created every iteration, so its value for each iteration is 1. This loop would not end.
-}
-
-foreach( x; 0 .. 32 ) {
-	// This loop is correct and much nicer
-}
-	\end{code}
-
-	\item For variables declared inside \textbf{for}:
-	\begin{compactitem}
-		\item Variables in the initialization part are destroyed after the loop end
-		\item Variables in the condition part are created before each iteration and destroyed after each iteration
-		\item Variables in the post-loop part are destroyed just after the post-loop part is executed
-	\end{compactitem}
-
-	\item For variables inside \textbf{foreach}:
-	\begin{compactitem}
-		\item Variables in the variable declaration part are created before each iteration and destroyed after each iteration
-		\item Variables in the iterated expression part are destroyed when the foreach ends.
-	\end{compactitem}
-
-	\item Variables inside the \textbf{switch} expression part are destroyed when the switch ends.
-\end{itemize}
-
-\paragraph{Static variables} are destroyed when the program ends in the reverse order they were constructed.
-
-\paragraph{Static \decoratorRef{ctime} variables} are never destroyed (they were created before the program started).
+\begin{code}
+auto var = true; // true is Bool, so var is of type Bool
+Int? ref := new auto(); // ref constructor expects the Int? type, so auto is inferred as Int
+\end{code}
 
 \chapter{Functions}
 \begin{grammar}
@@ -704,13 +385,7 @@ foreach( x; 0 .. 32 ) {
 
 \section{Definition constraint}
 
-\section{One-line function definition}
-
-\section{Variadic functions}
-
 \section{The \kwd{auto} keyword}
-
-\section{Parameter namespace accessor (\texttt{:ident})}
 
 \chapter{Types}
 

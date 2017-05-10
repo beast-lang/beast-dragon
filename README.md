@@ -97,6 +97,8 @@ Void main() {
 ```
 
 # News
+__05.05.2017__: Finished writing code for bachelor's thesis. Development of this project is now halted until master thesis or until excessive interest for this project is shown from a community.
+
 __27.04.2017__: Static functions with @ctime parameters implemented! They generate kinda messy code ("template" instances are not joined when provided with same arguments), but still, we have them!
 
 __21.04.2017__: We now should have fully working @ctime mirroring in both interpreter and cpp backends.
