@@ -41,6 +41,9 @@ final class Symbol_Type_Type : Symbol_StaticClass {
 			// Dtor
 			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newNoopDtor( this );
 
+			//mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalEqNeqOp( this ); // T == T2, T != T2
+
+			// T := t2
 			mem ~= opRefAssign = new Symbol_PrimitiveMemberRuntimeFunction( ID!"#refAssign", this, coreType.Void, //
 					ExpandedFunctionParameter.bootstrap( this ), //
 					( cb, inst, args ) => cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] ) );

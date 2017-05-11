@@ -6,11 +6,9 @@
 	{\ttfamily \small
 		\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
 			\BODY
-	\end{tabularx}}%
-	\hspace{5mm}
-	\begin{center}
-		\putref
-	\end{center}
+	\end{tabularx}} \nopagebreak
+
+	\putrefCentered
 }
 \newcommand{\grDef}[1]{\rule{0mm}{5mm}\refstepcounter{grammarRule}\label{gr:#1}#1&::=&}
 \newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&&}
@@ -51,6 +49,7 @@
 	breakautoindent=true,
 	breakindent=5mm,
 	escapeinside=$$,
+	literate={-}{{-}}{1},
 	numbers=left,
 	numberstyle=\small\ttfamily,
 	numbersep=3mm,
@@ -60,9 +59,12 @@
 	xleftmargin=8mm,
 } 
 \lstnewenvironment{code}[1][]{
+	\noindent
 	\hspace{0mm}
+	\minipage{\textwidth}
 }{%
-	\nobreak\nopagebreak\putrefCentered[#1]
+	\putrefCentered[#1]
+	\endminipage
 	\vspace{3mm}
 } 
 

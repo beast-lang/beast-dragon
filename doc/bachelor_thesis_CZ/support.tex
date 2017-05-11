@@ -4,20 +4,9 @@
 \usepackage{needspace}
 
 % References
-\newcommand{\eqlabel}[1][]{
-	\small
-	(\arabic{chapter}.\arabic{equation}) #1
-}
-\newcommand{\putref}[1][]{
-	\nopagebreak\refstepcounter{equation}
-	\eqlabel[#1]
-}
-\newcommand{\putrefCentered}[1][]{
-	\centering
-	\refstepcounter{equation}
-	\eqlabel[#1]
-	\par
-}
+\newcommand{\eqlabel}[1][]{\small(\arabic{chapter}.\arabic{equation}) #1}
+\newcommand{\putref}[1][]{\nopagebreak\refstepcounter{equation}\eqlabel[#1]}
+\newcommand{\putrefCentered}[1][]{\centering\refstepcounter{equation}\eqlabel[#1]\par}
 \renewcommand{\theequation}{\arabic{chapter}.\arabic{equation}}
 
 \newcommand{\putImage}[3][]{

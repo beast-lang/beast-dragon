@@ -30,21 +30,10 @@
 \usepackage{enumitem}
 
 % Referencing
-\newcommand{\eqlabel}[1][]{
-	\small
-	(\arabic{chapter}.\arabic{equation}) #1
-}
+\newcommand{\eqlabel}[1][]{\small(\arabic{chapter}.\arabic{equation}) #1}
 \usepackage[hidelinks]{hyperref}
-\newcommand{\putref}[1][]{
-	\nopagebreak\refstepcounter{equation}
-	\eqlabel[#1]
-}
-\newcommand{\putrefCentered}[1][]{
-	\centering
-	\refstepcounter{equation}
-	\eqlabel[#1]
-	\par
-}
+\newcommand{\putref}[1][]{\refstepcounter{equation}\eqlabel[#1]}
+\newcommand{\putrefCentered}[1][]{\centering\refstepcounter{equation}\eqlabel[#1]\par}
 
 %math settings
 \usepackage{amsmath}

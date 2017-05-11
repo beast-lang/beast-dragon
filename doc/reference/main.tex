@@ -73,6 +73,16 @@ More keywords will be added in the future.
 auto, break, class, delete, else, if, module, new, return, while
 \end{code}
 
+\section{Operators}
+\begin{code}
++ - * / ? ! == != > >= < <= && || ! = :=
+\end{code}
+
+\section{Special tokens}
+\begin{code}
+. , @ ( ) { }
+\end{code}
+
 \section{Literals}
 \begin{grammar}
 	\grDef{Literal} \gr{IntLiteral} \\
@@ -225,6 +235,7 @@ void main() {
 Operands are evaluated left to right, if not specified otherwise.
 
 \subsection{Comparison operators chaining} Comparison operators can be chained in monotonous order:
+
 \begin{code}
 // (Almost) equivalent with (a > b) && (b >= c) && (c == d) && (d >= e) && (e > f)
 a > b >= c == d >= e > f;
@@ -242,11 +253,11 @@ When chaining comparison operators, the expressions in form \inlineCode{x == y >
 Overloadset is a language structure, a container with all symbols that match currently processed expression. Consider following example:
 
 \begin{code}
-	Void f() {}$\label{codeLine:overloadSets1:fDecl}$
-	
-	Void main() {
-		f();$\label{codeLine:overloadSets1:fCall}$	
-	}
+Void f() {}$\label{codeLine:overloadSets1:fDecl}$
+
+Void main() {
+	f();$\label{codeLine:overloadSets1:fCall}$	
+}
 \end{code}
 
 Here, when processing the function call on line \ref{codeLine:overloadSets1:fCall}, the compiler starts with identifier \inlineCode{f}. It constructs an overloadset which contains the function \inlineCode{f} defined on line \ref{codeLine:overloadSets1:fDecl}. Then, it reads parentheses, so it will look up for operator \inlineCode{x(args)} in the previous overloadset and put everything it has found to a new overloadset. Then, a process which selects the best matching overload is performed (will be described later in this chapter).
@@ -265,17 +276,17 @@ This language construct can be used for example in parameter lists. When used, a
 This of course does not work with \kwd{auto} parameters.
 
 \begin{code}
-	enum Enum {
-		a, b, c, d
-	}
-	
-	Void f( Enum e ) {}
-	
-	Void main() {
-		// Following lines are semantically identical
-		f( Enum.a );
-		f( :a );	
-	}
+enum Enum {
+	a, b, c, d
+}
+
+Void f( Enum e ) {}
+
+Void main() {
+	// Following lines are semantically identical
+	f( Enum.a );
+	f( :a );	
+}
 \end{code}
 
 \subsection{Overload resolution} \label{overloadResolution}
@@ -291,7 +302,7 @@ Each overload is assigned a "match level" number. Then, the overload with lowest
 	\item General fallback (compiler-defined)
 \end{compactenum}
 
-\subsection{Casting}
+\subsection{Type conversion} \label{typeConversion}
 Beast introduces implicit and explicit cast. Implicit cast are used whenever there's mismatch between expected type and the type provided (for example when passing an argument to a function), explicit casting is done using function \inlineCode{to( @ctime Type targetType )} (which also tries implicit casting if there is no explicit cast available).
 
 Implicit casting is realized by calling \inlineCode{var.#implicitCast( TargetType )}, where \inlineCode{TargetType} being the type the cast is intended to. The function has to return value of \inlineCode{TargetType}. Explicit cast is realized by calling \inlineCode{var.#explicitCast( TargetType )} in the same manner.
@@ -401,6 +412,7 @@ Variable declarations can be decorated with the \inlineCode{@ctime} decorator. \
 
 \section{Function definitions}
 Functions in Beast are similar to those in the D programming language. You do not have to write declaration before definition.
+
 \begin{code}
 Void foo() {}
 
@@ -410,6 +422,7 @@ Void foo2() {
 \end{code}
 
 When declaring a parameter, you can access all parameters already declared in the parameter list (to declare a parameter, you can utilize all parameters to the left). In return type expression, you can access all function parameters.
+
 \begin{code}
 b.#type foo( Int a, a.#type b, a.#type c ) {
 	// code
@@ -491,6 +504,7 @@ Void main() {
 There are currently these functions static defined by the compiler:
 
 \paragraph{\inlineCode{print} functions}
+
 \begin{code}
 Void print( Bool data )
 Void print( Int32 data )
@@ -499,12 +513,14 @@ Void print( Int64 data )
 These functions print provided argument to the stdout as signed decimals (\inlineCode{true} is printed as \inlineCode{1} and \inlineCode{false} as 0). Calling these functions at compile time results in an error.
 
 \paragraph{\inlineCode{assert}}
+
 \begin{code}
 void assert( Bool expr )
 \end{code}
 Does nothing if provided argument is \inlineCode{true}. If \inlineCode{expr} is \inlineCode{false}, creates an error (compiler error at compile time, prints text to stderr and exits the program at runtime).
 
 \paragraph{\inlineCode{malloc}, \inlineCode{free}}
+
 \begin{code}
 	Pointer malloc( Size bytes )
 	Void free( Pointer ptr )
@@ -512,6 +528,7 @@ Does nothing if provided argument is \inlineCode{true}. If \inlineCode{expr} is 
 Allocates/deallocates a memory on the heap. This function is also callable at compile time.
 
 \chapter{Types}
+
 \begin{grammar}
 	\grDef{ClassDecl} \kwd{class} \token{Identifier} \kwd{\{} \gr{DeclScope} \kwd{\}}
 \end{grammar}
@@ -552,23 +569,95 @@ class C {
 }
 \end{code}
 
-You can declare classes in classes, however you have to decorate the inner class with \inlineCode{@static}.
+Classes have following fields/functions/properties automatically defined/implemented by the compiler:
+\begin{compactenum}
+	\item \inlineCode{T?} suffix operator that returns reference type (static call only)
+	\item \inlineCode{T!} suffix operator that currently does nothing (returns the class itself; static call only); in future, it will be used as a mutability declarator (Beast will be const-by-default)
+	\item Implicit cast to reference
+	\item \inlineCode{T( args )} constructing an instance of \inlineCode{T} with provided arguments (static call only; see \autoref{varDecls})
+	\item \inlineCode{var.to( Type )} for explicit/implicit casting (see \autoref{typeConversion})
+	\item \inlineCode{var.#addr} that returns \inlineCode{Pointer} referencing the variable \inlineCode{var}
+	\item \inlineCode{T.#instanceSize} of type \inlineCode{Size} that returns instance size of given type (equivalent to \inlineCode{sizeof} in C++/D)
+	\item Comparison operators \inlineCode{T == T2} and \inlineCode{T != T2} for comparing type variables (static call only)
+\end{compactenum}
 
-\section{User-defined types}
+Classes can be considered a \ctime variables of type \inlineCode{Type} (see \autoref{typeType}).
 
-\subsection{Pointers vs. references}
+\paragraph{Nested class declarations}
+You can declare classes in classes, however you have to decorate the inner class with \inlineCode{@static}. Nested classes do not implicitly store pointer to parent class instance. They can be accessed from outside using \inlineCode{OuterClass.NestedClass}.
+
+\section{Compiler-defined types}
+Beast offers a limited amount of pre-defined types.
+
+\subsection{Numeric types}
+Beast provides 32-bit and 64-bit signed integer types -- \inlineCode{Int32} (also aliased as \inlineCode{Int}) and \inlineCode{Int64}. Basic arithmetic operators are supported (\inlineCode{+}, \inlineCode{-}, \inlineCode{*}, \inlineCode{/}) and are overloaded in both left and right variants (see \autoref{operatorOverloading}), meaning both expressions like \inlineCode{a + 5} and \inlineCode{5 + a} are supported if \inlineCode{a} is of type implicitly convertible to \inlineCode{Int} (see \autoref{typeConversion}). \inlineCode{Int32} is implicitly castable to \inlineCode{Int64}.
+
+Beast also has type \inlineCode{Size} which has size of 4 or 8 bytes, depending on a platform. This is a Beast alternative to \inlineCode{size_t}.
+
+\subsection{Reference types}
+Beast offers reference type \inlineCode{T?} (where \inlineCode{T} is the referenced type) and pointer type \inlineCode{Pointer}. \inlineCode{Pointer} is not bound to a type, referenced data is manipulated via \inlineCode{T ptr.data( @ctime Type T )}.  You cannot have reference of a reference.
+
+For most cases, reference is the way to go. It acts like referenced type, except for following cases:
+\begin{compactitem}
+	\item \inlineCode{ref.#ctor} and \inlineCode{ref.#dtor} calls reference constructor, not referenced type constructor.
+	\item \inlineCode{ref := var} operator is overloaded and is used for changing the referenced variable
+	\item Reference is implicitly castable to \inlineCode{Pointer}
+	\item A \inlineCode{isNull} property is added (use as \inlineCode{ref.isNull}, not \inlineCode{ref.isNull()}) which returns if a reference references a variable or not
+	\item A \inlineCode{@ctime Type ref.#baseType} property is added that stores the referenced type
+	\item A \inlineCode{ref.#data} alias is added, which allows direct access to referenced variable namespace. This is useful for example when a programmer needs to manually call referenced value constructor/destructor (please note that it is usually dangerous) -- he would use \inlineCode{ref.#data.}\-\inlineCode{#dtor()}, because \inlineCode{ref.#dtor()} would call the reference destructor, not the referenced value one.
+\end{compactitem}
+\pagebreak
+
 \begin{centeredRefTabular}{l | c | c}
 	\textbf{Property} & \textbf{Reference} & \textbf{Pointer} \\ \hline \hline
 	
-	Pointer arithmetics & no & yes \\ \hline
+	Pointer arithmetics & no & (in future) \\ \hline
 	Can be \inlineCode{null} & yes & yes \\ \hline
 	Rebindable & yes & yes \\ \hline
-	Binding & \inlineCode{ref := val} & \inlineCode{ptr = val.addr} \\
-		& or \inlineCode{ref := val.addr} & \\
+	Binding & \inlineCode{ref := val} & \inlineCode{ptr = val.#addr} \\
 		& or \inlineCode{ref := ref2} & \\ \hline
-	Member access & \inlineCode{ref.mem} & \inlineCode{ptr.data.mem} \\ \hline
-	Dereference & (implicit cast) & \inlineCode{ptr.data} \\
+	Member access & \inlineCode{ref.mem} & \inlineCode{ptr.data( Type ).mem} \\ \hline
+	Dereference & (implicit cast) & \inlineCode{ptr.data( Type )} \\
 \end{centeredRefTabular}
+
+\begin{code}
+Int x = 5;
+Int y = 6;
+
+// ref now references variable x
+Int? ref := x;
+print( ref ); // prints 5
+ref = 10; // x is set to 10
+
+xref := y; // ref now references variable y
+print( ref ); // prints 6
+ref = 7; // y is is set to 7
+\end{code}
+
+\begin{code}
+Int x = 5;
+Int y = 6;
+
+// ptr now references variable x
+Pointer ptr = x.#addr;
+print( ptr.data( Int ) ); // prints 5
+ptr.data( Int ) = 10; // x is set to 10
+
+ptr = y.#addr; // ptr now references variable y
+print( ptr.data( Int ) ); // prints 6
+ptr.data( Int ) = 7; // y is is set to 7
+\end{code}
+
+\subsection{\inlineCode{Type} type} \label{typeType}
+Types (classes, enums, ...) are considered \ctime variables of type \inlineCode{Type}. Type variables can only be used as \ctime variables.
+
+\begin{code}
+@ctime Type T! = Int;
+T x = 5;
+
+@ctime T := Bool;
+T y = true;
+\end{code}
 
 \chapter{Modules}
 \begin{grammar}
@@ -594,99 +683,6 @@ The \gr{ModuleIdentifier} in the \gr{ModuleEntry} then works as an identifier fo
 \paragraph{Filesystem representation} Module identifier has to correspond with the directory structure the source file is in and the source file name has to be same as the module name (case sensitive). For example, having set up \verb|project/src| and \verb|project/include| source file directories, module \verb|straw.beast.main| has to be in file \verb|project/src/straw/beast/main.beast| or \verb|project/include/straw/beast/main.beast|.
 
 \paragraph{Naming convention} Modules should be named in lower-CamelCase. This is not enforced, however disobeying this rule results in a warning.
-
-\section{Imports} \label{imports}
-\begin{grammar}
-	\grDef{ImportStmt} \{ \gr{Decoration} \} \kwd{import} \gr{ModuleIdentifier} \kwd{;}
-\end{grammar}
-
-Using the \kwd{import} statement, you can make symbols other modules accessible for the current scope.
-
-Imports are not modified using standard access modifier decorators (\decoratorRef{public}, \decoratorRef{private}, etc.), but with \decoratorRef{global} and \decoratorRef{local}, \decoratorRef{local} being default.
-
-\subsection{Local imports} \label{decorator:local}
-Local import makes the symbols from the specified module accessible only for the current scope (and its subscopes).
-
-\begin{code}
-module a;
-
-Void aFunc() {
-	// Do something
-}
-
-$\moduleSep$
-module b;
-
-import a; /* Equivalent with @local import a; */
-
-Void bFunc() {
-	aFunc(); // Ok
-}
-
-$\moduleSep$
-module c;
-
-import b;
-
-Void cFunc() {
-	import a;
-	aFunc(); // Ok
-}
-Void cFunc2() {
-	aFunc(); // Error	
-}
-\end{code}
-
-\subsection{Global imports} \label{decorator:global}
-Symbols that are imported using the global import are accessible from the current scope (and its subscopes) and all scopes that import the current scope (and their subscopes).
-
-\begin{code}
-module a;
-
-Void aFunc() {
-	// Do something
-}
-
-$\moduleSep$
-module b;
-
-@global import a;
-
-Void bFunc() {
-	aFunc(); // Ok
-}
-
-$\moduleSep$
-module c;
-
-@global import b;
-
-Void cFunc() {
-	bFunc(); // Ok
-	aFunc(); // Ok	
-}
-
-$\moduleSep$
-module d;
-
-import c;
-
-Void Func() {
-	cFunc(); // Ok
-	aFunc(); // Ok
-}
-
-$\moduleSep$
-module e;
-
-import d;
-
-Void eFunc() {
-	dFunc(); // Ok
-	cFunc(); // Error
-	aFunc(); // Error	
-}
-\end{code}
 
 \chapter{Decorators}
 %TODO noWarning, final, abstract, base, virtual, override, static, noScope, virtualBase
