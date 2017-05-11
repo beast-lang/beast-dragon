@@ -59,10 +59,10 @@
 	framesep=2mm,
 	xleftmargin=8mm,
 } 
-\lstnewenvironment{code}{
+\lstnewenvironment{code}[1][]{
 	\hspace{0mm}
 }{%
-	\nobreak\nopagebreak\centerline{\putref}
+	\nobreak\nopagebreak\putrefCentered[#1]
 	\vspace{3mm}
 } 
 

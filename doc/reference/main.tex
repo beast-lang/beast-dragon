@@ -114,7 +114,7 @@ void main() {
 		
 	\grDef{ParentCommaExpr} \kwd{(} [ \gr{Expression} \{ \kwd{,} \gr{Expression} \} ] \kwd{)} \\
 	
-	\grDef{DecoratedExpression} \{ \gr{Decoration} \}+ \gr{Expression} \\
+	\grDef{DecoratedExpression} \{ \gr{Decoration} \}+ \gr{AssignExpr} \\
 \end{grammar}
 
 \section{Operators}
@@ -294,9 +294,9 @@ Each overload is assigned a "match level" number. Then, the overload with lowest
 \subsection{Casting}
 Beast introduces implicit and explicit cast. Implicit cast are used whenever there's mismatch between expected type and the type provided (for example when passing an argument to a function), explicit casting is done using function \inlineCode{to( @ctime Type targetType )} (which also tries implicit casting if there is no explicit cast available).
 
-Implicit casting is realized
+Implicit casting is realized by calling \inlineCode{var.#implicitCast( TargetType )}, where \inlineCode{TargetType} being the type the cast is intended to. The function has to return value of \inlineCode{TargetType}. Explicit cast is realized by calling \inlineCode{var.#explicitCast( TargetType )} in the same manner.
 
-\section{Operator overloading}
+\section{Operator overloading} \label{operatorOverloading}
 Generally, all operators can be overloaded. Most operators are assigned an item in the \inlineCode{Operator} enum. Operator overloading rules are described in the table below; the "Enum" column corresponds with names of the \inlineCode{Operator} enum items (and the \inlineCode{@ctime Operator op} argument in the "Resolution" column). The "Resolution" column describes how operators are resolved. If there are multiple function resolutions mentioned in the column, the first one is tried first, if it fails (no matching overload is found), the second one is tried, and so on.
 
 \begin{centeredRefTabular}{c | c | p{6cm}}
@@ -343,9 +343,10 @@ Generally, all operators can be overloaded. Most operators are assigned an item 
 	
 \end{centeredRefTabular}
 
-\pagebreak\section{Variable declarations}
+\section{Variable declarations} \label{varDecls}
 \begin{grammar}
-	\grDef{VarDeclStmt} \gr{TypeExpr} \token{Identifier} [ ( \kwd{=} | \kwd{:=} ) \gr{Expression} ] \\
+	\grDef{VarDeclStmt} \{ \gr{Decoration} \} \gr{TypeExpr} \token{Identifier} \\
+		\grLn [ ( \kwd{=} | \kwd{:=} ) \gr{Expression} ] \kwd{;} \\
 	\grDef{TypeExpr} \gr{PrefixExpr}
 \end{grammar}
 
@@ -359,9 +360,9 @@ There are multiple ways of how to construct a variable:
 \begin{compactenum}
 	\item \inlineCode{Type var;} \quad allocates a variable on the stack and calls \inlineCode{var.#ctor()}
 	\item \label{vardecl:opt1} \inlineCode{Type var = val;} allocates a variable on the stack and calls \inlineCode{var.#ctor( val )}
-	\item \label{vardecl:opt2} \inlineCode{Type var := val;} allocates a variable on the stack and calls \inlineCode{var.#ctor( Operator.refAssign, val )} %TODO change first argument to something more reasonable (singleton?)
-	\item \inlineCode{Type( arg1, arg2 )} allocates a temporary variable on the stack, calls \inlineCode{tmpVar.#ctor( arg1, arg2 )} and returns the variable
-	\item \label{vardecl:opt3} \inlineCode{new Type( arg1, arg2 )} allocates a variable on the heap, calls \inlineCode{heapVar.#ctor( arg1, arg2 )}, and returns pointer to the variable
+	\item \label{vardecl:opt2} \inlineCode{Type var := val;} allocates a variable on the stack and calls\\\inlineCode{var.#ctor( Operator.refAssign, val )} %TODO change first argument to something more reasonable (singleton?)
+	\item \inlineCode{Type( arg1, arg2 )} allocates a temporary variable on the stack, calls\\\inlineCode{tmpVar.#ctor( arg1, arg2 )} and returns the variable
+	\item \label{vardecl:opt3} \inlineCode{new Type( arg1, arg2 )} allocates a variable on the heap, calls\\\inlineCode{heapVar.#ctor( arg1, arg2 )}, and returns pointer to the variable
 \end{compactenum}
 
 \paragraph{\inlineCode{auto} keyword}
@@ -372,24 +373,188 @@ auto var = true; // true is Bool, so var is of type Bool
 Int? ref := new auto(); // ref constructor expects the Int? type, so auto is inferred as Int
 \end{code}
 
+\paragraph{\inlineCode{@ctime} variables}
+Variable declarations can be decorated with the \inlineCode{@ctime} decorator. \inlineCode{@ctime} variables are completely evaluated at compile time. For more information, see \autoref{ctime}.
+
+\paragraph{Variable lifetime (extent)} Variable lifetime is same as in C++ or D -- local variables exist until end of the scope (or \inlineCode{return}, \inlineCode{break}, exception, ...), where the are destroyed in reverse order they were defined. Dynamically constructed variables exist until they are manually destroyed (usually done via \gr{DeleteStmt}). Static variables are constructed during application start and are never destroyed (probably will change in the future).
+
 \chapter{Functions}
 \begin{grammar}
-	\grDef{FunctionDecl} \gr{TypeExpr} \token{Identifier} \gr{ParentCommaExpr} ( \gr{FunctionDefPart} | \kwd{;} ) \\
-	\grDef{FunctionDefPart} [ \gr{FunctionDefConstraint} ] ( \gr{CommandBlock} | \kwd{=} Expression )\\
-	\grDef{FunctionDefConstraint} \kwd{if} \kwd{(} \gr{Expression} \kwd{)} \\
+	\grDef{FunctionDecl} \gr{TypeExpr} \token{Identifier} \gr{ParentCommaExpr} \gr{CodeBlock} \\
+	\grDef{CodeBlock} \{ \gr{Decoration} \} \kwd{\{} \{ \gr{Statement} \} \kwd{\}} \\
+	\grDef{Statement} \gr{CodeBlock} \\
+		\grAltLn \gr{ReturnStmt} \\
+		\grAltLn \gr{BreakStmt} \\
+		\grAltLn \gr{IfStmt} \\
+		\grAltLn \gr{WhileStmt} \\
+		\grAltLn \gr{DeleteStmt} \\
+		\grAltLn \gr{Expression} \\
+		\grAltLn \gr{VarDeclStmt} \\
 	\\
-	\grDef{CommandBlock} \kwd{\{} \{ \gr{Command} \} \kwd{\}} \\
-	\grDef{Command} \gr{VarDeclCmd} \\
-		\grAltLn \gr{CommaExpression} \kwd{;} \\
+	\grDef{ReturnStmt} \kwd{return} \gr{Expression} \kwd{;} \\
+	\grDef{BreakStmt} \kwd{break} \kwd{;} \\
+	\grDef{IfStmt} \{ \gr{Decoration} \} \kwd{if} \kwd{(} \gr{Expression} \kwd{)} \gr{Statement} \\
+		\grLn [ \kwd{else} \gr{Statement} ] \\
+	\grDef{WhileStmt} \kwd{while} \kwd{(} \gr{Expression} \kwd{)} \gr{Statement} \\
+	\grDef{DeleteStmt} \kwd{delete} \gr{Expression} \kwd{;} \\
 \end{grammar}
 
-\section{Definition constraint}
+\section{Function definitions}
+Functions in Beast are similar to those in the D programming language. You do not have to write declaration before definition.
+\begin{code}
+Void foo() {}
 
-\section{The \kwd{auto} keyword}
+Void foo2() {
+	foo();
+}
+\end{code}
+
+When declaring a parameter, you can access all parameters already declared in the parameter list (to declare a parameter, you can utilize all parameters to the left). In return type expression, you can access all function parameters.
+\begin{code}
+b.#type foo( Int a, a.#type b, a.#type c ) {
+	// code
+}
+\end{code}
+
+\subsection{\inlineCode{auto} return type}
+Function return type can be declared as \inlineCode{auto}. In that case, return type is inferred as a data type of the first \inlineCode{return} statement expression in the function code. If there are no return statements, return type is \inlineCode{Void}.
+
+\begin{code}
+auto foo() {
+	return 5; // return type is deduced to be Int
+}
+\end{code}
+
+\subsection{Constant-value parameters}
+It is possible to declare a parameter that accepts one exact value of a defined type (implicit casting is allowed). This is achieved by instead of using variable declaration syntax, pure expression is inserted to the parameter list. The value must me known at compile time, same as argument value when calling the function. Const-value parameter value and provided argument value are compared bit-by-bit. 
+
+This construct is useful for a \ctime parameter specialization or to differentiate between two overloads with otherwise same parameter types. It is also used when overloading operators.
+
+\begin{code}[Example of constant-value parameters. Please note that there is no \inlineCode{String} in Beast so far, neither user-defined enums]
+class Stream {
+	// CreateFrom.fromFile and .fromFile are const-value parameters
+	Void #ctor( CreateFrom.fromFile, String filename ) { /* ... */ }
+	Void #ctor( CreateFrom.fromString, String str ) { /* ... */ } 
+}
+
+Void main() {
+	// :ident construct is supported with const-value parameters
+	Stream str1 = Stream( :fromFile, "file.txt" );
+	Stream str2 = Stream( :fromString, "asdfgh" );
+}
+\end{code}
+
+\begin{code}
+class C {
+	
+	// Operator.binPlus is a const-value parameter
+	C #opBinary( Operator.binPlus, C? other ) {
+		...	
+	}
+	
+}
+\end{code}
+
+\subsection{\ctime parameters}
+Static functions (class member functions currently not) can also have \ctime parameters -- parameters decorated with the \inlineCode{@ctime} decorator (see \autoref{ctime}). Effectively, \ctime parameters are similar to template parameters in languages like C++, D or Java.
+
+\begin{code}
+auto max( @ctime Type T, T a, T b ) {
+	if( a > b )
+		return a;
+	else
+		return b;
+}
+	
+Void main() {
+	print( max( Int, 5, 3 ) );
+}
+\end{code}
+
+\subsection{The \kwd{auto} keyword}
+It is possible to declare a parameter as \inlineCode{auto} type. In that case, type of the parameter is deduced from provided argument type. This effectively creates a hidden \inlineCode{@ctime Type} variable, so functions with \inlineCode{auto} parameters cannot be declared as member functions (for now).
+
+\begin{code}
+auto max( auto a, a.#type b ) {
+	if( a > b )
+		return a;
+	else
+		return b;
+}
+
+Void main() {
+	print( max( 5, 3 ) );
+}
+\end{code}
+
+\section{Compiler-defined functions}
+There are currently these functions static defined by the compiler:
+
+\paragraph{\inlineCode{print} functions}
+\begin{code}
+Void print( Bool data )
+Void print( Int32 data )
+Void print( Int64 data )
+\end{code}
+These functions print provided argument to the stdout as signed decimals (\inlineCode{true} is printed as \inlineCode{1} and \inlineCode{false} as 0). Calling these functions at compile time results in an error.
+
+\paragraph{\inlineCode{assert}}
+\begin{code}
+void assert( Bool expr )
+\end{code}
+Does nothing if provided argument is \inlineCode{true}. If \inlineCode{expr} is \inlineCode{false}, creates an error (compiler error at compile time, prints text to stderr and exits the program at runtime).
+
+\paragraph{\inlineCode{malloc}, \inlineCode{free}}
+\begin{code}
+	Pointer malloc( Size bytes )
+	Void free( Pointer ptr )
+\end{code}
+Allocates/deallocates a memory on the heap. This function is also callable at compile time.
 
 \chapter{Types}
+\begin{grammar}
+	\grDef{ClassDecl} \kwd{class} \token{Identifier} \kwd{\{} \gr{DeclScope} \kwd{\}}
+\end{grammar}
 
-\subsection{Type casting}
+Currently, Beast only supports classes. There are also compiler-defined enums, but there's currently no syntactic support for user-defined enumerations.
+
+\section{Class declarations}
+Classes do not support inheritance at all (is to change in the future). No automatic constructor or destructor generation is implemented either, a programmer must manually write class constructors and destructors and call member constructors and destructors in them. It is important to call member constructors/destructors, especially for reference types. Constructors are declared as \inlineCode{Void #ctor( args )} and destructors as \inlineCode{Void #dtor()}.
+
+For more info about constructor and destructor calls, see \autoref{varDecls}.
+
+For more info about operator overloading, see \autoref{operatorOverloading}.
+
+\begin{code}
+class C {
+
+	// Implicit constructor
+	Void #ctor() {
+		a.#ctor();
+		b.#ctor();
+	}
+	
+	// Copy constructor
+	Void #ctor( C? other ) {
+		a.#ctor( other.a );
+		b.#ctor( other.b );	
+	}
+
+	// Destructor
+	Void #dtor() {
+		a.#dtor();
+		b.#dtor();	
+	}
+
+	Int a;
+	Int b;
+
+}
+\end{code}
+
+You can declare classes in classes, however you have to decorate the inner class with \inlineCode{@static}.
+
+\section{User-defined types}
 
 \subsection{Pointers vs. references}
 \begin{centeredRefTabular}{l | c | c}
@@ -414,6 +579,7 @@ Int? ref := new auto(); // ref constructor expects the Int? type, so auto is inf
 		\grAltLn \gr{ImportStmt} \\
 		\grAltLn \gr{FunctionDecl} \\
 		\grAltLn \gr{ScopeDecorationStmt} \\
+		\grAltLn \gr{ModuleLvlDeclBlock} \\
 	\grDef{ScopeDecorationStmt} \{ \gr{Decoration} \}+ \kwd{:} \\
 	\grDef{ModuleLvlDeclBlock} \{ \gr{Decoration} \} \kwd{\{} \gr{ModuleLvlDecl} \kwd{\}} \\
 \end{grammar}
@@ -526,7 +692,7 @@ Void eFunc() {
 %TODO noWarning, final, abstract, base, virtual, override, static, noScope, virtualBase
 
 \begin{grammar}
-	\grDef{Decoration} \kwd{@} \token{Identifier} [ \gr{ParentCommaExpr} ]
+	\grDef{Decoration} \kwd{@} \token{Identifier}
 \end{grammar}
 
 Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code.
@@ -823,7 +989,7 @@ The decorator cannot be used in any other contexts.
 
 \subsection{The \decoratorRef{noscope} decorator} \label{decorator:noscope}
 
-\chapter{Ctime}
+\chapter{Code hatching concept (\inlineCode{@ctime})} \label{ctime}
 Ctime is a powerful concept introduced in Beast. It provides a form of metaprogramming, but that's not all what it does.
 
 \paragraph{Basic idea}
@@ -833,7 +999,7 @@ These variables will are called ctime variables in Beast.
 
 \paragraph{Consequences} Consequences of this one simple rule are following:
 
-\chapter{Language reflection}
+\chapter{Reflection} \label{reflection}
 
 \section{Overloadsets}
 \begin{code}
@@ -890,9 +1056,9 @@ class FunctionMetadata {
 	\item Class and enum names are in \verb|UpperCamelCase|.
 	\item Enum members are in \verb|lowerCamelCase|. They do not contain any enum-related prefixes.
 	\item Decorator names are in \verb|lowerCamelCase|.
-	\item Variable (and parameter) names are in \verb|lowerCamelCase|, type variables are in \verb|UpperCamelCase|.
+	\item Variable (and parameter) names are in \verb|lowerCamelCase|, type variables are in\\\verb|UpperCamelCase|.
 	\item Function names are in \verb|lowerCamelCase|.
-	\item The \verb|_| symbol can be used in identifiers as a separator (for example class \verb|PizzaIngredient_Cheese|).
+	\item The \verb|_| symbol can be used in identifiers as a separator (for example class\\\verb|PizzaIngredient_Cheese|).
 \end{itemize}
 
 \section{Further recommended code style}
@@ -900,7 +1066,7 @@ class FunctionMetadata {
 	\item Indent with tabs (so anyone can set up tab size based on his preferences)
 	\item Spaces in statements like this: \inlineCode{if( expr ) \{}, opening brace on the same line
 	\item Spaces around operators: \inlineCode{x + y}
-	\item Decorators on the same line with decorated symbols.
+	\item Decorators on the same line with decorated symbols (if the decoration list is too long).
 \end{itemize}
 
 \chapter{Plans for the future}
@@ -929,99 +1095,5 @@ class FunctionMetadata {
 	\item \inlineCode{class X : @public @final Y}
 	\item Array literals
 \end{compactitem}
-
-\section{Random thoughts scrapbook}
-\begin{code}
-auto max( auto x, x.#type y ) = ( x > y ) ? x : y;
-
-write( "Asd \(varx) and \(vary)" );
-
-T!? #new( @ctime Type T ) {
-	return malloc( T.#size ).to( T!? );
-}
-
-auto Int = Int32;
-auto Float = Float32;
-
-auto I1 = Int8;
-auto I2 = Int16;
-auto I4 = Int32;
-auto I8 = Int64;
-auto I16 = Int128;
-
-Int8.#identifier == "Int8"
-I8.#identifier == "I8"
-I8.#name = "Int8"
-
-decorator.ctime or decorator( ctime )
-module.straw.beast.test or module( straw.beast.test )
-
-class null {
-	@public @static	T #implicitCast( Type T )
-		if( T is Pointer )
-	{
-		module.this
-		module.straw.beast.functionInAnotherModule();
-		module( "asd.test" ).functionInAnotherModule();
-		return T(0);
-	}
-}
-
-class Void {}
-
-
-// X class
-class X( Int32 i ) {
-}
-
-X(5).#type == Class
-X(5).#template == X
-X.#type == ClassTemplate
-X.#identifier == "X"
-X(5).#name == "X"
-X(5).#identifier == null
-
-// Overloadsets
-I8
-
-// Constantization
-Void foo() {
-	Int! x = 5;
-	x += 3;
-	constantize x;
-	
-	x += 3; // Error: x is constant
-}
-
-!!!
-class C( @ctime Int x, Int y ) { // y IS A RUNTIME VARIABLE
-
-}
-
-
-@noscope @ctime if( true ) // if does not create scope, so all variables declared in it are available outside its body
-	Int! x;
-	
-	while else jako v Pythonu
-	
-\end{code}
-
-\paragraph{Multiple inheritance}
-\begin{itemize}
-	\item A base class cannot be inherited twice (in any way, considering the entire inheritance tree); if it is, all inheritances but one must be decorated with \inlineCode{@virtual}. This rule is not applied if the inherited class is an interface (doesn't contain variables)
-	\item Classes don't handle constructing of their virtual base classes
-\end{itemize}
-
-\subsection{Possible lists}
-
-\begin{centeredRefTabular}{l | P{5cm} || c || c | c || c | c | c || c | c}
-	\textbf{List type} & \textbf{Allocation method} & \rotableheader{Reasonable item count} & \rotableheader{FIFO} & \rotableheader{LIFO} & \rotableheader{Index access} & \rotableheader{Fast insert} & \rotableheader{Fast delete} & \rotableheader{Constant item address} & \rotableheader{Keeps order} \\ \hline \hline
-	Array & $2^n$ & 1k & & * & * & & & & * \\ \hline
-	Lazy array (swap delete) & $2^n$ & 10k & & & & * & * & & \\ \hline
-	Linked list & $n$ or $2^n$ & $\infty$ & * & * & & * & * & * & * \\ \hline
-	Tree & $n$ or $2^n$ & $\infty$ & * & * & & * & * & * & * \\ \hline
-\end{centeredRefTabular}
-
-\paragraph{Container names} container, array, list, collection, tree, table, hash, associativeXX, set
 
 \end{document}          

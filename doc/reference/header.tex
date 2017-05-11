@@ -1,7 +1,6 @@
 % !TeX root = main.tex
 
 \documentclass[10pt, a4paper, fleqn]{report}
-\usepackage[margin=20mm]{geometry}
 \usepackage{cmap}
 
 \usepackage[utf8]{inputenc}
@@ -31,13 +30,20 @@
 \usepackage{enumitem}
 
 % Referencing
-\usepackage[hidelinks]{hyperref}
-\newcommand{\putlabel}{
-	(\arabic{chapter}.\arabic{equation})
+\newcommand{\eqlabel}[1][]{
+	\small
+	(\arabic{chapter}.\arabic{equation}) #1
 }
-\newcommand{\putref}{
+\usepackage[hidelinks]{hyperref}
+\newcommand{\putref}[1][]{
+	\nopagebreak\refstepcounter{equation}
+	\eqlabel[#1]
+}
+\newcommand{\putrefCentered}[1][]{
+	\centering
 	\refstepcounter{equation}
-	\putlabel
+	\eqlabel[#1]
+	\par
 }
 
 %math settings
@@ -69,6 +75,11 @@
 \titlespacing*{\subsection}{0em}{4mm plus 2mm minus 2mm}{0mm}
 \titlespacing*{\paragraph}{0mm}{4mm plus 2mm minus 2mm}{0mm}
 \titleformat{\paragraph}[runin]{\bf}{}{0mm}{}[~~~~]
+
+\setlength{\hoffset}{-0.7cm}
+\setlength{\voffset}{-1.5cm}
+\setlength{\textheight}{23.0cm}
+\setlength{\textwidth}{15.2cm}
 
 %circuit settings
 \usepackage{circuitikz}
@@ -115,7 +126,9 @@
 	\begin{center}
 		\begin{longtable}{#1}	
 }{
-		\end{longtable}~\\*\putref
+		\end{longtable} \nopagebreak
+	
+		\putref
 	\end{center}
 }
 
@@ -123,7 +136,9 @@
 	\begin{center}
 		\begin{tabular}{#1}	
 }{
-		\end{tabular}~\\*\putref
+		\end{tabular} \nopagebreak
+	
+		\putref
 	\end{center}
 }
 
@@ -133,7 +148,7 @@
 
 	\begin{minipage}{\linewidth}
 		\begin{center}
-			\includegraphics[#3]{#2}
+			\includegraphics[#3]{#2} \nopagebreak
 			
 			{\footnotesize \putref #1}
 		\end{center}
