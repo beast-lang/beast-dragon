@@ -121,6 +121,10 @@ final class MemoryBlock {
 			return flag( SharedFlag.sessionFinished );
 		}
 
+		pragma( inline ) bool isDynamicallyAllocated( ) {
+			return flag( Flag.dynamicallyAllocated );
+		}
+
 	public:
 		pragma( inline ) bool flag( Flag flag ) {
 			return ( flags & flag ) == flag;

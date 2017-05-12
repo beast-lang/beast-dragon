@@ -119,7 +119,7 @@ Některé jazyky (například Rust\footnote{\url{https://doc.rust-lang.org/night
 
 Je tedy třeba určit syntaktickou konstrukci pro označování nekonstantních proměnných. V rámci koherence syntaxe jazyka (která je rozvedena v dalších kapitolách tohoto textu), připadají  v úvahu dvě možnosti:
 \begin{enumerate}
-	\item Vytvoření dekorátoru\footnote{\BeastRef{Decorators}} v kontextu \inlineCode{typeWrapper}\footnote{\BeastRef{Decoration contexts}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
+	\item Vytvoření dekorátoru\footnote{\BeastRef{Decorators}}, nejlogičtěji \inlineCode{@mutable} nebo \inlineCode{@mut}
 	\item Vyčlenění operátoru; nejlepším kandidátem je suffixový operátor \inlineCode{Type!}, protože nemá žádnou standardní sémantiku, je nepoužitý a znak vykřičníku je intuitivně asociován s výstrahou, což je asociovatelné s mutabilitou.
 \end{enumerate}
 
@@ -186,7 +186,7 @@ Jak bylo uvedeno v oddílu \ref{implicitConst}, pro jazyk Beast byla zvolena dru
 Beast má podobný mechanismus typových kontrol jako jazyky C++ a D:
 \begin{itemize}
 	\item Typy mohou být implicitně konvertibilní do jiných typů. Proces konverze je definován v jednom z typů (přetížením funkcí \inlineCode{#implicitCast})\footnote{\BeastRef{Type casting}}. Implicitní konverze se provádí sama v případě potřeby\footnote{Implicitní konverze ovlivňuje rezoluci volání přetížených funkcí, \beastRef{Overload resolution}}.
-	\item Typy mohou být explicitně konvertibilní do jiných typů (funkce \inlineCode{#explicitCast}). K explicitnímu přetypování se používá výhradně funkce\\\inlineCode{var.to(Type)} (lze použít i k implicitnímu přetypování).
+	\item Typy mohou být explicitně konvertibilní do jiných typů (funkce \inlineCode{#explicitCast}). K~explicitnímu přetypování se používá výhradně funkce\\\inlineCode{var.to(Type)} (lze použít i k implicitnímu přetypování).
 \end{itemize}
 
 Důvodem k jiné syntaxi oproti C++ je opět snaha o zjednodušení pravidel a zvýšení přehlednosti kódu.

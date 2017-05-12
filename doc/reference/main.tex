@@ -9,7 +9,7 @@
 % Title Page
 \title{Beast programming language}
 \subtitle{Language specification/reference}
-\author{Daniel 'Danol' Čejchan}
+\author{Daniel Čejchan}
 \date{2016-2017}
 
 
@@ -18,10 +18,13 @@
 %\renewcommand{\clearpage}{}
 
 \chapter{Table of contents}
-\makeatletter
-\setcounter{tocdepth}{1}
-\@starttoc{toc}
-\makeatother
+{
+	\renewcommand{\baselinestretch}{0.7}\normalsize
+	\makeatletter
+	\setcounter{tocdepth}{1}
+	\@starttoc{toc}
+	\makeatother
+}
 
 \chapter{Introduction}
 Beast is an imperative, structured, modular programming language supporting OO and functional paradigms. Currently, only transcompilation to C is available. In future, a LLVM backend integration is planned.
@@ -169,7 +172,8 @@ void main() {
 		\grAltLn \gr{ParentCommaExpr}
 \end{grammar}
 
-\subsection{Operator precedence} \label{opPrecedence}
+\subsection{Operator precedence} \label{opPrecedence} \nopagebreak
+
 \begin{centeredRefTabular}{P{1.5cm} | c | p{6cm} | c}
 	\textbf{Priority} & \textbf{Operator} & \textbf{Semantics} & \textbf{Assoc.} \\ \hline \hline
 	
@@ -384,14 +388,14 @@ auto var = true; // true is Bool, so var is of type Bool
 Int? ref := new auto(); // ref constructor expects the Int? type, so auto is inferred as Int
 \end{code}
 
-\paragraph{\inlineCode{@ctime} variables}
-Variable declarations can be decorated with the \inlineCode{@ctime} decorator. \inlineCode{@ctime} variables are completely evaluated at compile time. For more information, see \autoref{ctime}.
+\paragraph{\decoratorRef{ctime} variables}
+Variable declarations can be decorated with the \decoratorRef{@ctime} decorator. \ctime variables are completely evaluated at compile time. For more information, see \autoref{ctime}.
 
 \paragraph{Variable lifetime (extent)} Variable lifetime is same as in C++ or D -- local variables exist until end of the scope (or \inlineCode{return}, \inlineCode{break}, exception, ...), where the are destroyed in reverse order they were defined. Dynamically constructed variables exist until they are manually destroyed (usually done via \gr{DeleteStmt}). Static variables are constructed during application start and are never destroyed (probably will change in the future).
 
 \chapter{Functions}
 \begin{grammar}
-	\grDef{FunctionDecl} \gr{TypeExpr} \token{Identifier} \gr{ParentCommaExpr} \gr{CodeBlock} \\
+	\grDef{FunctionDecl} \{ \gr{Decoration} \} \gr{TypeExpr} \token{Identifier} \gr{ParentCommaExpr} \gr{CodeBlock} \\
 	\grDef{CodeBlock} \{ \gr{Decoration} \} \kwd{\{} \{ \gr{Statement} \} \kwd{\}} \\
 	\grDef{Statement} \gr{CodeBlock} \\
 		\grAltLn \gr{ReturnStmt} \\
@@ -468,8 +472,8 @@ class C {
 }
 \end{code}
 
-\subsection{\ctime parameters}
-Static functions (class member functions currently not) can also have \ctime parameters -- parameters decorated with the \inlineCode{@ctime} decorator (see \autoref{ctime}). Effectively, \ctime parameters are similar to template parameters in languages like C++, D or Java.
+\subsection{\ctime parameters} \label{function:ctimeParams}
+Static functions (class member functions currently not) can also have \ctime parameters -- parameters decorated with the \ctime decorator (see \autoref{ctime}). Effectively, \ctime parameters are similar to template parameters in languages like C++, D or Java.
 
 \begin{code}
 auto max( @ctime Type T, T a, T b ) {
@@ -500,10 +504,15 @@ Void main() {
 }
 \end{code}
 
-\section{Compiler-defined functions}
+\section{Statements}
+Statements work very much like in C++/D, so they are not described here.
+
+Only thing needed to specify is that \inlineCode{new} and \inlineCode{delete} operators work with references, not pointers.
+
+\section{Compiler-defined functions} \label{compilerFunctions}
 There are currently these functions static defined by the compiler:
 
-\paragraph{\inlineCode{print} functions}
+\paragraph{\inlineCode{print} functions}~
 
 \begin{code}
 Void print( Bool data )
@@ -512,14 +521,14 @@ Void print( Int64 data )
 \end{code}
 These functions print provided argument to the stdout as signed decimals (\inlineCode{true} is printed as \inlineCode{1} and \inlineCode{false} as 0). Calling these functions at compile time results in an error.
 
-\paragraph{\inlineCode{assert}}
+\paragraph{\inlineCode{assert}}~
 
 \begin{code}
 void assert( Bool expr )
 \end{code}
 Does nothing if provided argument is \inlineCode{true}. If \inlineCode{expr} is \inlineCode{false}, creates an error (compiler error at compile time, prints text to stderr and exits the program at runtime).
 
-\paragraph{\inlineCode{malloc}, \inlineCode{free}}
+\paragraph{\inlineCode{malloc}, \inlineCode{free}}~
 
 \begin{code}
 	Pointer malloc( Size bytes )
@@ -530,7 +539,7 @@ Allocates/deallocates a memory on the heap. This function is also callable at co
 \chapter{Types}
 
 \begin{grammar}
-	\grDef{ClassDecl} \kwd{class} \token{Identifier} \kwd{\{} \gr{DeclScope} \kwd{\}}
+	\grDef{ClassDecl} \{ \gr{Decoration} \} \kwd{class} \token{Identifier} \kwd{\{} \gr{DeclScope} \kwd{\}}
 \end{grammar}
 
 Currently, Beast only supports classes. There are also compiler-defined enums, but there's currently no syntactic support for user-defined enumerations.
@@ -589,6 +598,9 @@ You can declare classes in classes, however you have to decorate the inner class
 \section{Compiler-defined types}
 Beast offers a limited amount of pre-defined types.
 
+\subsection{\inlineCode{Bool}}
+\inlineCode{Bool} is a 1-byte boolean type. Supported operators are \inlineCode{&& || == !=}. Constants \inlineCode{true} and \inlineCode{false} are provided by the core library.
+
 \subsection{Numeric types}
 Beast provides 32-bit and 64-bit signed integer types -- \inlineCode{Int32} (also aliased as \inlineCode{Int}) and \inlineCode{Int64}. Basic arithmetic operators are supported (\inlineCode{+}, \inlineCode{-}, \inlineCode{*}, \inlineCode{/}) and are overloaded in both left and right variants (see \autoref{operatorOverloading}), meaning both expressions like \inlineCode{a + 5} and \inlineCode{5 + a} are supported if \inlineCode{a} is of type implicitly convertible to \inlineCode{Int} (see \autoref{typeConversion}). \inlineCode{Int32} is implicitly castable to \inlineCode{Int64}.
 
@@ -606,7 +618,6 @@ For most cases, reference is the way to go. It acts like referenced type, except
 	\item A \inlineCode{@ctime Type ref.#baseType} property is added that stores the referenced type
 	\item A \inlineCode{ref.#data} alias is added, which allows direct access to referenced variable namespace. This is useful for example when a programmer needs to manually call referenced value constructor/destructor (please note that it is usually dangerous) -- he would use \inlineCode{ref.#data.}\-\inlineCode{#dtor()}, because \inlineCode{ref.#dtor()} would call the reference destructor, not the referenced value one.
 \end{compactitem}
-\pagebreak
 
 \begin{centeredRefTabular}{l | c | c}
 	\textbf{Property} & \textbf{Reference} & \textbf{Pointer} \\ \hline \hline
@@ -626,11 +637,11 @@ Int y = 6;
 
 // ref now references variable x
 Int? ref := x;
-print( ref ); // prints 5
+print( ref ); //! stdout: 5
 ref = 10; // x is set to 10
 
 xref := y; // ref now references variable y
-print( ref ); // prints 6
+print( ref ); //! stdout: 6
 ref = 7; // y is is set to 7
 \end{code}
 
@@ -640,16 +651,16 @@ Int y = 6;
 
 // ptr now references variable x
 Pointer ptr = x.#addr;
-print( ptr.data( Int ) ); // prints 5
+print( ptr.data( Int ) ); //! stdout: 5
 ptr.data( Int ) = 10; // x is set to 10
 
 ptr = y.#addr; // ptr now references variable y
-print( ptr.data( Int ) ); // prints 6
+print( ptr.data( Int ) ); //! stdout: 6
 ptr.data( Int ) = 7; // y is is set to 7
 \end{code}
 
 \subsection{\inlineCode{Type} type} \label{typeType}
-Types (classes, enums, ...) are considered \ctime variables of type \inlineCode{Type}. Type variables can only be used as \ctime variables.
+Types (classes, enums, ...) are considered \ctime variables of type \inlineCode{Type}. Type variables can only be used as \ctime variables. \nopagebreak
 
 \begin{code}
 @ctime Type T! = Int;
@@ -661,28 +672,32 @@ T y = true;
 
 \chapter{Modules}
 \begin{grammar}
-	\grDef{ModuleEntry} \kwd{module} \gr{ModuleIdentifier} \kwd{;} \{ \gr{ModuleLvlDecl} \} \\
-	\grDef{ModuleIdentifier} \token{Identifier} \{ \kwd{.} \token{Identifier} \} \\
+	\grDef{ModuleDecl} \kwd{module} \gr{ExtIdentifier} \kwd{;} \{ \gr{DeclScope} \} \\
+	\grDef{ExtIdentifier} \token{Identifier} \{ \kwd{.} \token{Identifier} \} \\
 	\\
-	\grDef{ModuleLvlDecl} \gr{ModuleLvlDeclBlock} \\
-		\grAltLn \gr{ImportStmt} \\
+	\grDef{DeclScope} \gr{ClassDecl} \\
 		\grAltLn \gr{FunctionDecl} \\
 		\grAltLn \gr{ScopeDecorationStmt} \\
-		\grAltLn \gr{ModuleLvlDeclBlock} \\
+		\grAltLn \gr{DeclBlock} \\
 	\grDef{ScopeDecorationStmt} \{ \gr{Decoration} \}+ \kwd{:} \\
-	\grDef{ModuleLvlDeclBlock} \{ \gr{Decoration} \} \kwd{\{} \gr{ModuleLvlDecl} \kwd{\}} \\
+	\grDef{DeclBlock} \{ \gr{Decoration} \} \kwd{\{} \gr{DeclScope} \kwd{\}} \\
 \end{grammar}
 
 The program is divided into modules. Each module begins with a module declaration statement.
 \begin{code}
-module package.package.moduleName;
+module package.package.modulename;
 \end{code}
 
-The \gr{ModuleIdentifier} in the \gr{ModuleEntry} then works as an identifier for the module. Multiple modules with the same identifier are not allowed.
+The \gr{ExtIdentifier} in the \gr{ModuleDecl} then works as an identifier for the module. Multiple modules with the same identifier are not allowed.
+
+Although Beast supports modules, there are currently no imports between them supported.
 
 \paragraph{Filesystem representation} Module identifier has to correspond with the directory structure the source file is in and the source file name has to be same as the module name (case sensitive). For example, having set up \verb|project/src| and \verb|project/include| source file directories, module \verb|straw.beast.main| has to be in file \verb|project/src/straw/beast/main.beast| or \verb|project/include/straw/beast/main.beast|.
 
-\paragraph{Naming convention} Modules should be named in lower-CamelCase. This is not enforced, however disobeying this rule results in a warning.
+\paragraph{Naming convention} Modules have to be named in lowercase (including package names), otherwise an error is shown.
+
+\section{Project configuration}
+Beast supports project configuration files in the JSON format. Items of configuration can be listed using the \inlineCode{./beast --help-config} command.
 
 \chapter{Decorators}
 %TODO noWarning, final, abstract, base, virtual, override, static, noScope, virtualBase
@@ -691,10 +706,11 @@ The \gr{ModuleIdentifier} in the \gr{ModuleEntry} then works as an identifier fo
 	\grDef{Decoration} \kwd{@} \token{Identifier}
 \end{grammar}
 
-Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code.
+Generally, decorators provide syntax support for altering properties of types, declarations or even blocks of code. In the future, decorators are planned to have many practical applications. In the current Beast version, there are only two compiler-defined decorators and there is no support for user-defined decorators.
 
 \section{Decorator application}
 At module level, there are three ways of how to apply a decorator:
+
 \begin{code}
 module a;
 
@@ -717,334 +733,199 @@ class C {
 }
 \end{code}
 
-\paragraph{Scope decorations} Decorators are applied to all statements following the decoration up to next scope decoration or current scope end. You cannot use scope decorations directly in the module root scope.
+\paragraph{Scope decorations} Decorators are applied to all statements following the decoration up to next scope decoration or current scope end.
 
 \paragraph{Block decorations} Decorators are applied to all statements in the block.
 
 \paragraph{Statement decorations} Decorators are applied to the statement that follows the decoration.
 
-\subsection{Decoration contexts} \label{decorationContexts}
-The concept of decorators wraps up lot of possibilities and functionality. In order to make things work, it is necessary to define different types of decorators, each altering the program in a different, unique way. In Beast, these decorator subtypes are called \textit{decorator contexts}. Each decorator is defined for one particular context. However decorator identifiers are overloadable, so it is possible to define multiple decorators for different contexts with the same name.
-
-The contexts are following (decorators of contexts commented with "system only" cannot be defined by the programmer):
-\begin{code}
-enum DecorationContext {
-	importModifier, // system only
-	parameterModifier, // system only
-	accessModifier, // system only for now
-	metadata, // concept, not fully documented
-	fieldWrapper, // concept, not fully documented
-	typeWrapper, // concept, not fully documented
-	typeMixin, // concept, not fully documented
-	functionModifier, // system only
-	classDeclarationModifier, // system only
-	enumDeclarationModifier, // system only
-	variableDeclarationModifier, // system only
-	controlStatementModifier, // system only
-	codeBlockModifier // system only
-}
-\end{code} \label{enum:DecorationContext}
-%TODO better ordering
-
-%TODO context description
-\subsubsection{The 'importModifier' decoration context}
-
-\subsection{Decorator overloading}
-Decorators can take parameters, just like functions (\inlineCode{@decoration} is equivalent to \inlineCode{@decoration()}). The behavior is following:
-\begin{enumerate}
-	\item Overloads that do not match given arguments are ignored
-	\item Find overload that has lowest-index context (as ordered in the \enumRef{DecorationContext} enum) and remove overloads that are of different context
-	\item Remove those overloads whose list of required implicit casts is superset of any other overload's required implicit cast list in the overloadset
-	\begin{itemize}
-		\item \inlineCode{auto} arguments are treated as implicit casted
-		\item Arguments containing \inlineCode{:ident} accessor are also treated as implicit casted
-	\end{itemize}
-	\item Apply the only overload remaining (or error)
-\end{enumerate}
-
-\paragraph{Decorator ordering by context} In order to improve code readability and programmers' awareness, it is enforced by the compiler that decorations are ordered by the context they're used in (the order is specified in the \enumRef{DecorationContext} enum).
-
-\subsection{Decorator conflicts}
-\textbf{You cannot apply two decorators that are incompatible.} The most common case are the \hyperref[accessModifierDecorators]{access modifier decorators}.
-\begin{code}
-@final class C {
-
-@public:
-	@private Int8 a; // Error - @public and @private decorators are incompatible
-	
-}
-\end{code}
-
 \section{Predefined decorators}
 
-\subsection{Import locality modifiers (\decoratorRef{global}, \decoratorRef{local})}
-The decorators only support \decorationContextRef{importDecoration} context. See \nameref{imports}.
-
-\subsection{Access modifiers (\decoratorRef{public}, \decoratorRef{private}, \decoratorRef{protected} and \decoratorRef{friend})} \label{accessModifierDecorators}
-Access modifier decorators specify where a symbol is accessible from. They only support the \decorationContextRef{moduleLevelDeclaration} context.
-
-\paragraph{\decoratorRef{public}} \label{decorator:public} Symbols with the \decoratorRef{public} access modifier are accessible from everywhere.
-
-\paragraph{\decoratorRef{private}} \label{decorator:private} Symbols with the \decoratorRef{private} access modifier are accessible only from the current scope (and it's subscopes).
-
-\paragraph{\decoratorRef{protected}} \label{decorator:protected} The \decoratorRef{protected} only makes sense when used in classes. It makes symbols accessible from the current scope, its subscopes and any scope that derives from any of its subscopes.
-
-\paragraph{\decoratorRef{friend}} \label{decorator:friend} The \decoratorRef{friend} decorator exclusively allows access to one scope symbol, specified as the parameter. This rule has higher priority than \decoratorRef{protected} or \decoratorRef{private}.
-
-Syntax: \inlineCode{@friend( Symbol friend )}
+\subsection{Decorator \decoratorRef{static}} \label{decorator:static}
+Decorator \decoratorRef{static} is used for declaring static variables inside functions and for declaring static nested classes (as non-static ones are not supported yet). \nopagebreak
 
 \begin{code}
-class C {
-	@private @friend( func3 ) Int8 x;
-	@protected Int16 func() {
-		return 32000;
-	}	
-	@public Int32 y;
-}
-
-@final class D : @public C {
-	
-@public:
-	Void func2() {
-		x = 6; // Error
-		func(); // Ok
-	}
-	
-}
-
-Void func3() {
-	C c;
-	c.x = 5; // Ok - func3 is friend with C.x
-	c.func(); // Error
-	c.y = 10; // Ok
-}
-\end{code}
-
-\paragraph{Inter-compatibility}
-The \decoratorRef{public}, \decoratorRef{protected} and \decoratorRef{private} decorators are not compatible with any decorator from the three (this also means you can't apply them twice). Also, \decoratorRef{friend} and \decoratorRef{public} decorators are not compatible.
-
-\subsection{The \decoratorRef{ctime} (and \decoratorRef{autoCtime}) decorator} \label{decorator:ctime} \label{decorator:autoCtime}
-%TODO rework
-Generally, the \decoratorRef{ctime} decorator is related with compile time execution. It supports multiple contexts and depending on the context, its semantics can slightly change.
-
-\paragraph{Axioms overview}
-\begin{itemize}
-	\item A compile-time variable's value is always known at compile time (=> cannot change during runtime).
-	\item A compile-time function is always evaluated at compile time. That implies that parameters must be known at compile time. The return type is also compile-time.
-	\item Some runtime functions can be executed at compile time.
-	\item There is a difference between a compile-time function and a function executed at compile time.
-	\item A compile-time variable is implicitly castable to const runtime variable.
-	\item A compile-time class contains compile-time variables.
-	\item A compile-time class can contain runtime functions, but those cannot modify class' fields (they can only be const).
-\end{itemize}
-
-\paragraph{Compile-time parameters}
-A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter.
-
-Compile-time parameter values must always be known at compile time. Compile-time parameters can be mutable.
-
-Technically, a function with compile-time parameter is a function template.
-
-\begin{code}
-// 'y' and 't' parameters are compile-time
-Void f( Int x, @ctime Int y, @ctime Type t ) {
-	
-}
-\end{code}
-
-For more info, see \nameref{ctime:parameter}.
-
-\paragraph{Compile-time variables}
-A variable decorated with \decoratorRef{ctime} is a compile-time variable. Compile-time variables defined in function bodies \textbf{can be mutable} (global compile-time variables cannot be mutable). A compile-time variable can be of a \hyperref[ctime:class]{compile-time type} (a non-compile-time variable cannot be of a~compile-time type). You cannot define a compile-time variable as a dynamic member of a non-compile-time class.
-
-In order to prevent confusion, it is prohibited to work with runtime variables and manipulate (change values of) @ctime variables in the same expression.
-
-\begin{code}
-@ctime Type! t = Int; // t is a mutable @ctime variable that can hold types.
-
-t x = 5; // Now we declared a variable x of type t (which is Int). It is a runtime variable.
-
-t = String; // We're changing the @ctime variable here
-t str = "asd"; // y is of type String
-
-@ctime t str2 = "lol"; // str2 is compile time variable of type String
-\end{code}
-
-For more info, see \nameref{ctime:variable}.
-
-\paragraph{Compile-time functions}
-A function decorated with \decoratorRef{ctime} is a compile-time function. A compile-time function is always executed at compile time. It returns a \hyperref[ctime:class]{compile-time type}. Its parameters and all variables used in its body are compile-time.
-
-The \decoratorRef{ctime} decorator should be omitted in parameter, variable and return type declaration; a warning is shown otherwise.
-
-\begin{code}
-@ctime Type TypeIntersection( Type t1, Type t2 ) {
-	// if t2 is parent of t1
-	if( t1 is t2 )
-		return t2;
-		
-	// if t1 is parent of t2
-	else if( t2 is t1 )
-		return t1;
-	
-	else
-		return Void;
-}
-\end{code}
-
-For more info, see \nameref{ctime:function}
-
-\paragraph{Compile-time classes}
-A class decorated with \decoratorRef{ctime} is a compile-time class. Any instance of a compile-time class is a compile-time instance/variable. All its mutable member functions must be \hyperref[ctime:function]{compile-time functions}, all its member variables are \hyperref[ctime:variable]{compile-time variables} (the \decoratorRef{ctime} decorator should be omitted).
-
-\begin{code}
-@final @ctime class MyFunctionInfo {
-
-@public:
-	Void #ctor!( Function F ) {
-		returnType = F.#returnType;
-		parameterTypes = F.#parameters.map( x => x.type );
-	}
-	
-@public:
-	Type returnType;
-	Type[] parameterTypes;	
-	
-}
-\end{code}
-
-For more info, see \nameref{ctime:class}.
-
-\paragraph{Compile-time control statements}
-A control statement decorated with \decoratorRef{ctime} is a compile-time control statement. In a compile-time control statement, \textbf{expressions in the statement are evaluated in compile-time, but the statement bodies are evaluated at runtime}.
-
-All variables declared in the statement expressions are compile-time. They don't need to be decorated with the \decoratorRef{ctime} decorator.
-
-\begin{code}
-@ctime Type! t = Int8;
-
-if( 3 == 5 )
-	t = Int16; // Warning: compile-time variable modification inside a runtime control statement
-
-// t == Int16 here
-\end{code}
-
-\begin{code}
-@ctime for( Int16 x = 0; x < 20; x ++ ) {
-	// x is a compile-time variable
-	writeln( "lol" );
-	// The code generated from this would be twenty writeln("lol") calls
-}
-
-for( Int16 x = 0; x < 20; x ++ ) {
-	// x is a runtime variable, the loop is executed at runtime	
-}
-
-@ctime for( Int16 x = 0; x < 20; x ++ ) @ctime {
-	// x is a compile-time variable and this entire block is also executed at compile-time (the "lol" is written into compiler console)
-	writeln( "lol" );
-}
-
-\end{code}
-
-\paragraph{Compile-time code block} A code block decorated with the \decoratorRef{ctime} is executed at compile time. All variables declared in it are compile time and they should not be decorated with the \decoratorRef{ctime} decorator.
-
-\paragraph{The \decoratorRef{autoCtime} decorator} \label{decorator:autoCtime} This decorator works similar to the \decoratorRef{ctime}, except it only makes things compile-time when it is possible.
-
-In \decorationContextRef{classDeclaration} and \decorationContextRef{enumDeclaration}, it makes the type compile-time if it derives from a compile-time type or if it has a nonstatic compile-time member.
-
-In the \decorationContextRef{parameterDeclaration} context, the parameter is made compile-time whenever the function is called with a parameter value that is known at compile time.
-\begin{code}
-@final class HashTable( Type Key, Type Value ) {
-
-@public:
-	// You may ask, that the hell is "T!?!" ?! Don't be scared, T! means a mutable type T, T!? means non-mutable reference to mutable type and T!?! means mutable reference to mutable type (mutable reference == you can change where the reference points to using the ':=' operator)
-	T!?! #operator!( Operator("x[args]"), @autoCtime Key key ) {
-		Index hash = key.#hash() % tableSize_;	
-		
-		// Locating the record here 
-	}
-	
+Void foo() {
+	@static Int! x = 4;
+	print( x );
+	x = x + 1;
 }
 
 Void main() {
-	HashTable( String, Int )! table;
-	
-	table[ stdin.read() ] = 5;
-	
-	table[ "key" ] = 10;
-	// On the previous line the #key parameter is known at compile time, so the function is optimized (the hash calculation is performed at compile time)
+	foo(); //! stdout: 4
+	foo(); //! stdout: 5
 }
 \end{code}
 
-In the \decorationContextRef{functionDeclaration} context, the function is made compile-time when all of its parameters (all of them must be decorated with \decoratorRef{autoCtime} or \decoratorRef{ctime}) and/or return type are compile time.
+\subsection{Decorator \ctime} \label{decorator:ctime}
+The \ctime decorator is a cornerstone of the code hatching concept (see \autoref{ctime}). It is generally associated with compile-time execution, but its exact behavior depends on the context it is used in.
 
-In the \decorationContextRef{variableDeclaration} context, the variable is made compile time if its type is compile time.
+\paragraph{\ctime expressions}
+Decorating an expression with the \ctime decorator forces it to be evaluated at compile time. The expression can contain function calls, but it is not possible no use \nonctime variables in it. Also, some functions cannot be called during compile time, such as \inlineCode{print} (see \autoref{compilerFunctions}).
 
-The decorator cannot be used in any other contexts.
+\begin{code}
+Int factorial( Int x ) { /* ... */ }
+	
+Void main() {
+	print( @ctime factorial( 12 ) ); // factorial is evaluated at compile time
+}
+\end{code}
 
-\subsection{The \decoratorRef{noscope} decorator} \label{decorator:noscope}
+\paragraph{\ctime variables}
+Variables decorated with \ctime are always evaluated at compile time. They're not present in the output code at all or in a very optimized form. Local \ctime variables can be mutable (static ones not). It is not allowed to declare class members fields as \ctime variables. Some types can only be instantiated as \ctime variables, such as \inlineCode{Type} (see \autoref{typeType}).
+
+As for now, all modifying manipulations with \ctime variables must be done in \ctime expressions. \ctime variables can be read and referenced in runtime code.
+
+\begin{code}
+@ctime Int i = 3;
+
+print( i ); //! stdout: 3
+
+Int? ref := i; // ref is a runtime reference
+print( ref ); //! stdout: 3
+
+@ctime i = i + 5;
+print( ref ); //! stdout: 8
+\end{code}
+
+\paragraph{\decoratorRef{ctime} parameters}
+A function parameter decorated with \decoratorRef{ctime} is a compile-time parameter. When calling the function, value of an argument representing a \ctime parameter must be evaluable at compile-time. A \ctime parameter is technically an alternative to generic parameters in languages like C++, D or Java. In Beast, \ctime and \nonctime parameters are inside the same parenthesis, \ctime parameters do not have to be before \nonctime and they are both manipulated with the same way. See also \autoref{function:ctimeParams}.
+
+\begin{code}
+// 'y' and 't' parameters are compile-time
+Void foo( Int x, @ctime Int y, @ctime Type t ) { ... }
+
+Void main() {
+	foo( 5, 6, Int );
+}
+\end{code}
+
+\paragraph{\inlineCode{@ctime if}}
+When using \inlineCode{@ctime if}, the condition is evaluated at compile time, but then or else branch is not.
+
+\begin{code}
+Int x = 5;
+
+Void foo( @ctime Type T ) {	
+	@ctime if( T == Int )
+		x = x + 1;
+	
+	print( x );
+	x = x + 1;
+}
+
+Void main() {
+	foo( Bool ); //! stdout: 5
+	foo( Int ); //! stdout: 7
+	foo( Type ); //! stdout: 8
+}
+\end{code}
+
+\paragraph{\ctime code block} Contents of a code block decorated with \ctime are completely evaluated at compile time. \nopagebreak
+
+\begin{code}
+Void main() {
+	@ctime Type! T := Int;
+	
+	T x = 5;
+	print( x ); //! stdout: 5
+	
+	@ctime {
+		Type! T2 := Int;
+		
+		if( T2.#instanceSize == 4 )
+			T2 := Bool;
+		
+		T := T2;
+	}
+	
+	T y = true;
+	print( y ); //! stdout: 1
+}
+\end{code}
 
 \chapter{Code hatching concept (\inlineCode{@ctime})} \label{ctime}
-Ctime is a powerful concept introduced in Beast. It provides a form of metaprogramming, but that's not all what it does.
+Code hatching concept is a new concept introduced in the Beast programming language. It unifies generic programming, compile-time function execution, reflection and generally metaprogramming. Working with these formerly separate concept is now smooth and feels like a natural part of the language with simple rules, without having to learn any special syntactic constructs.
 
-\paragraph{Basic idea}
-The ctime concept has one simple idea: to introduce a \textbf{type of variables of which value can be deduced at any line of code} (without having to run the program).
+It is based on a simple idea -- having a classifier for variables whose value is deducible during compile time. In Beast, those variables are classified using the \inlineCode{@ctime} decorator (usage \inlineCode{@ctime Int x}; see also \autoref{decorator:ctime}). Local \ctime variables can be mutable; because Beast declarations are not processed in order as they are declared in source code, order of evaluation of expressions modifying static \ctime variables cannot be decided; that means that static \ctime variables cannot be mutable. All \ctime variable manipulations are evaluated at compile time.
 
-These variables will are called ctime variables in Beast.
+\ctime variables can also be included within a standard code (although their mutation can never depend on \nonctime variables or inputs).
 
-\paragraph{Consequences} Consequences of this one simple rule are following:
+\begin{code}
+@ctime Int z = 5;
+
+Void main() {
+	@ctime Int! x = 8;
+	Int! y = 16;
+	y += x + z;
+	x += 3;
+}
+\end{code}
+
+The concept of variables completely evaluable at compile time brings a possibility of having type variables (only \ctime, runtime type variables cannot be effectively done in compiled, statically typed languages). As a consequence, class and type definitions in general can be considered \ctime constant variables (thus first-class citizens; see also \autoref{typeType}).
+
+\begin{code}
+Void main() {
+	@ctime Type! T = Int;
+	T x = 5;
+	T = Bool;
+	T b = false;
+}
+\end{code}
+
+Having type variables, templates can be viewed as functions with \ctime parameters, for example class templates can be viewed functions returning a type. With \ctime variables, generics, instead of being a standalone concept, become a natural part of the language. Adding compile-time reflection is just a matter of adding compiler-defined functions returning appropriate \ctime data (not fully implemented in the current version of the language/compiler).
+
+The \inlineCode{@ctime} decorator can also be used on more syntactical constructs than just variable definitions (see \autoref{typeType}):
+\begin{compactitem}
+	\item \ctime code blocks are entirely performed at compile time.
+	\item \ctime branching statements (currently only \inlineCode{if}) are performed at compile time (not their bodies, just branch unwrapping).
+	\item \ctime expressions are always evaluated at compile time.
+\end{compactitem}
+
+To make the code hatching concept work, it is necessary to ensure that \ctime variables are truly evaluable at compile time. That is realized by the following rules. Their deduction can be found in bachelor's thesis introducing Beast and code hatching concept (in Czech languge, downloadable from the Github repository).
+\begin{compactenum}
+	\item \ctime variables cannot be data-dependent on \nonctime variables. \nopagebreak
+	\begin{compactenum}
+		\item Data of \nonctime variables cannot be assigned into \ctime variables.
+		\item It is not possible to change \ctime variables declared in a different runtime scope; for example it is not possible to change \ctime variables from a \nonctime if body if they were declared outside it.
+	\end{compactenum}
+	\item Static (non-local) \ctime variables must not be mutable.
+	\item If a variable is \ctime, all its member variables (as class members) are also \ctime.
+	\item If a reference/pointer is \ctime, the referenced data is also \ctime.
+	\item \ctime variables cannot be changed from runtime (\nonctime) code.
+	\item Classes cannot contain member \ctime variables.
+\end{compactenum}
 
 \chapter{Reflection} \label{reflection}
+In the current version, only few reflection elements are implemented.
 
-\section{Overloadsets}
+\section{Expressions}
+Following reflection elements apply to any expression.
+
+\begin{centeredRefTabular}{c | c | p{8cm}}
+	\textbf{Data type} & \textbf{Identifier} & \textbf{Description} \\ \hline \hline
+	\inlineCode{Type} & \inlineCode{#type} & Type of value the expression holds
+\end{centeredRefTabular}
+
 \begin{code}
-Overloadset #overloadset
-Symbol #matchOverload( args )
-
-class Overloadset {
-}
+assert( ( 5 + 3 ).#type == Int );
 \end{code}
 
-\section{Symbols}
-\begin{code}
-String #identifier
-Type #type
-SymbolMetadata #symbol
+\section{Functions}
+Following reflection elements apply to functions \textbf{without \ctime or \inlineCode{auto} parameters.}
 
-class SymbolMetadata {
-
-}
-\end{code}
+\begin{centeredRefTabular}{c | c | p{8cm}}
+	\textbf{Data type} & \textbf{Identifier} & \textbf{Description} \\ \hline \hline
+	\inlineCode{Type} & \inlineCode{#returnType} & Return type of the function
+\end{centeredRefTabular}
 
 \section{Classes}
-\begin{code}
-String #className // Can be null for anonymous classes
-ClassMetadata #class
-Overloadset #member( String identifier )
-Size #instanceSize
+Following reflection elements apply to classes.
 
-class ClassMetadata {
-}
-\end{code}
-
-\section{Function}
-\begin{code}
-Type #returnType
-Type #returnType( args )
-FunctionMetadata #function
-Type #argType( Index index )
-String #argIdentifier( Index index )
-Bool #isVariadic
-
-class FunctionMetadata {
-	
-@public:
-	String identifier;
-	
-	
-}
-\end{code}
+\begin{centeredRefTabular}{c | c | p{8cm}}
+	\textbf{Data type} & \textbf{Identifier} & \textbf{Description} \\ \hline \hline
+	\inlineCode{Size} & \inlineCode{#instanceSize} & Size of class instance in bytes
+\end{centeredRefTabular}
 
 \chapter{Beast practices \& styling guide}
 
@@ -1064,32 +945,5 @@ class FunctionMetadata {
 	\item Spaces around operators: \inlineCode{x + y}
 	\item Decorators on the same line with decorated symbols (if the decoration list is too long).
 \end{itemize}
-
-\chapter{Plans for the future}
-\begin{compactitem}
-	\item Aliased imports
-	\item Namespaces
-	\item User decorators
-	\item Blueprints -- "mixin classes" -- bad idea?
-	\item Mixins
-	\item Mixins but no mixins (not mixing a string, mixing a declaration)
-	\item Lambdas
-	\item Singletons
-	\item Extern functions -- cooperation with other programming languages
-	\item Compiler support for documentation comments?
-	\item Compiler outputs intellisense data?
-	\item Compiler caching
-\end{compactitem}
-
-\section{Documentation to-do}
-\begin{compactitem}
-	\item Virtual functions, when a class is virtual
-	\item \decoratorRef{noWarning(W103)}
-	\item \decoratorRef{label} (for break, continue nested)
-	\item \decoratorRef{notNull}
-	\item \verb|#| prefixed identifiers (rules, restrictions) + \verb|to|
-	\item \inlineCode{class X : @public @final Y}
-	\item Array literals
-\end{compactitem}
 
 \end{document}          

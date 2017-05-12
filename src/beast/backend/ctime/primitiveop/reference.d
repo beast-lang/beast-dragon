@@ -34,7 +34,9 @@ void primitiveOp_malloc( CB cb, T t, Op arg1, Op arg2 ) {
 }
 
 void primitiveOp_free( CB cb, T t, Op arg1 ) {
-	memoryManager.free( arg1.readMemoryPtr );
+	auto ptr = arg1.readMemoryPtr;
+	benforce( ptr.isNull || ptr.block.isDynamicallyAllocated, E.invalidMemoryOperation, "Can only free memory allocated with new or malloc" );
+	memoryManager.free( ptr );
 
 	debug ( ctime )
 		writefln( "CTIME free( %s ) (=%s)", arg1, arg1.readMemoryPtr );

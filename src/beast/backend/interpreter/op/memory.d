@@ -42,7 +42,9 @@ pragma( inline ):
 	}
 
 	void op_free( Interpreter ir, MemoryPtr op1 ) {
-		memoryManager.free( op1.readMemoryPtr );
+		auto ptr = op1.readMemoryPtr;
+		benforce( ptr.isNull || ptr.block.isDynamicallyAllocated, E.invalidMemoryOperation, "Can only free memory allocated with new or malloc" );
+		memoryManager.free( ptr );
 
 		debug ( interpreter )
 			writefln( "free( %s (=%s) )", op1, op1.readMemoryPtr );

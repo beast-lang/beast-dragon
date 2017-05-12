@@ -106,15 +106,15 @@ The D programming language, which Beast is inspired by the most, offers all of t
 
 \begin{figure}[h]
 	\begin{dcode}
-		// D code
-		string format( Args ... )( string fmt, Args args ) { ... }
-		string format( string fmt, Args ... )( Args args ) { ... }
-		
-		void main() {
-			auto rt = format( "%s, %i worlds", "hello", 5 );
-			
-			auto ct = format!( "%s, %i worlds" )( "hello", 5 );
-		}
+// D code
+string format( Args ... )( string fmt, Args args ) { ... }
+string format( string fmt, Args ... )( Args args ) { ... }
+
+void main() {
+	auto rt = format( "%s, %i worlds", "hello", 5 );
+	
+	auto ct = format!( "%s, %i worlds" )( "hello", 5 );
+}
 	\end{dcode}
 	\caption{Usage of the \inlineDCode{format} function in the D programming language (similar to \inlineCppCode{sprintf} in C). Second \inlineDCode{format} definition and function call accept the \inlineDCode{fmt} string as a template parameter, resulting in the string formatting code being generated at compile time.}
 	\label{fig:dFormat}

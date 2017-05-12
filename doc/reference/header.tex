@@ -1,6 +1,6 @@
 % !TeX root = main.tex
 
-\documentclass[10pt, a4paper, fleqn]{report}
+\documentclass[10pt, a4paper, fleqn, oneside, onecolumn]{report}
 \usepackage{cmap}
 
 \usepackage[utf8]{inputenc}
@@ -57,17 +57,17 @@
 \setlength{\parindent}{0cm}
 \setlength{\parskip}{0.3cm}
 
-\titlespacing*{\chapter}{0em}{0em}{0em}
-\titleformat{\chapter}[block]{\bf\LARGE}{\arabic{chapter} | }{0em}{}
+\titlespacing*{\chapter}{0mm}{0mm}{0mm}
+\titleformat{\chapter}[block]{\bf\LARGE}{\arabic{chapter} | }{0mm}{}
 
-\titlespacing*{\section}{0em}{6mm plus 3mm minus 3mm}{0mm}
-\titlespacing*{\subsection}{0em}{4mm plus 2mm minus 2mm}{0mm}
+\titlespacing*{\section}{0mm}{6mm plus 3mm minus 3mm}{0mm}
+\titlespacing*{\subsection}{0mm}{4mm plus 2mm minus 2mm}{0mm}
 \titlespacing*{\paragraph}{0mm}{4mm plus 2mm minus 2mm}{0mm}
 \titleformat{\paragraph}[runin]{\bf}{}{0mm}{}[~~~~]
 
 \setlength{\hoffset}{-0.7cm}
-\setlength{\voffset}{-1.5cm}
-\setlength{\textheight}{23.0cm}
+\setlength{\voffset}{-2cm}
+\setlength{\textheight}{24cm}
 \setlength{\textwidth}{15.2cm}
 
 %circuit settings
@@ -112,13 +112,13 @@
 \preto\longtable{\shorthandoff{-}}
 
 \newenvironment{centeredRefTabular}[1]{
-	\begin{center}
+	\begin{minipage}{\linewidth} \begin{center}
 		\begin{longtable}{#1}	
 }{
 		\end{longtable} \nopagebreak
 	
 		\putref
-	\end{center}
+	\end{center} \end{minipage}
 }
 
 \newenvironment{reftabular}[1]{

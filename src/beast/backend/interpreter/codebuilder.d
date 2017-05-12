@@ -334,7 +334,7 @@ final class CodeBuilder_Interpreter : CodeBuilder {
 		override void mirrorBlockDataChange( MemoryBlock block ) {
 			debug assert( block.session == context.session );
 
-			MemoryBlock data = block.duplicate( MemoryBlock.Flag.ctime | MemoryBlock.Flag.dynamicallyAllocated | MemoryBlock.Flag.doNotMirrorChanges );
+			MemoryBlock data = block.duplicate( MemoryBlock.Flag.ctime | MemoryBlock.Flag.doNotMirrorChanges );
 			data.markDoNotGCAtSessionEnd( );
 
 			debug ( interpreter ) {

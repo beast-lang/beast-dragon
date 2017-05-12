@@ -2,13 +2,15 @@
 
 % Grammar
 \newcounter{grammarRule}
-\NewEnviron{grammar}{
-	{\ttfamily \small
+\NewEnviron{grammar}{%
+	\vspace{-5mm} \begin{minipage}{\textwidth}
+		{\ttfamily \small \noindent
 		\begin{tabularx}{\textwidth-1cm}{l c p{\textwidth}}
 			\BODY
-	\end{tabularx}} \nopagebreak
-
-	\putrefCentered
+		\end{tabularx}} \nopagebreak
+	
+		\putrefCentered
+	\end{minipage}
 }
 \newcommand{\grDef}[1]{\rule{0mm}{5mm}\refstepcounter{grammarRule}\label{gr:#1}#1&::=&}
 \newcommand{\tokenDef}[1]{\refstepcounter{grammarRule}\label{tok:#1}#1:&&}
@@ -26,8 +28,8 @@
 
 \newcommand{\moduleSep}{/* - - - - - - - - DIFFERENT MODULE - - - - - - - - */}
 
-\newcommand{\ctime}{\inlineCode{@ctime}\xspace}
-\newcommand{\nonctime}{non-\inlineCode{@ctime}\xspace}
+\newcommand{\ctime}{\decoratorRef{ctime}\xspace}
+\newcommand{\nonctime}{non-\decoratorRef{ctime}\xspace}
 
 % Code
 
