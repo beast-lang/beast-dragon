@@ -12,9 +12,9 @@ Beast is a new programming language mostly inspired by C++ and D.
 This repository contains (everything is WIP):
 
 * Sample transcompiler to C (you will need a [D compiler](http://dlang.org/))
-* [Language reference (WIP)](https://github.com/beast-lang/beast-dragon/blob/master/doc/reference/main.pdf)
+* [Language reference](https://github.com/beast-lang/beast-dragon/blob/master/doc/reference/main.pdf)
 * [Excel@FIT article describing basic concepts of Beast](https://github.com/beast-lang/beast-dragon/blob/master/doc/excel_article/2017-ExcelFIT-Beast.pdf)
-* [Bachelor thesis text (WIP)](https://github.com/beast-lang/beast-dragon/blob/master/doc/bachelor_thesis_CZ/projekt.pdf) (Czech language)
+* [Bachelor thesis text](https://github.com/beast-lang/beast-dragon/blob/master/doc/bachelor_thesis_CZ/projekt.pdf) (Czech language)
 
 Source file extension: `.be`
 
