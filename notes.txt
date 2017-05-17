@@ -88,8 +88,16 @@ Fantasy:
 Special:
 	Bestiary
 
-For presentation:
-	Number slides (x/total)
+More ideas:
+	- Extension function - this syntax
+		fun String.format(): String {
+		    return this.replace(' ', '_')
+		}
+
+		val formatted = str.format()
+
+	- === for reference equality
+	- ref?.member for default values for null?
 
 BBasile (does simple editor with syntax highlight): b2.temp@gmx.com
 
