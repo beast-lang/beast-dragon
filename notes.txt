@@ -1,5 +1,4 @@
-Bakalářka:
-	- rozcestník do úvodu
+BUG?? src/beast/code/ast/expr/assign.d iń parse - i load operator, then run it through switch, but if the operator does not match assign stuff, it eats the operator anyway?
 
 Soon to-to:
 	- user enums (with member functions)
@@ -10,12 +9,31 @@ Future to-do:
 	- Parameters indifferent ???
 
 Diplomka to-do:
+	x++.staticFunction
+		- x++ (context) should execute?
+		- always execute side effects
+		- a.#type b ???
+
+	New memory mgmt system:
+		Beast pointer = offset in pointer table
+		pointer table items: struct { MemoryBlock (instance), size_t offset in the memory block }
+		-> no need for virtual address space structures, constant time pointer lookup
+		- also special case for null pointer
+
+	- rework bootstrap function/member generation
+		- for example turn this: Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
+						( AST_Node ast, DataEntity inst, MemoryPtr targetType ) { //
+			into
+			( AST_Node ast, DataEntity inst, CTArg!( coreType.Type ) targetType ) { ... }
+
+	- auto constructor generation (call implicit ones - enough for now?)
 	- no need to pass matchLevel or parentInstance in data entities -> symbols can become data entities
-		- matchLevel can be simply done by a wrapping data entity
+		- matchLevel can be simply done by a wrapping data entity (or better have it stored in overloadset)
 		- same for parentInstance, but then you need to pass parentInstance in buildCode and resolveIdentifier as an argument (which is okay, I think); add parentInstaceType property
 		- sink instead of Overloadset
+		- Overloadset - keep pair of Symbol, Context (no need to dynamically allocate for contexting)
+	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back) ...?
 
-	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back)
 	- Copy-on-write, session only
 	- @ctime while
 	- if in function definitions
@@ -25,15 +43,15 @@ Diplomka to-do:
 	- Join template parameters - pointer-aware data compare
 	- Implicit cast to reference -> higher priority than implict cast to anything else
 	- Do not generate reference types for everything
-	- Better pointers
+	- trycast allow explicit retyping
 	- Class inheritance, virtual functions, etc.
 	- Member functions with @ctime parameters
 	- @ctime functions
 	- user decorators?
 	- functions - first-class citizens
-	- audo constructor generation
 	- generic classes
 	- imports
+	- $ instead of # ?
 
 	Bool ctimeFunc( @ctime Int x ) { ... }
 	void main() {
@@ -42,13 +60,10 @@ Diplomka to-do:
 
 		// Problem - ctimeFunc is executed during semantic tree building, so x++ is executed after
 		// Resolution: cannot mutate @ctime variables in nonctime code + @ctime code has to be executed immidately when building semantic tree
+		// - another problem: @ctime ( a + b ).#type << ( a + b ) gets executed!
+		// - resolution: ?????; check inner expression did not change any outer memory
 
 	}
-
-	New memory mgmt system:
-		Beast pointer = offset in pointer table
-		pointer table items: struct { MemoryBlock (instance), size_t offset in the memory block }
-		-> no need for virtual address space structures
 
 Examples - ideas:
 	Fibonacci
@@ -103,6 +118,18 @@ BBasile (does simple editor with syntax highlight): b2.temp@gmx.com
 
 -- Problem with @ctime variable destructor calls when calling break; or return; or so - they can't be actually called
 	- @ctime destructors would be called "last" ? Or not at all?
+
+
+--
+	// in D (not working as virtual):
+	void foo( this T )() {
+
+	}
+	// in Beast: (or something like this)
+	@virtualImpl void foo() {
+
+	}
+	// or we can also have a function that is implemented for the first child and then is final, something like @firstChildImpl or so, also just @virtualChildImpl or so (like @virtualImpl but implements only for the first child and then gets final), also @childImpl that is like @virtualChildImpl but is not virtual (and allows @ctime parameters)
 
 
 -- Reflection of comments + documentation generation
