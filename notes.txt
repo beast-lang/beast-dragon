@@ -1,24 +1,20 @@
 BUG?? src/beast/code/ast/expr/assign.d iń parse - i load operator, then run it through switch, but if the operator does not match assign stuff, it eats the operator anyway?
 
-Soon to-to:
-	- user enums (with member functions)
-	- realloc
-	- arrays?
-
-Future to-do:
-	- Parameters indifferent ???
-
 Diplomka to-do:
 	x++.staticFunction
 		- x++ (context) should execute?
 		- always execute side effects
-		- a.#type b ???
+		- a.#type b ???	
+
+	Offer directFunction that works over memory pointers
+		For stuff like integer addition in interpreters (still needs fallback for other backends)
 
 	New memory mgmt system:
 		Beast pointer = offset in pointer table
 		pointer table items: struct { MemoryBlock (instance), size_t offset in the memory block }
 		-> no need for virtual address space structures, constant time pointer lookup
 		- also special case for null pointer
+		- allow saving memory state and reverting to it (breaks and @ctime)
 
 	- rework bootstrap function/member generation
 		- for example turn this: Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
@@ -32,8 +28,28 @@ Diplomka to-do:
 		- same for parentInstance, but then you need to pass parentInstance in buildCode and resolveIdentifier as an argument (which is okay, I think); add parentInstaceType property
 		- sink instead of Overloadset
 		- Overloadset - keep pair of Symbol, Context (no need to dynamically allocate for contexting)
-	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back) ...?
 
+	- clean up namespaces/scopes; scopes are handled internally in backend, then we have Namespaces: StaticNamespace (once generated and then untouchable) and LocalNamespace (can be sequentially written, but only accessed from the current job)
+
+	Bool ctimeFunc( @ctime Int x ) { ... }
+	void main() {
+		@ctime Int! x;
+		println( x++ > 0 && ctimeFunc( x ) );
+
+		// Problem - ctimeFunc is executed during semantic tree building, so x++ is executed after
+		// Resolution: cannot mutate @ctime variables in nonctime code + @ctime code has to be executed immidately when building semantic tree
+		// - another problem: @ctime ( a + b ).#type << ( a + b ) gets executed!
+		// - resolution: ?????; check inner expression did not change any outer memory
+
+	}
+
+	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back) ...?
+	- zbavit se BP stacku v C++ backendu - místo toho lokální proměnnou, jejíž velikost specifikuju pozdějc
+
+More to-do:
+	- user enums (with member functions)
+	- realloc
+	- arrays?
 	- Copy-on-write, session only
 	- @ctime while
 	- if in function definitions
@@ -52,18 +68,6 @@ Diplomka to-do:
 	- generic classes
 	- imports
 	- $ instead of # ?
-
-	Bool ctimeFunc( @ctime Int x ) { ... }
-	void main() {
-		@ctime Int! x;
-		println( x++ > 0 && ctimeFunc( x ) );
-
-		// Problem - ctimeFunc is executed during semantic tree building, so x++ is executed after
-		// Resolution: cannot mutate @ctime variables in nonctime code + @ctime code has to be executed immidately when building semantic tree
-		// - another problem: @ctime ( a + b ).#type << ( a + b ) gets executed!
-		// - resolution: ?????; check inner expression did not change any outer memory
-
-	}
 
 Examples - ideas:
 	Fibonacci
@@ -104,6 +108,8 @@ Special:
 	Bestiary
 
 More ideas:
+	- TRAITS : make them @trait base classes (the classes will not really exists, but everything else will work)
+
 	- Extension function - this syntax
 		fun String.format(): String {
 		    return this.replace(' ', '_')
@@ -111,7 +117,7 @@ More ideas:
 
 		val formatted = str.format()
 
-	- === for reference equality
+	- === for reference equality; rather ?==
 	- ref?.member for default values for null?
 
 BBasile (does simple editor with syntax highlight): b2.temp@gmx.com
@@ -177,8 +183,8 @@ Void main() {
 ---
 class C {
  
-public:
-    @wipOrConst Int! x;
+@public:
+    @wipMutable Int x;
  
 }
  
