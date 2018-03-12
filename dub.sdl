@@ -2,8 +2,14 @@ name "beast"
 description "Beast language compiler"
 
 authors "Daniel 'Danol' Čejchan"
+license "GPL-3.0"
 
 sourcePaths "src"
+versions "cppBackend"
+
+// Remove the "_" to enable
+// when identificationLocals is enabled, local string variables are created in appropriate function containing appropriate identification strings
+debugVersions "_interpreter" "_gc" "_ctime" "_memory" "_identificationLocals"
 
 targetName "beast"
 targetPath "bin"
