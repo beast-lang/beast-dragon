@@ -6,7 +6,7 @@ Diplomka to-do:
 		- always execute side effects
 		- a.#type b ???	
 
-	Offer directFunction that works over memory pointers
+	Offer directFunction that works over memory pointers ( Int.addDirectFunction("operatorAdd", (a,b) => a+b))
 		For stuff like integer addition in interpreters (still needs fallback for other backends)
 
 	New memory mgmt system:
@@ -16,7 +16,10 @@ Diplomka to-do:
 		- also special case for null pointer
 		- allow saving memory state and reverting to it (breaks and @ctime)
 
+	- code location guard -> mixin; nepoužívat explicit stack, využít lokální proměnný (stejně jako u spousty dalších věcí)
+
 	- rework bootstrap function/member generation
+		- primitive functions -> rename to inline functions
 		- for example turn this: Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
 						( AST_Node ast, DataEntity inst, MemoryPtr targetType ) { //
 			into
@@ -45,6 +48,8 @@ Diplomka to-do:
 
 	- @ctime local variable destructors - memory rollback is necessary to implement (because of breaks and returns - we have to mirror destructor call changes and then roll it back) ...?
 	- zbavit se BP stacku v C++ backendu - místo toho lokální proměnnou, jejíž velikost specifikuju pozdějc
+	- pole
+	- lambda funkce (zatím stačí bez kontextu)
 
 More to-do:
 	- user enums (with member functions)
