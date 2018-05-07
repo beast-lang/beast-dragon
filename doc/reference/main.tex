@@ -275,7 +275,7 @@ When there's an expression that starts with an identifier (\gr{AtomExpr}, the \t
 The scoped identifier resolution is similar to the full identifier resolution, except it doesn't look into parent scopes at all.
 
 \subsection{The '\inlineCode{:ident}' accessor} \label{colonAccessor}
-This language construct can be used for example in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an expected data type}. In function calls, the expected data type would be parameter data type. Please mote that operators are also translated into function calls, so this construct works with operators, too.
+This language construct can be used for example in parameter lists. When used, a \textbf{\hyperref[scopedIdentifierResolution]{scoped identifier resolution} is run} instead of the full identifier resolution. Also, \textbf{the resolution is not performed for the current scope but for the scope of an expected data type}. In function calls, the expected data type would be parameter data type. Please note that operators are also translated into function calls, so this construct works with operators, too.
 
 This of course does not work with \kwd{auto} parameters.
 
@@ -307,9 +307,11 @@ Each overload is assigned a "match level" number. Then, the overload with lowest
 \end{compactenum}
 
 \subsection{Type conversion} \label{typeConversion}
-Beast introduces implicit and explicit cast. Implicit cast are used whenever there's mismatch between expected type and the type provided (for example when passing an argument to a function), explicit casting is done using function \inlineCode{to( @ctime Type targetType )} (which also tries implicit casting if there is no explicit cast available).
+Beast introduces implicit and explicit casts. Implicit casts are used whenever there's mismatch between expected type and the type provided (for example when passing an argument to a function), explicit casting is done using function \inlineCode{to( @ctime Type targetType )} (which also tries implicit casting if there is no explicit cast available).
 
 Implicit casting is realized by calling \inlineCode{var.#implicitCast( TargetType )}, where \inlineCode{TargetType} being the type the cast is intended to. The function has to return value of \inlineCode{TargetType}. Explicit cast is realized by calling \inlineCode{var.#explicitCast( TargetType )} in the same manner.
+
+% Todo describe function to
 
 \section{Operator overloading} \label{operatorOverloading}
 Generally, all operators can be overloaded. Most operators are assigned an item in the \inlineCode{Operator} enum. Operator overloading rules are described in the table below; the "Enum" column corresponds with names of the \inlineCode{Operator} enum items (and the \inlineCode{@ctime Operator op} argument in the "Resolution" column). The "Resolution" column describes how operators are resolved. If there are multiple function resolutions mentioned in the column, the first one is tried first, if it fails (no matching overload is found), the second one is tried, and so on.
@@ -320,11 +322,11 @@ Generally, all operators can be overloaded. Most operators are assigned an item 
 	\inlineCode{x(args)} & & \inlineCode{x.#call(args)} \\
 	\hline
 	
-	\inlineCode{x!} & \inlineCode{suffNot} & \multirow{2}{*}{\inlineCode{x.#opSuffix( op )}} \\
+	\inlineCode{x!} & \inlineCode{suffNot} & \multirow{2}{*}{\inlineCode{x.#opSuffix(op)}} \\
 	\inlineCode{x?} & \inlineCode{suffRef} & \\
 	\hline
 	
-	\inlineCode{!x} & \inlineCode{preNot} & \inlineCode{x.#opPrefix( op )} \\
+	\inlineCode{!x} & \inlineCode{preNot} & \inlineCode{x.#opPrefix(op)} \\
 	\hline
 	
 	\inlineCode{x * y} & \inlineCode{binMult} & \multirow{12}{*}{\parbox{\textwidth}{
@@ -350,10 +352,10 @@ Generally, all operators can be overloaded. Most operators are assigned an item 
 	\inlineCode{x || y} & \inlineCode{binLogOr} & \\
 	\hline
 	
-	\inlineCode{x = y} & \inlineCode{assign} & \inlineCode{x.#assign( y )} \\
+	\inlineCode{x = y} & \inlineCode{assign} & \inlineCode{x.#assign(y)} \\
 	\hline
 	
-	\inlineCode{x := y} & \inlineCode{refAssign} & \inlineCode{x.#refAssign( y )} \\
+	\inlineCode{x := y} & \inlineCode{refAssign} & \inlineCode{x.#refAssign(y)} \\
 	\hline
 	
 \end{centeredRefTabular}
@@ -389,7 +391,7 @@ Int? ref := new auto(); // ref constructor expects the Int? type, so auto is inf
 \end{code}
 
 \paragraph{\decoratorRef{ctime} variables}
-Variable declarations can be decorated with the \decoratorRef{@ctime} decorator. \ctime variables are completely evaluated at compile time. For more information, see \autoref{ctime}.
+Variable declarations can be decorated with the \decoratorRef{ctime} decorator. \ctime variables are completely evaluated at compile time. For more information, see \autoref{ctime}.
 
 \paragraph{Variable lifetime (extent)} Variable lifetime is same as in C++ or D -- local variables exist until end of the scope (or \inlineCode{return}, \inlineCode{break}, exception, ...), where the are destroyed in reverse order they were defined. Dynamically constructed variables exist until they are manually destroyed (usually done via \gr{DeleteStmt}). Static variables are constructed during application start and are never destroyed (probably will change in the future).
 
@@ -941,7 +943,7 @@ Following reflection elements apply to classes.
 \section{Further recommended code style}
 \begin{itemize}
 	\item Indent with tabs (so anyone can set up tab size based on his preferences)
-	\item Spaces in statements like this: \inlineCode{if( expr ) \{}, opening brace on the same line
+	\item Spaces in statements like this: \inlineCode{if(expr) \{}, opening brace on the same line
 	\item Spaces around operators: \inlineCode{x + y}
 	\item Decorators on the same line with decorated symbols (if the decoration list is too long).
 \end{itemize}

@@ -7,7 +7,8 @@ Diplomka to-do:
 		- a.#type b ???	
 
 	Offer directFunction that works over memory pointers ( Int.addDirectFunction("operatorAdd", (a,b) => a+b))
-		For stuff like integer addition in interpreters (still needs fallback for other backends)
+		- For stuff like integer addition in interpreters (still needs fallback for other backends)
+		- Asi nemít natvrdo backendové funkce? (bude se líp implementovat?) 
 
 	New memory mgmt system:
 		Beast pointer = offset in pointer table
@@ -31,6 +32,7 @@ Diplomka to-do:
 		- same for parentInstance, but then you need to pass parentInstance in buildCode and resolveIdentifier as an argument (which is okay, I think); add parentInstaceType property
 		- sink instead of Overloadset
 		- Overloadset - keep pair of Symbol, Context (no need to dynamically allocate for contexting)
+		- rename DataEntity to SemanticEntity?
 
 	- clean up namespaces/scopes; scopes are handled internally in backend, then we have Namespaces: StaticNamespace (once generated and then untouchable) and LocalNamespace (can be sequentially written, but only accessed from the current job)
 
@@ -50,6 +52,8 @@ Diplomka to-do:
 	- zbavit se BP stacku v C++ backendu - místo toho lokální proměnnou, jejíž velikost specifikuju pozdějc
 	- pole
 	- lambda funkce (zatím stačí bez kontextu)
+	- Type.#instanceSize (this should return size of type Type?) vs var.#instanceSize vs SomeType.#instanceSize
+	- u namespaců opatřovat seznam identifikátorů, aniž by se musely instanciovat typy (pro každý identifikátor pak instanciovat zvlášť)
 
 More to-do:
 	- user enums (with member functions)
@@ -81,6 +85,8 @@ Examples - ideas:
 	Erastothenes sieve
 	Inferration examples -> make user enum
 	Flags example
+
+	string.toInt(base, ?result); -- předávání nekonstantních referencí musí předcházet otazník
 
 Names:
 	Lion
