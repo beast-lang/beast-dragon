@@ -14,16 +14,19 @@ import std.typecons : Typedef;
 struct ProjectConfiguration {
 
 	public:
-		// Can't put UDAs on enum members, sucks ( https://github.com/dlang/dmd/pull/6161 )
-		// TODO: Put help UDAs when they finally add them
+		// TODO: Actually do something with the help UDA in the enum
 		enum MessageFormat {
-			gnu, /// Standard GNU error messages
-			json // Wrapped in JSON object, contain more data
+			@help( "Standard GNU error messages" )
+			gnu,
+			@help( "JSON-formatted error messages, contain more data" )
+			json
 		}
 		/// Compiler can be configured to stop at certaing compilation phase
 		enum StopOnPhase {
-			lexing, /// Do only lexical analysis
-			parsing, /// Do lexical and syntax analysis
+			@help("Do only lexical analysis")
+			lexing,
+			@help("Do lexical and syntax analysis")
+			parsing,
 			codegen,
 			outputgen,
 			doEverything,
@@ -252,7 +255,7 @@ struct ProjectConfiguration {
 		}
 
 	private:
-		string help_possibleValues( T : string )( ) {
+		string  help_possibleValues( T : string )( ) {
 			return "string";
 		}
 
