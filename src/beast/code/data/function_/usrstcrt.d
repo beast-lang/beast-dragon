@@ -131,7 +131,7 @@ final class Symbol_UserStaticRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	protected:
-		final class Data : super.Data {
+		final class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_UserStaticRuntimeFunction sym, MatchLevel matchLevel ) {

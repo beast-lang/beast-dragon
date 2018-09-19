@@ -167,7 +167,7 @@ final class Symbol_Type_Reference : Symbol_StaticClass {
 		Identifier id_;
 
 	private:
-		final static class Data : super.Data {
+		final static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_Type_Reference sym, MatchLevel matchLevel ) {

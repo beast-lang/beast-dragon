@@ -118,7 +118,7 @@ abstract class Symbol_Enum : Symbol_Type {
 		Symbol[ uint ] valueAAWIP_;
 
 	private:
-		final static class Data : super.Data {
+		final static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_Enum sym, MatchLevel matchLevel ) {

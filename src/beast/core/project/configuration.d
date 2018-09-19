@@ -73,7 +73,7 @@ struct ProjectConfiguration {
 			bool outputCodeToStdout;
 
 			@help( "Program used to compile the C++ code" )
-			string cppCompiler = "gcc";
+			string cppCompiler = "g++";
 
 			@help( "Command that is executed for compiling the C++ code (you can use %COMPILER%, %SOURCE% and %TARGET%)" )
 			string compileCommand = "%COMPILER% %SOURCE% -o %TARGET%";

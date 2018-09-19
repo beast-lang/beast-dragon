@@ -152,7 +152,7 @@ final class Token {
 
 	public:
 		CodeLocation codeLocation;
-		const Type type;
+		Type type;
 		Token previousToken;
 
 	public:

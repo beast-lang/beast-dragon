@@ -40,7 +40,7 @@ final class Symbol_BootstrapStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 		bool staticCallOnly_;
 
 	protected:
-		final static class Data : super.Data {
+		final static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_BootstrapStaticNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {

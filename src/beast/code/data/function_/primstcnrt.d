@@ -44,7 +44,7 @@ final class Symbol_PrimitiveStaticNonRuntimeFunction : Symbol_NonRuntimeFunction
 		Data staticData_;
 
 	protected:
-		final static class Data : super.Data {
+		final static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_PrimitiveStaticNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {

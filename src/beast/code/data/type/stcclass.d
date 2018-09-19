@@ -33,7 +33,7 @@ abstract class Symbol_StaticClass : Symbol_Class {
 		DataEntity parent_;
 
 	protected:
-		static class Data : super.Data {
+		static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_StaticClass sym, MatchLevel matchLevel ) {

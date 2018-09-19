@@ -131,7 +131,7 @@ final class Backend_Cpp : Backend {
 				result ~= "int main() {\n";
 				result ~= "\tsize_t ctimeStackBP = ctimeStackSize;\n";
 				result ~= "\tif( sizeof( void* ) != %s ) {\n".format( hardwareEnvironment.pointerSize );
-				result ~= "\t\tfprintf( stderr, \"Beast compiler considered pointer size %s but C compiler used %%s\", sizeof(void*) );\n".format( hardwareEnvironment.pointerSize );
+				result ~= "\t\tfprintf( stderr, \"Beast compiler considered pointer size %s but C compiler used %%zu\", sizeof(void*) );\n".format( hardwareEnvironment.pointerSize );
 				result ~= "\t\texit( -1 );\n";
 				result ~= "\t}\n";
 

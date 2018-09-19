@@ -49,7 +49,7 @@ final class Symbol_UserStaticNonRuntimeFunction : Symbol_NonRuntimeFunction {
 		UIDGenerator instanceIdGenerator_;
 
 	protected:
-		final static class Data : super.Data {
+		final static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_UserStaticNonRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
@@ -328,7 +328,7 @@ final class Symbol_ExpandedUserStaticNonRuntimeFunction : Symbol_RuntimeFunction
 		}
 
 	protected:
-		final class Data : super.Data {
+		final class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_ExpandedUserStaticNonRuntimeFunction sym, MatchLevel matchLevel ) {

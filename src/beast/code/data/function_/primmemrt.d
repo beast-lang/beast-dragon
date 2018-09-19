@@ -231,7 +231,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	protected:
-		final static class Data : super.Data {
+		final static class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, DataEntity parentInstance, MatchLevel matchLevel ) {
@@ -268,7 +268,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		}
 
-		final static class Match : super.Match {
+		final static class Match : typeof(super).Match {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel ) {
@@ -286,7 +286,7 @@ final class Symbol_PrimitiveMemberRuntimeFunction : Symbol_RuntimeFunction {
 
 		}
 
-		final static class MatchData : super.MatchData {
+		final static class MatchData : typeof(super).MatchData {
 
 			public:
 				this( Symbol_PrimitiveMemberRuntimeFunction sym, Match match ) {

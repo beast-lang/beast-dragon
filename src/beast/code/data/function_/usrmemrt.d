@@ -136,7 +136,7 @@ final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 		}
 
 	protected:
-		final class Data : super.Data {
+		final class Data : typeof(super).Data {
 
 			public:
 				this( Symbol_UserMemberRuntimeFunction sym, MatchLevel matchLevel, DataEntity parentInstance ) {

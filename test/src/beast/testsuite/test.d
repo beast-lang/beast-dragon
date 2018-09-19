@@ -5,7 +5,7 @@ import beast.testsuite.main;
 import core.thread;
 import std.algorithm;
 import std.conv;
-import std.datetime;
+import std.datetime.stopwatch;
 import std.exception;
 import std.file;
 import std.json;
@@ -24,7 +24,7 @@ enum StopOnPhase {
 	doEverything,
 }
 
-enum StopOnPhaseStr = [ "lexing", "parsing", "codegen", "outputgen" ];
+immutable StopOnPhaseStr = [ "lexing", "parsing", "codegen", "outputgen" ];
 
 final class Test {
 
@@ -181,14 +181,14 @@ final class Test {
 						break;
 					}
 
-					if ( sw.peek.seconds > timeout ) {
+					if ( sw.peek > timeout.seconds ) {
 						pid.kill( );
 						fail( "Process timeout" );
 					}
-					Thread.sleep( dur!"msecs"( sw.peek.msecs / 4 ) );
+					Thread.sleep( sw.peek / 4 );
 				}
 
-				log.writefln( "Execution took: %s ms", sw.peek.msecs );
+				log.writefln( "Execution took: %s ms", sw.peek.total!"msecs" );
 				log.writefln( "Exit code: %s\n", exitCode );
 			}
 
