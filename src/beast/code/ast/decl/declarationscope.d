@@ -5,96 +5,96 @@ import beast.code.ast.decl.toolkit;
 /// Module or class level declaration scope
 final class AST_DeclarationScope : AST_Node {
 
-	public:
-		static AST_DeclarationScope parse( AST_DecorationList rootDecorationList = null ) {
-			auto clg = codeLocationGuard( );
-			auto result = new AST_DeclarationScope;
+public:
+	static AST_DeclarationScope parse(AST_DecorationList rootDecorationList = null) {
+		auto clg = codeLocationGuard();
+		auto result = new AST_DeclarationScope;
 
-			/// Current main scope decorations ( @decorator: xxx )
-			AST_DecorationList scopeDecorationList = rootDecorationList;
+		/// Current main scope decorations ( @decorator: xxx )
+		AST_DecorationList scopeDecorationList = rootDecorationList;
 
-			while ( true ) {
+		while (true) {
 
-				// @decor @decor (something)
-				if ( AST_DecorationList.canParse ) {
-					AST_DecorationList decorationList = AST_DecorationList.parse( );
+			// @decor @decor (something)
+			if (AST_DecorationList.canParse) {
+				AST_DecorationList decorationList = AST_DecorationList.parse();
 
-					// @decor :
-					if ( currentToken.matchAndNext( Token.Special.colon ) ) {
-						decorationList.parentDecorationList = rootDecorationList;
-						scopeDecorationList = decorationList;
-						result.commonDecorationLists_ ~= decorationList;
-					}
-
-					// @decor { xx }
-				else if ( currentToken.matchAndNext( Token.Special.lBrace ) ) {
-						decorationList.parentDecorationList = scopeDecorationList;
-
-						AST_DeclarationScope subScope = AST_DeclarationScope.parse( decorationList );
-						result.subScopes_ ~= subScope;
-						result.allDeclarations_ ~= subScope.allDeclarations_;
-
-						currentToken.expectAndNext( Token.Special.rBrace, "declaration or '}'" );
-					}
-
-					// @decor declaration;
-				else if ( AST_Declaration.canParse ) {
-						decorationList.parentDecorationList = scopeDecorationList;
-
-						AST_Declaration declaration = AST_Declaration.parse( decorationList );
-						result.directDeclarations_ ~= declaration;
-					}
-
-					else
-						currentToken.reportSyntaxError( "':', '{' or declaration" );
+				// @decor :
+				if (currentToken.matchAndNext(Token.Special.colon)) {
+					decorationList.parentDecorationList = rootDecorationList;
+					scopeDecorationList = decorationList;
+					result.commonDecorationLists_ ~= decorationList;
 				}
 
-				// Declaration
-				else if ( AST_Declaration.canParse ) {
-					AST_Declaration declaration = AST_Declaration.parse( scopeDecorationList );
-					result.directDeclarations_ ~= declaration;
-				}
+				// @decor { xx }
+			else if (currentToken.matchAndNext(Token.Special.lBrace)) {
+					decorationList.parentDecorationList = scopeDecorationList;
 
-				// { block }
-				else if ( currentToken.matchAndNext( Token.Special.lBrace ) ) {
-					AST_DeclarationScope subScope = AST_DeclarationScope.parse( scopeDecorationList );
+					AST_DeclarationScope subScope = AST_DeclarationScope.parse(decorationList);
 					result.subScopes_ ~= subScope;
 					result.allDeclarations_ ~= subScope.allDeclarations_;
 
-					currentToken.expectAndNext( Token.Special.rBrace, "declaration or '}'" );
+					currentToken.expectAndNext(Token.Special.rBrace, "declaration or '}'");
+				}
+
+				// @decor declaration;
+			else if (AST_Declaration.canParse) {
+					decorationList.parentDecorationList = scopeDecorationList;
+
+					AST_Declaration declaration = AST_Declaration.parse(decorationList);
+					result.directDeclarations_ ~= declaration;
 				}
 
 				else
-					break;
+					currentToken.reportSyntaxError("':', '{' or declaration");
 			}
 
-			result.allDeclarations_ ~= result.directDeclarations_;
+			// Declaration
+			else if (AST_Declaration.canParse) {
+				AST_Declaration declaration = AST_Declaration.parse(scopeDecorationList);
+				result.directDeclarations_ ~= declaration;
+			}
 
-			result.codeLocation = clg.get( );
-			return result;
+			// { block }
+			else if (currentToken.matchAndNext(Token.Special.lBrace)) {
+				AST_DeclarationScope subScope = AST_DeclarationScope.parse(scopeDecorationList);
+				result.subScopes_ ~= subScope;
+				result.allDeclarations_ ~= subScope.allDeclarations_;
+
+				currentToken.expectAndNext(Token.Special.rBrace, "declaration or '}'");
+			}
+
+			else
+				break;
 		}
 
-	public:
-		/// Processes the declarations, resulting in a symbol
-		Symbol[ ] executeDeclarations( DeclarationEnvironment env ) {
-			Symbol[ ] result;
+		result.allDeclarations_ ~= result.directDeclarations_;
 
-			foreach ( decl; allDeclarations_ )
-				decl.executeDeclarations( env, ( s ) { result ~= s; } );
+		result.codeLocation = clg.get();
+		return result;
+	}
 
-			return result;
-		}
+public:
+	/// Processes the declarations, resulting in a symbol
+	Symbol[] executeDeclarations(DeclarationEnvironment env) {
+		Symbol[] result;
 
-	protected:
-		override SubnodesRange _subnodes( ) {
-			return nodeRange( directDeclarations_, commonDecorationLists_, subScopes_ );
-		}
+		foreach (decl; allDeclarations_)
+			decl.executeDeclarations(env, (s) { result ~= s; });
 
-	private:
-		/// Declarations directly placed in the current declaration scope 
-		AST_Declaration[ ] directDeclarations_; /// Declarations placed in the current declaration scope and its subscopes
-		AST_Declaration[ ] allDeclarations_; /// Scope and block decoration lists
-		AST_DecorationList[ ] commonDecorationLists_; /// Child scopes
-		AST_DeclarationScope[ ] subScopes_;
+		return result;
+	}
+
+protected:
+	override SubnodesRange _subnodes() {
+		return nodeRange(directDeclarations_, commonDecorationLists_, subScopes_);
+	}
+
+private:
+	/// Declarations directly placed in the current declaration scope 
+	AST_Declaration[] directDeclarations_; /// Declarations placed in the current declaration scope and its subscopes
+	AST_Declaration[] allDeclarations_; /// Scope and block decoration lists
+	AST_DecorationList[] commonDecorationLists_; /// Child scopes
+	AST_DeclarationScope[] subScopes_;
 
 }

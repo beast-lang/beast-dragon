@@ -8,95 +8,95 @@ import beast.code.data.util.deref;
 
 final class Symbol_Type_Pointer : Symbol_StaticClass {
 
-	public:
-		this( DataEntity parent ) {
-			// Identifier must be available
-			super( parent );
+public:
+	this(DataEntity parent) {
+		// Identifier must be available
+		super(parent);
 
-			parent_ = parent;
-			instanceSize_ = hardwareEnvironment.pointerSize;
-			namespace_ = new BootstrapNamespace( this );
+		parent_ = parent;
+		instanceSize_ = hardwareEnvironment.pointerSize;
+		namespace_ = new BootstrapNamespace(this);
+	}
+
+	override void initialize() {
+		super.initialize();
+
+		Symbol[] mem;
+		auto tp = &coreType;
+
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp(this); // a = b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp(this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd); // a + b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp(this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub); // a - b
+
+		{
+			auto ops = Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp(this); // a == b, a != b
+			opBinary_equals = ops[0];
+			opBinary_notEquals = ops[1];
+			mem ~= ops;
 		}
 
-		override void initialize( ) {
-			super.initialize( );
+		// TODO: other comparison
 
-			Symbol[ ] mem;
-			auto tp = &coreType;
+		// Implicit constructor
+		mem ~= new Symbol_PrimitiveMemberRuntimeFunction(ID!"#ctor", this, coreType.Void, //
+				ExpandedFunctionParameter.bootstrap(), //
+				(cb, inst, args) { //
+					cb.build_primitiveOperation(BackendPrimitiveOperation.markPtr, inst);
+					cb.build_primitiveOperation(BackendPrimitiveOperation.memZero, inst);
+				});
 
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( this ); // a = b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveBinaryOp( this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
+		// Copy ctor
+		mem ~= copyCtor = new Symbol_PrimitiveMemberRuntimeFunction(ID!"#ctor", this, coreType.Void, //
+				ExpandedFunctionParameter.bootstrap(this), //
+				(cb, inst, args) { //
+					cb.build_primitiveOperation(BackendPrimitiveOperation.markPtr, inst);
+					cb.build_primitiveOperation(BackendPrimitiveOperation.memCpy, inst, args[0]);
+				});
 
-			{
-				auto ops = Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveEqNeqOp( this ); // a == b, a != b
-				opBinary_equals = ops[ 0 ];
-				opBinary_notEquals = ops[ 1 ];
-				mem ~= ops;
-			}
+		// Dtor
+		mem ~= new Symbol_PrimitiveMemberRuntimeFunction(ID!"#dtor", this, coreType.Void, //
+				ExpandedFunctionParameter.bootstrap(), //
+				(cb, inst, args) { //
+					cb.build_primitiveOperation(BackendPrimitiveOperation.unmarkPtr, inst);
+					cb.build_primitiveOperation(BackendPrimitiveOperation.noopDtor, inst);
+				});
 
-			// TODO: other comparison
+		// Explicit cast to reference
+		mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction(ID!"#explicitCast", this, //
+				Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder().ctArg(coreType.Type).finishIf( //
+					(DataEntity inst, MemoryPtr targetType) => targetType.readType.isReferenceType ? null : "argument 1 is not a reference type", //
+					(AST_Node, DataEntity inst, MemoryPtr targetType) => new DataEntity_ReinterpretCast(inst, targetType.readType) //
+					));
 
-			// Implicit constructor
-			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
-					ExpandedFunctionParameter.bootstrap( ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memZero, inst );
-					} );
+		// .data( Type )
+		mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction(ID!"data", this, //
+				Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder().ctArg(coreType.Type).finish( //
+					(AST_Node, DataEntity inst, MemoryPtr targetType) => new DataEntity_DereferenceProxy(inst, targetType.readType) //
+				));
 
-			// Copy ctor
-			mem ~= copyCtor = new Symbol_PrimitiveMemberRuntimeFunction( ID!"#ctor", this, coreType.Void, //
-					ExpandedFunctionParameter.bootstrap( this ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.markPtr, inst );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memCpy, inst, args[ 0 ] );
-					} );
+		namespace_.initialize(mem);
+	}
 
-			// Dtor
-			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#dtor", this, coreType.Void, //
-					ExpandedFunctionParameter.bootstrap( ), //
-					( cb, inst, args ) { //
-						cb.build_primitiveOperation( BackendPrimitiveOperation.unmarkPtr, inst );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.noopDtor, inst );
-					} );
+public:
+	override Identifier identifier() {
+		return ID!"Pointer";
+	}
 
-			// Explicit cast to reference
-			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"#explicitCast", this, //
-					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finishIf(  //
-						( DataEntity inst, MemoryPtr targetType ) => targetType.readType.isReferenceType ? null : "argument 1 is not a reference type", //
-						( AST_Node, DataEntity inst, MemoryPtr targetType ) => new DataEntity_ReinterpretCast( inst, targetType.readType ) //
-						 ) );
+	override size_t instanceSize() {
+		return instanceSize_;
+	}
 
-			// .data( Type )
-			mem ~= new Symbol_PrimitiveMemberNonRuntimeFunction( ID!"data", this, //
-					Symbol_PrimitiveMemberNonRuntimeFunction.paramsBuilder( ).ctArg( coreType.Type ).finish(  //
-						( AST_Node, DataEntity inst, MemoryPtr targetType ) => new DataEntity_DereferenceProxy( inst, targetType.readType ) //
-					 ) );
+	override Namespace namespace() {
+		return namespace_;
+	}
 
-			namespace_.initialize( mem );
-		}
+public:
+	Symbol_PrimitiveMemberRuntimeFunction copyCtor;
+	Symbol opBinary_equals, opBinary_notEquals;
 
-	public:
-		override Identifier identifier( ) {
-			return ID!"Pointer";
-		}
-
-		override size_t instanceSize( ) {
-			return instanceSize_;
-		}
-
-		override Namespace namespace( ) {
-			return namespace_;
-		}
-
-	public:
-		Symbol_PrimitiveMemberRuntimeFunction copyCtor;
-		Symbol opBinary_equals, opBinary_notEquals;
-
-	private:
-		BootstrapNamespace namespace_;
-		DataEntity parent_;
-		size_t instanceSize_;
+private:
+	BootstrapNamespace namespace_;
+	DataEntity parent_;
+	size_t instanceSize_;
 
 }

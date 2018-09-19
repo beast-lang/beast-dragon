@@ -8,132 +8,140 @@ import std.array : array;
 
 final class Symbol_Type_Int : Symbol_StaticClass {
 
-	public:
-		this( DataEntity parent, Identifier identifier, size_t instanceSize, bool signed ) {
-			assert( instanceSize == 1 || instanceSize == 2 || instanceSize == 4 || instanceSize == 8 );
+public:
+	this(DataEntity parent, Identifier identifier, size_t instanceSize, bool signed) {
+		assert(instanceSize == 1 || instanceSize == 2 || instanceSize == 4 || instanceSize == 8);
 
-			// This code must be before super call, as super constructor calls identifier
-			identifier_ = identifier;
-			instanceSize_ = instanceSize;
-			signed_ = signed;
+		// This code must be before super call, as super constructor calls identifier
+		identifier_ = identifier;
+		instanceSize_ = instanceSize;
+		signed_ = signed;
 
-			super( parent );
-			assert( identifier );
+		super(parent);
+		assert(identifier);
 
-			namespace_ = new BootstrapNamespace( this );
-		}
+		namespace_ = new BootstrapNamespace(this);
+	}
 
-		override void initialize( ) {
-			super.initialize( );
+	override void initialize() {
+		super.initialize();
 
-			Symbol[ ] mem;
+		Symbol[] mem;
 
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCtor( this ); // Implicit constructor
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCopyCtor( this ); // Copy constructor
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newNoopDtor( this ); // Destructor
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCtor(this); // Implicit constructor
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveCopyCtor(this); // Copy constructor
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newNoopDtor(this); // Destructor
 
-			// Operator overloads
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp( this ); // a = b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalEqNeqOp( this ); // a == b, a != b
+		// Operator overloads
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveAssignOp(this); // a = b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalEqNeqOp(this); // a == b, a != b
 
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binGt, BackendPrimitiveOperation.intGt ); // a > b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binGte, BackendPrimitiveOperation.intGte ); // a >= b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binLt, BackendPrimitiveOperation.intLt ); // a < b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreType.Bool, coreEnum.operator.binLte, BackendPrimitiveOperation.intLte ); // a <= b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreType.Bool, coreEnum.operator.binGt, BackendPrimitiveOperation.intGt); // a > b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreType.Bool, coreEnum.operator.binGte, BackendPrimitiveOperation.intGte); // a >= b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreType.Bool, coreEnum.operator.binLt, BackendPrimitiveOperation.intLt); // a < b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreType.Bool, coreEnum.operator.binLte, BackendPrimitiveOperation.intLte); // a <= b
 
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd ); // a + b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub ); // a - b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binMult, BackendPrimitiveOperation.intMult ); // a * b
-			mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp( this, coreEnum.operator.binDiv, BackendPrimitiveOperation.intDiv ); // a / b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreEnum.operator.binPlus, BackendPrimitiveOperation.intAdd); // a + b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreEnum.operator.binMinus, BackendPrimitiveOperation.intSub); // a - b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreEnum.operator.binMult, BackendPrimitiveOperation.intMult); // a * b
+		mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveSymmetricalBinaryOp(this, coreEnum.operator.binDiv, BackendPrimitiveOperation.intDiv); // a / b
 
-			auto zeroLiteral = new Symbol_Literal( this, ubyte( 0 ).repeat.take( instanceSize_ ).array, "%s_zero".format( identifier.str ) );
+		auto zeroLiteral = new Symbol_Literal(this, ubyte(0).repeat.take(instanceSize_).array, "%s_zero".format(identifier.str));
 
-			// Implicit cast to bool
-			mem ~= new Symbol_PrimitiveMemberRuntimeFunction( ID!"#implicitCast", this, coreType.Bool, //
-					ExpandedFunctionParameter.bootstrap( coreType.Bool.dataEntity ), //
-					( cb, inst, args ) { //
-						auto var = new DataEntity_TmpLocalVariable( coreType.Bool );
-						cb.build_localVariableDefinition( var );
-						cb.build_primitiveOperation( BackendPrimitiveOperation.memNeq, var, inst, zeroLiteral.dataEntity );
+		// Implicit cast to bool
+		mem ~= new Symbol_PrimitiveMemberRuntimeFunction(ID!"#implicitCast", this, coreType.Bool, //
+				ExpandedFunctionParameter.bootstrap(coreType.Bool.dataEntity), //
+				(cb, inst, args) { //
+					auto var = new DataEntity_TmpLocalVariable(coreType.Bool);
+					cb.build_localVariableDefinition(var);
+					cb.build_primitiveOperation(BackendPrimitiveOperation.memNeq, var, inst, zeroLiteral.dataEntity);
 
-						// Store var into result operand
-						var.buildCode( cb );
-					} );
+					// Store var into result operand
+					var.buildCode(cb);
+				});
 
-			switch ( instanceSize_ + signed_ * 100 ) {
+		switch (instanceSize_ + signed_ * 100) {
 
-				// Int32
-			case 104: {
-					mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveImplicitCast( this, coreType.Int64, BackendPrimitiveOperation.int32To64 ); // Implicit cast to Int64
-					break;
-				}
-
-			default:
+			// Int32
+		case 104: {
+				mem ~= Symbol_PrimitiveMemberRuntimeFunction.newPrimitiveImplicitCast(this, coreType.Int64, BackendPrimitiveOperation.int32To64); // Implicit cast to Int64
 				break;
-
 			}
 
-			namespace_.initialize( mem );
+		default:
+			break;
+
 		}
 
-	public:
-		override Identifier identifier( ) {
-			return identifier_;
+		namespace_.initialize(mem);
+	}
+
+public:
+	override Identifier identifier() {
+		return identifier_;
+	}
+
+	override size_t instanceSize() {
+		return instanceSize_;
+	}
+
+	override Namespace namespace() {
+		return namespace_;
+	}
+
+public:
+	override Symbol_Type_Int isIntType() {
+		return this;
+	}
+
+public:
+	override string valueIdentificationString(MemoryPtr value) {
+		switch (instanceSize_ + signed_ * 100) {
+
+			// UNSIGNED:
+		case 1:
+			return value.readPrimitive!ubyte
+				.to!string;
+
+		case 2:
+			return value.readPrimitive!ushort
+				.to!string;
+
+		case 4:
+			return value.readPrimitive!uint
+				.to!string;
+
+		case 8:
+			return value.readPrimitive!ulong
+				.to!string;
+
+			// SIGNED:
+		case 101:
+			return value.readPrimitive!byte
+				.to!string;
+
+		case 102:
+			return value.readPrimitive!short
+				.to!string;
+
+		case 104:
+			return value.readPrimitive!int
+				.to!string;
+
+		case 108:
+			return value.readPrimitive!long
+				.to!string;
+
+		default:
+			assert(0);
+
 		}
+	}
 
-		override size_t instanceSize( ) {
-			return instanceSize_;
-		}
-
-		override Namespace namespace( ) {
-			return namespace_;
-		}
-
-	public:
-		override Symbol_Type_Int isIntType( ) {
-			return this;
-		}
-
-	public:
-		override string valueIdentificationString( MemoryPtr value ) {
-			switch ( instanceSize_ + signed_ * 100 ) {
-
-				// UNSIGNED:
-			case 1:
-				return value.readPrimitive!ubyte.to!string;
-
-			case 2:
-				return value.readPrimitive!ushort.to!string;
-
-			case 4:
-				return value.readPrimitive!uint.to!string;
-
-			case 8:
-				return value.readPrimitive!ulong.to!string;
-
-				// SIGNED:
-			case 101:
-				return value.readPrimitive!byte.to!string;
-
-			case 102:
-				return value.readPrimitive!short.to!string;
-
-			case 104:
-				return value.readPrimitive!int.to!string;
-
-			case 108:
-				return value.readPrimitive!long.to!string;
-
-			default:
-				assert( 0 );
-
-			}
-		}
-
-	private:
-		BootstrapNamespace namespace_;
-		Identifier identifier_;
-		const size_t instanceSize_;
-		const bool signed_;
+private:
+	BootstrapNamespace namespace_;
+	Identifier identifier_;
+	const size_t instanceSize_;
+	const bool signed_;
 
 }

@@ -6,39 +6,39 @@ import std.json;
 
 final class MessageFormatter_JSON : MessageFormatter {
 
-	public:
-		this( ) {
-			gnuFormatter = new MessageFormatter_GNU;
-		}
+public:
+	this() {
+		gnuFormatter = new MessageFormatter_GNU;
+	}
 
-	public:
-		override string formatErrorMessage( ErrorMessage msg ) {
-			JSONValue[ string ] result;
+public:
+	override string formatErrorMessage(ErrorMessage msg) {
+		JSONValue[string] result;
 
-			result[ "gnuFormat" ] = gnuFormatter.formatErrorMessage( msg );
-			result[ "message" ] = msg.message;
-			result[ "error" ] = msg.error.to!string;
-			result[ "severity" ] = msg.severity.to!string;
+		result["gnuFormat"] = gnuFormatter.formatErrorMessage(msg);
+		result["message"] = msg.message;
+		result["error"] = msg.error.to!string;
+		result["severity"] = msg.severity.to!string;
 
-			if ( auto cl = msg.codeLocation ) {
-				result[ "file" ] = cl.file;
+		if (auto cl = msg.codeLocation) {
+			result["file"] = cl.file;
 
-				if ( cl.startLine ) {
-					result[ "line" ] = cl.startLine;
-					result[ "column" ] = cl.startColumn;
-					result[ "pos" ] = cl.startPos;
+			if (cl.startLine) {
+				result["line"] = cl.startLine;
+				result["column"] = cl.startColumn;
+				result["pos"] = cl.startPos;
 
-					result[ "toLine" ] = cl.endLine;
-					result[ "toColumn" ] = cl.endColumn;
-					result[ "toPos" ] = cl.endPos;
-				}
+				result["toLine"] = cl.endLine;
+				result["toColumn"] = cl.endColumn;
+				result["toPos"] = cl.endPos;
 			}
-
-			const JSONValue _result = JSONValue( result );
-			return _result.toJSON;
 		}
 
-	private:
-		MessageFormatter_GNU gnuFormatter;
+		const JSONValue _result = JSONValue(result);
+		return _result.toJSON;
+	}
+
+private:
+	MessageFormatter_GNU gnuFormatter;
 
 }

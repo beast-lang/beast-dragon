@@ -7,60 +7,60 @@ import beast.code.ast.expr.binary;
 final class AST_LogicExpression : AST_Expression {
 	alias LowerLevelExpression = AST_CmpExpression;
 
-	public:
-		static bool canParse( ) {
-			return LowerLevelExpression.canParse;
+public:
+	static bool canParse() {
+		return LowerLevelExpression.canParse;
+	}
+
+	static AST_Expression parse() {
+		auto _gd = codeLocationGuard();
+
+		AST_Expression base = LowerLevelExpression.parse();
+
+		if (currentToken != Token.Operator.logOr && currentToken != Token.Operator.logAnd)
+			return base;
+
+		auto result = new AST_LogicExpression;
+		result.op = currentToken.operator;
+		result.base = base;
+
+		while (currentToken == Token.Operator.logOr || currentToken == Token.Operator.logAnd) {
+			benforce(currentToken == result.op, E.invalidOpCombination, "You cannot mix && and || operators, use parentheses", (err) { err.codeLocation = currentToken.codeLocation; });
+			getNextToken();
+
+			result.items ~= LowerLevelExpression.parse();
 		}
 
-		static AST_Expression parse( ) {
-			auto _gd = codeLocationGuard( );
+		result.codeLocation = _gd.get();
+		return result;
+	}
 
-			AST_Expression base = LowerLevelExpression.parse( );
+public:
+	AST_Expression base;
+	AST_Expression[] items;
+	Token.Operator op;
 
-			if ( currentToken != Token.Operator.logOr && currentToken != Token.Operator.logAnd )
-				return base;
+public:
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+		const auto __gd = ErrorGuard(codeLocation);
 
-			auto result = new AST_LogicExpression;
-			result.op = currentToken.operator;
-			result.base = base;
+		DataEntity result = base.buildSemanticTree_singleInfer(inferredType, errorOnInferrationFailure);
 
-			while ( currentToken == Token.Operator.logOr || currentToken == Token.Operator.logAnd ) {
-				benforce( currentToken == result.op, E.invalidOpCombination, "You cannot mix && and || operators, use parentheses", ( err ) { err.codeLocation = currentToken.codeLocation; } );
-				getNextToken( );
+		// If errorOnInferrationFailure is false then result might be null (inferration failure)
+		if (!result)
+			return Overloadset();
 
-				result.items ~= LowerLevelExpression.parse( );
-			}
+		DataEntity opArg = (op == Token.Operator.logOr) ? coreEnum.operator.binOr.dataEntity : coreEnum.operator.binAnd.dataEntity;
 
-			result.codeLocation = _gd.get( );
-			return result;
-		}
+		foreach (item; items)
+			result = resolveBinaryOperation(this, result, item, opArg, op);
 
-	public:
-		AST_Expression base;
-		AST_Expression[ ] items;
-		Token.Operator op;
+		return result.Overloadset;
+	}
 
-	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-			const auto __gd = ErrorGuard( codeLocation );
-
-			DataEntity result = base.buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
-
-			// If errorOnInferrationFailure is false then result might be null (inferration failure)
-			if ( !result )
-				return Overloadset( );
-
-			DataEntity opArg = ( op == Token.Operator.logOr ) ? coreEnum.operator.binOr.dataEntity : coreEnum.operator.binAnd.dataEntity;
-
-			foreach ( item; items )
-				result = resolveBinaryOperation( this, result, item, opArg, op );
-
-			return result.Overloadset;
-		}
-
-	protected:
-		override SubnodesRange _subnodes( ) {
-			return nodeRange( base, items );
-		}
+protected:
+	override SubnodesRange _subnodes() {
+		return nodeRange(base, items);
+	}
 
 }

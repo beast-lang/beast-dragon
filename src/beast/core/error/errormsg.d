@@ -5,10 +5,10 @@ import beast.core.project.codelocation;
 
 final class ErrorMessage {
 
-	public:
-		string message;
-		E error;
-		ErrorSeverity severity;
-		CodeLocation codeLocation;
+public:
+	string message;
+	E error;
+	ErrorSeverity severity;
+	CodeLocation codeLocation;
 
 }

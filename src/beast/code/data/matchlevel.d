@@ -9,5 +9,5 @@ enum MatchLevel : uint {
 	staticCall = alias_ << 1, /// Called static function via an object instance
 	compilerDefined = staticCall << 1, /// Item is compiler defined
 	fallback = compilerDefined << 1, /// Function is fallback (is used only when no non-fallback function is possible)
-	noMatch = cast( ubyte )-1, /// Function does not match the arguments at all
+	noMatch = cast(ubyte)-1, /// Function does not match the arguments at all
 }

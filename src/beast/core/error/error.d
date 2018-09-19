@@ -104,85 +104,85 @@ enum ErrorSeverity {
 	hint
 }
 
-enum string[ ErrorSeverity ] ErrorSeverityStrings = [ ErrorSeverity.error : "error", ErrorSeverity.error_nothrow : "error", ErrorSeverity.warning : "warning", ErrorSeverity.hint : "hint" ];
+enum string[ErrorSeverity] ErrorSeverityStrings = [ErrorSeverity.error : "error", ErrorSeverity.error_nothrow : "error", ErrorSeverity.warning : "warning", ErrorSeverity.hint : "hint"];
 
 /// Returns current location (what location would be reported in an error report)
-CodeLocation getCodeLocation( ) {
+CodeLocation getCodeLocation() {
 	// TODO: this probably isn't very fast
 	auto msg = scoped!ErrorMessage;
 
-	foreach ( func; context.errorGuardData.stack )
-		func( msg );
+	foreach (func; context.errorGuardData.stack)
+		func(msg);
 
 	return msg.codeLocation;
 }
 
 /// If the condition is not true, calls berror
-void benforce( ErrorSeverity severity = ErrorSeverity.error )( bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {
-	if ( !condition )
-		breport!( severity )( error, message, errGdFunc, file, line );
+void benforce(ErrorSeverity severity = ErrorSeverity.error)(bool condition, E error, lazy string message, lazy ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__) {
+	if (!condition)
+		breport!(severity)(error, message, errGdFunc, file, line);
 }
 
 /// If the confition is not true, reports a hint
-alias benforceHint = benforce!( ErrorSeverity.hint );
+alias benforceHint = benforce!(ErrorSeverity.hint);
 
 /// Generates error/warning/hint, eventually throwing an exception
-void breport( ErrorSeverity severity = ErrorSeverity.error )( E error, string message, ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {
+void breport(ErrorSeverity severity = ErrorSeverity.error)(E error, string message, ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__) {
 	ErrorMessage msg = new ErrorMessage;
 	msg.message = message;
 	msg.error = error;
 	msg.severity = severity;
 
-	foreach ( func; context.errorGuardData.stack )
-		func( msg );
+	foreach (func; context.errorGuardData.stack)
+		func(msg);
 
-	if ( errGdFunc )
-		errGdFunc( msg );
+	if (errGdFunc)
+		errGdFunc(msg);
 
-	const string formattedMessage = project.messageFormatter.formatErrorMessage( msg );
+	const string formattedMessage = project.messageFormatter.formatErrorMessage(msg);
 
-	if ( !context.preventErrorPrint ) {
-		synchronized ( stderrMutex ) {
-			stderr.writeln( formattedMessage );
+	if (!context.preventErrorPrint) {
+		synchronized (stderrMutex) {
+			stderr.writeln(formattedMessage);
 
-			debug if ( project.configuration.showStackTrace )
-				stderr.writeln( defaultTraceHandler.toString );
+			debug if (project.configuration.showStackTrace)
+				stderr.writeln(defaultTraceHandler.toString);
 		}
 	}
 
-	if ( msg.severity == ErrorSeverity.error ) {
+	if (msg.severity == ErrorSeverity.error) {
 		wereErrors = true;
-		throw new BeastErrorException( message, file, line );
+		throw new BeastErrorException(message, file, line);
 	}
 }
 
 /// Generates error/warning/hint, eventually throwing an exception
-void berror( E error, string message, ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__ ) {
-	breport!( ErrorSeverity.error )( error, message, errGdFunc, file, line );
+void berror(E error, string message, ErrorGuardFunction errGdFunc = null, string file = __FILE__, size_t line = __LINE__) {
+	breport!(ErrorSeverity.error)(error, message, errGdFunc, file, line);
 }
 
 /// Base error class for all compiler generated exceptions (that are expected)
 final class BeastErrorException : Exception {
 
-	public:
-		this( string message, string file = __FILE__, size_t line = __LINE__ ) {
-			super( message, file, line );
-		}
+public:
+	this(string message, string file = __FILE__, size_t line = __LINE__) {
+		super(message, file, line);
+	}
 
 }
 
 /// Tries to execute given code and if it throws an exception, returns fallback instead
-pragma( inline ) auto tryFallback( T )( lazy T dg, T fallback ) {
+pragma(inline) auto tryFallback(T)(lazy T dg, T fallback) {
 	context.preventErrorPrint++;
-	scope ( exit )
+	scope (exit)
 		context.preventErrorPrint--;
 
 	try
-		return dg( );
-	catch ( BeastErrorException exc )
+		return dg();
+	catch (BeastErrorException exc)
 		return fallback;
 }
 
-private enum _init = HookAppInit.hook!( {
+private enum _init = HookAppInit.hook!({
 		stderrMutex = new Mutex; //
-	} );
+	});

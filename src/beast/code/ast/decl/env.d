@@ -9,57 +9,57 @@ import beast.code.data.function_.rt;
 /// Implicit declaration arguments
 final class DeclarationEnvironment {
 
-	public:
-		static DeclarationEnvironment newModule( ) {
-			DeclarationEnvironment result = new DeclarationEnvironment;
-			return result;
-		}
+public:
+	static DeclarationEnvironment newModule() {
+		DeclarationEnvironment result = new DeclarationEnvironment;
+		return result;
+	}
 
-		static DeclarationEnvironment newFunctionBody( ) {
-			DeclarationEnvironment result = new DeclarationEnvironment;
-			result.isStatic = false;
-			return result;
-		}
+	static DeclarationEnvironment newFunctionBody() {
+		DeclarationEnvironment result = new DeclarationEnvironment;
+		result.isStatic = false;
+		return result;
+	}
 
-		static DeclarationEnvironment newClass( ) {
-			DeclarationEnvironment result = new DeclarationEnvironment;
-			result.isStatic = false;
-			return result;
-		}
+	static DeclarationEnvironment newClass() {
+		DeclarationEnvironment result = new DeclarationEnvironment;
+		result.isStatic = false;
+		return result;
+	}
 
-	public:
-		DeclarationEnvironment dup( ) {
-			auto result = new DeclarationEnvironment( );
-			result.isStatic = isStatic;
-			result.isCtime = isCtime;
-			
-			result.parentType = parentType;
-			result.enforceDone_memberOffsetObtaining = enforceDone_memberOffsetObtaining;
-			result.staticMembersParent = staticMembersParent;
-			result.staticMemberMerger = staticMemberMerger;
-			result.functionReturnType = functionReturnType;
+public:
+	DeclarationEnvironment dup() {
+		auto result = new DeclarationEnvironment();
+		result.isStatic = isStatic;
+		result.isCtime = isCtime;
 
-			return result;
-		}
+		result.parentType = parentType;
+		result.enforceDone_memberOffsetObtaining = enforceDone_memberOffsetObtaining;
+		result.staticMembersParent = staticMembersParent;
+		result.staticMemberMerger = staticMemberMerger;
+		result.functionReturnType = functionReturnType;
 
-	public:
-		bool isStatic = true;
-		bool isCtime = false;
+		return result;
+	}
 
-	public:
-		Symbol_Type parentType;
+public:
+	bool isStatic = true;
+	bool isCtime = false;
 
-		/// Delegate that is used when declaring class members
-		/// Points to parent class function that enforces that members have correct parent offset (bytes from this) value set
-		void delegate( ) enforceDone_memberOffsetObtaining;
+public:
+	Symbol_Type parentType;
 
-		/// Parent for static members
-		DataEntity staticMembersParent;
+	/// Delegate that is used when declaring class members
+	/// Points to parent class function that enforces that members have correct parent offset (bytes from this) value set
+	void delegate() enforceDone_memberOffsetObtaining;
 
-		StaticMemberMerger staticMemberMerger;
+	/// Parent for static members
+	DataEntity staticMembersParent;
 
-		/// When in function, this varaible is used for inferring expected types for return statements
-		/// Can be null (when function return type is auto) -> then the first return in the code sets it
-		Symbol_Type functionReturnType;
+	StaticMemberMerger staticMemberMerger;
+
+	/// When in function, this varaible is used for inferring expected types for return statements
+	/// Can be null (when function return type is auto) -> then the first return in the code sets it
+	Symbol_Type functionReturnType;
 
 }

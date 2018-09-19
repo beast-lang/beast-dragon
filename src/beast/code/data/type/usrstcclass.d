@@ -13,74 +13,74 @@ import beast.code.data.codenamespace.namespace;
 final class Symbol_UserStaticClass : Symbol_StaticClass {
 	mixin TaskGuard!"instanceSizeObtaining";
 
-	public:
-		this( AST_Class ast, DecorationList decorationList, ClassDeclarationData declData ) {
-			// Identifier (thus ast) must be available even when constructing parent class
-			ast_ = ast;
+public:
+	this(AST_Class ast, DecorationList decorationList, ClassDeclarationData declData) {
+		// Identifier (thus ast) must be available even when constructing parent class
+		ast_ = ast;
 
-			decorationList.enforceAllResolved();
+		decorationList.enforceAllResolved();
 
-			super( declData.env.staticMembersParent );
+		super(declData.env.staticMembersParent);
 
-			assert( !declData.isCtime );
-			assert( declData.isStatic );
-			assert( ast );
+		assert(!declData.isCtime);
+		assert(declData.isStatic);
+		assert(ast);
 
-			namespace_ = new UserNamespace( this, &execute_membersObtaining );
-		}
+		namespace_ = new UserNamespace(this, &execute_membersObtaining);
+	}
 
-		override Identifier identifier( ) {
-			return ast_.identifier;
-		}
+	override Identifier identifier() {
+		return ast_.identifier;
+	}
 
-		override size_t instanceSize( ) {
-			enforceDone_instanceSizeObtaining( );
-			return instanceSizeWIP_;
-		}
+	override size_t instanceSize() {
+		enforceDone_instanceSizeObtaining();
+		return instanceSizeWIP_;
+	}
 
-		override AST_Node ast( ) {
-			return ast_;
-		}
+	override AST_Node ast() {
+		return ast_;
+	}
 
-		override Namespace namespace( ) {
-			return namespace_;
-		}
+	override Namespace namespace() {
+		return namespace_;
+	}
 
-	private:
-		final Symbol[ ] execute_membersObtaining( ) {
-			scope env = DeclarationEnvironment.newClass( );
-			env.staticMembersParent = staticData_;
-			env.parentType = this;
-			env.enforceDone_memberOffsetObtaining = &enforceDone_instanceSizeObtaining;
+private:
+	final Symbol[] execute_membersObtaining() {
+		scope env = DeclarationEnvironment.newClass();
+		env.staticMembersParent = staticData_;
+		env.parentType = this;
+		env.enforceDone_memberOffsetObtaining = &enforceDone_instanceSizeObtaining;
 
-			return ast_.declarationScope.executeDeclarations( env ).inRootDataScope( parent );
-		}
+		return ast_.declarationScope.executeDeclarations(env).inRootDataScope(parent);
+	}
 
-		final void execute_instanceSizeObtaining( ) {
-			size_t instanceSize = 0;
+	final void execute_instanceSizeObtaining() {
+		size_t instanceSize = 0;
 
-			foreach ( mem; namespace_.members ) {
-				if ( auto memVar = mem.isMemberVariable ) {
-					size_t memSize = memVar.dataType.instanceSize;
+		foreach (mem; namespace_.members) {
+			if (auto memVar = mem.isMemberVariable) {
+				size_t memSize = memVar.dataType.instanceSize;
 
-					if ( !memSize )
-						continue;
+				if (!memSize)
+					continue;
 
-					size_t roundTo = min( memSize, hardwareEnvironment.pointerSize );
+				size_t roundTo = min(memSize, hardwareEnvironment.pointerSize);
 
-					// We round the instance size so that member is aligned to its size
-					instanceSize += ( roundTo - instanceSize % roundTo ) % roundTo;
-					memVar.setParentThisOffsetWIP__ONLYFROMPARENTCLASS( instanceSize );
-					instanceSize += memSize;
-				}
+				// We round the instance size so that member is aligned to its size
+				instanceSize += (roundTo - instanceSize % roundTo) % roundTo;
+				memVar.setParentThisOffsetWIP__ONLYFROMPARENTCLASS(instanceSize);
+				instanceSize += memSize;
 			}
-
-			instanceSizeWIP_ = instanceSize;
 		}
 
-	private:
-		AST_Class ast_;
-		UserNamespace namespace_;
-		size_t instanceSizeWIP_;
+		instanceSizeWIP_ = instanceSize;
+	}
+
+private:
+	AST_Class ast_;
+	UserNamespace namespace_;
+	size_t instanceSizeWIP_;
 
 }

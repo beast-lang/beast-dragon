@@ -6,19 +6,19 @@ import std.json;
 /// Expects given string on stdout (mainValue argument is parsed as JSON string)
 final class TestDirective_Stdout : TestDirective {
 
-	public:
-		this( TestDirectiveArguments args ) {
-			data_ = args.mainValue.startsWith( "\"" ) ? args.mainValue.parseJSON.str : args.mainValue;
-		}
+public:
+	this(TestDirectiveArguments args) {
+		data_ = args.mainValue.startsWith("\"") ? args.mainValue.parseJSON.str : args.mainValue;
+	}
 
-	public:
-		override void onBeforeTestStart( ) {
-			test.expectedStdout ~= data_;
-			test.needsCompilation = true;
-			test.runAfterBuild = true;
-		}
+public:
+	override void onBeforeTestStart() {
+		test.expectedStdout ~= data_;
+		test.needsCompilation = true;
+		test.runAfterBuild = true;
+	}
 
-	private:
-		string data_;
+private:
+	string data_;
 
 }

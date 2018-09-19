@@ -12,50 +12,50 @@ import beast.code.data.function_.param;
 /// @ctime
 final class Symbol_Decorator_Ctime : Symbol_Decorator {
 
-	public:
-		this( DataEntity parent ) {
-			super( parent );
-		}
+public:
+	this(DataEntity parent) {
+		super(parent);
+	}
 
-	public:
-		override Identifier identifier( ) {
-			return ID!"#decorator_ctime";
-		}
+public:
+	override Identifier identifier() {
+		return ID!"#decorator_ctime";
+	}
 
-	public:
-		override bool apply_variableDeclarationModifier( VariableDeclarationData data ) {
-			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
-			data.isCtime = true;
-			return true;
-		}
+public:
+	override bool apply_variableDeclarationModifier(VariableDeclarationData data) {
+		benforceHint(!data.isCtime, E.duplicitModification, "@ctime is redundant");
+		data.isCtime = true;
+		return true;
+	}
 
-		override bool apply_functionDeclarationModifier( FunctionDeclarationData data ) {
-			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
-			data.isCtime = true;
-			return true;
-		}
+	override bool apply_functionDeclarationModifier(FunctionDeclarationData data) {
+		benforceHint(!data.isCtime, E.duplicitModification, "@ctime is redundant");
+		data.isCtime = true;
+		return true;
+	}
 
-		override bool apply_functionParameterModifier( FunctionParameterDecorationData data ) {
-			data.isCtime = true;
-			return true;
-		}
+	override bool apply_functionParameterModifier(FunctionParameterDecorationData data) {
+		data.isCtime = true;
+		return true;
+	}
 
-		override bool apply_classDeclarationModifier( ClassDeclarationData data ) {
-			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
-			data.isCtime = true;
-			return true;
-		}
+	override bool apply_classDeclarationModifier(ClassDeclarationData data) {
+		benforceHint(!data.isCtime, E.duplicitModification, "@ctime is redundant");
+		data.isCtime = true;
+		return true;
+	}
 
-		override bool apply_expressionDecorator( ExpressionDecorationData data ) {
-			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
-			data.isCtime = true;
-			return true;
-		}
+	override bool apply_expressionDecorator(ExpressionDecorationData data) {
+		benforceHint(!data.isCtime, E.duplicitModification, "@ctime is redundant");
+		data.isCtime = true;
+		return true;
+	}
 
-		override bool apply_statementDecorator( StatementDecorationData data ) {
-			benforceHint( !data.isCtime, E.duplicitModification, "@ctime is redundant" );
-			data.isCtime = true;
-			return true;
-		}
+	override bool apply_statementDecorator(StatementDecorationData data) {
+		benforceHint(!data.isCtime, E.duplicitModification, "@ctime is redundant");
+		data.isCtime = true;
+		return true;
+	}
 
 }

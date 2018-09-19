@@ -3,11 +3,11 @@ module beast.util.identifiable;
 interface Identifiable {
 
 public:
-	string identificationString( );
+	string identificationString();
 
 public:
-	final string toString( ) const {
-		return ( cast(Identifiable) this ).identificationString( );
+	final string toString() const {
+		return (cast(Identifiable) this).identificationString();
 	}
 
 }

@@ -4,12 +4,12 @@ import beast.backend.interpreter.op.toolkit;
 
 //debug = interpreter;
 
-debug ( interpreter ) {
+debug (interpreter) {
 	import std.stdio : writefln;
 }
 
-pragma( inline ):
+pragma(inline):
 
-	void op_boolNot( Interpreter ir, MemoryPtr target, MemoryPtr source ) {
-		target.writePrimitive( !source.readPrimitive!bool );
-	}
+void op_boolNot(Interpreter ir, MemoryPtr target, MemoryPtr source) {
+	target.writePrimitive(!source.readPrimitive!bool);
+}

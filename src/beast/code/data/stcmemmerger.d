@@ -7,34 +7,34 @@ import beast.code.data.symbol;
 /// The merging is searched via CodeLocation (bootstrap static members are to be handled by the programmer)
 final class StaticMemberMerger {
 
-	public:
-		bool isFinished( ) {
-			return isFinished_;
-		}
+public:
+	bool isFinished() {
+		return isFinished_;
+	}
 
-	public:
-		void addRecord( AST_Node ast, Symbol sym ) {
-			assert( !isFinished_ );
-			assert( ast !in members_ );
-			
-			members_[ ast ] = sym;
-		}
+public:
+	void addRecord(AST_Node ast, Symbol sym) {
+		assert(!isFinished_);
+		assert(ast !in members_);
 
-		Symbol getRecord( AST_Node ast ) {
-			assert( isFinished_ );
-			assert( ast in members_ );
+		members_[ast] = sym;
+	}
 
-			return members_[ ast ];
-		}
+	Symbol getRecord(AST_Node ast) {
+		assert(isFinished_);
+		assert(ast in members_);
 
-		void finish( ) {
-			assert( !isFinished_ );
-			isFinished_ = true;
-		}
+		return members_[ast];
+	}
 
-	private:
-		Symbol[ AST_Node ] members_;
+	void finish() {
+		assert(!isFinished_);
+		isFinished_ = true;
+	}
 
-		bool isFinished_;
+private:
+	Symbol[AST_Node] members_;
+
+	bool isFinished_;
 
 }

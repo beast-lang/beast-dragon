@@ -9,158 +9,160 @@ import std.range.primitives : isInputRange, ElementType;
 /// Structure that handles overload matching
 struct CallMatchSet {
 
-	public:
-		this( Overloadset overloadset, AST_Node ast, bool reportErrors = true, MatchLevel matchLevel = MatchLevel.fullMatch ) {
-			scope_ = new LocalDataScope( );
-			auto _sgd = scope_.scopeGuard( false );
+public:
+	this(Overloadset overloadset, AST_Node ast, bool reportErrors = true, MatchLevel matchLevel = MatchLevel.fullMatch) {
+		scope_ = new LocalDataScope();
+		auto _sgd = scope_.scopeGuard(false);
 
-			this.reportErrors = reportErrors;
+		this.reportErrors = reportErrors;
 
-			foreach ( overload; overloadset ) {
-				if ( overload.isCallable )
-					matches ~= overload.startCallMatch( ast, reportErrors && ( overloadset.length == 1 ), matchLevel );
+		foreach (overload; overloadset) {
+			if (overload.isCallable)
+				matches ~= overload.startCallMatch(ast, reportErrors && (overloadset.length == 1), matchLevel);
 
-				// If the overload is not callable, we try to overload against overload.#opCall( XXX )
-				else {
-					auto suboverloadset = overload.tryResolveIdentifier( Identifier.preobtained!"#call" );
-					foreach ( suboverload; suboverloadset ) {
-						if ( suboverload.isCallable )
-							matches ~= suboverload.startCallMatch( ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel );
-					}
+			// If the overload is not callable, we try to overload against overload.#opCall( XXX )
+			else {
+				auto suboverloadset = overload.tryResolveIdentifier(Identifier.preobtained!"#call");
+				foreach (suboverload; suboverloadset) {
+					if (suboverload.isCallable)
+						matches ~= suboverload.startCallMatch(ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel);
 				}
 			}
-
-			benforce( !reportErrors || matches.length != 0, E.noMatchingOverload, "No callable overloads" );
 		}
 
-	public:
-		ref CallMatchSet arg( T : DataEntity )( T entity ) {
-			auto _sgd = scope_.scopeGuard( false );
+		benforce(!reportErrors || matches.length != 0, E.noMatchingOverload, "No callable overloads");
+	}
 
-			Symbol_Type dataType = entity.dataType;
-			argumentEntities ~= entity;
+public:
+	ref CallMatchSet arg(T : DataEntity)(T entity) {
+		auto _sgd = scope_.scopeGuard(false);
 
-			foreach ( match; matches )
-				match.matchNextArgument( null, entity, dataType ).inSubSession;
+		Symbol_Type dataType = entity.dataType;
+		argumentEntities ~= entity;
 
-			return this;
-		}
+		foreach (match; matches)
+			match.matchNextArgument(null, entity, dataType).inSubSession;
 
-		ref CallMatchSet arg( T : Symbol )( T sym ) {
-			return arg( sym.dataEntity( MatchLevel.fullMatch ) );
-		}
+		return this;
+	}
 
-		ref CallMatchSet arg( T : AST_Expression )( T expr ) {
-			auto _sgd = scope_.scopeGuard( false );
+	ref CallMatchSet arg(T : Symbol)(T sym) {
+		return arg(sym.dataEntity(MatchLevel.fullMatch));
+	}
 
-			DataEntity entity = expr.buildSemanticTree_single( false );
-			Symbol_Type dataType = entity ? entity.dataType : null;
-			argumentEntities ~= entity;
+	ref CallMatchSet arg(T : AST_Expression)(T expr) {
+		auto _sgd = scope_.scopeGuard(false);
 
-			foreach ( match; matches )
-				match.matchNextArgument( expr, entity, dataType ).inSubSession;
+		DataEntity entity = expr.buildSemanticTree_single(false);
+		Symbol_Type dataType = entity ? entity.dataType : null;
+		argumentEntities ~= entity;
 
-			return this;
-		}
+		foreach (match; matches)
+			match.matchNextArgument(expr, entity, dataType).inSubSession;
 
-		ref CallMatchSet arg( R )( R args ) if ( isInputRange!R ) {
-			foreach ( argv; args )
-				arg( argv );
+		return this;
+	}
 
-			return this;
-		}
+	ref CallMatchSet arg(R)(R args) if (isInputRange!R) {
+		foreach (argv; args)
+			arg(argv);
 
-	public:
-		/// Can return null when reportErrors is false
-		CallableMatch finish_getMatch( ) {
-			scope_.finish( );
+		return this;
+	}
 
-			if ( matches.length == 0 )
-				return null;
+public:
+	/// Can return null when reportErrors is false
+	CallableMatch finish_getMatch() {
+		scope_.finish();
 
-			// Now find best match
-			CallableMatch bestMatch = matches[ 0 ];
-			size_t bestMatchCount = 1;
+		if (matches.length == 0)
+			return null;
 
-			matches[ 0 ].finish( );
+		// Now find best match
+		CallableMatch bestMatch = matches[0];
+		size_t bestMatchCount = 1;
 
-			foreach ( match; matches[ 1 .. $ ] ) {
-				match.finish( );
+		matches[0].finish();
 
-				/*
+		foreach (match; matches[1 .. $]) {
+			match.finish();
+
+			/*
 					Let me write an example:
 					a: 0 1 0 1
 					b: 0 1 1 0
 
 					Now we want a to be the new best match, because it's match level is smaller (which is better)
 				*/
-				if ( match.matchLevel < bestMatch.matchLevel ) {
-					bestMatch = match;
-					bestMatchCount = 1;
-				}
-				else if ( match.matchLevel == bestMatch.matchLevel )
-					bestMatchCount++;
+			if (match.matchLevel < bestMatch.matchLevel) {
+				bestMatch = match;
+				bestMatchCount = 1;
 			}
-
-			if ( bestMatch.matchLevel == MatchLevel.noMatch ) {
-				if ( !reportErrors ) {
-					// Do nothing
-				}
-				else if ( matches.length == 1 )
-					berror( E.noMatchingOverload, "%s does not match arguments %s: %s".format( matches[ 0 ].sourceDataEntity.tryGetIdentificationString, argumentListIdentificationString, matches[ 0 ].errorStr ) );
-				else
-					berror( E.noMatchingOverload, //
-							"None of the overloads match arguments %s:%s".format(  //
-								argumentListIdentificationString, //
-								matches.map!( x => "\n\n\t%s:\n\t\t%s".format( x.sourceDataEntity.tryGetIdentificationString, x.errorStr ) ).joiner ) //
-							 );
-
-				return null;
-			}
-
-			// Report errors do not apply on amiguous resolution (that would screw up things)
-			// Report errors = false is used when trying binary operations and their reverse versions -> a.#opBinary( binXX, b ), then b.#opBinaryR( binXX, a )
-			// If reportErrors would hide ambiguous resolution, then ambiguous resolution would cause trying the opBinaryR variant, which is not a correct behavior
-			benforce( bestMatchCount == 1, E.ambiguousResolution, //
-					"Ambiguous overload resolution for arguments %s:%s".format(  //
-						argumentListIdentificationString, //
-						matches.filter!( x => x.matchLevel == bestMatch.matchLevel ).map!( x => "\n\t%s (match level %s)".format( x.sourceDataEntity.tryGetIdentificationString, cast( int ) x.matchLevel ) ).joiner, //
-						 ) );
-
-			return bestMatch;
+			else if (match.matchLevel == bestMatch.matchLevel)
+				bestMatchCount++;
 		}
 
-		pragma( inline ) DataEntity finish( ) {
-			if ( auto result = finish_getMatch( ) )
-				return result.toDataEntity( );
+		if (bestMatch.matchLevel == MatchLevel.noMatch) {
+			if (!reportErrors) {
+				// Do nothing
+			}
+			else if (matches.length == 1)
+				berror(E.noMatchingOverload, "%s does not match arguments %s: %s".format(matches[0].sourceDataEntity.tryGetIdentificationString, argumentListIdentificationString, matches[0].errorStr));
 			else
-				return null;
+				berror(E.noMatchingOverload, //
+						"None of the overloads match arguments %s:%s".format( //
+							argumentListIdentificationString, //
+							matches.map!(x => "\n\n\t%s:\n\t\t%s".format(x.sourceDataEntity.tryGetIdentificationString, x.errorStr)).joiner) //
+						);
+
+			return null;
 		}
 
-	public:
-		/// List of data entities representing arguments
-		/// Some of them can be null (where inferration was needed)
-		DataEntity[ ] argumentEntities;
+		// Report errors do not apply on amiguous resolution (that would screw up things)
+		// Report errors = false is used when trying binary operations and their reverse versions -> a.#opBinary( binXX, b ), then b.#opBinaryR( binXX, a )
+		// If reportErrors would hide ambiguous resolution, then ambiguous resolution would cause trying the opBinaryR variant, which is not a correct behavior
+		benforce(bestMatchCount == 1, E.ambiguousResolution, //
+				"Ambiguous overload resolution for arguments %s:%s".format( //
+					argumentListIdentificationString, //
+					matches.filter!(x => x.matchLevel == bestMatch.matchLevel)
+					.map!(x => "\n\t%s (match level %s)".format(x.sourceDataEntity.tryGetIdentificationString, cast(int) x.matchLevel))
+					.joiner, //
+					));
 
-		CallableMatch[ ] matches;
+		return bestMatch;
+	}
 
-		DataScope scope_;
+	pragma(inline) DataEntity finish() {
+		if (auto result = finish_getMatch())
+			return result.toDataEntity();
+		else
+			return null;
+	}
 
-		bool reportErrors;
+public:
+	/// List of data entities representing arguments
+	/// Some of them can be null (where inferration was needed)
+	DataEntity[] argumentEntities;
 
-	public:
-		string argumentListIdentificationString( ) {
-			string[ ] args;
-			foreach ( arg; argumentEntities ) {
-				if ( arg is null )
-					args ~= "#inferred#";
-				else if ( arg.isCtime )
-					args ~= "%s = %s".format( arg.dataType.identificationString, arg.valueIdentificationString );
-				else
-					args ~= "%s".format( arg.dataType.identificationString );
-			}
+	CallableMatch[] matches;
 
-			return "( %s )".format( args.joiner( ", " ) );
+	DataScope scope_;
+
+	bool reportErrors;
+
+public:
+	string argumentListIdentificationString() {
+		string[] args;
+		foreach (arg; argumentEntities) {
+			if (arg is null)
+				args ~= "#inferred#";
+			else if (arg.isCtime)
+				args ~= "%s = %s".format(arg.dataType.identificationString, arg.valueIdentificationString);
+			else
+				args ~= "%s".format(arg.dataType.identificationString);
 		}
+
+		return "( %s )".format(args.joiner(", "));
+	}
 
 }

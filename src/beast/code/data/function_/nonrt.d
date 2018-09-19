@@ -7,15 +7,15 @@ abstract class Symbol_NonRuntimeFunction : Symbol_Function {
 
 	static class Data : SymbolRelatedDataEntity {
 
-		public:
-			this( Symbol_NonRuntimeFunction sym, MatchLevel matchLevel ) {
-				super( sym, matchLevel );
-			}
+	public:
+		this(Symbol_NonRuntimeFunction sym, MatchLevel matchLevel) {
+			super(sym, matchLevel);
+		}
 
-		public:
-			override string identificationString( ) {
-				return "auto %s".format( identificationString_noPrefix );
-			}
+	public:
+		override string identificationString() {
+			return "auto %s".format(identificationString_noPrefix);
+		}
 
 	}
 

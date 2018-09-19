@@ -7,52 +7,52 @@ import beast.util.uidgen;
 
 final class Worker {
 
-	public:
-		static Worker current;
+public:
+	static Worker current;
 
-	package:
-		this( UIDGenerator.I id ) {
-			thread_ = new Thread( &run );
-			thread_.start( );
-			id_ = id;
-		}
+package:
+	this(UIDGenerator.I id) {
+		thread_ = new Thread(&run);
+		thread_.start();
+		id_ = id;
+	}
 
-	public:
-		UIDGenerator.I id( ) {
-			return id_;
-		}
+public:
+	UIDGenerator.I id() {
+		return id_;
+	}
 
-	package:
-		void waitForEnd( ) {
-			thread_.join( );
-		}
+package:
+	void waitForEnd() {
+		thread_.join();
+	}
 
-	private:
-		Thread thread_;
-		UIDGenerator.I id_;
+private:
+	Thread thread_;
+	UIDGenerator.I id_;
 
-	private:
-		void run( ) {
-			import core.stdc.stdlib : exit;
-			import std.stdio : stderr, writeln;
+private:
+	void run() {
+		import core.stdc.stdlib : exit;
+		import std.stdio : stderr, writeln;
 
-			current = this;
+		current = this;
 
-			try {
-				while ( true ) {
-					TaskContext task = taskManager.askForAJob( );
+		try {
+			while (true) {
+				TaskContext task = taskManager.askForAJob();
 
-					if ( !task )
-						return;
+				if (!task)
+					return;
 
-					// Execute the job
-					task.execute( );
-				}
-			}
-			catch ( Throwable t ) {
-				stderr.writeln( "UNCAUGHT EXCEPTION: " ~ t.toString );
-				// Disgracefully shutdown the application
-				exit( 5 );
+				// Execute the job
+				task.execute();
 			}
 		}
+		catch (Throwable t) {
+			stderr.writeln("UNCAUGHT EXCEPTION: " ~ t.toString);
+			// Disgracefully shutdown the application
+			exit(5);
+		}
+	}
 }

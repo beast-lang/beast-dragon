@@ -6,68 +6,68 @@ import beast.code.data.util.subst;
 
 final class Symbol_BootstrapConstant : Symbol_StaticVariable {
 
-	public:
-		/// Length of the data is inferred from the dataType instance size
-		this( DataEntity parent, Identifier identifier, Symbol_Type dataType, ulong data ) {
-			super( parent );
-			assert( dataType.instanceSize <= data.sizeof );
+public:
+	/// Length of the data is inferred from the dataType instance size
+	this(DataEntity parent, Identifier identifier, Symbol_Type dataType, ulong data) {
+		super(parent);
+		assert(dataType.instanceSize <= data.sizeof);
 
-			dataType_ = dataType;
-			identififer_ = identifier;
+		dataType_ = dataType;
+		identififer_ = identifier;
 
-			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.ctime );
-				block.markDoNotGCAtSessionEnd( );
-				block.identifier = identifier.str;
-				block.relatedDataEntity = dataEntity;
+		with (memoryManager.session(SessionPolicy.doNotWatchCtChanges)) {
+			auto block = memoryManager.allocBlock(dataType.instanceSize, MemoryBlock.Flag.ctime);
+			block.markDoNotGCAtSessionEnd();
+			block.identifier = identifier.str;
+			block.relatedDataEntity = dataEntity;
 
-				assert( data.sizeof >= dataType.instanceSize );
-				memoryPtr_ = block.startPtr.write( &data, dataType.instanceSize );
-			}
+			assert(data.sizeof >= dataType.instanceSize);
+			memoryPtr_ = block.startPtr.write(&data, dataType.instanceSize);
 		}
+	}
 
-		/// Creates a constant by copying data from given data entity (at ctime)
-		this( DataEntity parent, Identifier identifier, DataEntity copyCtorSource ) {
-			super( parent );
+	/// Creates a constant by copying data from given data entity (at ctime)
+	this(DataEntity parent, Identifier identifier, DataEntity copyCtorSource) {
+		super(parent);
 
-			identififer_ = identifier;
+		identififer_ = identifier;
 
-			with ( memoryManager.session( SessionPolicy.doNotWatchCtChanges ) ) {
-				dataType_ = copyCtorSource.dataType;
+		with (memoryManager.session(SessionPolicy.doNotWatchCtChanges)) {
+			dataType_ = copyCtorSource.dataType;
 
-				auto block = memoryManager.allocBlock( dataType.instanceSize, MemoryBlock.Flag.ctime );
-				block.markDoNotGCAtSessionEnd( );
-				block.identifier = identifier.str;
-				block.relatedDataEntity = dataEntity;
+			auto block = memoryManager.allocBlock(dataType.instanceSize, MemoryBlock.Flag.ctime);
+			block.markDoNotGCAtSessionEnd();
+			block.identifier = identifier.str;
+			block.relatedDataEntity = dataEntity;
 
-				scope cb = new CodeBuilder_Ctime( );
-				cb.build_copyCtor( new SubstitutiveDataEntity( block.startPtr, dataType ), copyCtorSource );
-				cb.result.destroy( );
+			scope cb = new CodeBuilder_Ctime();
+			cb.build_copyCtor(new SubstitutiveDataEntity(block.startPtr, dataType), copyCtorSource);
+			cb.result.destroy();
 
-				memoryPtr_ = block.startPtr;
-			}
+			memoryPtr_ = block.startPtr;
 		}
+	}
 
-	public:
-		override Identifier identifier( ) {
-			return identififer_;
-		}
+public:
+	override Identifier identifier() {
+		return identififer_;
+	}
 
-		override Symbol_Type dataType( ) {
-			return dataType_;
-		}
+	override Symbol_Type dataType() {
+		return dataType_;
+	}
 
-		override MemoryPtr memoryPtr( ) {
-			return memoryPtr_;
-		}
+	override MemoryPtr memoryPtr() {
+		return memoryPtr_;
+	}
 
-		override bool isCtime( ) {
-			return true;
-		}
+	override bool isCtime() {
+		return true;
+	}
 
-	protected:
-		Symbol_Type dataType_;
-		Identifier identififer_;
-		MemoryPtr memoryPtr_;
+protected:
+	Symbol_Type dataType_;
+	Identifier identififer_;
+	MemoryPtr memoryPtr_;
 
 }

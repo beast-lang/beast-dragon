@@ -5,57 +5,57 @@ import beast.code.data.scope_.local;
 
 final class AST_WhileStatement : AST_Statement {
 
-	public:
-		pragma( inline ) static bool canParse( ) {
-			return currentToken == Token.Keyword.while_;
+public:
+	pragma(inline) static bool canParse() {
+		return currentToken == Token.Keyword.while_;
+	}
+
+	/// Continues parsing after decoration list
+	static AST_WhileStatement parse(CodeLocationGuard _gd, AST_DecorationList decorationList) {
+		auto result = new AST_WhileStatement;
+		benforce(decorationList is null, E.invalidDecoration, "Decorating a while statement is not allowed");
+
+		currentToken.expectAndNext(Token.Keyword.while_);
+
+		// Condition
+		{
+			currentToken.expectAndNext(Token.Special.lParent);
+			result.condition = AST_Expression.parse();
+			currentToken.expectAndNext(Token.Special.rParent);
 		}
 
-		/// Continues parsing after decoration list
-		static AST_WhileStatement parse( CodeLocationGuard _gd, AST_DecorationList decorationList ) {
-			auto result = new AST_WhileStatement;
-			benforce( decorationList is null, E.invalidDecoration, "Decorating a while statement is not allowed" );
+		result.body_ = AST_Statement.parse(null);
 
-			currentToken.expectAndNext( Token.Keyword.while_ );
+		result.codeLocation = _gd.get();
+		return result;
+	}
 
-			// Condition
-			{
-				currentToken.expectAndNext( Token.Special.lParent );
-				result.condition = AST_Expression.parse( );
-				currentToken.expectAndNext( Token.Special.rParent );
-			}
+public:
+	override void buildStatementCode(DeclarationEnvironment env, CodeBuilder cb) {
+		const auto __gd = ErrorGuard(codeLocation);
 
-			result.body_ = AST_Statement.parse( null );
+		cb.build_loop((CodeBuilder cb) { //
+			auto _sgd = new LocalDataScope().scopeGuard;
 
-			result.codeLocation = _gd.get( );
-			return result;
-		}
+			cb.build_if( //
+				// TODO: remake bool into custom type, get rid of the expectResolveIdentifier here
+				condition.buildSemanticTree_singleExpect(coreType.Bool).expectResolveIdentifier(ID!"#opPrefix").resolveCall(condition, true, coreEnum.operator.preNot), //
+				(CodeBuilder cb) { //
+					cb.build_break();
+				}, null);
 
-	public:
-		override void buildStatementCode( DeclarationEnvironment env, CodeBuilder cb ) {
-			const auto __gd = ErrorGuard( codeLocation );
+			body_.buildStatementCode(env, cb);
+		});
+	}
 
-			cb.build_loop( ( CodeBuilder cb ) { //
-				auto _sgd = new LocalDataScope( ).scopeGuard;
+public:
+	AST_Expression condition;
+	AST_Statement body_;
 
-				cb.build_if(  //
-					// TODO: remake bool into custom type, get rid of the expectResolveIdentifier here
-					condition.buildSemanticTree_singleExpect( coreType.Bool ).expectResolveIdentifier( ID!"#opPrefix" ).resolveCall( condition, true, coreEnum.operator.preNot ), //
-					( CodeBuilder cb ) { //
-						cb.build_break( );
-					}, null );
-
-				body_.buildStatementCode( env, cb );
-			} );
-		}
-
-	public:
-		AST_Expression condition;
-		AST_Statement body_;
-
-	protected:
-		override SubnodesRange _subnodes( ) {
-			// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
-			return nodeRange( condition, body_ );
-		}
+protected:
+	override SubnodesRange _subnodes() {
+		// Decoration list can be inherited from decoration block or something, in that case we should not consider it a subnodes
+		return nodeRange(condition, body_);
+	}
 
 }

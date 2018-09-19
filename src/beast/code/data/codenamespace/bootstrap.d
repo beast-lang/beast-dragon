@@ -8,14 +8,14 @@ import beast.util.identifiable;
 /// Call initialize with symbol list as an argument
 final class BootstrapNamespace : Namespace {
 
-	public:
-		this( Identifiable parent ) {
-			super( parent );
-		}
+public:
+	this(Identifiable parent) {
+		super(parent);
+	}
 
-	public:
-		final void initialize( Symbol[ ] symbolList ) {
-			initialize_( symbolList );
-		}
+public:
+	final void initialize(Symbol[] symbolList) {
+		initialize_(symbolList);
+	}
 
 }

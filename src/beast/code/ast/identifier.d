@@ -6,17 +6,17 @@ import beast.code.ast.toolkit;
 final class AST_Identifier : AST_Node {
 
 public:
-	static bool canParse( ) {
+	static bool canParse() {
 		return currentToken == Token.Type.identifier;
 	}
 
-	static AST_Identifier parse( ) {
+	static AST_Identifier parse() {
 		auto result = new AST_Identifier;
 
-		currentToken.expect( Token.Type.identifier );
+		currentToken.expect(Token.Type.identifier);
 		result.identifier = currentToken.identifier;
 		result.codeLocation = currentToken.codeLocation;
-		getNextToken( );
+		getNextToken();
 
 		return result;
 	}

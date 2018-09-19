@@ -15,81 +15,81 @@ import beast.core.project.codelocation;
 /// Abstraction of module in Beast (as a project file)
 /// See also Symbol_Module and Symbol_UserModule in beast.code.data.module_.XX
 final class Module : CodeSource, Identifiable {
-	mixin TaskGuard!( "parsing" );
+	mixin TaskGuard!("parsing");
 
-	public:
-		this( CTOR_FromFile _, string filename, ExtendedIdentifier identifier ) {
-			this.identifier = identifier;
+public:
+	this(CTOR_FromFile _, string filename, ExtendedIdentifier identifier) {
+		this.identifier = identifier;
 
-			super( _, filename );
-		}
+		super(_, filename);
+	}
 
-	public:
-		ExtendedIdentifier identifier;
+public:
+	ExtendedIdentifier identifier;
 
-		AST_Module ast( ) {
-			enforceDone_parsing( );
-			return astWIP_;
-		}
+	AST_Module ast() {
+		enforceDone_parsing();
+		return astWIP_;
+	}
 
-		/// Symbol of the module
-		Symbol_UserModule symbol( ) {
-			enforceDone_parsing( );
-			return symbolWIP_;
-		}
+	/// Symbol of the module
+	Symbol_UserModule symbol() {
+		enforceDone_parsing();
+		return symbolWIP_;
+	}
 
-		Token[ ] tokenList( ) {
-			// TODO: Don't always keep tokenlist
-			enforceDone_parsing( );
-			return tokenListWIP_;
-		}
+	Token[] tokenList() {
+		// TODO: Don't always keep tokenlist
+		enforceDone_parsing();
+		return tokenListWIP_;
+	}
 
-	public:
-		override string identificationString( ) {
-			return identifier.str;
-		}
+public:
+	override string identificationString() {
+		return identifier.str;
+	}
 
-	private:
-		void execute_parsing( ) {
-			assert( !context.lexer );
+private:
+	void execute_parsing() {
+		assert(!context.lexer);
 
-			Lexer lexer = new Lexer( this );
-			context.lexer = lexer;
-			scope ( exit )
-				context.lexer = null;
+		Lexer lexer = new Lexer(this);
+		context.lexer = lexer;
+		scope (exit)
+			context.lexer = null;
 
-			// If we are instructed to do only lexing phase, do it
-			if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.lexing ) {
-				while ( lexer.getNextToken != Token.Special.eof ) {
-				}
-
-				tokenListWIP_ = lexer.generatedTokens;
-				return;
+		// If we are instructed to do only lexing phase, do it
+		if (project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.lexing) {
+			while (lexer.getNextToken != Token.Special.eof) {
 			}
 
-			// Read first token
-			lexer.getNextToken( );
-
-			astWIP_ = AST_Module.parse( );
-			benforce( astWIP_.identifier == identifier, E.moduleNameMismatch, "Module '" ~ astWIP_.identifier.str ~ "' should be named '" ~ identifier.str ~ "'", CodeLocation( this ).errGuardFunction );
-
 			tokenListWIP_ = lexer.generatedTokens;
-
-			if ( project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing )
-				return;
-
-			symbolWIP_ = new Symbol_UserModule( this, astWIP_ );
+			return;
 		}
 
-	private:
-		AST_Module astWIP_;
-		Symbol_UserModule symbolWIP_;
-		Token[ ] tokenListWIP_;
+		// Read first token
+		lexer.getNextToken();
+
+		astWIP_ = AST_Module.parse();
+		benforce(astWIP_.identifier == identifier, E.moduleNameMismatch, "Module '" ~ astWIP_.identifier.str ~ "' should be named '" ~ identifier.str ~ "'", CodeLocation(this).errGuardFunction);
+
+		tokenListWIP_ = lexer.generatedTokens;
+
+		if (project.configuration.stopOnPhase == ProjectConfiguration.StopOnPhase.parsing)
+			return;
+
+		symbolWIP_ = new Symbol_UserModule(this, astWIP_);
+	}
+
+private:
+	AST_Module astWIP_;
+	Symbol_UserModule symbolWIP_;
+	Token[] tokenListWIP_;
 
 }
 
-bool isValidModuleOrPackageIdentifier( string str ) {
+bool isValidModuleOrPackageIdentifier(string str) {
 	import std.regex : ctRegex, matchFirst;
 
-	return cast( bool ) str.matchFirst( ctRegex!"^[a-z_][a-z0-9_]*$" );
+	return cast(bool) str.matchFirst(ctRegex!"^[a-z_][a-z0-9_]*$");
 }

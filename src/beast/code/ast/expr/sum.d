@@ -7,85 +7,85 @@ import beast.code.ast.expr.binary;
 final class AST_SumExpression : AST_Expression {
 	alias LowerLevelExpression = AST_MultExpression;
 
-	public:
-		static bool canParse( ) {
-			return LowerLevelExpression.canParse;
+public:
+	static bool canParse() {
+		return LowerLevelExpression.canParse;
+	}
+
+	static AST_Expression parse() {
+		auto _gd = codeLocationGuard();
+
+		AST_Expression base = LowerLevelExpression.parse();
+
+		if (currentToken != Token.Operator.plus && currentToken != Token.Operator.minus)
+			return base;
+
+		auto result = new AST_SumExpression;
+		result.base = base;
+
+		while (currentToken == Token.Operator.plus || currentToken == Token.Operator.minus) {
+			Item item;
+			item.op = currentToken.operator;
+
+			getNextToken();
+			item.expr = LowerLevelExpression.parse();
+
+			result.items ~= item;
 		}
 
-		static AST_Expression parse( ) {
-			auto _gd = codeLocationGuard( );
+		result.codeLocation = _gd.get();
+		return result;
+	}
 
-			AST_Expression base = LowerLevelExpression.parse( );
+public:
+	AST_Expression base;
+	Item[] items;
 
-			if ( currentToken != Token.Operator.plus && currentToken != Token.Operator.minus )
-				return base;
+public:
+	struct Item {
+		Token.Operator op;
+		AST_Expression expr;
+	}
 
-			auto result = new AST_SumExpression;
-			result.base = base;
+public:
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+		const auto __gd = ErrorGuard(codeLocation);
 
-			while ( currentToken == Token.Operator.plus || currentToken == Token.Operator.minus ) {
-				Item item;
-				item.op = currentToken.operator;
+		DataEntity result = base.buildSemanticTree_singleInfer(inferredType, errorOnInferrationFailure);
 
-				getNextToken( );
-				item.expr = LowerLevelExpression.parse( );
+		// If errorOnInferrationFailure is false then result might be null (inferration failure)
+		if (!result)
+			return Overloadset();
 
-				result.items ~= item;
+		DataEntity opArg;
+
+		auto opr = &coreEnum.operator;
+
+		foreach (item; items) {
+			switch (item.op) {
+
+			case Token.Operator.plus:
+				opArg = opr.binPlus.dataEntity;
+				break;
+
+			case Token.Operator.minus:
+				opArg = opr.binMinus.dataEntity;
+				break;
+
+			default:
+				assert(0);
+
 			}
 
-			result.codeLocation = _gd.get( );
-			return result;
+			result = resolveBinaryOperation(this, result, item.expr, opArg, item.op);
 		}
 
-	public:
-		AST_Expression base;
-		Item[ ] items;
+		return result.Overloadset;
+	}
 
-	public:
-		struct Item {
-			Token.Operator op;
-			AST_Expression expr;
-		}
-
-	public:
-		override Overloadset buildSemanticTree( Symbol_Type inferredType, bool errorOnInferrationFailure = true ) {
-			const auto __gd = ErrorGuard( codeLocation );
-
-			DataEntity result = base.buildSemanticTree_singleInfer( inferredType, errorOnInferrationFailure );
-
-			// If errorOnInferrationFailure is false then result might be null (inferration failure)
-			if ( !result )
-				return Overloadset( );
-
-			DataEntity opArg;
-
-			auto opr = &coreEnum.operator;
-
-			foreach ( item; items ) {
-				switch ( item.op ) {
-
-				case Token.Operator.plus:
-					opArg = opr.binPlus.dataEntity;
-					break;
-
-				case Token.Operator.minus:
-					opArg = opr.binMinus.dataEntity;
-					break;
-
-				default:
-					assert( 0 );
-
-				}
-
-				result = resolveBinaryOperation( this, result, item.expr, opArg, item.op );
-			}
-
-			return result.Overloadset;
-		}
-
-	protected:
-		override SubnodesRange _subnodes( ) {
-			return nodeRange( base, items.map!( x => x.expr ) );
-		}
+protected:
+	override SubnodesRange _subnodes() {
+		return nodeRange(base, items.map!(x => x.expr));
+	}
 
 }

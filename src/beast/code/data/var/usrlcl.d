@@ -9,56 +9,56 @@ import beast.code.ast.expr.expression;
 
 final class DataEntity_UserLocalVariable : DataEntity_LocalVariable {
 
-	public:
-		this( AST_VariableDeclaration ast, DecorationList decorationList, VariableDeclarationData data ) {
-			ast_ = ast;
-			identifier_ = ast.identifier.identifier;
+public:
+	this(AST_VariableDeclaration ast, DecorationList decorationList, VariableDeclarationData data) {
+		ast_ = ast;
+		identifier_ = ast.identifier.identifier;
 
-			this( ast.identifier, ast.dataType, decorationList, data );
-		}
+		this(ast.identifier, ast.dataType, decorationList, data);
+	}
 
-		this( AST_VariableDeclarationExpression ast, DecorationList decorationList, VariableDeclarationData data ) {
-			ast_ = ast;
+	this(AST_VariableDeclarationExpression ast, DecorationList decorationList, VariableDeclarationData data) {
+		ast_ = ast;
 
-			this( ast.identifier, ast.dataType, decorationList, data );
-		}
+		this(ast.identifier, ast.dataType, decorationList, data);
+	}
 
-		private this( Identifier id, AST_Expression typeExpression, DecorationList decorationList, VariableDeclarationData data ) {
-			const auto _gd = ErrorGuard( this );
+	private this(Identifier id, AST_Expression typeExpression, DecorationList decorationList, VariableDeclarationData data) {
+		const auto _gd = ErrorGuard(this);
 
-			// Deduce data type
-			Symbol_Type dataType = typeExpression.ctExec_asType( ).inLocalDataScope;
+		// Deduce data type
+		Symbol_Type dataType = typeExpression.ctExec_asType().inLocalDataScope;
 
-			this( identifier, dataType, decorationList, data );
-		}
+		this(identifier, dataType, decorationList, data);
+	}
 
-		this( Identifier id, Symbol_Type dataType, DecorationList decorationList, VariableDeclarationData data ) {
-			identifier_ = id;
+	this(Identifier id, Symbol_Type dataType, DecorationList decorationList, VariableDeclarationData data) {
+		identifier_ = id;
 
-			benforce( dataType.instanceSize > 0, E.zeroSizeVariable, "Variable %s of type %s has zero size".format( identifier_.str, dataType.identificationString ) );
+		benforce(dataType.instanceSize > 0, E.zeroSizeVariable, "Variable %s of type %s has zero size".format(identifier_.str, dataType.identificationString));
 
-			super( dataType );
+		super(dataType);
 
-			decorationList.enforceAllResolved( );
-		}
+		decorationList.enforceAllResolved();
+	}
 
-	public:
-		final override Identifier identifier( ) {
-			return identifier_;
-		}
+public:
+	final override Identifier identifier() {
+		return identifier_;
+	}
 
-		final override AST_Node ast( ) {
-			return ast_;
-		}
+	final override AST_Node ast() {
+		return ast_;
+	}
 
-	public:
-		override void allocate( bool isCtime ) {
-			allocate_( isCtime, MemoryBlock.Flags.noFlag );
-			memoryBlock_.identifier = identifier_.str;
-		}
+public:
+	override void allocate(bool isCtime) {
+		allocate_(isCtime, MemoryBlock.Flags.noFlag);
+		memoryBlock_.identifier = identifier_.str;
+	}
 
-	private:
-		Identifier identifier_;
-		AST_Node ast_;
+private:
+	Identifier identifier_;
+	AST_Node ast_;
 
 }

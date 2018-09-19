@@ -9,8 +9,8 @@ alias CB = CodeBuilder_Ctime;
 alias T = Symbol_Type;
 alias Op = MemoryPtr;
 
-pragma( inline ) void checkMemoryNotCtime( string arg ) {
+pragma(inline) void checkMemoryNotCtime(string arg) {
 	import std.algorithm : startsWith;
 
-	benforce( !arg.startsWith( "CTMEM" ), E.protectedMemory, "Cannot write to a @ctime variable at runtime" );
+	benforce(!arg.startsWith("CTMEM"), E.protectedMemory, "Cannot write to a @ctime variable at runtime");
 }
