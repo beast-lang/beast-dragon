@@ -1,7 +1,7 @@
 module beast.corelib.type.type;
 
 import beast.corelib.type.toolkit;
-import beast.code.data.type.stcclass;
+import beast.code.semantic.type.stcclass;
 import beast.util.uidgen;
 import beast.code.memory.memorymgr;
 

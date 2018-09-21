@@ -1,7 +1,7 @@
 module beast.code.ast.stmt.codeblock;
 
 import beast.code.ast.toolkit;
-import beast.code.data.scope_.local;
+import beast.code.semantic.scope_.local;
 import beast.code.decorationlist;
 import beast.code.ast.stmt.statement;
 import beast.backend.ctime.codebuilder;

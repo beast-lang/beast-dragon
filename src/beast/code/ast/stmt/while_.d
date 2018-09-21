@@ -1,7 +1,7 @@
 module beast.code.ast.stmt.while_;
 
 import beast.code.ast.toolkit;
-import beast.code.data.scope_.local;
+import beast.code.semantic.scope_.local;
 
 final class AST_WhileStatement : AST_Statement {
 

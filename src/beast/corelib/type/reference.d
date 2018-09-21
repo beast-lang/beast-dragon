@@ -5,8 +5,8 @@ import beast.corelib.type.toolkit;
 import beast.util.hash;
 import core.sync.rwmutex;
 import beast.code.hwenv.hwenv;
-import beast.code.data.util.deref;
-import beast.code.data.util.direct;
+import beast.code.semantic.util.deref;
+import beast.code.semantic.util.direct;
 
 final class Symbol_Type_Reference : Symbol_StaticClass {
 

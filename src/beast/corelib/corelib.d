@@ -4,7 +4,7 @@ import beast.corelib.toolkit;
 import beast.corelib.type.types;
 import beast.corelib.deco.decorators;
 import beast.corelib.const_.constants;
-import beast.code.data.module_.bootstrap;
+import beast.code.semantic.module_.bootstrap;
 import beast.code.lex.identifier;
 import beast.corelib.const_.enums;
 import beast.corelib.deco.functions;

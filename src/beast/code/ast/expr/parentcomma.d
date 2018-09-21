@@ -2,9 +2,9 @@ module beast.code.ast.expr.parentcomma;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.suffix;
-import beast.code.data.callable.match;
+import beast.code.semantic.callable.match;
 import beast.code.ast.expr.vardecl;
-import beast.code.data.matchlevel;
+import beast.code.semantic.matchlevel;
 
 /// Parameter list used in declarations
 final class AST_ParentCommaExpression : AST_Expression, AST_SuffixExpressionItem {

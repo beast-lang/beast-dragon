@@ -2,11 +2,11 @@ module beast.code.ast.decl.variable;
 
 import beast.code.ast.decl.toolkit;
 import beast.code.ast.identifier;
-import beast.code.data.scope_.root;
-import beast.code.data.var.usrstc;
-import beast.code.data.var.usrlcl;
+import beast.code.semantic.scope_.root;
+import beast.code.semantic.var.usrstc;
+import beast.code.semantic.var.usrlcl;
 import beast.backend.ctime.codebuilder;
-import beast.code.data.var.usrmem;
+import beast.code.semantic.var.usrmem;
 
 final class AST_VariableDeclaration : AST_Declaration {
 

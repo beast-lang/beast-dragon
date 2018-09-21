@@ -7,7 +7,7 @@ import beast.code.memory.block;
 import beast.core.task.context;
 import beast.core.error.guard;
 import beast.core.task.worker;
-import beast.code.data.scope_.scope_;
+import beast.code.semantic.scope_.scope_;
 import std.container.rbtree;
 import beast.code.memory.ptr : MemoryPtr;
 import beast.util.uidgen;

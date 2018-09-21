@@ -1,6 +1,17 @@
 BUG?? src/beast/code/ast/expr/assign.d iń parse - i load operator, then run it through switch, but if the operator does not match assign stuff, it eats the operator anyway?
 
 Diplomka to-do:
+	- oddělit namespaces od dataentities
+	- dataentities můžou potřebovat kontext (+ matchlevel) uchovávat ve vlastním záznamu
+	- současně s tím můžeme udělat líné vytváření namespaces dle identifikátorů
+	
+	- no need to pass matchLevel or parentInstance in data entities -> symbols can become data entities
+		- matchLevel can be simply done by a wrapping data entity (or better have it stored in overloadset)
+		- same for parentInstance, but then you need to pass parentInstance in buildCode and resolveIdentifier as an argument (which is okay, I think); add parentInstaceType property
+		- sink instead of Overloadset
+		- Overloadset - keep pair of Symbol, Context (no need to dynamically allocate for contexting)
+		- rename DataEntity to SemanticEntity?
+		
 	x++.staticFunction
 		- x++ (context) should execute?
 		- always execute side effects
@@ -27,12 +38,6 @@ Diplomka to-do:
 			( AST_Node ast, DataEntity inst, CTArg!( coreType.Type ) targetType ) { ... }
 
 	- auto constructor generation (call implicit ones - enough for now?)
-	- no need to pass matchLevel or parentInstance in data entities -> symbols can become data entities
-		- matchLevel can be simply done by a wrapping data entity (or better have it stored in overloadset)
-		- same for parentInstance, but then you need to pass parentInstance in buildCode and resolveIdentifier as an argument (which is okay, I think); add parentInstaceType property
-		- sink instead of Overloadset
-		- Overloadset - keep pair of Symbol, Context (no need to dynamically allocate for contexting)
-		- rename DataEntity to SemanticEntity?
 
 	- clean up namespaces/scopes; scopes are handled internally in backend, then we have Namespaces: StaticNamespace (once generated and then untouchable) and LocalNamespace (can be sequentially written, but only accessed from the current job)
 

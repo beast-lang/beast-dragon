@@ -2,7 +2,7 @@ module beast.code.ast.expr.decorated;
 
 import beast.code.ast.toolkit;
 import beast.code.decorationlist;
-import beast.code.data.util.ctexec;
+import beast.code.semantic.util.ctexec;
 import beast.code.memory.memorymgr;
 import beast.backend.ctime.codebuilder;
 

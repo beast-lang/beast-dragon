@@ -3,7 +3,7 @@ module beast.code.memory.ptr;
 import beast.code.toolkit;
 import beast.code.memory.block;
 import beast.code.memory.memorymgr;
-import beast.code.data.type.type;
+import beast.code.semantic.type.type;
 import beast.code.hwenv.hwenv;
 import core.stdc.string : memcpy;
 import std.algorithm.searching : all;

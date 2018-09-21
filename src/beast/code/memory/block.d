@@ -2,8 +2,8 @@ module beast.code.memory.block;
 
 import beast.code.toolkit;
 import beast.code.memory.ptr;
-import beast.code.data.var.local;
-import beast.code.data.function_.expandedparameter;
+import beast.code.semantic.var.local;
+import beast.code.semantic.function_.expandedparameter;
 import core.memory : GC;
 import core.atomic : atomicOp, atomicLoad;
 import beast.code.memory.memorymgr;

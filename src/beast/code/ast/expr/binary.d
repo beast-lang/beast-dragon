@@ -1,8 +1,8 @@
 module beast.code.ast.expr.binary;
 
 import beast.code.ast.toolkit;
-import beast.code.data.symbol;
-import beast.code.data.matchlevel;
+import beast.code.semantic.symbol;
+import beast.code.semantic.matchlevel;
 
 DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression rightExpr, DataEntity binXX, Token.Operator op) {
 	import std.range : chain;

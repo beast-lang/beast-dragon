@@ -1,7 +1,7 @@
 module beast.corelib.const_.constants;
 
 import beast.corelib.toolkit;
-import beast.code.data.var.btspconst;
+import beast.code.semantic.var.btspconst;
 import beast.util.decorator;
 
 struct CoreLibrary_Constants {

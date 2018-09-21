@@ -1,7 +1,7 @@
 module beast.backend.interpreter.instruction;
 
 import beast.backend.toolkit;
-import beast.code.data.function_.rt;
+import beast.code.semantic.function_.rt;
 import beast.util.enumassoc;
 import beast.core.project.codelocation;
 import beast.core.error.error;

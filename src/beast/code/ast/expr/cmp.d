@@ -4,10 +4,10 @@ import beast.code.ast.toolkit;
 import beast.code.ast.expr.sum;
 import beast.code.ast.expr.binary;
 import std.range : chain;
-import beast.code.data.var.btspconst;
-import beast.code.data.symbol;
-import beast.code.data.matchlevel;
-import beast.code.data.var.tmplocal;
+import beast.code.semantic.var.btspconst;
+import beast.code.semantic.symbol;
+import beast.code.semantic.matchlevel;
+import beast.code.semantic.var.tmplocal;
 
 final class AST_CmpExpression : AST_Expression {
 	alias LowerLevelExpression = AST_SumExpression;

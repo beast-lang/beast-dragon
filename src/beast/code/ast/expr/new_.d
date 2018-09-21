@@ -4,11 +4,11 @@ import beast.code.ast.toolkit;
 import beast.code.ast.expr.prefix;
 import beast.code.ast.expr.binary;
 import beast.code.ast.expr.parentcomma;
-import beast.code.data.util.reinterpret;
-import beast.code.data.util.btsp;
-import beast.code.data.var.tmplocal;
-import beast.code.data.matchlevel;
-import beast.code.data.util.deref;
+import beast.code.semantic.util.reinterpret;
+import beast.code.semantic.util.btsp;
+import beast.code.semantic.var.tmplocal;
+import beast.code.semantic.matchlevel;
+import beast.code.semantic.util.deref;
 
 final class AST_NewExpression : AST_Expression {
 	alias LowerLevelExpression = AST_PrefixExpression;

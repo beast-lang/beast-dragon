@@ -1,15 +1,15 @@
 module beast.corelib.const_.enums;
 
 import beast.corelib.toolkit;
-import beast.code.data.var.btspconst;
+import beast.code.semantic.var.btspconst;
 import beast.util.decorator;
-import beast.code.data.type.btspenum;
-import beast.code.data.function_.primstcrt;
+import beast.code.semantic.type.btspenum;
+import beast.code.semantic.function_.primstcrt;
 import beast.code.memory.ptr;
-import beast.code.data.function_.expandedparameter;
-import beast.code.data.function_.primstcnrt;
+import beast.code.semantic.function_.expandedparameter;
+import beast.code.semantic.function_.primstcnrt;
 import beast.code.ast.node;
-import beast.code.data.util.reinterpret;
+import beast.code.semantic.util.reinterpret;
 
 struct CoreLibrary_Enums {
 

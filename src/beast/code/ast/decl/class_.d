@@ -4,7 +4,7 @@ import beast.code.ast.decl.toolkit;
 import beast.code.ast.decl.declarationscope;
 import beast.code.ast.decoration;
 import beast.code.ast.identifier;
-import beast.code.data.type.usrstcclass;
+import beast.code.semantic.type.usrstcclass;
 
 final class AST_Class : AST_Declaration {
 

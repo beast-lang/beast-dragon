@@ -4,8 +4,8 @@ import beast.backend.toolkit;
 import std.array : Appender, appender;
 import beast.backend.interpreter.instruction;
 import beast.backend.interpreter.codeblock;
-import beast.code.data.var.result;
-import beast.code.data.scope_.local;
+import beast.code.semantic.var.result;
+import beast.code.semantic.scope_.local;
 import beast.backend.common.codebuilder;
 import std.algorithm : count;
 

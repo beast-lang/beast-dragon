@@ -1,7 +1,7 @@
 module beast.corelib.type.bool_;
 
 import beast.corelib.type.toolkit;
-import beast.code.data.var.tmplocal;
+import beast.code.semantic.var.tmplocal;
 
 void initialize_Bool(ref CoreLibrary_Types tp) {
 	Symbol[] mem;

@@ -4,11 +4,11 @@ import beast.code.ast.decl.toolkit;
 import beast.code.ast.identifier;
 import beast.code.ast.expr.parentcomma;
 import beast.code.ast.stmt.codeblock;
-import beast.code.data.scope_.root;
-import beast.code.data.function_.usrstcrt;
-import beast.code.data.function_.usrmemrt;
-import beast.code.data.function_.paramlist;
-import beast.code.data.function_.usrstcnrt;
+import beast.code.semantic.scope_.root;
+import beast.code.semantic.function_.usrstcrt;
+import beast.code.semantic.function_.usrmemrt;
+import beast.code.semantic.function_.paramlist;
+import beast.code.semantic.function_.usrstcnrt;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
