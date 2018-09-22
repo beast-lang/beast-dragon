@@ -7,6 +7,7 @@ import beast.code.semantic.symbol;
 /// The merging is searched via CodeLocation (bootstrap static members are to be handled by the programmer)
 final class StaticMemberMerger {
 
+	// TODO: This would bug template classes
 public:
 	bool isFinished() {
 		return isFinished_;

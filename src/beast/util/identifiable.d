@@ -1,5 +1,6 @@
 module beast.util.identifiable;
 
+/// An interface for anything that needs identifying in the console (provides identificationString function)
 interface Identifiable {
 
 public:

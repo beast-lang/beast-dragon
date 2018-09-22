@@ -11,7 +11,7 @@ import std.range : isInputRange, ElementType;
 struct Overloadset {
 
 public:
-	this(DataEntity[] data) {
+	this(SemanticEntity[] data) {
 		this.data = data;
 	}
 
@@ -19,12 +19,12 @@ public:
 		this.data = data.array;
 	}
 
-	this(DataEntity entity) {
+	this(SemanticEntity entity) {
 		data = [entity];
 	}
 
 public:
-	DataEntity[] data;
+	SemanticEntity[] data;
 	alias data this;
 
 public:
@@ -44,7 +44,7 @@ public:
 public:
 	/// Returns single entry from the overloadset
 	/// If the overloadset is empty, throws noMatchingOverload error, if it contains multiple items, throws ambiguousResolution error
-	DataEntity single() {
+	SemanticEntity single() {
 		benforce(data.length < 2, E.ambiguousResolution, "Expression is ambigous; can be one of:%s".format(data.map!(x => "\n\t%s".format(x.tryGetIdentificationString)).joiner));
 		benforce(data.length > 0, E.noMatchingOverload, "Empty overloadset (more explaining message should have been shown, this would probably deserve a bug report)");
 		return data[0];
@@ -53,13 +53,13 @@ public:
 	/// Returns single entry from the overloadset that is of expected type or implicitly converible to to it
 	/// Throws error if no matching overload is found (or the result is ambiguous)
 	/// The expectedType can be null, in that case, the "single"" function is called
-	DataEntity single_expectType(Symbol_Type expectedType) {
+	SemanticEntity single_expectType(Symbol_Type expectedType) {
 		if (!expectedType)
 			return this.single();
 
 		benforce(data.length > 0, E.noMatchingOverload, "Empty overloadset (more explaining message should have been shown, this would probably deserve a bug report)");
 
-		DataEntity result;
+		SemanticEntity result;
 
 		foreach (item; data) {
 			item = item.tryCast(expectedType);
@@ -84,15 +84,9 @@ public:
 
 public:
 	/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
-	DataEntity resolveCall(Args...)(AST_Node ast, bool reportErrors, Args args) {
+	SemanticEntity resolveCall(Args...)(AST_Node ast, bool reportErrors, Args args) {
 		auto _gd = ErrorGuard(ast);
-
-		CallMatchSet match = CallMatchSet(this, ast, reportErrors);
-
-		foreach (arg; args)
-			match.arg(arg);
-
-		return match.finish();
+		return CallMatchSet(this, ast, reportErrors).args(args).finish();
 	}
 
 public:

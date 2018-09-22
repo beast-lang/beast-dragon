@@ -26,7 +26,7 @@ public:
 	void initialize(Symbol[] members) {
 		super.initialize();
 
-		members ~= new Symbol_BootstrapAlias(ID!"#dtor", (matchLevel, parentInstance) => baseClass.tryResolveIdentifier(ID!"#dtor", parentInstance.reinterpret(baseClass), matchLevel));
+		members ~= new Symbol_BootstrapAlias(ID!"#dtor", (entity) => baseClass.tryResolveIdentifier(ID!"#dtor", entity));
 
 		// Copy/assign constructor
 		members ~= new Symbol_PrimitiveMemberRuntimeFunction(ID!"#ctor", this, coreType.Void, //

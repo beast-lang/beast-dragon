@@ -7,7 +7,8 @@ public {
 	import beast.code.semantic.overloadset : Overloadset;
 	import beast.code.semantic.callable.matchset : CallMatchSet;
 	import beast.code.semantic.type.type : Symbol_Type;
-	import beast.code.semantic.entity : DataEntity;
+	import beast.code.semantic.entity : SemanticEntity;
+	import beast.code.semantic.node : SemanticNode;
 	import beast.code.semantic.scope_.scope_ : DataScope, currentScope, scopeGuard, inLocalDataScope, inRootDataScope, inBlurryDataScope, inDataScope;
 	import beast.core.error.guard : ErrorGuard;
 	import beast.corelib.corelib : coreLibrary, coreConst, coreEnum, coreType, coreFunc;

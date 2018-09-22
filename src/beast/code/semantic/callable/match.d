@@ -46,7 +46,15 @@ public:
 		return result;
 	}
 
+	pragma(inline) final CallableMatch matchNextArguments(Args...)(Args args) {
+		foreach (arg; args)
+			matchNextArgument(arg);
+
+		return this;
+	}
+
 	alias arg = matchNextArgument;
+	alias args = matchNextArguments;
 
 	pragma(inline) final CallableMatch finish() {
 		debug finished_ = true;

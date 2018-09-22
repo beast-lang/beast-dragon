@@ -8,7 +8,7 @@ public {
 	import beast.code.semantic.function_.bstpstcnrt : Symbol_BootstrapStaticNonRuntimeFunction;
 	import beast.code.semantic.function_.expandedparameter : ExpandedFunctionParameter;
 	import beast.code.semantic.function_.primmemrt : Symbol_PrimitiveMemberRuntimeFunction;
-	import beast.code.semantic.matchlevel : MatchLevel;
+	import beast.code.semantic.callable.matchlevel : MatchLevel;
 	import beast.code.semantic.overloadset : Overloadset;
 	import beast.code.semantic.type.btspstcclass : Symbol_BootstrapStaticClass;
 	import beast.code.semantic.type.stcclass : Symbol_StaticClass;

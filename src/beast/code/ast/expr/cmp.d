@@ -6,7 +6,7 @@ import beast.code.ast.expr.binary;
 import std.range : chain;
 import beast.code.semantic.var.btspconst;
 import beast.code.semantic.symbol;
-import beast.code.semantic.matchlevel;
+import beast.code.semantic.callable.matchlevel;
 import beast.code.semantic.var.tmplocal;
 
 final class AST_CmpExpression : AST_Expression {

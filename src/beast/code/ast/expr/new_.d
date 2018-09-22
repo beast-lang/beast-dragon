@@ -7,7 +7,7 @@ import beast.code.ast.expr.parentcomma;
 import beast.code.semantic.util.reinterpret;
 import beast.code.semantic.util.btsp;
 import beast.code.semantic.var.tmplocal;
-import beast.code.semantic.matchlevel;
+import beast.code.semantic.callable.matchlevel;
 import beast.code.semantic.util.deref;
 
 final class AST_NewExpression : AST_Expression {

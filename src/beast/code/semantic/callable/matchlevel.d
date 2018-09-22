@@ -1,4 +1,4 @@
-module beast.code.semantic.matchlevel;
+module beast.code.semantic.callable.matchlevel;
 
 enum MatchLevel : uint {
 	fullMatch = 0, /// All types match

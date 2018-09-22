@@ -1,15 +1,14 @@
 module beast.code.semantic.util.reinterpret;
 
 import beast.code.semantic.toolkit;
+import beast.code.semantic.util.proxy;
 
 /// Data entity that "reinterpret casts" source data entity into different datatype (no data change)
-final class DataEntity_ReinterpretCast : DataEntity {
+final class SemanticNode_ReinterpretCast : ProxySemanticNode {
 
 public:
-	this(DataEntity sourceEntity, Symbol_Type newType, MatchLevel matchLevel = MatchLevel.fullMatch) {
-		super(matchLevel);
-		newType_ = newType;
-		sourceEntity_ = sourceEntity;
+	this(SemanticNode source, Symbol_Type newType) {
+		super(newType);
 	}
 
 public:
