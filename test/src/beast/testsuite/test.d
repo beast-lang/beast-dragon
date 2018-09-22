@@ -183,7 +183,7 @@ public:
 
 				if (sw.peek > timeout.seconds) {
 					pid.kill();
-					fail("Process timeout");
+					fail("Process timeout (%s s)".format(timeout.seconds));
 				}
 				Thread.sleep(sw.peek / 4);
 			}
@@ -242,7 +242,7 @@ public:
 	bool needsCompilation;
 	bool runAfterBuild;
 	/// Timeout in seconds
-	int timeout = 3;
+	int timeout = 5;
 	int maxThreads = 0;
 	string expectedStdout;
 
