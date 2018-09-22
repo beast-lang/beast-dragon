@@ -59,8 +59,8 @@ public:
 	/// Data entity representing the symbol, either with static static access or via instance of parent type
 	abstract DataEntity dataEntity(MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null);
 
-	Overloadset overloadset(MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null) {
-		return dataEntity(matchLevel, parentInstance).Overloadset;
+	void constructOverloadset(ref Overloadset.Appender sink, MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null) {
+		sink ~= dataEntity(matchLevel, parentInstance);
 	}
 
 public:

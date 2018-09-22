@@ -7,8 +7,12 @@ import beast.code.semantic.callable.match;
 import beast.code.semantic.scope_.local;
 import beast.code.ast.expr.expression;
 import std.range : isInputRange, ElementType;
+import std.array : RefAppender;
 
 struct Overloadset {
+
+public:
+	alias Appender = RefAppender!(DataEntity[]);
 
 public:
 	this(DataEntity[] data) {

@@ -2,6 +2,7 @@ module beast.code.semantic.codenamespace.namespace;
 
 import beast.code.semantic.toolkit;
 import beast.util.identifiable;
+import std.array;
 
 abstract class Namespace : Identifiable {
 
@@ -21,10 +22,17 @@ public:
 	Overloadset tryResolveIdentifier(Identifier id, DataEntity instance, MatchLevel matchLevel = MatchLevel.fullMatch) {
 		debug assert(initialized_);
 
-		if (auto result = id in groupedMembers_)
-			return (*result).map!(x => x.overloadset(matchLevel, instance)).joiner.array.Overloadset;
+		auto data = id in groupedMembers_;
+		if (!data)
+			return Overloadset();
 
-		return Overloadset();
+		Overloadset result;
+		Overloadset.Appender sink = appender(&result.data);
+
+		foreach (Symbol s; *data)
+			s.constructOverloadset(sink, matchLevel, instance);
+
+		return result;
 	}
 
 public:

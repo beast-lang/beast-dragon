@@ -28,8 +28,8 @@ public:
 		assert(0); // This should not happen as only overloadset should be called
 	}
 
-	override Overloadset overloadset(MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null) {
-		return aliasFunc_(matchLevel, parentInstance);
+	override void constructOverloadset(ref Overloadset.Appender sink, MatchLevel matchLevel = MatchLevel.fullMatch, DataEntity parentInstance = null) {
+		sink ~= aliasFunc_(matchLevel, parentInstance);
 	}
 
 private:
