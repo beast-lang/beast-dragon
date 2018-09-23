@@ -19,12 +19,14 @@ __gshared string testsDir, testRootDir;
 int main(string[] args) {
 	bool showLogs;
 	bool onlyFailed;
+	bool[string] explicitTests;
 
 	auto getoptResult = getopt(args, //
 			std.getopt.config.bundling, //
 			"showLogs", "Show logs of failed tests in the stdout", &showLogs, //
-			"f|onlyFailed", "Only executes previously failed tests", &onlyFailed //
-			);
+			"f|onlyFailed", "Only executes previously failed tests", &onlyFailed, //
+			"t|test", "Explicitly run only this test", (string opt, string val) { explicitTests[val] = true; } //
+	);
 
 	if (getoptResult.helpWanted) {
 		defaultGetoptPrinter("Beast testsuite.", getoptResult.options);
@@ -66,6 +68,9 @@ int main(string[] args) {
 
 	foreach (test; tests) {
 		if (onlyFailed && test.identifier in previouslySucceededTests)
+			continue;
+
+		if (!explicitTests.empty && test.identifier !in explicitTests)
 			continue;
 
 		activeTests ~= test;

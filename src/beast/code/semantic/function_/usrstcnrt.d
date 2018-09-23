@@ -61,7 +61,10 @@ protected:
 	public:
 		override string identification() {
 			// TODO: better identification?
-			return "%s( ... )".format(sym_.identifier.str);
+			if (auto loc = sym_.ast_.parameterList.codeLocation)
+				return "%s%s".format(sym_.identifier.str, loc.shortContent);
+			else
+				return "%s( ... )".format(sym_.identifier.str);
 		}
 
 		override string identificationString_noPrefix() {

@@ -80,7 +80,8 @@ enum E {
 
 	// TYPES:
 	referenceOfReference, /// Tried to create reference of reference
-	referenceTypeRequired, /// Anythin but reference passed to delete, invalid inferration of newAuto
+	referenceTypeRequired, /// Anything but reference passed to delete, invalid inferration of newAuto
+	invalidParentDataType, /// Invalid parentInstance dataType
 
 	// STATEMENTS:
 	missingReturnExpression,

@@ -89,6 +89,7 @@ private:
 	public:
 		override void buildCode(CodeBuilder cb) {
 			benforce(parentInstance_ !is null, E.needThis, "Need this for %s".format(identificationString));
+			benforce(parentInstance_.dataType is sym_.parent_, E.invalidParentDataType, "Context for %s should be %s, not %s".format(this, sym_.dataType, parentInstance_.dataType));
 
 			cb.build_offset(&parentInstance_.buildCode, sym_.parentThisOffset);
 		}

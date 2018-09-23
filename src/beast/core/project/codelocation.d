@@ -58,6 +58,12 @@ public:
 			assert(source);
 			return source.content[startPos .. endPos];
 		}
+
+		string shortContent() {
+			// TODO: shortening
+			assert(source);
+			return source.content[startPos .. endPos];
+		}
 	}
 
 public:

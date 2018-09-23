@@ -130,6 +130,7 @@ public:
 		mem ~= new Symbol_BootstrapAlias(ID!"#addr", //
 				(MatchLevel matchLevel, DataEntity inst) => new DataEntity_Bootstrap(ID!"addr", coreType.Pointer, inst ? inst : dataEntity, inst ? inst.isCtime : true, //
 					(CodeBuilder cb) { //
+						benforce(inst.dataType is this, E.invalidParentDataType, "Context for %s should be %s, not %s".format(inst, this, inst.dataType));
 						benforce(inst !is null, E.needThis, "Need this for %s.#addr".format(dataEntity.identificationString));
 
 						auto var = new DataEntity_TmpLocalVariable(coreType.Pointer);
@@ -233,6 +234,11 @@ public:
 	}
 
 public:
+/// Returns if the data type is ctime -> cannot be instantiated in runtime
+	bool isCtime() {
+		return false;
+	}
+
 	/// Returns if the type is reference type (X?)
 	Symbol_Type_Reference isReferenceType() {
 		return null;

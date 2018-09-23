@@ -64,6 +64,10 @@ public:
 		return namespace_;
 	}
 
+	override bool isCtime() {
+		return true;
+	}
+
 public:
 	override string valueIdentificationString(MemoryPtr value) {
 		return value.readType.identificationString;

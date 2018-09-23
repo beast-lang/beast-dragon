@@ -9,6 +9,7 @@ import beast.code.semantic.type.type;
 import beast.code.semantic.util.reinterpret;
 import beast.code.semantic.util.deref;
 import beast.code.semantic.idcontainer;
+import beast.code.semantic.util.subst;
 
 /// DataEntity stores information about a value: what is its type and how to obtain it (how to build code that obtains it)
 /// It is practically a semantic tree node
@@ -213,6 +214,10 @@ public:
 
 		benforce(type !is null, E.invalidPointer, "'%s' does not point to a valid type".format(identificationString));
 		return type;
+	}
+
+	final DataEntity ctExec_asDataEntity() {
+		return new SubstitutiveDataEntity(ctExec.keepUntilSessionEnd, dataType);
 	}
 
 protected:

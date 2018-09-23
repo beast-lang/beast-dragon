@@ -86,8 +86,10 @@ protected:
 
 	public:
 		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			if (parentInstance_)
+			if (parentInstance_) {
+				benforce(parentInstance_.dataType is sym_.parent_, E.invalidParentDataType, "Context for %s should be %s, not %s".format(this, sym_.parent_, parentInstance_.dataType));
 				return sym_.matchFactory_.startCallMatch(this, ast, canThrowErrors, matchLevel | this.matchLevel);
+			}
 			else {
 				benforce(!canThrowErrors, E.needThis, "Need this for %s".format(this.tryGetIdentificationString));
 				return new InvalidCallableMatch(this, "need this");
