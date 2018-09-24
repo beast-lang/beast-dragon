@@ -60,7 +60,7 @@ public:
 			ttype = refInferredType.baseType;
 		}
 		else {
-			auto ctexec = type.ctExec(coreType.Type);
+			auto ctexec = type.ctExec(coreType.Type); 
 			ttype = ctexec.value.readType();
 			ctexec.destroy();
 		}

@@ -5,6 +5,7 @@ import beast.code.semantic.scope_.local;
 import beast.code.decorationlist;
 import beast.code.ast.stmt.statement;
 import beast.backend.ctime.codebuilder;
+import beast.core.ctxctimeguard;
 
 final class AST_CodeBlockStatement : AST_Statement {
 
@@ -44,17 +45,25 @@ public:
 		decoList.enforceAllResolved();
 
 		if (decoData.isCtime) {
+			auto __cgd = ContextCtimeGuard(true);
+
 			cb = new CodeBuilder_Ctime();
 			env = env.dup();
 			env.isCtime = true;
-		}
 
-		cb.build_scope((cb) {
 			foreach (stmt; subStatements) {
 				cb.build_comment(stmt.codeLocation.content);
 				stmt.buildStatementCode(env, cb);
 			}
-		}).inLocalDataScope;
+			
+		} else {
+			cb.build_scope((cb) {
+				foreach (stmt; subStatements) {
+					cb.build_comment(stmt.codeLocation.content);
+					stmt.buildStatementCode(env, cb);
+				}
+			}).inLocalDataScope;
+		}
 	}
 
 public:

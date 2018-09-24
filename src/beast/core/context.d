@@ -50,6 +50,10 @@ public:
 	/// Subsessions are to protect memory, same as sessions, but memory is not GC'd on subsession end (it is only on session end)
 	UIDGenerator.I[] subSessionStack;
 
+	/// Stores if the current envirovnment is ctime
+	/// This is used for different semantic tree build behavior for ctime and non-ctime build (can be necessary sometimes)
+	bool isCtime = false;
+
 public:
 	/// This is to prevent passing scopes aroung all the time
 	DataScope currentScope;
@@ -126,5 +130,4 @@ public:
 
 }
 
-/// Context-local (fiber-local) pointer to working context
 ContextData context;

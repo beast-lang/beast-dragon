@@ -7,6 +7,7 @@ import beast.code.ast.decl.variable;
 import beast.code.semantic.scope_.root;
 import beast.backend.ctime.codebuilder;
 import beast.code.semantic.util.subst;
+import beast.core.ctxctimeguard;
 
 /// User (programmer) defined static variable
 final class Symbol_UserStaticVariable : Symbol_StaticVariable {
@@ -98,7 +99,9 @@ private:
 			DataEntity substEntity = new SubstitutiveDataEntity(memoryPtrWIP_, dataTypeWIP_);
 
 			if (isCtime_) {
+				auto __cgd = ContextCtimeGuard(true);
 				scope cb = new CodeBuilder_Ctime();
+				
 
 				// If the variable is ctime, we execute the constructor in ctime
 				if (valueEntity)

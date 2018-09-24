@@ -8,6 +8,7 @@ import beast.code.semantic.var.result;
 import beast.code.semantic.scope_.local;
 import beast.backend.common.codebuilder;
 import std.algorithm : count;
+import beast.core.ctxctimeguard;
 
 /// "CodeBuilder" that builds code for the internal interpret
 final class CodeBuilder_Interpreter : CodeBuilder {
@@ -118,6 +119,8 @@ public:
 		// Because of stuff, parameters are passed by reference -> we execute their expressions, and then add pointer to those expression results just before calling the function
 
 		assert(arguments.length == function_.parameters.count!(x => !x.isConstValue));
+
+		auto __cgd = ContextCtimeGuard(false);
 
 		InstructionOperand resultOperand;
 		if (function_.returnType !is coreType.Void) {

@@ -183,7 +183,7 @@ public:
 
 				if (sw.peek > timeout.seconds) {
 					pid.kill();
-					fail("Process timeout (%s s)".format(timeout.seconds));
+					fail("Process timeout (%s)".format(timeout.seconds));
 				}
 				Thread.sleep(sw.peek / 4);
 			}

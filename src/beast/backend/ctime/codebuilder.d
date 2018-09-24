@@ -6,6 +6,7 @@ import beast.backend.interpreter.interpreter;
 import beast.util.uidgen;
 import beast.corelib.type.reference;
 import std.algorithm : count;
+import beast.core.ctxctimeguard;
 
 /// "CodeBuilder" that executes data at compile time
 /// Because of its result caching, always use each instance of this codebuilder in one task context only!
@@ -62,6 +63,8 @@ public: // Expression related build commands
 public:
 	override void build_functionCall(Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[] arguments) {
 		assert(arguments.length == function_.parameters.count!(x => !x.isConstValue));
+
+		auto __cgd = ContextCtimeGuard(true);
 
 		// We execute the runtime function using the interpreter
 		debug (identificationLocals) string functionIdentification = function_.identificationString;

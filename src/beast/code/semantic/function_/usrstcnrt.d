@@ -10,6 +10,7 @@ import beast.code.semantic.var.btspconst;
 import beast.code.semantic.util.subst;
 import beast.code.ast.decl.env;
 import beast.util.uidgen;
+import beast.core.ctxctimeguard;
 
 final class Symbol_UserStaticNonRuntimeFunction : Symbol_NonRuntimeFunction {
 
@@ -172,6 +173,7 @@ protected:
 				MemoryPtr constvalValue;
 
 				with (memoryManager.subSession) {
+					auto __cgd = ContextCtimeGuard(true);
 					auto _sgd2 = parametersScope_.scopeGuard(false);
 					// TODO: execute during semtree building
 					auto semTree = paramData.ast.buildSemanticTree_single();

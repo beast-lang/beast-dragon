@@ -47,7 +47,7 @@ public:
 
 		if (decoData.isCtime) {
 			cb.build_scope((cb) { //
-				if (condition.buildSemanticTree_singleExpect(coreType.Bool).ctExec().keepUntilSessionEnd.readPrimitive!bool)
+				if (condition.ctExec(coreType.Bool).keepUntilSessionEnd.readPrimitive!bool)
 					thenBranch.buildStatementCode(env, cb).inLocalDataScope;
 				else if (elseBranch)
 					elseBranch.buildStatementCode(env, cb).inLocalDataScope;

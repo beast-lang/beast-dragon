@@ -5,6 +5,7 @@ import beast.code.decorationlist;
 import beast.code.semantic.util.ctexec;
 import beast.code.memory.memorymgr;
 import beast.backend.ctime.codebuilder;
+import beast.core.ctxctimeguard;
 
 final class AST_DecoratedExpression : AST_Expression {
 
@@ -62,8 +63,10 @@ public:
 
 		if (cb.isCtime)
 			cb.build_scope(&buildSemanticTree(null, decoData, decoList).single.buildCode);
-		else if (decoData.isCtime)
+		else if (decoData.isCtime) {
+			auto __cgd = ContextCtimeGuard(true);
 			new CodeBuilder_Ctime().build_scope(&buildSemanticTree(null, decoData, decoList).single.buildCode);
+		}
 		else
 			cb.build_scope(&buildSemanticTree(null, decoData, decoList).single.buildCode).inSubSession;
 	}

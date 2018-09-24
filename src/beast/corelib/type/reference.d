@@ -108,6 +108,9 @@ public:
 			// Alias #baseType
 			mem ~= new Symbol_BootstrapAlias(ID!"#baseType", (matchLevel, parentInstance) => baseType_.dataEntity(matchLevel).Overloadset);
 
+			// Alias #opBinary to the base type, because it is used by type comparison functions
+			mem ~= new Symbol_BootstrapAlias(ID!"#opBinary", (matchLevel, inst) => (inst ? inst.dereference(baseType_) : baseType_.dataEntity).tryResolveIdentifier(ID!"#opBinary", matchLevel | MatchLevel.baseClass));
+
 			// #data for acessing all the referenced data members
 			mem ~= new Symbol_BootstrapAlias(ID!"#data", //
 					(matchLevel, inst) => (inst ? inst.dereference(baseType_) : baseType_.dataEntity(matchLevel)).Overloadset);

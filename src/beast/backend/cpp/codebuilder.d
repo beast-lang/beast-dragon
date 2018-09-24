@@ -9,6 +9,7 @@ import beast.core.error.error;
 import beast.code.lex.identifier;
 import std.algorithm : startsWith, count;
 import beast.backend.common.codebuilder;
+import beast.core.ctxctimeguard;
 
 class CodeBuilder_Cpp : CodeBuilder {
 	public enum tab = "\t";
@@ -122,6 +123,8 @@ public: // Expression related build commands
 	override void build_functionCall(Symbol_RuntimeFunction function_, DataEntity parentInstance, DataEntity[] arguments) {
 		assert(arguments.length == function_.parameters.count!(x => !x.isConstValue));
 		//codeResult_.formattedWrite( "%s// Function %s call\n", tabs, function_.tryGetIdentificationString );
+
+		auto __cgd = ContextCtimeGuard(false);
 
 		string resultVarName;
 		if (function_.returnType !is coreType.Void) {

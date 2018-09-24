@@ -10,6 +10,7 @@ import beast.code.ast.expr.assign;
 import std.typecons : Tuple;
 import beast.code.ast.expr.parentcomma;
 import beast.code.ast.expr.decorated;
+import beast.core.ctxctimeguard;
 
 abstract class AST_Expression : AST_Statement {
 	alias LowerLevelExpression = AST_AssignExpression;
@@ -124,11 +125,15 @@ public:
 
 	final CTExecResult ctExec(Symbol_Type expectedType) {
 		const auto __gd = ErrorGuard(codeLocation);
+		auto __cgd = ContextCtimeGuard(true);
+
 		return buildSemanticTree_singleExpect(expectedType).ctExec();
 	}
 
 	pragma(inline) final Symbol_Type ctExec_asType() {
 		const auto __gd = ErrorGuard(codeLocation);
+		auto __cgd = ContextCtimeGuard(true);
+		
 		return buildSemanticTree_singleExpect(coreType.Type).ctExec_asType();
 	}
 

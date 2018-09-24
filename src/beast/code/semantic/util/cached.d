@@ -3,6 +3,8 @@ module beast.code.semantic.util.cached;
 import beast.code.semantic.toolkit;
 import beast.code.semantic.util.btsp;
 import beast.code.semantic.var.tmplocal;
+import beast.corelib.toolkit;
+import beast.corelib.type.reference;
 
 /// Structure of two DataEntities constructed from one source DataEntity
 /// If the dataEntity is ctime, it executes (in a subsession) it and sets both member entitites to the result
@@ -20,11 +22,12 @@ public:
 			definition = reference = sourceEntity.ctExec_asDataEntity.inSubSession;
 
 		else {
-			auto var = new DataEntity_TmpLocalVariable(sourceEntity.dataType);
-			auto varCtor = var.getCopyCtor(sourceEntity);
+			Symbol_Type_Reference refType = coreType.Reference.referenceTypeOf(sourceEntity.dataType);
+			auto var = new DataEntity_TmpLocalVariable(refType);
+			auto varCtor = refType.expectResolveIdentifier_direct(ID!"#ctor", var).resolveCall(sourceEntity.ast, true, sourceEntity);//var.getCopyCtor(sourceEntity);
 
 			reference = var;
-			definition = new DataEntity_Bootstrap(sourceEntity.identifier, sourceEntity.dataType, sourceEntity.parent, false, (cb) {
+			definition = new DataEntity_Bootstrap(sourceEntity.identifier, refType, sourceEntity.parent, false, (cb) {
 				auto _gd = ErrorGuard(sourceEntity.ast.codeLocation);
 
 				cb.build_localVariableDefinition(var);

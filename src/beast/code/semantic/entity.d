@@ -10,6 +10,7 @@ import beast.code.semantic.util.reinterpret;
 import beast.code.semantic.util.deref;
 import beast.code.semantic.idcontainer;
 import beast.code.semantic.util.subst;
+import beast.core.ctxctimeguard;
 
 /// DataEntity stores information about a value: what is its type and how to obtain it (how to build code that obtains it)
 /// It is practically a semantic tree node
@@ -199,6 +200,8 @@ public:
 	/// Executes the expression at compile time, returns result
 	/// parentCodeBuilder needs to know what @ctime variables were created so it can mirror them
 	pragma(inline) final CTExecResult ctExec() {
+		auto __cgd = ContextCtimeGuard(true);
+		
 		auto cb = new CodeBuilder_Ctime;
 		buildCode(cb);
 		return cb.result;

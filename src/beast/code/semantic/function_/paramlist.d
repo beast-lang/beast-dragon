@@ -6,6 +6,7 @@ import beast.code.decorationlist;
 import beast.code.ast.expr.decorated;
 import beast.code.ast.expr.vardecl;
 import beast.code.semantic.function_.param;
+import beast.core.ctxctimeguard;
 
 final class FunctionParameterList {
 
@@ -84,6 +85,8 @@ public:
 			}
 			// Constant value parameter
 			else {
+				auto __cgd = ContextCtimeGuard(true);
+
 				DataEntity constVal = paramData.ast.buildSemanticTree_single();
 
 				param.dataType = constVal.dataType;

@@ -7,6 +7,7 @@ import beast.code.semantic.var.usrstc;
 import beast.code.semantic.var.usrlcl;
 import beast.backend.ctime.codebuilder;
 import beast.code.semantic.var.usrmem;
+import beast.core.ctxctimeguard;
 
 final class AST_VariableDeclaration : AST_Declaration {
 
@@ -106,8 +107,11 @@ public:
 			else
 				var = new DataEntity_UserLocalVariable(this, decorations, declData);
 
-			if (declData.isCtime)
+			ContextCtimeGuard __cgd;
+			if (declData.isCtime) {
 				varCb = new CodeBuilder_Ctime;
+				__cgd = ContextCtimeGuard(true);
+			}
 
 			varCb.build_localVariableDefinition(var);
 
