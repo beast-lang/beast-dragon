@@ -52,10 +52,10 @@ public:
 	Identifier id;
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
-		auto match = left.buildSemanticTree_single().expectResolveIdentifier(id).CallMatchSet(this, true);
+		auto match = left.buildSemanticTree_single(ctime).expectResolveIdentifier(id).CallMatchSet(this, true);
 
 		if (operatorConstArg)
 			match.arg(operatorConstArg);

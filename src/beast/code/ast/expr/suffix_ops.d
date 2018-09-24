@@ -44,7 +44,7 @@ public:
 	Operator[] ops;
 
 public:
-	override Overloadset p1expressionItem_buildSemanticTree(Overloadset leftSide) {
+	override Overloadset p1expressionItem_buildSemanticTree(Overloadset leftSide, bool ctime) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		DataEntity result = leftSide.single;
@@ -59,7 +59,7 @@ public:
 			else
 				assert(0);
 
-			result = result.expectResolveIdentifier(ID!"#opSuffix").resolveCall(this, true, suffXX);
+			result = result.expectResolveIdentifier(ID!"#opSuffix").resolveCall(this, ctime, true, suffXX);
 		}
 
 		return result.Overloadset;

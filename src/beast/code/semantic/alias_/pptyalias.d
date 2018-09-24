@@ -35,7 +35,7 @@ private:
 	public:
 		this(DataEntity sourceEntity, MatchLevel matchLevel) {
 			sourceEntity_ = sourceEntity;
-			callEntity_ = sourceEntity.resolveCall(null, true);
+			callEntity_ = sourceEntity.resolveCall(null, false, true);
 
 			super(callEntity_, matchLevel);
 		}

@@ -162,7 +162,7 @@ public:
 
 		// We don't call var.tryResolveIdentifier because of Type variables
 		// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
-		var.dataType.expectResolveIdentifier_direct(ID!"#dtor", var).resolveCall(null, true).buildCode(this);
+		var.dataType.expectResolveIdentifier_direct(ID!"#dtor", var).resolveCall(null, isCtime, true).buildCode(this);
 	}
 
 protected:

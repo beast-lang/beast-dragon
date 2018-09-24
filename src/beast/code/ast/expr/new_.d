@@ -40,7 +40,7 @@ public:
 	AST_ParentCommaExpression args;
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		Symbol_Type ttype;
@@ -60,7 +60,7 @@ public:
 			ttype = refInferredType.baseType;
 		}
 		else {
-			auto ctexec = type.ctExec(coreType.Type);
+			auto ctexec = type.ctExec(coreType.Type); 
 			ttype = ctexec.value.readType();
 			ctexec.destroy();
 		}
@@ -69,9 +69,9 @@ public:
 
 		auto var = new DataEntity_TmpLocalVariable(refType);
 
-		DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall(this, true, ttype.instanceSizeLiteral);
-		DataEntity refCtorCall = coreType.Pointer.copyCtor.dataEntity(MatchLevel.fullMatch, var.reinterpret(coreType.Pointer)).resolveCall(this, true, mallocCall);
-		DataEntity varCtorCall = var.dereference(ttype).expectResolveIdentifier(ID!"#ctor").resolveCall(args, true, args.items);
+		DataEntity mallocCall = coreFunc.malloc.dataEntity.resolveCall(this, ctime, true, ttype.instanceSizeLiteral);
+		DataEntity refCtorCall = coreType.Pointer.copyCtor.dataEntity(MatchLevel.fullMatch, var.reinterpret(coreType.Pointer)).resolveCall(this, ctime, true, mallocCall);
+		DataEntity varCtorCall = var.dereference(ttype).expectResolveIdentifier(ID!"#ctor").resolveCall(args, ctime, true, args.items);
 
 		return new DataEntity_Bootstrap(null, refType, ttype.dataEntity, false, (cb) { //
 			// Define the reference variable

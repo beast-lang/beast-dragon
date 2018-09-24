@@ -81,20 +81,20 @@ public:
 	}
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		assert(items.length);
 
 		// We're passing null as expected type because expected type applies only to the rightmost part of the expression
-		Overloadset result = base.buildSemanticTree(inferredType, errorOnInferrationFailure);
+		Overloadset result = base.buildSemanticTree(inferredType, ctime, errorOnInferrationFailure);
 
 		// If errorOnInferrationFailure is false then entity might be null (inferration failure)
 		if (!result)
 			return result;
 
 		foreach (item; items)
-			result = item.p1expressionItem_buildSemanticTree(result);
+			result = item.p1expressionItem_buildSemanticTree(result, ctime);
 
 		return result;
 	}
@@ -109,7 +109,7 @@ protected:
 interface AST_SuffixExpressionItem {
 
 public:
-	abstract Overloadset p1expressionItem_buildSemanticTree(Overloadset leftSide);
+	abstract Overloadset p1expressionItem_buildSemanticTree(Overloadset leftSide, bool ctime);
 
 	abstract AST_ParentCommaExpression isParentCommaExpression();
 

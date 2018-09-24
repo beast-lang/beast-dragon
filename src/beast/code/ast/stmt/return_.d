@@ -33,10 +33,10 @@ public:
 
 		if (expression) {
 			if (env.functionReturnType)
-				result = expression.buildSemanticTree_singleExpect(env.functionReturnType);
+				result = expression.buildSemanticTree_singleExpect(env.functionReturnType, cb.isCtime);
 
 			else {
-				result = expression.buildSemanticTree_single();
+				result = expression.buildSemanticTree_single(cb.isCtime);
 				env.functionReturnType = result.dataType;
 			}
 		}

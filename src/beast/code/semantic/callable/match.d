@@ -6,9 +6,10 @@ import beast.code.ast.expr.expression;
 abstract class CallableMatch {
 
 public:
-	this(DataEntity sourceDataEntity, MatchLevel initialMatchLevel = MatchLevel.fullMatch) {
+	this(DataEntity sourceDataEntity, bool ctime, MatchLevel initialMatchLevel = MatchLevel.fullMatch) {
 		sourceDataEntity_ = sourceDataEntity;
 		matchLevel_ = initialMatchLevel;
+		isCtime_ = ctime;
 	}
 
 public:
@@ -25,6 +26,10 @@ public:
 	/// When the match is noMatch, this should return why does it not match
 	final string errorStr() {
 		return errorStr_;
+	}
+
+	final bool isCtime() {
+		return isCtime_;
 	}
 
 public:
@@ -106,6 +111,7 @@ private:
 	MatchLevel matchLevel_;
 	DataEntity sourceDataEntity_;
 	string errorStr_;
+	bool isCtime_;
 	debug bool finished_ = false;
 
 }

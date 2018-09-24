@@ -80,7 +80,7 @@ private:
 			if (ast_.dataType.isAutoExpression) {
 				benforce(ast_.value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format(parent.identificationString, identifier.str));
 
-				valueEntity = ast_.value.buildSemanticTree_single();
+				valueEntity = ast_.value.buildSemanticTree_single(isCtime_);
 				dataTypeWIP_ = valueEntity.dataType;
 			}
 			else

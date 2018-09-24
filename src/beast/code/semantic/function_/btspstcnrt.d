@@ -72,9 +72,9 @@ protected:
 		}
 
 	public:
-		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
+		override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
 			if (parentInstance_ is null || !sym_.staticCallOnly_)
-				return sym_.matchFactory_.startCallMatch(this, ast, canThrowErrors, matchLevel | this.matchLevel);
+				return sym_.matchFactory_.startCallMatch(this, ast, ctime, canThrowErrors, matchLevel | this.matchLevel);
 			else {
 				//benforce( !canThrowErrors, E.staticCallOnly, "Function %s can only be called statically".format( this.tryGetIdentificationString ) );
 				return new InvalidCallableMatch(this, "can only be called statically");

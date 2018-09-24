@@ -27,22 +27,22 @@ public:
 	}
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		auto _gd = ErrorGuard(codeLocation);
 		auto decoData = new ExpressionDecorationData;
 		auto decoList = new DecorationList(decorationList);
 
 		decoList.apply_expressionDecorator(decoData);
 
-		return buildSemanticTree(inferredType, decoData, decoList, errorOnInferrationFailure);
+		return buildSemanticTree(inferredType, ctime, decoData, decoList, errorOnInferrationFailure);
 	}
 
-	Overloadset buildSemanticTree(Symbol_Type inferredType, ExpressionDecorationData decoData, DecorationList decoList, bool errorOnInferrationFailure = true) {
+	Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, ExpressionDecorationData decoData, DecorationList decoList,bool errorOnInferrationFailure = true) {
 		auto _gd = ErrorGuard(codeLocation);
 		decoList.enforceAllResolved();
 
 		// TODO: Special case where baseExpression is variable declaration
-		auto result = baseExpression.buildSemanticTree(inferredType, errorOnInferrationFailure);
+		auto result = baseExpression.buildSemanticTree(inferredType, ctime, errorOnInferrationFailure);
 
 		if (decoData.isCtime)
 			result = result.map!(x => cast(DataEntity) new DataEntity_CtExecProxy(x)).Overloadset;
@@ -61,11 +61,11 @@ public:
 		decoList.apply_expressionDecorator(decoData);
 
 		if (cb.isCtime)
-			cb.build_scope(&buildSemanticTree(null, decoData, decoList).single.buildCode);
+			cb.build_scope(&buildSemanticTree(null, cb.isCtime, decoData, decoList).single.buildCode);
 		else if (decoData.isCtime)
-			new CodeBuilder_Ctime().build_scope(&buildSemanticTree(null, decoData, decoList).single.buildCode);
+			new CodeBuilder_Ctime().build_scope(&buildSemanticTree(null, cb.isCtime, decoData, decoList).single.buildCode);
 		else
-			cb.build_scope(&buildSemanticTree(null, decoData, decoList).single.buildCode).inSubSession;
+			cb.build_scope(&buildSemanticTree(null, cb.isCtime, decoData, decoList).single.buildCode).inSubSession;
 	}
 
 public:

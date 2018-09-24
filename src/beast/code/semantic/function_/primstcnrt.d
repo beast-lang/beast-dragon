@@ -85,8 +85,8 @@ protected:
 		}
 
 	public:
-		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			return sym_.matchFactory_.startCallMatch(this, ast, canThrowErrors, matchLevel | this.matchLevel);
+		override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			return sym_.matchFactory_.startCallMatch(this, ast, ctime, canThrowErrors, matchLevel | this.matchLevel);
 		}
 
 	protected:

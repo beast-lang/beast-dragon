@@ -47,7 +47,7 @@ public:
 
 		if (decoData.isCtime) {
 			cb.build_scope((cb) { //
-				if (condition.buildSemanticTree_singleExpect(coreType.Bool).ctExec().keepUntilSessionEnd.readPrimitive!bool)
+				if (condition.buildSemanticTree_singleExpect(coreType.Bool, true).ctExec().keepUntilSessionEnd.readPrimitive!bool)
 					thenBranch.buildStatementCode(env, cb).inLocalDataScope;
 				else if (elseBranch)
 					elseBranch.buildStatementCode(env, cb).inLocalDataScope;
@@ -55,7 +55,7 @@ public:
 		}
 		else {
 			cb.build_if( //
-					condition.buildSemanticTree_singleExpect(coreType.Bool), //
+					condition.buildSemanticTree_singleExpect(coreType.Bool, false), //
 					(CodeBuilder cb) => thenBranch.buildStatementCode(env, cb).inLocalDataScope, //
 					elseBranch ? (CodeBuilder cb) => elseBranch.buildStatementCode(env, cb).inLocalDataScope : null  //
 					);

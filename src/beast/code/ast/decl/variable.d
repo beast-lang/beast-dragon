@@ -100,7 +100,7 @@ public:
 			if (dataType.isAutoExpression) {
 				benforce(value !is null, E.missingInitValue, "Variable '%s.%s' definition needs implicit value for type deduction".format(currentScope.identificationString, identifier.str));
 
-				valueEntity = value.buildSemanticTree_single;
+				valueEntity = value.buildSemanticTree_single(cb.isCtime);
 				var = new DataEntity_UserLocalVariable(identifier, valueEntity.dataType, decorations, declData);
 			}
 			else
@@ -164,7 +164,7 @@ public:
 	}
 
 	pragma(inline) void buildConstructor(DataEntity entity, CodeBuilder cb) {
-		buildConstructor(entity, value ? value.buildSemanticTree_singleInfer(entity.dataType) : null, cb);
+		buildConstructor(entity, value ? value.buildSemanticTree_singleInfer(entity.dataType, cb.isCtime) : null, cb);
 	}
 
 }

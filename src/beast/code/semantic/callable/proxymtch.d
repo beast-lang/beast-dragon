@@ -9,7 +9,7 @@ final class ProxyCallableMatch : CallableMatch {
 
 public:
 	this(DataEntity sourceDataEntity, CallableMatch sourceMatch) {
-		super(sourceDataEntity);
+		super(sourceDataEntity, sourceMatch.isCtime);
 
 		sourceMatch_ = sourceMatch;
 	}

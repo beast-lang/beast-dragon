@@ -84,7 +84,7 @@ public:
 			}
 			// Constant value parameter
 			else {
-				DataEntity constVal = paramData.ast.buildSemanticTree_single();
+				DataEntity constVal = paramData.ast.buildSemanticTree_single(true);
 
 				param.dataType = constVal.dataType;
 				param.constValue = constVal.ctExec().keepForever;

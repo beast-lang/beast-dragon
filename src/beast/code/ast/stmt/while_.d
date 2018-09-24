@@ -39,7 +39,7 @@ public:
 
 			cb.build_if( //
 				// TODO: remake bool into custom type, get rid of the expectResolveIdentifier here
-				condition.buildSemanticTree_singleExpect(coreType.Bool).expectResolveIdentifier(ID!"#opPrefix").resolveCall(condition, true, coreEnum.operator.preNot), //
+				condition.buildSemanticTree_singleExpect(coreType.Bool, cb.isCtime).expectResolveIdentifier(ID!"#opPrefix").resolveCall(condition, cb.isCtime, true, coreEnum.operator.preNot), //
 				(CodeBuilder cb) { //
 					cb.build_break();
 				}, null);

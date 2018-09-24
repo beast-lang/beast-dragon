@@ -112,8 +112,8 @@ protected:
 		}
 
 	public:
-		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			return new Match(sym_, this, null, ast, canThrowErrors, this.matchLevel | matchLevel);
+		override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			return new Match(sym_, this, null, ast, ctime, canThrowErrors, this.matchLevel | matchLevel);
 		}
 
 	protected:
@@ -132,8 +132,8 @@ protected:
 	static class Match : SeriousCallableMatch {
 
 	public:
-		this(Symbol_RuntimeFunction sym, DataEntity sourceEntity, DataEntity parentInstance, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			super(sourceEntity, ast, canThrowErrors, matchLevel);
+		this(Symbol_RuntimeFunction sym, DataEntity sourceEntity, DataEntity parentInstance, AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			super(sourceEntity, ast, ctime, canThrowErrors, matchLevel);
 			sym_ = sym;
 			sourceEntity_ = sourceEntity;
 			parentInstance_ = parentInstance;

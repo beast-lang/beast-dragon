@@ -26,7 +26,7 @@ public:
 	}
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		return data.Overloadset;
 	}
 

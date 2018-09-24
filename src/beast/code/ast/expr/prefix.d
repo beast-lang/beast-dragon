@@ -37,16 +37,16 @@ public:
 	Operator[] operators;
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
-		DataEntity result = base.buildSemanticTree_singleInfer(inferredType, errorOnInferrationFailure);
+		DataEntity result = base.buildSemanticTree_singleInfer(inferredType, ctime, errorOnInferrationFailure);
 		if (!result)
 			return Overloadset();
 
 		foreach (op; operators) {
 			if (op == Operator.emark)
-				result = result.expectResolveIdentifier(ID!"#opPrefix").resolveCall(this, true, coreEnum.operator.preNot);
+				result = result.expectResolveIdentifier(ID!"#opPrefix").resolveCall(this, ctime, true, coreEnum.operator.preNot);
 			else
 				assert(0);
 		}

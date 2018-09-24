@@ -43,16 +43,16 @@ public:
 	}
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		// Maybe replace with void?
 		benforce(items.length > 0, E.syntaxError, "Empty parentheses");
 
 		// We're passing null as inferredType because inferredType only applies to the rightmost part of the expression
-		DataEntity[] payload = items[0 .. $ - 1].map!(x => buildSemanticTree_single()).array;
+		DataEntity[] payload = items[0 .. $ - 1].map!(x => x.buildSemanticTree_single(ctime)).array;
 
-		DataEntity base = items[$ - 1].buildSemanticTree_singleInfer(inferredType, errorOnInferrationFailure);
+		DataEntity base = items[$ - 1].buildSemanticTree_singleInfer(inferredType, ctime, errorOnInferrationFailure);
 
 		// If errorOnInferrationFailure is false then entity might be null (inferration failure)
 		if (!base)
@@ -64,9 +64,9 @@ public:
 		return new DataEntity_ParentComma(payload, base, this).Overloadset;
 	}
 
-	override Overloadset p1expressionItem_buildSemanticTree(Overloadset leftSide) {
+	override Overloadset p1expressionItem_buildSemanticTree(Overloadset leftSide, bool ctime) {
 		const auto _gd = ErrorGuard(this);
-		return leftSide.resolveCall(this, true, items).Overloadset;
+		return leftSide.resolveCall(this, ctime, true, items).Overloadset;
 	}
 
 protected:
@@ -105,8 +105,8 @@ public:
 		return base_.isCallable;
 	}
 
-	override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-		return base_.startCallMatch(ast, canThrowErrors, matchLevel | this.matchLevel);
+	override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+		return base_.startCallMatch(ast, ctime, canThrowErrors, matchLevel | this.matchLevel);
 	}
 
 public:

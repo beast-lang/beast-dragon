@@ -47,14 +47,20 @@ public:
 			cb = new CodeBuilder_Ctime();
 			env = env.dup();
 			env.isCtime = true;
-		}
 
-		cb.build_scope((cb) {
 			foreach (stmt; subStatements) {
 				cb.build_comment(stmt.codeLocation.content);
 				stmt.buildStatementCode(env, cb);
 			}
-		}).inLocalDataScope;
+			
+		} else {
+			cb.build_scope((cb) {
+				foreach (stmt; subStatements) {
+					cb.build_comment(stmt.codeLocation.content);
+					stmt.buildStatementCode(env, cb);
+				}
+			}).inLocalDataScope;
+		}
 	}
 
 public:

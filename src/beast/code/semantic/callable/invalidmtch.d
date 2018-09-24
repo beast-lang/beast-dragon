@@ -8,7 +8,7 @@ final class InvalidCallableMatch : CallableMatch {
 
 public:
 	this(DataEntity sourceDataEntity, string errorStr) {
-		super(sourceDataEntity);
+		super(sourceDataEntity, true);
 
 		this.errorStr = errorStr;
 	}

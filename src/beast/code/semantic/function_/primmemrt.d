@@ -253,10 +253,10 @@ protected:
 			return "%s.%s".format(sym_.parent_.identificationString, identification);
 		}
 
-		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
+		override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
 			if (parentInstance_) {
 				benforce(parentInstance_.dataType is sym_.parent_, E.invalidParentDataType, "Context for %s should be %s, not %s".format(this, sym_.parent_, parentInstance_.dataType));
-				return new Match(sym_, this, ast, canThrowErrors, matchLevel | this.matchLevel);
+				return new Match(sym_, this, ast, ctime, canThrowErrors, matchLevel | this.matchLevel);
 			}
 			else {
 				benforce(!canThrowErrors, E.needThis, "Need this for %s".format(this.tryGetIdentificationString));
@@ -273,8 +273,8 @@ protected:
 	final static class Match : typeof(super).Match {
 
 	public:
-		this(Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			super(sym, sourceEntity, sourceEntity.parentInstance_, ast, canThrowErrors, matchLevel);
+		this(Symbol_PrimitiveMemberRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			super(sym, sourceEntity, sourceEntity.parentInstance_, ast, ctime, canThrowErrors, matchLevel);
 			sym_ = sym;
 		}
 

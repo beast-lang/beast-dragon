@@ -80,8 +80,8 @@ protected:
 			return sym_.parent_;
 		}
 
-		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			return new Match(sym_, this, ast, canThrowErrors, matchLevel | this.matchLevel);
+		override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			return new Match(sym_, this, ast, ctime, canThrowErrors, matchLevel | this.matchLevel);
 		}
 
 	private:
@@ -92,8 +92,8 @@ protected:
 	final class Match : typeof(super).Match {
 
 	public:
-		this(Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			super(sym, sourceEntity, null, ast, canThrowErrors, matchLevel);
+		this(Symbol_PrimitiveStaticRuntimeFunction sym, Data sourceEntity, AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			super(sym, sourceEntity, null, ast, ctime, canThrowErrors, matchLevel);
 
 			sym_ = sym;
 		}

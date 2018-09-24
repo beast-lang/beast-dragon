@@ -32,7 +32,7 @@ public:
 		const auto __gd = ErrorGuard(codeLocation);
 
 		cb.build_scope((cb) {
-			auto val = expr.buildSemanticTree_single();
+			auto val = expr.buildSemanticTree_single(cb.isCtime);
 			auto refType = val.dataType;
 
 			benforce(refType.isReferenceType !is null, E.referenceTypeRequired, "Delete can only be used on references, not %s".format(refType.identificationString));
@@ -42,10 +42,10 @@ public:
 			cb.build_copyCtor(var, val);
 
 			// Call the destructor on referenced memory
-			var.expectResolveIdentifier(ID!"#data").single.expectResolveIdentifier(ID!"#dtor").resolveCall(expr, true).buildCode(cb);
+			var.expectResolveIdentifier(ID!"#data").single.expectResolveIdentifier(ID!"#dtor").resolveCall(expr, cb.isCtime, true).buildCode(cb);
 
 			// Call free
-			coreFunc.free.dataEntity.resolveCall(expr, true, new DataEntity_ReinterpretCast(var, coreType.Pointer)).buildCode(cb);
+			coreFunc.free.dataEntity.resolveCall(expr, cb.isCtime, true, new DataEntity_ReinterpretCast(var, coreType.Pointer)).buildCode(cb);
 		});
 	}
 

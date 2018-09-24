@@ -94,8 +94,8 @@ protected:
 		}
 
 	public:
-		override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-			return new Match(sym_, this, null, ast, canThrowErrors, this.matchLevel | matchLevel);
+		override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+			return new Match(sym_, this, null, ast, ctime, canThrowErrors, this.matchLevel | matchLevel);
 		}
 
 	protected:
@@ -174,7 +174,7 @@ protected:
 				with (memoryManager.subSession) {
 					auto _sgd2 = parametersScope_.scopeGuard(false);
 					// TODO: execute during semtree building
-					auto semTree = paramData.ast.buildSemanticTree_single();
+					auto semTree = paramData.ast.buildSemanticTree_single(true);
 					constvalType = semTree.dataType;
 					constvalValue = semTree.ctExec().keepUntilSessionEnd;
 				}

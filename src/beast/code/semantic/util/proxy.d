@@ -31,8 +31,8 @@ public:
 		return sourceEntity_.isCallable;
 	}
 
-	override CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
-		return sourceEntity_.startCallMatch(ast, canThrowErrors, matchLevel);
+	override CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
+		return sourceEntity_.startCallMatch(ast, ctime, canThrowErrors, matchLevel);
 	}
 
 	override Symbol_Decorator isDecorator() {

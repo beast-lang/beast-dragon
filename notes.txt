@@ -3,7 +3,7 @@ BUG?? src/beast/code/ast/expr/assign.d iń parse - i load operator, then run it 
 Diplomka to-do:			
 	x++.staticFunction
 		- x++ (context) should execute?
-		- always execute side effects
+		- always execute side effects - problematic (muselo by se udělat ukládání/načítání operandů v codebuilderu)
 		- a.#type b ???	
 
 	Offer directFunction that works over memory pointers ( Int.addDirectFunction("operatorAdd", (a,b) => a+b))

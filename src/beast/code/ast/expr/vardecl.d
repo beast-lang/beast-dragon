@@ -44,7 +44,7 @@ public:
 	bool valueColonAssign;
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		berror(E.notImplemented, "Inexpr variable definitions are not implemented");

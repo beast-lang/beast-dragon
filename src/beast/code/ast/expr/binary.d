@@ -4,7 +4,7 @@ import beast.code.ast.toolkit;
 import beast.code.semantic.symbol;
 import beast.code.semantic.matchlevel;
 
-DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression rightExpr, DataEntity binXX, Token.Operator op) {
+DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression rightExpr, DataEntity binXX, Token.Operator op, bool ctime) {
 	import std.range : chain;
 
 	// First we try left.#opBinary( binXX, rightExpr )
@@ -13,7 +13,7 @@ DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression 
 		return result;
 
 	// If looking for left.#opBinary( binXX, rightExpr ) failed, we build right side and try right.#opBinaryR( binXX, left )
-	DataEntity right = rightExpr.buildSemanticTree(null, false).single;
+	DataEntity right = rightExpr.buildSemanticTree(null, ctime, false).single;
 
 	benforce(right !is null, E.cannotResolve, "Cannot resolve %s %s %s:%s".format( //
 			left.dataType.identificationString, Token.operatorStr[op], right.dataType.identificationString, //
@@ -31,7 +31,7 @@ DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression 
 	assert(0);
 }
 
-DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, DataEntity right, DataEntity binXX, Token.Operator op) {
+DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, DataEntity right, DataEntity binXX, Token.Operator op, bool ctime) {
 	import std.range : chain;
 
 	// First we try left.#opBinary( binXX, rightExpr )

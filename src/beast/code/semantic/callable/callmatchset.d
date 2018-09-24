@@ -10,22 +10,23 @@ import std.range.primitives : isInputRange, ElementType;
 struct CallMatchSet {
 
 public:
-	this(Overloadset overloadset, AST_Node ast, bool reportErrors = true, MatchLevel matchLevel = MatchLevel.fullMatch) {
+	this(Overloadset overloadset, AST_Node ast, bool isCtime, bool reportErrors = true, MatchLevel matchLevel = MatchLevel.fullMatch) {
 		scope_ = new LocalDataScope();
 		auto _sgd = scope_.scopeGuard(false);
 
 		this.reportErrors = reportErrors;
+		this.isCtime = isCtime;
 
 		foreach (overload; overloadset) {
 			if (overload.isCallable)
-				matches ~= overload.startCallMatch(ast, reportErrors && (overloadset.length == 1), matchLevel);
+				matches ~= overload.startCallMatch(ast, isCtime, reportErrors && (overloadset.length == 1), matchLevel);
 
 			// If the overload is not callable, we try to overload against overload.#opCall( XXX )
 			else {
 				auto suboverloadset = overload.tryResolveIdentifier(Identifier.preobtained!"#call");
 				foreach (suboverload; suboverloadset) {
 					if (suboverload.isCallable)
-						matches ~= suboverload.startCallMatch(ast, overloadset.length == 1 && suboverloadset.length == 1, matchLevel);
+						matches ~= suboverload.startCallMatch(ast, isCtime, overloadset.length == 1 && suboverloadset.length == 1, matchLevel);
 				}
 			}
 		}
@@ -53,7 +54,7 @@ public:
 	ref CallMatchSet arg(T : AST_Expression)(T expr) {
 		auto _sgd = scope_.scopeGuard(false);
 
-		DataEntity entity = expr.buildSemanticTree_single(false);
+		DataEntity entity = expr.buildSemanticTree_single(/* TODO: ctime */ false, false);
 		Symbol_Type dataType = entity ? entity.dataType : null;
 		argumentEntities ~= entity;
 
@@ -149,6 +150,8 @@ public:
 	DataScope scope_;
 
 	bool reportErrors;
+
+	bool isCtime;
 
 public:
 	string argumentListIdentificationString() {

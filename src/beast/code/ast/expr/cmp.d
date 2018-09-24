@@ -57,10 +57,10 @@ public:
 	}
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
-		DataEntity baseOperand = base.buildSemanticTree_singleInfer(inferredType, errorOnInferrationFailure);
+		DataEntity baseOperand = base.buildSemanticTree_singleInfer(inferredType, ctime, errorOnInferrationFailure);
 		if (baseOperand.dataType.isCtime)
 			baseOperand = baseOperand.ctExec_asDataEntity;
 
@@ -74,11 +74,11 @@ public:
 		auto binAnd = coreEnum.operator.binAnd.dataEntity;
 
 		foreach (item; items[0 .. $ - 1]) {
-			CachedDataEntity rightExpr = item.expr.buildSemanticTree_single().CachedDataEntity;
-			DataEntity data = resolveBinaryOperation(item.expr, leftOperand, rightExpr.definition, cmpOperatorEnumConst(item.op).dataEntity, item.op);
+			CachedDataEntity rightExpr = item.expr.buildSemanticTree_single(ctime).CachedDataEntity;
+			DataEntity data = resolveBinaryOperation(item.expr, leftOperand, rightExpr.definition, cmpOperatorEnumConst(item.op).dataEntity, item.op, ctime);
 
 			if (result)
-				result = resolveBinaryOperation(item.expr, result, data, binAnd, Token.Operator.logAnd);
+				result = resolveBinaryOperation(item.expr, result, data, binAnd, Token.Operator.logAnd, ctime);
 			else
 				result = data;
 
@@ -89,11 +89,11 @@ public:
 		{
 			auto item = items[$ - 1];
 
-			DataEntity rightExpr = item.expr.buildSemanticTree_single();
-			auto cmpResult = resolveBinaryOperation(item.expr, leftOperand, rightExpr, cmpOperatorEnumConst(item.op).dataEntity, item.op);
+			DataEntity rightExpr = item.expr.buildSemanticTree_single(ctime);
+			auto cmpResult = resolveBinaryOperation(item.expr, leftOperand, rightExpr, cmpOperatorEnumConst(item.op).dataEntity, item.op, ctime);
 
 			if (result)
-				result = resolveBinaryOperation(item.expr, result, cmpResult, binAnd, Token.Operator.logAnd);
+				result = resolveBinaryOperation(item.expr, result, cmpResult, binAnd, Token.Operator.logAnd, ctime);
 			else
 				result = cmpResult;
 		}

@@ -88,10 +88,10 @@ public:
 
 public:
 	/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
-	DataEntity resolveCall(Args...)(AST_Node ast, bool reportErrors, Args args) {
+	DataEntity resolveCall(Args...)(AST_Node ast, bool ctime, bool reportErrors, Args args) {
 		auto _gd = ErrorGuard(ast);
 
-		CallMatchSet match = CallMatchSet(this, ast, reportErrors);
+		CallMatchSet match = CallMatchSet(this, ast, ctime, reportErrors);
 
 		foreach (arg; args)
 			match.arg(arg);

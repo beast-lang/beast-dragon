@@ -48,10 +48,10 @@ public:
 	}
 
 public:
-	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool errorOnInferrationFailure = true) {
+	override Overloadset buildSemanticTree(Symbol_Type inferredType, bool ctime, bool errorOnInferrationFailure = true) {
 		const auto __gd = ErrorGuard(codeLocation);
 
-		DataEntity result = base.buildSemanticTree_singleInfer(inferredType, errorOnInferrationFailure);
+		DataEntity result = base.buildSemanticTree_singleInfer(inferredType, ctime, errorOnInferrationFailure);
 
 		// If errorOnInferrationFailure is false then result might be null (inferration failure)
 		if (!result)
@@ -77,7 +77,7 @@ public:
 
 			}
 
-			result = resolveBinaryOperation(this, result, item.expr, opArg, item.op);
+			result = resolveBinaryOperation(this, result, item.expr, opArg, item.op, ctime);
 		}
 
 		return result.Overloadset;

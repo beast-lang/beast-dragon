@@ -27,7 +27,7 @@ public:
 			with (memoryManager.session(SessionPolicy.watchCtChanges)) {
 				auto entryModule = project.entryModule.symbol.dataEntity;
 				auto _sgd = new RootDataScope(entryModule).scopeGuard;
-				entryModule.expectResolveIdentifier(ID!"main").resolveCall(null, true).buildCode(entryFunctionCallCB);
+				entryModule.expectResolveIdentifier(ID!"main").resolveCall(null, false, true).buildCode(entryFunctionCallCB);
 			}
 		});
 

@@ -99,15 +99,15 @@ public:
 	}
 
 	/// Creates a class instance that is in charge of matching the currect callable entity with an argument list
-	CallableMatch startCallMatch(AST_Node ast, bool canThrowErrors, MatchLevel matchLevel) {
+	CallableMatch startCallMatch(AST_Node ast, bool ctime, bool canThrowErrors, MatchLevel matchLevel) {
 		assert(0, identificationString ~ " is not callable");
 	}
 
 	/// Resolves call with given arguments (can either be AST_Expression or DataEntity or ranges of both)
-	final DataEntity resolveCall(Args...)(AST_Node ast, bool reportErrors, Args args) {
+	final DataEntity resolveCall(Args...)(AST_Node ast, bool ctime, bool reportErrors, Args args) {
 		auto _gd = ErrorGuard(ast);
 
-		CallableMatch match = startCallMatch(ast, reportErrors, overloadMatch_);
+		CallableMatch match = startCallMatch(ast, ctime, reportErrors, overloadMatch_);
 
 		foreach (arg; args)
 			match.arg(arg);
