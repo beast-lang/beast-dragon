@@ -7,6 +7,8 @@ import beast.code.decorationlist;
 import beast.code.ast.decl.env;
 import beast.code.semantic.scope_.blurry;
 import beast.code.semantic.function_.paramlist;
+import beast.code.semantic.var.mem;
+import std.range;
 
 final class Symbol_UserMemberRuntimeFunction : Symbol_RuntimeFunction {
 	mixin TaskGuard!"returnTypeDeduction";
@@ -79,7 +81,34 @@ protected:
 			if (!ast_.returnType.isAutoExpression)
 				env.functionReturnType = returnType;
 
+			// If the function is a constructor, create default initializers
+			if (ast_.identifier.identifier == ID!"#ctor") {
+				auto thisPtr = new DataEntity_ContextPointer(ID!"this", parent_, false);
+
+				foreach (Symbol_MemberVariable var; parent_.namespace
+					.members
+					.map!(x => x.isMemberVariable)
+					.filter!(x => x !is null)) {
+
+					var.dataType.expectResolveIdentifier_direct(ID!"#ctor", var.dataEntity(MatchLevel.fullMatch, thisPtr)).resolveCall(null, true).buildCode(cb);
+				}
+			}
+
 			ast_.body_.buildStatementCode(env, cb);
+
+			// For destructors, create deinitializers in the opposite order
+			if (ast_.identifier.identifier == ID!"#dtor") {
+				auto thisPtr = new DataEntity_ContextPointer(ID!"this", parent_, false);
+
+				foreach (Symbol_MemberVariable var; parent_.namespace
+					.members
+					.retro
+					.map!(x => x.isMemberVariable)
+					.filter!(x => x !is null)) {
+
+					var.dataType.expectResolveIdentifier_direct(ID!"#dtor", var.dataEntity(MatchLevel.fullMatch, thisPtr)).resolveCall(null, true).buildCode(cb);
+				}
+			}
 
 			/*
 						If the return type is auto and the staticMemberMerger is not finished (meaning this definition building is the 'main' codeProcessing one),

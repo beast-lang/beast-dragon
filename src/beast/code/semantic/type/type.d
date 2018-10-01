@@ -248,7 +248,7 @@ public:
 		return null;
 	}
 
-protected:
+public:
 	/// Namespace with members of this type (static and dynamic)
 	abstract Namespace namespace();
 
