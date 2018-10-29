@@ -29,8 +29,9 @@ Source file extension: `.be`
 
 ## Progress
 
+!!! DEVELOPMENT CANCELLED
+
 * Compiler: The compiler now works as a proof-of-concept. It has some core functionality working, but not really anything you could write your programs with.
-  * __Development is paused for now__ (I have finished my job for a bachelor's thesis and I will probably have time to return to this project in first half of 2019). Feel free to write me about anything project related.
   * See test/tests for working code examples
 * Std library: Nothing at all
 * Language reference: Nothing much
@@ -99,11 +100,12 @@ Void main() {
 ## How to build
 
 1. Download a [D compiler](http://dlang.org/)
-1. Clone this repository
-1. Execute ```dub build``` in the root
-1. Folder ```bin``` is created with the Beast Dragon compiler
+2. Clone this repository
+3. Execute ```dub build``` in the root
+4. Folder ```bin``` is created with the Beast Dragon compiler
 
 # News
+__29.10.2018__: __Development cancelled__. I was planning to continue working on Beast as my master thesis, but they rejected it. Bummer. Feel free to use anything, but I don't expect it to be of any use in the current state.
 
 __05.05.2017__: Finished writing code for bachelor's thesis. Development of this project is now halted until master thesis or until excessive interest for this project is shown from a community.
 
