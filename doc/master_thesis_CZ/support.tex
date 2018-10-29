@@ -1,0 +1,160 @@
+% !TeX root = projekt.tex
+
+\usepackage{scalefnt}
+\usepackage{needspace}
+
+% References
+\newcommand{\eqlabel}[1][]{\small(\arabic{chapter}.\arabic{equation}) #1}
+\newcommand{\putref}[1][]{\nopagebreak\refstepcounter{equation}\eqlabel[#1]}
+\newcommand{\putrefCentered}[1][]{\centering\refstepcounter{equation}\eqlabel[#1]\par}
+\renewcommand{\theequation}{\arabic{chapter}.\arabic{equation}}
+
+\newcommand{\putImage}[3][]{
+	\begin{centering}
+		\vspace{5mm}
+		\includegraphics[#3]{obrazky-figures/#2} \nopagebreak
+		
+		\putrefCentered[#1] \vspace{5mm}
+	\end{centering}
+}
+
+% Code
+\lstset{% 
+	basicstyle=\fontfamily{SourceCodePro-TLF}\selectfont\scalefont{0.8}, 
+	breaklines=true,
+	breakatwhitespace=true,
+	breakautoindent=true,
+	breakindent=5mm,
+	escapeinside={$$}{$$},
+	numbers=left,
+	numberstyle=\fontfamily{SourceCodePro-TLF}\selectfont\small,
+	numbersep=3mm,
+	tabsize=2,
+	frame=leftline,
+	framesep=2mm,
+	xleftmargin=8mm,
+	literate={-}{{-}}{1},
+	showstringspaces=false
+}
+
+\lstdefinelanguage{beast}
+{
+	morekeywords={alias, asm, auto, blueprint, break, case, class, continue, debug, decorator, declaration, declare, delegate, delete, do, else, enum, except, extend, finally, for, foreach, function, generic, goto, if, import, in, is, lazy, loop, mixin, module, new, return, scope, singleton, switch, template, this, throw, try, while, with, yield},
+	sensitive=true,
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+	alsoletter={\#}
+}
+\lstnewenvironment{code}[1][]{
+	\noindent
+	\lstset{language=beast}
+	\minipage{\textwidth}
+}{%
+	\putrefCentered[#1]
+	\endminipage
+	\vspace{3mm}
+} 
+\newcommand{\inlineCode}[1]{\lstinline[%
+	language=beast,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true,
+	]{#1}}
+
+\lstdefinelanguage{d}
+{
+	morekeywords={catch, const, immutable, struct, class, alias, for, foreach, static, if, debug, release, template, mixin, module, import, while, is, in, scope, switch, this, throw, try, with, else, do, finally, function, delegate, asm, int, uint, short, ushort, long, ulong, byte, ubyte, string, interface, public, private, override, void, new, delete, cast},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+\lstnewenvironment{dcode}[1][]{
+	\hspace{0mm}
+	\lstset{language=d}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlineDCode}[1]{\lstinline[%
+	language=d,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\lstnewenvironment{cppcode}[1][]{
+	\hspace{0mm}
+	\lstset{language=c++}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+}
+\newcommand{\inlineCppCode}[1]{\lstinline[%
+	language=c++,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+
+\lstdefinelanguage{rust}
+{
+	morekeywords={abstract, alignof, as, become, box, break, const, continue, crate, do, else, enum, extern, false, final, fn, for, if, impl, in, let, loop, macro, match, mod, move, mut, offsetof, override, priv, proc, pub, pure, ref, return, Self, self, sizeof, static, struct, super, trait, true, type, typeof, unsafe, unsized, use, virtual, where, while, yield},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+}
+\lstnewenvironment{rustcode}[1][]{
+	\hspace{0mm}
+	\lstset{language=rust}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlineRustCode}[1]{\lstinline[%
+	language=rust,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\lstnewenvironment{scalacode}[1][]{
+	\hspace{0mm}
+	\lstset{language=scala}
+}{
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlineScalaCode}[1]{\lstinline[%
+	language=scala,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\lstdefinelanguage{objectPascal}
+{
+	morekeywords={begin, end, function, class, record, helper, for, var, const, self},
+	sensitive=false,
+	morecomment=[l]{\#}
+}
+\lstnewenvironment{pascalcode}[1][]{
+	\hspace{0mm}
+	\lstset{language=objectPascal}
+}{%
+	\putrefCentered[#1]
+	\vspace{3mm}
+} 
+\newcommand{\inlinePascalCode}[1]{\lstinline[%
+	language=objectPascal,
+	keepspaces,
+	breakatwhitespace=true,
+	breaklines=true
+	]{#1}}
+
+\newcommand{\beastRef}[1]{viz specifikace jazyka Beast (v příloze), oddíl \textit{#1}}
+\newcommand{\BeastRef}[1]{Viz specifikace jazyka Beast (v příloze), oddíl \textit{#1}}

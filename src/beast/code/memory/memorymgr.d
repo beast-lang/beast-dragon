@@ -11,15 +11,10 @@ import std.algorithm.searching : until;
 import beast.core.context;
 import beast.core.error.error : wereErrors;
 
-debug (memory) {
-	import std.stdio : writefln;
-}
+import std.stdio : writefln;
 
 version = sessionEndGCCleanup;
 version = finishGCCleanup;
-
-// TODO: sub sessions - you cannot write to data from a different subsession, but data are not garbage collected after subsession end
-// This would be used when matching overloads (not we have to markDoNotGCAtSessionEnd)
 
 /// MemoryManager is in charge of all @ctime-allocated memory
 __gshared MemoryManager memoryManager;

@@ -2,11 +2,11 @@ module beast.code.ast.decl.variable;
 
 import beast.code.ast.decl.toolkit;
 import beast.code.ast.identifier;
-import beast.code.semantic.scope_.root;
-import beast.code.semantic.var.usrstc;
-import beast.code.semantic.var.usrlcl;
+import beast.code.entity.scope_.root;
+import beast.code.entity.var.usrstc;
+import beast.code.entity.var.usrlcl;
 import beast.backend.ctime.codebuilder;
-import beast.code.semantic.var.usrmem;
+import beast.code.entity.var.usrmem;
 import beast.core.ctxctimeguard;
 
 final class AST_VariableDeclaration : AST_Declaration {
@@ -40,7 +40,12 @@ public:
 	}
 
 public:
-	override void executeDeclarations(DeclarationEnvironment env, void delegate(Symbol) sink) {
+	override Identifier declarationIdentifier() {
+		return identifier.identifier;
+	}
+
+	/// Module-level variable declaration
+	override executeDeclaration(ref Symbol[] result, DeclarationEnvironment env) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		VariableDeclarationData declData = new VariableDeclarationData(env);
@@ -51,16 +56,17 @@ public:
 
 		if (declData.isStatic) {
 			// No buildConstructor - that is handled in the Symbol_UserStaticVariable.memoryAllocation
-			sink(new Symbol_UserStaticVariable(this, decorationList, declData));
+			result ~= new Symbol_UserStaticVariable(this, decorationList, declData);
 		}
 		else {
 			benforce(env.parentType !is null, E.memVarOutsideClass, "Cannot declare nonstatic variables outside classes");
 			benforce(env.parentType.declarationType == Symbol.DeclType.staticClass || env.parentType.declarationType == Symbol.DeclType.memberClass, E.memVarOutsideClass, "Cannot declare nonstatic variables outside classes");
 
-			sink(new Symbol_UserMemberVariable(this, decorationList, declData));
+			result ~= new Symbol_UserMemberVariable(this, decorationList, declData);
 		}
 	}
 
+	/// Function-level variable declaration
 	override void buildStatementCode(DeclarationEnvironment env, CodeBuilder cb) {
 		const auto __gd = ErrorGuard(codeLocation);
 		assert(currentScope);

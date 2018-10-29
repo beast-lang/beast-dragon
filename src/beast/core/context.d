@@ -7,7 +7,7 @@ import beast.code.memory.block;
 import beast.core.task.context;
 import beast.core.error.guard;
 import beast.core.task.worker;
-import beast.code.semantic.scope_.scope_;
+import beast.code.entity.scope_.scope_;
 import std.container.rbtree;
 import beast.code.memory.ptr : MemoryPtr;
 import beast.util.uidgen;
@@ -25,6 +25,7 @@ final class ContextData {
 public:
 	alias ChangedMemoryBlocks = Typedef!(MemoryBlock[]);
 	alias NewMemoryBlocks = Typedef!(MemoryBlock[]);
+	alias JobId = UIDGenerator.I;
 
 public:
 	pragma(inline) auto session() {
@@ -41,7 +42,7 @@ public:
 
 public:
 	/// Id of the current job (task)
-	UIDGenerator.I jobId;
+	JobId jobId;
 
 	SessionData sessionData;
 	SessionData[] sessionDataStack;

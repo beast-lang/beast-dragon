@@ -1,8 +1,8 @@
 module beast.corelib.type.int_;
 
 import beast.corelib.type.toolkit;
-import beast.code.semantic.var.tmplocal;
-import beast.code.semantic.var.literal;
+import beast.code.entity.var.tmplocal;
+import beast.code.entity.var.literal;
 import std.range : repeat, take;
 import std.array : array;
 

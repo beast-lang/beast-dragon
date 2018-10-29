@@ -5,7 +5,7 @@ import beast.code.ast.expr.auto_;
 import beast.code.ast.expr.vardecl;
 import beast.code.memory.ptr;
 import beast.code.memory.memorymgr;
-import beast.code.semantic.scope_.root;
+import beast.code.entity.scope_.root;
 import beast.code.ast.expr.assign;
 import std.typecons : Tuple;
 import beast.code.ast.expr.parentcomma;

@@ -42,7 +42,7 @@ public:
 				return Overloadset();
 			}
 
-			result = inferredType.dataEntity.tryResolveIdentifier(identifier);
+			result = inferredType.dataEntity.resolveIdentifier(identifier);
 
 			if (result.isEmpty) {
 				if (errorOnInferrationFailure)

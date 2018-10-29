@@ -1,8 +1,8 @@
 module beast.code.ast.stmt.delete_;
 
 import beast.code.ast.toolkit;
-import beast.code.semantic.var.tmplocal;
-import beast.code.semantic.util.reinterpret;
+import beast.code.entity.var.tmplocal;
+import beast.code.entity.util.reinterpret;
 
 final class AST_DeleteStatement : AST_Statement {
 

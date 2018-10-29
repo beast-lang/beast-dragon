@@ -7,10 +7,10 @@ import beast.core.error.msgfmtr.msgfmtr;
 import beast.core.project.modulemgr;
 import beast.core.error.msgfmtr.gnu;
 import beast.backend.common.backend;
-import beast.code.semantic.function_.rt;
+import beast.code.entity.function_.rt;
 import beast.core.project.module_;
 import beast.code.lex.identifier;
-import beast.code.semantic.symbol;
+import beast.code.symbol.symbol;
 
 /// Project wrapping class
 final class Project : Identifiable {

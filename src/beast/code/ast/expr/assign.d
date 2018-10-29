@@ -2,7 +2,7 @@ module beast.code.ast.expr.assign;
 
 import beast.code.ast.toolkit;
 import beast.code.ast.expr.logic;
-import beast.code.semantic.symbol;
+import beast.code.symbol.symbol;
 
 final class AST_AssignExpression : AST_Expression {
 	alias LowerLevelExpression = AST_LogicExpression;

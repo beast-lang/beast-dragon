@@ -1,14 +1,14 @@
 module beast.code.ast.expr.binary;
 
 import beast.code.ast.toolkit;
-import beast.code.semantic.symbol;
-import beast.code.semantic.matchlevel;
+import beast.code.symbol.symbol;
+import beast.code.entity.matchlevel;
 
 DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression rightExpr, DataEntity binXX, Token.Operator op) {
 	import std.range : chain;
 
 	// First we try left.#opBinary( binXX, rightExpr )
-	CallMatchSet leftCall = left.tryResolveIdentifier(ID!"#opBinary").CallMatchSet(ast, false).arg(binXX).arg(rightExpr);
+	CallMatchSet leftCall = left.resolveIdentifier(ID!"#opBinary").CallMatchSet(ast, false).arg(binXX).arg(rightExpr);
 	if (auto result = leftCall.finish())
 		return result;
 
@@ -20,7 +20,7 @@ DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, AST_Expression 
 			leftCall.matches.map!(x => "\n\n\t%s:\n\t\t%s".format(x.sourceDataEntity.tryGetIdentificationString, x.errorStr)).joiner //
 			));
 
-	CallMatchSet rightCall = right.tryResolveIdentifier(ID!"#opBinaryR").CallMatchSet(ast, false).arg(binXX).arg(left);
+	CallMatchSet rightCall = right.resolveIdentifier(ID!"#opBinaryR").CallMatchSet(ast, false).arg(binXX).arg(left);
 	if (auto result = rightCall.finish())
 		return result;
 
@@ -35,11 +35,11 @@ DataEntity resolveBinaryOperation(AST_Node ast, DataEntity left, DataEntity righ
 	import std.range : chain;
 
 	// First we try left.#opBinary( binXX, rightExpr )
-	CallMatchSet leftCall = left.tryResolveIdentifier(ID!"#opBinary").CallMatchSet(ast, false).arg(binXX).arg(right);
+	CallMatchSet leftCall = left.resolveIdentifier(ID!"#opBinary").CallMatchSet(ast, false).arg(binXX).arg(right);
 	if (auto result = leftCall.finish())
 		return result;
 
-	CallMatchSet rightCall = right.tryResolveIdentifier(ID!"#opBinaryR").CallMatchSet(ast, false).arg(binXX).arg(left);
+	CallMatchSet rightCall = right.resolveIdentifier(ID!"#opBinaryR").CallMatchSet(ast, false).arg(binXX).arg(left);
 	if (auto result = rightCall.finish())
 		return result;
 

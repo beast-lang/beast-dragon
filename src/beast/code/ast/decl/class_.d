@@ -4,7 +4,7 @@ import beast.code.ast.decl.toolkit;
 import beast.code.ast.decl.declarationscope;
 import beast.code.ast.decoration;
 import beast.code.ast.identifier;
-import beast.code.semantic.type.usrstcclass;
+import beast.code.entity.type.usrstcclass;
 
 final class AST_Class : AST_Declaration {
 
@@ -34,7 +34,11 @@ public:
 	AST_DeclarationScope declarationScope;
 
 public:
-	override void executeDeclarations(DeclarationEnvironment env, void delegate(Symbol) sink) {
+	override Identifier declarationIdentifier() {
+		return identifier.identifier;
+	}
+
+	override void executeDeclaration(ref Symbol[] result, DeclarationEnvironment env) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		auto declData = new ClassDeclarationData(env);
@@ -48,7 +52,7 @@ public:
 		else {
 			auto class_ = new Symbol_UserStaticClass(this, decorations, declData);
 			class_.initialize();
-			sink(class_);
+			result ~= class_;
 		}
 	}
 

@@ -23,7 +23,6 @@ public:
 				if (currentToken.matchAndNext(Token.Special.colon)) {
 					decorationList.parentDecorationList = rootDecorationList;
 					scopeDecorationList = decorationList;
-					result.commonDecorationLists_ ~= decorationList;
 				}
 
 				// @decor { xx }
@@ -31,7 +30,6 @@ public:
 					decorationList.parentDecorationList = scopeDecorationList;
 
 					AST_DeclarationScope subScope = AST_DeclarationScope.parse(decorationList);
-					result.subScopes_ ~= subScope;
 					result.allDeclarations_ ~= subScope.allDeclarations_;
 
 					currentToken.expectAndNext(Token.Special.rBrace, "declaration or '}'");
@@ -58,7 +56,6 @@ public:
 			// { block }
 			else if (currentToken.matchAndNext(Token.Special.lBrace)) {
 				AST_DeclarationScope subScope = AST_DeclarationScope.parse(scopeDecorationList);
-				result.subScopes_ ~= subScope;
 				result.allDeclarations_ ~= subScope.allDeclarations_;
 
 				currentToken.expectAndNext(Token.Special.rBrace, "declaration or '}'");
@@ -75,26 +72,22 @@ public:
 	}
 
 public:
-	/// Processes the declarations, resulting in a symbol
-	Symbol[] executeDeclarations(DeclarationEnvironment env) {
-		Symbol[] result;
-
-		foreach (decl; allDeclarations_)
-			decl.executeDeclarations(env, (s) { result ~= s; });
-
-		return result;
+	override Identifier declarationIdentifier() {
+		return null;
 	}
 
-protected:
-	override SubnodesRange _subnodes() {
-		return nodeRange(directDeclarations_, commonDecorationLists_, subScopes_);
+	override void executeDeclaration(void delegate(Symbol) sink, DeclarationEnvironment env) {
+		assert(0, "executeDeclaration should not be called over a declaration scope");
+	}
+
+public:
+	AST_Declaration[] allDeclarations() {
+		return allDeclarations_;
 	}
 
 private:
 	/// Declarations directly placed in the current declaration scope 
 	AST_Declaration[] directDeclarations_; /// Declarations placed in the current declaration scope and its subscopes
 	AST_Declaration[] allDeclarations_; /// Scope and block decoration lists
-	AST_DecorationList[] commonDecorationLists_; /// Child scopes
-	AST_DeclarationScope[] subScopes_;
 
 }

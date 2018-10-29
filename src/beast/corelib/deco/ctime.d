@@ -1,13 +1,13 @@
 module beast.corelib.deco.ctime;
 
 import beast.corelib.toolkit;
-import beast.code.semantic.decorator.decorator;
+import beast.code.entity.decorator.decorator;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.decl.class_;
 import beast.code.ast.expr.decorated;
 import beast.code.ast.stmt.statement;
-import beast.code.semantic.function_.param;
+import beast.code.entity.function_.param;
 
 /// @ctime
 final class Symbol_Decorator_Ctime : Symbol_Decorator {

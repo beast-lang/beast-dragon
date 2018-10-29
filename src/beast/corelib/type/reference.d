@@ -5,8 +5,8 @@ import beast.corelib.type.toolkit;
 import beast.util.hash;
 import core.sync.rwmutex;
 import beast.code.hwenv.hwenv;
-import beast.code.semantic.util.deref;
-import beast.code.semantic.util.direct;
+import beast.code.entity.util.deref;
+import beast.code.entity.util.direct;
 
 final class Symbol_Type_Reference : Symbol_StaticClass {
 
@@ -109,7 +109,7 @@ public:
 			mem ~= new Symbol_BootstrapAlias(ID!"#baseType", (matchLevel, parentInstance) => baseType_.dataEntity(matchLevel).Overloadset);
 
 			// Alias #opBinary to the base type, because it is used by type comparison functions
-			mem ~= new Symbol_BootstrapAlias(ID!"#opBinary", (matchLevel, inst) => (inst ? inst.dereference(baseType_) : baseType_.dataEntity).tryResolveIdentifier(ID!"#opBinary", matchLevel | MatchLevel.baseClass));
+			mem ~= new Symbol_BootstrapAlias(ID!"#opBinary", (matchLevel, inst) => (inst ? inst.dereference(baseType_) : baseType_.dataEntity).resolveIdentifier(ID!"#opBinary", matchLevel | MatchLevel.baseClass));
 
 			// #data for acessing all the referenced data members
 			mem ~= new Symbol_BootstrapAlias(ID!"#data", //
@@ -160,7 +160,7 @@ public:
 protected:
 	override Overloadset _resolveIdentifier_mid(Identifier id, DataEntity instance, MatchLevel matchLevel) {
 		// We shadow referenced type namespace
-		return baseType_.tryResolveIdentifier(id, instance ? new DataEntity_DereferenceProxy(instance, baseType_) : null, matchLevel);
+		return baseType_.resolveIdentifier(id, instance ? new DataEntity_DereferenceProxy(instance, baseType_) : null, matchLevel);
 	}
 
 private:

@@ -1,0 +1,315 @@
+% !TeX spellcheck = de_DE
+% !TeX root = projekt.tex
+
+\chapter{Úvod}
+Tato publikace navazuje na autorovu bakalářskou práci \cite{Cejchan2017}, kde je představen a rámcově navržen programovací jazyk Beast a koncept líhnutí kódu. Její přečtení se doporučuje, není však vyžadováno pro porozumění tohoto dokumentu.
+
+Koncept líhnutí kódu je novým konceptem navrženým současně s programovacím jazykem Beast a sjednocuje funkcionalitu spjatou s vykonáváním kódu za doby kompilace, jako například generické programování, reflexe jazyka, volání funkcí během kompilace apod. Koncept je v této publikaci představen znovu, tentokrát z trochu jiné perspektivy, a jeho možnosti jsou srovnávány vůči ostatním kompilovaným programovacím jazykům.
+
+Součástí této práce je také postup v implementaci referenčního kompilátoru Dragon pro jazyk Beast. Zatímco pro bakalářskou práci byla implementována jen minimální funkcionalita nutná k demonstraci základních vlastností konceptu líhnutí kódu, zde rozšiřujeme možnosti jazyka a kompilátoru natolik, aby mohla být efektivně srovnávána a demonstrována síla konceptu líhnutí kódu s ostatními jazyky. K práci je přiložena i aktualizovaná specifikace jazyka v anglickém jazyce.
+
+\chapter{Programovací jazyk Beast}
+
+\section{Stručné představení programovacího jazyka Beast}
+
+\section{Změny oproti bakalářské práci}
+
+\chapter{Koncept líhnutí kódu}
+
+\chapter{Implementace konceptu líhnutí kódu}
+
+\chapter{Výpočty za doby kompilace v~jiných programovacích jazycích}
+V této kapitole srovnáme možnosti konceptu líhnutí kódu se silou ostatních programovacích jazyků, co se výpočtů za doby kompilace týče.
+%\section{C++}
+
+%\section{Java}
+
+\section{D}
+Z doposud prozkoumaných jazyků vykazuje jazyk D možnosti nejblíže podobné těm, které má Beast. Ačkoli se nejedná o všeobecně rozšířený jazyk, je aktivně vyvíjen a udržován od roku 2001\footnote{Dle \url{https://wiki.dlang.org/Language_History_and_Future}} a ve své infrastruktuře ho využívají i společnosti jako Ebay a Facebook\footnote{Dle \url{https://dlang.org/orgs-using-d.html}}. Jedná se o silně staticky typovaný kompilovaný jazyk podobný C++, C\# nebo Javě. Hlavními rozdíly oproti C++ jsou modulový systém podobný Javě (netřeba psát hlavičkové soubory, deklarace symbolu nemusí předcházet jeho použití v kódu), \textit{garbage collector} a vícenásobná dedičnost omezená pouze na rozhraní.
+
+\subsection{Generické programování}
+Generické programování v D je koncepčně podobné tomu v C++. Tedy, šablony zavádějí speciální seznam pro generické parametry; na základě hodnot generických parametrů se vytvoří speciální \textit{instance} dané šablony, která má (v případě funkcí) další, \textit{runtime} seznam parametrů. Takto se dají vytvořit jak generické funkce, tak generické třídy a struktury. Syntakticky je D rozdílné v tom, že nevyužívá klíčového slova \inlineCppCode{template}, ale seznam parametrů je ve standardních kulatých závorkách umístěn v definici za identifikátor definovaného symbolu; u generických funkcí jsou za sebou tedy dva seznamy parametrů, první generický a~druhý \textit{runtime}. Při aplikaci se před seznam generických argumentů (který je opět v~kulatých závorkách) přidává vykřičník.
+\pagebreak
+\begin{dcode}[Demonstrace generického programování v jazyce D]
+void genericFunction(int genericArgument)(int runtimeArgument) {
+	writeln(genericArgument, " ", runtimeArgument);
+}
+
+struct GenericType(int genericArgument, GenericTypeArgument) {
+	GenericTypeArgument[genericArgument] arrayField;
+}
+
+void main() {
+	// Also can write genericFunction!3(5);
+	genericFunction!(3)(5); // Prints "3 5\n"
+	
+	GenericType!(3, int) var;
+	var[0] = 1;
+	var[2] = 5;
+}
+\end{dcode}
+
+Za zmínku ještě stojí také konstrukce \inlineDCode{template}\footnote{\url{https://dlang.org/spec/template.html}}, která by se dala přirovnat ke generickému \inlineCppCode{namespace}. Díky této konstrukci se dá pod jednu sadu generických parametrů spojit více symbolů. Pokud je v \textit{template} symbol se stejným identifikátorem jaký má \textit{template} sám, nabývá výraz instanciace \textit{template} namísto jmenného prostoru \textit{template} přímo sémantiku daného symbolu\footnote{\url{https://dlang.org/spec/template.html\#implicit_template_properties}}; to efektivně umožňuje definovat generické proměnné nebo výčty (\textit{enums}), ačkoli přímo ty generický seznam parametrů nepodporují.
+
+\begin{dcode}[Demonstrace konstrukce \inlineDCode{template} v jazyce D]
+template Template(Type) {
+	Type var;
+	void func() {
+		writeln(Type.stringof);
+	}
+}
+
+template TemplateVar(Type) {
+	Type TemplateVar;
+}
+
+void main() {
+	Template!int.var = 5;
+	Template!short.var = 10;
+	
+	Template!short.func(); // Prints "short\n"
+	
+	writeln(Template!int.var, " ", Template!short.var); // Prints "5 10\n"
+	
+	TemplateVar!int = 5;
+	writeln(TemplateVar!short); // Prints "0\n"
+}
+\end{dcode}
+
+Jako generické parametry lze v jazyce D předávat typy, hodnoty struktur a primitivních typů. Dále lze pomocí klíčového slova \inlineDCode{alias} předávat sémantiku výrazu zadaného jako argument (sémantikou se myslí cokoli, co výraz v kontextu argumentu zastupoval -- typ, proměnnou, přetíženou funkci, ...). Mimo konstruci \inlineDCode{alias} nelze generickými parametry předávat data obsahující reference (tedy nelze předávat třídy ani struktury obsahující třídy nebo ukazatele).
+
+\begin{dcode}[Demonstrace konstrukce \inlineDCode{alias} v jazyce D]
+void f(string str) {
+	writeln("string ", str);
+}
+
+void f(int x) {
+	writeln("int ", x);
+}
+
+template T(alias f) {
+	void T() {
+		f(3);
+		f("asd");
+	}
+}
+
+void main() {
+	T!f(); // Prints "int 3\nstring asd\n"
+}
+\end{dcode}
+
+\subsubsection{Specializace šablon}
+Kromě konvenčních omezení typem (např. \inlineDCode{template T(int x)}) nabízí jazyk D další prostředky pro specializaci šablon. V ostatních jazycích neznámým prostředkem je konstrukce \inlineDCode{if(cond)}\footnote{\url{https://dlang.org/spec/template.html\#template_constraints}}, která se přidává před tělo definice symbolu. Výraz \inlineDCode{cond} v této konstrukci se vykonává za doby kompilace po vyhodhocení generických parametrů; pokud výraz nabývá hodnoty false, daná definice je vyřazena z rezolučního procesu.
+
+\begin{dcode}[Demonstrace konstrukce \inlineDCode{if(cond)} v kontextu specializace generických konstrukcí]
+void foo(T)() if(T.sizeof < 2) {
+	writeln("A ", T.sizeof);
+}
+
+void foo(T)() if(T.sizeof > 3) {
+	writeln("B ", T.sizeof);
+}
+
+void main() {
+	foo!byte(); // Prints "A 1"
+	foo!int(); // Prints "B 4"
+	foo!short(); // Error
+}
+\end{dcode}
+
+Druhým prostředkem je konstrukce \inlineDCode{param : expr}. Tato konstrukce se aplikuje na deklaraci generického parametru (\inlineDCode{param} zastupuje původní deklaraci). Výraz \inlineCode{expr} může být buď konkrétní hodnota očekávaná u daného parametru nebo výraz pro typový \textit{pattern matching}\footnote{Vychází z \url{https://dlang.org/spec/expression.html\#is_expression}}.
+
+\begin{dcode}[Demonstrace konstrukce \inlineDCode{param : expr} pro specializaci generických konstrukcí v jazyce D]
+struct S(alias a_, alias b_) {
+	alias a = a_;
+	alias b = b_;
+	int x;
+}
+
+void foo(T : int)() {
+	writeln("A");
+}
+
+void foo(T : Item[], Item)() {
+	writeln("B ", Item.stringof, " ", T.stringof);
+}
+
+void foo(T : S!(a, b), int a, int b)() {
+	writeln("C ", a, " ", b, " ", T.stringof);
+}
+
+void foo(T : S!(a, b), int a : 5, alias b)() {
+	writeln("D ", T.stringof);
+}
+
+void main() {
+	foo!(int)(); // Prints "A\n"
+	foo!(int[])(); // Prints "B int int[]\n"
+	foo!(S!(2,3))(); // Prints "C 2 3 S!(2,3)\n"
+	foo!(S!(5,"asd"))(); // Prints "D S!(5,"asd")\n"
+}
+\end{dcode}
+
+\subsubsection{Srovnání s jazykem Beast}
+Generické typy jsou v jazycích D a Beast principiálně totožné, u generických funkcí se ale přístupy rozcházejí. Primárním rozdílem je to, že v jazyce Beast generické parametry sdílejí stejné závorky s \textit{runtime} parametry a nejsou striktně oddělené pořadím (tedy generické a~\textit{runtime} parametry mohou být vzájemně prokládány). Nové možnosti uspořádání mohou někdy lépe reflektovat sémantický tok významu parametrů.
+
+\begin{code}[Nastínění případu, kdy může být intiutivnější umístění generických parametrů za \textit{runtime} parametry]
+Void glVertices(Buffer(Int)? buffer, @ctime Int dim) {
+	for(Int i = 0; i < buffer.size / dim; i++)
+		#resolve("glVertex" + dim.to(String) + "i")(...buffer[i * dim .. (i+1) * dim].to(StaticArray(Int, dim)).to(Tuple));
+}
+
+Void main() {
+	Buffer(Int) buf(1, 2, 3, 4, 5, 6);
+	glVertices(buffer, 2); // Calls glVertex2i(x, y) for each pair in the buffer
+	glVertices(buffer, 3); // Calls glVertex3i(x, y, z) for each triplet in the buffer
+}
+\end{code}
+
+Syntaktické oddělení generických a \textit{runtime} parametrů může být komplikací také ve chvíli, kdy se v existujícím kódu nahrazuje varianta funkce, která má nějaký z parametrů generický, za variantu, kdy je daný parametr \textit{runtime} a naopak. V takovém případě je kód třeba ručně přepisovat; současná IDE automatizaci tohoto druhu refaktorizace neumožňují.
+
+Tento nový přístup vyžaduje i revizi automatického odvozování typů a \textit{pattern matchingu}. Zatímco oddělený seznam generických parametrů umožňuje například automatické odvození typu u funkce \inlineDCode{max}:
+
+\begin{dcode}[Vzorová implementace generické funkce \inlineDCode{max} v jazyce D]
+auto max(T)(T a, T b) {
+	return a >= b ? a : b;
+}
+
+auto i = max(3, 5); // T is automatically inferred
+\end{dcode}
+
+...ve sjednoceném seznamu parametrů něco takového možné není. Naivním řešením by tedy bylo:
+
+\begin{code}[Naivní implementace funkce \inlineCode{max} v jazyce Beast]
+auto max(@ctime Type T, T a, T b) {
+	return a >= b ? a : b;
+}
+
+auto i = max(Int, 3, 5);
+\end{code}
+
+Tato implementace by ale vyžadovala explicitní určení typu ve všech případech. Jazyk Beast proto zavádí klíčové slovo \inlineCode{auto} i do parametrů funkce, takže je možné definovat funkci \inlineCode{max} takto:
+
+\begin{code}
+auto max(auto a, a.#type b) {
+	return a >= b ? a : b;
+}
+\end{code}
+
+Sjednocení seznamů parametrů také vyžaduje přehodnocení konstrukcí pro \textit{pattern matching}. Jazyk Beast tento problém explicitně neřeší. V jazyce Beast je také zavedena konstrukce \inlineCode{if(cond)}, kde podmínka \inlineCode{cond} rozhoduje, zda se daný symbol bude uvažovat v procesu rezoluce. Funkčnost \textit{pattern matchingu} je v jazyce Beast do jisté míry nahrazena tím, že jsou při rezoluci parametru funkce k dispozici data všech předchozích parametrů. V~některých případech je tento přístup dokonce silnější:
+
+\begin{dcode}[Příklad selhání \textit{pattern matchingu} v jazyce D]
+struct Z {
+	alias Y = int;
+	int x;
+}
+
+void foo(T)(T t, T.Y u) {
+	writeln(u);
+}
+
+void main() {
+	Z z = Z(10);
+	foo!Z(z, 5); // Ok
+	foo(z, 5); // Error: cannot deduce
+}
+\end{dcode}
+
+\begin{code}[Příklad funkčního ekvivalentního kódu v jazyce Beast]
+class Z {
+	@static @ctime Type Y = Int;
+	Int! x;
+}
+
+Void foo(auto t, t.Y u) {
+	print(u);
+}
+
+Void main() {
+	Z z;
+	z.x = 10;
+	foo(z, 10); // Ok
+}
+\end{code}
+
+\subsection{Vykonávání funkcí za doby kompilace}
+Kompilátor jazyka D obsahuje interpret, který umožňuje vykonávat funkce za doby kompilace (dále CTFE -- \textit{Compile Time Function Execution}). Limity interpretovaného kódu nejsou nijak výrazné -- lze volat funkce, i rekurzivně, i dynamicky alokovat paměť; nicméně volání I/O funkcí během interpretace vyvolá chybu. Výsledky interpretace lze předávat jako generické parametry, ale s již dříve zmíněnými omezeními, že předávaná data nemohou obsahovat ukazateles. Ačkoli I/O funkce nelze volat během kompilace ani v Beastu, koncept líhnutí kódu netrpí omezením indirekcí v generických parametrech.
+
+Jádrem tohoto omezení je, že D umí během kompilace (s výjimkou běhu interpretu) ukládat a pracovat s daty pouze jako s literály. V jazyce D tedy nelze mít nekonstantní \textit{compile-time} proměnné. Tuto funkčnost do jisté míry realizuje existence konstruktu \inlineDCode{static foreach}, která umožňuje během kompilace projít prvky zadaného iterovatelného výrazu.
+
+\subsection{Reflexe, typové proměnné}
+Jazyk D, stejně jako Beast, podporuje reflexi za doby kompilace v dostatečné míře pro praktické aplikace. Jsou k dispozici např. konstrukty \inlineDCode{__traits(allMembers, Class)} navracející členy zadané třídy, \inlineDCode{__traits(getOverloads, f)} navracející jednotlivá přetížení dané funkce a další, popsané v dokumentaci jazyka\footnote{\url{https://dlang.org/spec/traits.html}} a standardní knihovny\footnote{\url{https://dlang.org/phobos/std_traits.html}}.
+
+Práci s těmito konstrukty v jazyce D ale ztěžuje fakt, že typy (a potažmo \textit{aliases}; aliasem rozumíme jakýkoli výraz se sémantikou) nejsou \textit{first-class citizens}, tedy se s nimi nedá pracovat jako s proměnnými, nedají se ukládat do polí apod. V jazyce D existuje kontejner pro aliasy: jedná se o generiku \inlineDCode{AliasSeq}\footnote{\url{https://dlang.org/phobos/std_meta.html\#AliasSeq}}; práce s kontejnerem \inlineDCode{AliasSeq} je však značně omezená. Nad takovýmto kontejnerem se nedají používat standardní knihovní funkce a operace nad ním se musí implementovat pomocí rekurzivních šablon. Díky tomu vznikají velké syntaktické rozdíly mezi běžným programováním a prací s reflexí.
+
+Demonstrujme tento rozdíl na příkladu: mějme pole číselných hodnot \inlineDCode{int[] arr} a chceme rozhodnout, zda po každém výskytu čísla \inlineDCode{5} následuje číslo \inlineDCode{3}. Implementace funkce by vypadala takto:
+\pagebreak
+\begin{dcode}
+bool test(int[] arr) {
+	int previous = arr[0];
+	foreach(int current; arr[1..$]) {
+		if(previous == 5 && current != 3)
+			return false;	
+			
+		previous = current;
+	}
+
+	return previous != 5;
+}
+\end{dcode}
+
+Podobným způsobem ale v jazyce D nelze řešit například ověření, zda v \inlineDCode{AliasSeq} typů \inlineDCode{int} vždy následuje \inlineDCode{string}; pro řešení stejným způsobem bychom museli být schopni uchovávat měnit hodnotu \inlineDCode{previous}. Možné řešení je toto:
+
+\begin{dcode}
+// Single-item AliasSeq
+template test(Item) {
+	enum test = !is(Item == int);
+}
+
+// Multiple-item AliasSeq
+template test(Item1, Item2, Items...) {
+	static if(is(Item1 == int) && !is(Item2 == string))
+		enum test = false;
+	else
+		enum test = test!(Item2, Items);
+}
+
+pragma(msg, test!(AliasSeq!(int, string, int, string))); // true
+pragma(msg, test!(AliasSeq!(int, string, int))); // false
+\end{dcode}
+
+Je zřejmé, že rozdíl v syntaxi těchto dvou příkladů je markantní. V jazyce Beast lze díky konceptu líhnutí kódu řešit obojí stejným způsobem, který se neliší od běžného psaní kódu:
+
+\begin{code}
+@ctime Bool test(Type[] arr) {
+	Type previous = arr[0];
+	for(Type current : arr[1 .. $]) {
+		if(previous == Int && current != String)	
+			return false;
+			
+		previous = current;
+	}
+
+	return previous != Int;
+}
+\end{code}
+
+TODO: mixins, template mixins, variadické funkce
+
+%\section{Zig}
+
+\section{Stručný přehled}
+\begin{tabular}{l||c|c|c|c||c}
+	\textbf{Schopnost} & \textbf{C++} & \textbf{Java} & \textbf{D} & \textbf{Zig} & \textbf{Beast} \\
+	\hline\hline
+	Generické programování \\\hline
+	\textit{Compile-time} proměnné \\
+	\multicolumn{1}{r||}{\textit{runtime shadowing}\footnote{\textit{Runtime shadowing}: předávání \textit{compile-time} proměnných za běhu odkazem}} \\\hline
+	\textit{CTFE}\footnote{\textit{Compile Time Function Execution}: Vykonávání funkcí za doby kompilace} \\\hline
+	Typové proměnné \\\hline
+	Reflexe \\\hline
+	\textit{Mixins}\footnote{\textit{Mixins}: vyhodnocování textových řetězců jakožto platný kód jazyka} \\
+\end{tabular}
+
+\chapter{Závěr}

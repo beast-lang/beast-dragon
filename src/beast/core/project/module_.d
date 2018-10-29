@@ -6,14 +6,14 @@ import beast.core.project.codesource;
 import beast.core.task.guard;
 import beast.code.ast.decl.module_;
 import beast.code.lex.identifier;
-import beast.code.semantic.module_.user;
+import beast.code.entity.module_.user;
 import beast.code.lex.token;
 import beast.code.lex.lexer;
 import beast.core.project.configuration;
 import beast.core.project.codelocation;
 
 /// Abstraction of module in Beast (as a project file)
-/// See also Symbol_Module and Symbol_UserModule in beast.code.semantic.module_.XX
+/// See also Symbol_Module and Symbol_UserModule in beast.code.entity.module_.XX
 final class Module : CodeSource, Identifiable {
 	mixin TaskGuard!("parsing");
 

@@ -1,7 +1,7 @@
 module beast.corelib.deco.static_;
 
 import beast.corelib.toolkit;
-import beast.code.semantic.decorator.decorator;
+import beast.code.entity.decorator.decorator;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.decl.class_;

@@ -4,11 +4,11 @@ import beast.code.ast.decl.toolkit;
 import beast.code.ast.identifier;
 import beast.code.ast.expr.parentcomma;
 import beast.code.ast.stmt.codeblock;
-import beast.code.semantic.scope_.root;
-import beast.code.semantic.function_.usrstcrt;
-import beast.code.semantic.function_.usrmemrt;
-import beast.code.semantic.function_.paramlist;
-import beast.code.semantic.function_.usrstcnrt;
+import beast.code.entity.scope_.root;
+import beast.code.entity.function_.usrstcrt;
+import beast.code.entity.function_.usrmemrt;
+import beast.code.entity.function_.paramlist;
+import beast.code.entity.function_.usrstcnrt;
 
 final class AST_FunctionDeclaration : AST_Declaration {
 
@@ -32,7 +32,11 @@ public:
 	}
 
 public:
-	override void executeDeclarations(DeclarationEnvironment env, void delegate(Symbol) sink) {
+	override Identifier declarationIdentifier() {
+		return identifier.identifier;
+	}
+
+	override void executeDeclaration(ref Symbol[] result, DeclarationEnvironment env) {
 		const auto __gd = ErrorGuard(codeLocation);
 
 		FunctionDeclarationData declData = new FunctionDeclarationData(env);
@@ -44,13 +48,13 @@ public:
 		auto paramList = new FunctionParameterList(parameterList);
 
 		if (declData.isStatic && !declData.isCtime && paramList.isRuntimeParameterList)
-			sink(new Symbol_UserStaticRuntimeFunction(this, decorations, declData, paramList));
+			result ~= new Symbol_UserStaticRuntimeFunction(this, decorations, declData, paramList);
 
 		else if (!declData.isStatic && !declData.isCtime && paramList.isRuntimeParameterList)
-			sink(new Symbol_UserMemberRuntimeFunction(this, decorations, declData, paramList));
+			result ~= new Symbol_UserMemberRuntimeFunction(this, decorations, declData, paramList);
 
 		else if (declData.isStatic && !declData.isCtime && !paramList.isRuntimeParameterList)
-			sink(new Symbol_UserStaticNonRuntimeFunction(this, decorations, declData, paramList));
+			result ~= new Symbol_UserStaticNonRuntimeFunction(this, decorations, declData, paramList);
 
 		else if (!declData.isStatic && !declData.isCtime && !paramList.isRuntimeParameterList)
 			berror(E.notImplemented, "Member functions with @ctime parameters are not implemented yet");

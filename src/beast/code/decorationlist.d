@@ -5,14 +5,14 @@ import beast.code.ast.decorationlist;
 import beast.code.ast.decl.variable;
 import beast.code.ast.decl.function_;
 import beast.code.ast.decoration;
-import beast.code.semantic.decorator.decorator;
+import beast.code.entity.decorator.decorator;
 import beast.code.ast.decl.class_;
 import beast.code.ast.expr.decorated;
-import beast.code.semantic.idcontainer;
+import beast.code.entity.idcontainer;
 import beast.code.ast.decl.env;
 import beast.code.ast.stmt.statement;
-import beast.code.semantic.function_.paramlist;
-import beast.code.semantic.function_.param;
+import beast.code.entity.function_.paramlist;
+import beast.code.entity.function_.param;
 
 /// Class for working with decoration lists; it is used for gradually applying decorators on a symbol (context by context)
 final class DecorationList {

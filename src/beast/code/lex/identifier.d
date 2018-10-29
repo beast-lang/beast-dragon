@@ -6,6 +6,15 @@ import beast.util.hash;
 /// Preobtained identifier
 alias ID = Identifier.preobtained;
 
+alias ResolutionFlags = uint;
+enum ResolutionFlag : ResolutionFlags {
+	defaultFlags = 0,
+
+	noRecursion = 1 << 0,
+	noAliasThis = 1 << 1,
+	noParentClass = 1 << 2
+}
+
 final class Identifier {
 
 public:

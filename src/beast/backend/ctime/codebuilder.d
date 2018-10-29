@@ -1,7 +1,7 @@
 module beast.backend.ctime.codebuilder;
 
 import beast.backend.toolkit;
-import beast.code.semantic.scope_.local;
+import beast.code.entity.scope_.local;
 import beast.backend.interpreter.interpreter;
 import beast.util.uidgen;
 import beast.corelib.type.reference;

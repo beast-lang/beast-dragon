@@ -1,7 +1,7 @@
 module beast.corelib.type.type;
 
 import beast.corelib.type.toolkit;
-import beast.code.semantic.type.stcclass;
+import beast.code.entity.type.stcclass;
 import beast.util.uidgen;
 import beast.code.memory.memorymgr;
 
@@ -85,7 +85,7 @@ protected:
 		if (instance) {
 			Symbol_Type type = instance.ctExec_asType.inStandaloneSession;
 
-			if (auto result = type.tryResolveIdentifier(id, null, matchLevel))
+			if (auto result = type.resolveIdentifier(id, null, matchLevel))
 				return result;
 		}
 

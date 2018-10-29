@@ -2,9 +2,9 @@ module beast.corelib.type.pointer;
 
 import beast.corelib.type.toolkit;
 import beast.code.hwenv.hwenv;
-import beast.code.semantic.function_.primmemnrt;
-import beast.code.semantic.util.reinterpret;
-import beast.code.semantic.util.deref;
+import beast.code.entity.function_.primmemnrt;
+import beast.code.entity.util.reinterpret;
+import beast.code.entity.util.deref;
 
 final class Symbol_Type_Pointer : Symbol_StaticClass {
 

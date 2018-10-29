@@ -5,7 +5,7 @@ static import std.file;
 import beast.backend.common.backend;
 import beast.backend.cpp.codebuilder;
 import beast.backend.toolkit;
-import beast.code.semantic.scope_.root;
+import beast.code.entity.scope_.root;
 import beast.code.hwenv.hwenv;
 import beast.core.error.error;
 import beast.core.project.configuration;

@@ -4,7 +4,7 @@ import beast.code.lex.toolkit;
 import beast.core.project.codesource;
 import beast.core.project.codelocation;
 import std.bigint;
-import beast.code.semantic.var.literal;
+import beast.code.entity.var.literal;
 
 pragma(inline) {
 	/// Context-local lexer instance

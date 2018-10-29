@@ -2,11 +2,11 @@ module beast.corelib.deco.functions;
 
 import beast.corelib.toolkit;
 import beast.corelib.deco.static_;
-import beast.code.semantic.function_.function_;
-import beast.code.semantic.function_.primstcrt;
-import beast.code.semantic.function_.expandedparameter;
+import beast.code.entity.function_.function_;
+import beast.code.entity.function_.primstcrt;
+import beast.code.entity.function_.expandedparameter;
 import beast.backend.common.primitiveop;
-import beast.code.semantic.var.tmplocal;
+import beast.code.entity.var.tmplocal;
 
 struct CoreLibrary_Functions {
 

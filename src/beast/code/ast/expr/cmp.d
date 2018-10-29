@@ -4,8 +4,8 @@ import beast.code.ast.toolkit;
 import beast.code.ast.expr.sum;
 import beast.code.ast.expr.binary;
 import std.range : chain;
-import beast.code.semantic.util.cached;
-import beast.code.semantic.var.btspconst;
+import beast.code.entity.util.cached;
+import beast.code.entity.var.btspconst;
 
 final class AST_CmpExpression : AST_Expression {
 	alias LowerLevelExpression = AST_SumExpression;

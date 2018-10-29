@@ -4,7 +4,7 @@ import beast.corelib.type.toolkit;
 import beast.corelib.type.type;
 import beast.util.decorator;
 import beast.corelib.type.reference;
-import beast.code.semantic.function_.bstpstcnrt;
+import beast.code.entity.function_.bstpstcnrt;
 import beast.corelib.type.int_;
 import beast.corelib.type.pointer;
 import beast.code.hwenv.hwenv;

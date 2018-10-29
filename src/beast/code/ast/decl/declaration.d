@@ -57,9 +57,9 @@ public:
 	}
 
 public:
-	/// Processes the declaration, resulting in a symbol(s) - so module level declaration
-	/// For each symbol created, calls the function sink
-	abstract void executeDeclarations(DeclarationEnvironment env, void delegate(Symbol) sink);
+	abstract Identifier declarationIdentifier();
+
+	abstract void executeDeclaration(ref Symbol[] result, DeclarationEnvironment env);
 
 public:
 	AST_DecorationList decorationList;

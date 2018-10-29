@@ -160,8 +160,8 @@ public:
 		if (var.isCtime && !this.isCtime)
 			return;
 
-		// We don't call var.tryResolveIdentifier because of Type variables
-		// calling var.tryResolveIdentifier would result in calling #ctor of the represented type
+		// We don't call var.resolveIdentifier because of Type variables
+		// calling var.resolveIdentifier would result in calling #ctor of the represented type
 		var.dataType.expectResolveIdentifier_direct(ID!"#dtor", var).resolveCall(null, true).buildCode(this);
 	}
 

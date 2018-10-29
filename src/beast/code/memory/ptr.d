@@ -3,7 +3,7 @@ module beast.code.memory.ptr;
 import beast.code.toolkit;
 import beast.code.memory.block;
 import beast.code.memory.memorymgr;
-import beast.code.semantic.type.type;
+import beast.code.entity.type.type;
 import beast.code.hwenv.hwenv;
 import core.stdc.string : memcpy;
 import std.algorithm.searching : all;
@@ -15,13 +15,8 @@ enum nullMemoryPtr = MemoryPtr(0);
 struct MemoryPtr {
 
 public:
-	size_t val;
-
-public:
-	/// Returns memory block corresponding to this pointer
-	MemoryBlock block() const {
-		return memoryManager.findMemoryBlock(this);
-	}
+	MemoryBlock block;
+	size_t offset;
 
 public:
 	/// Writes a "primitive" (direct data copy - usually you should use hwenv) into given pointer
@@ -39,7 +34,7 @@ public:
 	}
 
 	MemoryPtr write(MemoryPtr data, size_t bytes) const {
-		memoryManager.write(this, memoryManager.read(data, bytes));
+		write(data.read(bytes));
 		return this;
 	}
 

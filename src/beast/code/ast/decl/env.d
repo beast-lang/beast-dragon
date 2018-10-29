@@ -1,10 +1,10 @@
 module beast.code.ast.decl.env;
 
 import beast.code.ast.decl.toolkit;
-import beast.code.semantic.type.type;
-import beast.code.semantic.codenamespace.namespace;
-import beast.code.semantic.stcmemmerger.d;
-import beast.code.semantic.function_.rt;
+import beast.code.entity.type.type;
+import beast.code.entity.codenamespace.namespace;
+import beast.code.entity.stcmemmerger.d;
+import beast.code.entity.function_.rt;
 
 /// Implicit declaration arguments
 final class DeclarationEnvironment {

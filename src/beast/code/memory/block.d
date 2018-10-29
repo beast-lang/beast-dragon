@@ -2,8 +2,8 @@ module beast.code.memory.block;
 
 import beast.code.toolkit;
 import beast.code.memory.ptr;
-import beast.code.semantic.var.local;
-import beast.code.semantic.function_.expandedparameter;
+import beast.code.entity.var.local;
+import beast.code.entity.function_.expandedparameter;
 import core.memory : GC;
 import core.atomic : atomicOp, atomicLoad;
 import beast.code.memory.memorymgr;
@@ -66,6 +66,34 @@ public:
 	}
 
 public:
+	/// Data in this memory block
+	ubyte* data;
+
+	/// Size of the block
+	const size_t size;
+
+public:
+	/// Number unique to each allocation
+	const UIDGenerator.I allocId;
+
+	/// Session the current block was initialized in
+	const UIDGenerator.I session;
+
+	/// Subsession the current block was initialized in
+	const UIDGenerator.I subSession;
+
+	/// Flags of the block.
+	const Flags flags;
+
+	/// Flags that can be modified asynchronously ("atomic or" write only)
+	shared ubyte sharedFlags_;
+
+public:
+	/// This is for checking if there was reading from a different thread before write
+	debug bool wasReadOutsideContext;
+	debug UIDGenerator.I jobId;
+
+public:
 	/// Duplicates given memory block. The memory block must not be runtime. The resulting block is set static
 	MemoryBlock duplicate(Flag flags) {
 		assert(isCtime);
@@ -78,21 +106,6 @@ public:
 	/// Returns if the block is marked as runtime
 	pragma(inline) bool isRuntime() {
 		return !flag(Flag.ctime);
-	}
-
-	/// Returns if the block is marked as compile time
-	pragma(inline) bool isCtime() {
-		return flag(Flag.ctime);
-	}
-
-	/// Returns if the block is local - if it coresponds to a variable on stack
-	pragma(inline) bool isLocal() {
-		return flag(Flag.local);
-	}
-
-	/// Returns if the block is static - not local nor dynamically allocated
-	pragma(inline) bool isStatic() {
-		return !flag(Flag.local) && !flag(Flag.dynamicallyAllocated);
 	}
 
 	pragma(inline) void markReferenced() {
@@ -165,37 +178,5 @@ public:
 	int opCmp(const MemoryBlock other) const {
 		return startPtr.opCmp(other.startPtr);
 	}
-
-public:
-	/// Number unique to each allocation
-	const UIDGenerator.I allocId;
-	/// First byte that belongs to the block
-	const MemoryPtr startPtr;
-	/// First byte that doesn't belong to the block
-	const MemoryPtr endPtr;
-	/// Size of the block
-	const size_t size;
-	/// Session the current block was initialized in
-	const UIDGenerator.I session;
-	/// Subsession the current block was initialized in
-	const UIDGenerator.I subSession;
-	/// Flags of the block.
-	const Flags flags;
-	/// Flags that can be modified asynchronously ("atomic or" write only)
-	shared ubyte sharedFlags_;
-	ubyte* data;
-
-	/// Data entity related to the code block
-	DataEntity relatedDataEntity;
-	string identifier;
-
-	/// Readable/writable only from block context!
-	/// Base pointer offset of a local variable (or mirrored @ctime variable) for the interpreter
-	/// OR base pointer offset of a nonstatic @ctime variable for ctimeStack
-	size_t bpOffset;
-
-	/// This is for checking if there was reading from a different thread before write
-	debug bool wasReadOutsideContext;
-	debug UIDGenerator.I jobId;
 
 }
